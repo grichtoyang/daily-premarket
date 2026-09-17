@@ -62,15 +62,25 @@ def last_weekday(d: date) -> date:
     return d
 
 
-def call_gemini(prompt: str, key: str, timeout: int = 180) -> str | None:
+def rank_models(names: list[str]) -> list[str]:
+    """穩定版優先：精確版號 > 非 preview/lite > 其他。"""
+    def score(n: str) -> tuple:
+        l = n.lower()
+        return (0 if "preview" not in l and "tts" not in l and "image" not in l else 1,
+                0 if "lite" not in l and "omni" not in l else 1,
+                -len(n), n)
+    return sorted(set(names), key=score)
+
+
+def call_gemini(prompt: str, key: str, timeout: int = 180, temperature: float = 0.3) -> str | None:
     found = list_models(key)
-    models = found + [m for m in MODELS if m not in found]
+    models = rank_models(found) + [m for m in MODELS if m not in found]
     for model in models:
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
                f":generateContent?key={key}")
         body = {"contents": [{"parts": [{"text": prompt}]}],
                 "safetySettings": SAFETY,
-                "generationConfig": {"temperature": 0.3, "maxOutputTokens": 8192}}
+                "generationConfig": {"temperature": temperature, "maxOutputTokens": 8192}}
         try:
             r = requests.post(url, json=body, timeout=timeout)
             if r.status_code == 404:
@@ -139,6 +149,25 @@ def audit_numbers(text: str, data: str) -> list[str]:
     return bad[1:] and [f"疑似虛構數字：{bad}"] or []
 
 
+def run_stage(prompt: str, key: str, check, tries: int = 2, temperature: float = 0.3):
+    """跑一階段：調 API → check(text) 回錯誤清單；通過回 (text, [])，否則 (None, errs)。"""
+    text, errs = None, ["not run"]
+    for attempt in range(1, tries + 1):
+        p = prompt
+        if attempt > 1 and text:
+            p += "\n\n【格式修正】上一版未通過校驗：" + "；".join(errs) + "。請重出全文並修正。"
+        print(f"[INFO] API attempt {attempt}")
+        text = call_gemini(p, key, temperature=temperature)
+        if text is None:
+            errs = ["API 無回應"]
+            continue
+        errs = check(text)
+        if not errs:
+            return text, []
+        print(f"[WARN] 校驗失敗：{errs}")
+    return None, errs
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="")
@@ -159,30 +188,43 @@ def main() -> int:
         print(f"[ERROR] 找不到 {data_path}", file=sys.stderr)
         return 2
     data_text = data_path.read_text(encoding="utf-8")
-    template = Path(args.prompt).read_text(encoding="utf-8")
-    base_prompt = (f"{template}\n\n---\n以下為 DATA_REPORT_{ymd}.md 全文 (T0={t0})：\n\n{data_text}")
+    extract_tpl = (ROOT / "prompts" / "extract.md").read_text(encoding="utf-8")
+    analyze_tpl = Path(args.prompt).read_text(encoding="utf-8")
 
-    text, errs = None, ["not run"]
-    for attempt in range(1, 4):
-        prompt = base_prompt
-        if attempt > 1:
-            prompt += ("\n\n【格式修正】上一版未通過校驗："
-                       + "；".join(errs) + "。請重出全文並修正。")
-        print(f"[INFO] API attempt {attempt}")
-        text = call_gemini(prompt, key)
-        if text is None:
-            errs = ["API 無回應"]
-            continue
-        errs = validate(text)
-        if not errs:
-            errs = audit_numbers(text, data_text)
-            if errs:
-                print(f"[WARN] 數字稽核：{errs}")
-        if not errs:
-            break
-        print(f"[WARN] 校驗失敗：{errs}")
-    if errs:
-        print(f"[ERROR] 3 次皆未通過：{errs}", file=sys.stderr)
+    # ---- Stage A：摘錄 (低溫抄寫，嚴格稽核) ----
+    stage_a_prompt = (f"{extract_tpl}\n\n---\n以下為 DATA_REPORT_{ymd}.md 全文 (T0={t0})：\n\n{data_text}")
+
+    def check_a(t: str) -> list[str]:
+        e = []
+        if "關鍵數據一覽" not in t:
+            e.append("缺關鍵數據表")
+        for b in ("kpi", "levels", "oidist"):
+            m = re.search(rf"```{b}\n(.*?)```", t, re.S)
+            if not m or len([l for l in m.group(1).strip().splitlines() if l.strip()]) < 2:
+                e.append(f"機器區不足：{b}")
+        e += audit_numbers(t, data_text)
+        return e
+
+    extracted, errs = run_stage(stage_a_prompt, key, check_a, tries=2, temperature=0.1)
+    if extracted is None:
+        print(f"[ERROR] Stage A 未通過：{errs}", file=sys.stderr)
+        return 1
+
+    # ---- Stage B：解讀 (數字以 Stage A 為準) ----
+    stage_b_prompt = (f"{analyze_tpl}\n\n---\n【Stage A 已驗證摘錄，數字以此為準】\n\n{extracted}"
+                      f"\n\n---\n以下為 DATA_REPORT_{ymd}.md 全文 (T0={t0}，僅供背景參考)：\n\n{data_text}")
+
+    def check_b(t: str) -> list[str]:
+        e = validate(t)
+        if not e:
+            e = audit_numbers(t, data_text)
+            if e:
+                print(f"[WARN] 數字稽核：{e}")
+        return e
+
+    text, errs = run_stage(stage_b_prompt, key, check_b, tries=2, temperature=0.3)
+    if text is None:
+        print(f"[ERROR] Stage B 未通過：{errs}", file=sys.stderr)
         return 1
 
     out = ROOT / "reports" / f"Daily_REPORT_{ymd}.md"
