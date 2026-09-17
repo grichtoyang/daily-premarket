@@ -119,9 +119,12 @@ dpath = f"data_reports/DATA_REPORT_{rdate}.md"
 dmd = load_md(dpath) or ""
 ymd = f"{rdate[:4]}-{rdate[4:6]}-{rdate[6:]}" if len(rdate) == 8 else rdate
 blocks = parse_blocks(md)
+GH = "https://github.com/grichtoyang/daily-premarket/blob/master"
+gh_data = f"{GH}/{dpath}"
+gh_ana = f"{GH}/{ana_path}"
 
 st.title("📈 每日盤前分析 Dashboard")
-st.caption(f"報告日 {ymd}｜Asia/Taipei｜[原始 DATA 報告]({dpath})")
+st.caption(f"報告日 {ymd}｜Asia/Taipei｜[原始 DATA 報告]({gh_data})")
 
 tab_sum, tab_spot, tab_mkt, tab_fut, tab_opt = st.tabs(
     ["總結", "現貨", "重要市場", "期貨", "選擇權"])
@@ -168,6 +171,8 @@ with tab_sum:
         if t:
             with st.expander(sec, expanded=(sec == "關鍵價位與今日交易計畫")):
                 st.markdown(t.split("## 附錄")[0][:2500])
+    with st.expander("原始 DATA 報告全文"):
+        st.markdown(dmd[:20000] if dmd else "無")
 
 # ================= 現貨 ← DATA 第一章 =================
 with tab_spot:
@@ -303,5 +308,5 @@ with tab_opt:
                 st.table(t)
 
 st.divider()
-st.caption(f"分析報告：[{ana_path}]({ana_path})｜原始數據：[{dpath}]({dpath})｜"
+st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
            "非投資建議，僅供參考")
