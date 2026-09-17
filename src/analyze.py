@@ -23,7 +23,10 @@ import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 TAIPEI = ZoneInfo("Asia/Taipei")
-MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"]
+MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-001", "gemini-flash-latest"]
+SAFETY = [{"category": c, "threshold": "BLOCK_ONLY_HIGH"}
+          for c in ("HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH",
+                    "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT")]
 SECTIONS = ["關鍵數據一覽", "國際市場解讀", "台股籌碼解讀", "期貨選擇權解讀",
             "關鍵價位與今日交易計畫", "資料限制聲明"]
 BLOCKS = ("kpi", "levels", "oidist", "scenarios")
@@ -42,18 +45,31 @@ def call_gemini(prompt: str, key: str, timeout: int = 180) -> str | None:
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
                f":generateContent?key={key}")
         body = {"contents": [{"parts": [{"text": prompt}]}],
+                "safetySettings": SAFETY,
                 "generationConfig": {"temperature": 0.3, "maxOutputTokens": 8192}}
         try:
             r = requests.post(url, json=body, timeout=timeout)
             if r.status_code == 404:
+                print(f"[INFO] {model} 404 (model not found)")
                 continue
-            r.raise_for_status()
-            cands = r.json().get("candidates") or []
+            if r.status_code != 200:
+                print(f"[WARN] {model} HTTP {r.status_code}: {r.text[:300]}")
+                time.sleep(5)
+                continue
+            j = r.json()
+            fb = (j.get("promptFeedback") or {}).get("blockReason")
+            if fb:
+                print(f"[WARN] {model} blocked: {fb}")
+                return None
+            cands = j.get("candidates") or []
             if cands:
                 parts = (cands[0].get("content") or {}).get("parts") or []
                 text = "".join(p.get("text", "") for p in parts).strip()
                 if text:
                     return text
+                print(f"[WARN] {model} 空回應 (finish={cands[0].get('finishReason')})")
+            else:
+                print(f"[WARN] {model} 無 candidates: {str(j)[:300]}")
         except Exception as e:  # noqa: BLE001
             print(f"[WARN] {model} failed: {e}")
             time.sleep(5)
