@@ -30,11 +30,7 @@ jobs:
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
           python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
-      - name: AI analysis (Gemini, free tier)
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          python src/analyze.py --date "$TODAY" --t0 "${{ inputs.t0 }}" || echo "ANALYZE_FAILED=1" >> $GITHUB_ENV
+      # 分析層：半自動（人工貼 DATA 給 OpenCode 寫 Daily_REPORT），全自動管線保留在 src/analyze.py，日後啟用
       - name: Commit report
         run: |
           git config user.name "github-actions[bot]"
