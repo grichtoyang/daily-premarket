@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-18`
 - T0 交易日期：`2026-09-17`
-- 資料產出時間：`2026-09-18 01:56:40`
+- 資料產出時間：`2026-09-18 02:10:43`
 - 時區：`Asia/Taipei`
 
 ---
@@ -101,12 +101,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,635.59 | 83.78 | +1.11 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 26,395.60 | 417.17 | +1.61 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 29,427.69 | 482.63 | +1.67 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 51,808.41 | 346.51 | +0.67 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 11,601.64 | 355.53 | +3.16 | Yahoo Finance Chart API |
-| VIX | ^VIX | 15.59 | -2.12 | -11.97 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,636.39 | 84.58 | +1.12 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 26,392.59 | 414.16 | +1.59 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 29,423.49 | 478.43 | +1.65 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 51,818.99 | 357.09 | +0.69 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 11,599.62 | 353.51 | +3.14 | Yahoo Finance Chart API |
+| VIX | ^VIX | 15.58 | -2.13 | -12.03 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,707.25 | 150.75 | +1.99 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 29,743.25 | 779.75 | +2.69 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,245.00 | 738.00 | +1.43 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,909.30 | 47.60 | +1.66 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,707.00 | 150.50 | +1.99 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,737.25 | 773.75 | +2.67 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,263.00 | 756.00 | +1.47 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,908.90 | 47.20 | +1.65 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -139,7 +139,7 @@
 |---|---|---|---|---|
 | 美國 2 年期殖利率 | 2 Yr | 4.74 | 0.07 | U.S. Treasury yield.xml (網頁備援) |
 | 美國 10 年期殖利率 | 10 Yr | 4.95 | -0.06 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.30 | -0.05 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.29 | -0.06 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.88 | 0.10 | +0.33 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.88 | 0.11 | +0.34 | Yahoo Finance Chart API |
 | DXY美元指數 | DX-Y.NYB | 100.24 | -0.07 | -0.07 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 156.01 | 0.74 | +0.48 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,381.10 | 17.53 | +1.29 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 156.04 | 0.78 | +0.50 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,381.15 | 17.58 | +1.29 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 429.61 | 11.89 | +2.85 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 24.43 | 1.90 | +8.43 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 39.95 | 2.00 | +5.27 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 429.65 | 11.93 | +2.86 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 24.50 | 1.97 | +8.77 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 40.05 | 2.10 | +5.53 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 101.87 | -0.56 | -0.55 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,399.90 | 12.40 | +0.28 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 76,626.64 | 476.32 | +0.63 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 101.96 | -0.47 | -0.46 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,400.50 | 13.00 | +0.30 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 76,594.07 | 443.75 | +0.58 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -220,10 +220,10 @@
   - 來源：CNBC；發布時間：Thu, 17 Sep 2026 14:28:39 GMT；台北時間：2026-09-17 22:28
   - 摘要：European Commission President Ursula von der Leyen said EU is opening the door for Canada to become the first associate member of the 27-member bloc.
   - 原文連結：https://www.cnbc.com/2026/09/17/trump-canada-european-union-tariffs-associate-member-ukraine-.html
-- 事件11：Trump gains a tariff weapon against China and India. Will he use it?
-  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 08:46:04 GMT；台北時間：2026-09-17 16:46
-  - 摘要：U.S. House has paved the way for a legislation that will allow Trump to impose up to 100% tariffs on countries buying Russian oil, giving him leverage
-  - 原文連結：https://www.cnbc.com/2026/09/17/trump-russia-sanctions-india-china-oil-tariffs.html
+- 事件11：Jensen Huang says Nvidia will sell twice as many chips next year
+  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 17:52:29 GMT；台北時間：2026-09-18 01:52
+  - 摘要：Huang's comment is the latest forecast from Nvidia and points to continuing massive growth for the next six quarters.
+  - 原文連結：https://www.cnbc.com/2026/09/17/nvidia-huang-ai-chip-guidance.html
 - 事件12：A Chinese AI company just connected its model to Wall Street's leading data providers
   - 來源：CNBC；發布時間：Thu, 17 Sep 2026 14:30:25 GMT；台北時間：2026-09-17 22:30
   - 摘要：The startup Moonshot said it signed on financial industry giants from investment bank CICC to venture capital firms
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-17 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609F3 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-18 01:56:40 | 本機 |
+| 資料更新時間 | 2026-09-18 02:10:43 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -536,7 +536,7 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-17；資料時間：2026-09-18 01:56:40；時區：`Asia/Taipei`
+- 資料日期：2026-09-17；資料時間：2026-09-18 02:10:43；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 未取得欄位 (5)：margin.ratio, futures.top10_change, options.chain_oi_change, options.pos_change, options.wall_change
 - 註記：Gamma 資料日期 2026-09-16 (T0 2026-09-17 尚無，上游 FMTQIK 落後，採最新可得)
