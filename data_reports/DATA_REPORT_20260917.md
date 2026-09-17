@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-18`
 - T0 交易日期：`2026-09-17`
-- 資料產出時間：`2026-09-17 21:57:12`
+- 資料產出時間：`2026-09-18 01:09:33`
 - 時區：`Asia/Taipei`
 
 ---
@@ -71,7 +71,7 @@
 | 融資增減 | +54.4 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 253,521 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | 22,065 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | 183.94 | % | istock.tw 大盤融資維持率 (民間估算；官方無每日序列) |
+| 融資維持率 | unavailable | % | istock.tw |
 
 ### 5. 借券資料
 
@@ -79,9 +79,9 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 2,415,145 | 張 | TWSE TWT96U + TPEX margin_sbl |
-| 借券賣出餘額 | unavailable | 張 | TWSE TWT96U + TPEX margin_sbl |
-| 借券賣出增減 | unavailable | 張 | TWSE TWT96U + TPEX margin_sbl |
+| 借券餘額 | 4,489,570 | 張 | TWSE TWT96U + TPEX margin_sbl |
+| 借券賣出餘額 | 37,233 | 張 | TWSE TWT96U + TPEX margin_sbl |
+| 借券賣出增減 | 3,125 | 張 | TWSE TWT96U + TPEX margin_sbl |
 
 ### 6. 市場成交結構
 
@@ -101,12 +101,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,620.60 | 68.79 | +0.91 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 26,320.02 | 341.59 | +1.31 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 29,368.26 | 423.20 | +1.46 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 51,665.75 | 203.85 | +0.40 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 11,613.61 | 367.50 | +3.27 | Yahoo Finance Chart API |
-| VIX | ^VIX | 15.82 | -1.89 | -10.67 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,635.86 | 84.05 | +1.11 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 26,405.49 | 427.06 | +1.64 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 29,443.99 | 498.93 | +1.72 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 51,810.58 | 348.68 | +0.68 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 11,607.61 | 361.50 | +3.21 | Yahoo Finance Chart API |
+| VIX | ^VIX | 15.55 | -2.16 | -12.20 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -114,11 +114,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 64,136.25 | 213.25 | +0.33 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 6,715.41 | -2.56 | -0.04 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 24,604.29 | -109.49 | -0.44 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,875.60 | -16.00 | -0.41 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 13,409.91 | -44.83 | -0.33 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 63,923.00 | 438.90 | +0.69 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 6,717.97 | 90.71 | +1.37 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 24,713.78 | 46.54 | +0.19 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,891.60 | 27.32 | +0.71 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 13,454.74 | 166.77 | +1.26 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,694.50 | 138.00 | +1.83 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 29,664.00 | 700.50 | +2.42 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,136.00 | 629.00 | +1.22 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,916.40 | 54.70 | +1.91 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,705.50 | 149.00 | +1.97 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,741.50 | 778.00 | +2.69 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,242.00 | 735.00 | +1.43 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,911.30 | 49.60 | +1.73 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -138,8 +138,8 @@
 | 項目 | API 資料欄位／識別 | 殖利率 | 日變化 | 資料來源 |
 |---|---|---|---|---|
 | 美國 2 年期殖利率 | 2 Yr | 4.74 | 0.07 | U.S. Treasury yield.xml (網頁備援) |
-| 美國 10 年期殖利率 | 10 Yr | 4.96 | -0.05 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.31 | -0.03 | Yahoo Finance (備援) |
+| 美國 10 年期殖利率 | 10 Yr | 4.95 | -0.06 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.30 | -0.05 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.84 | 0.07 | +0.21 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 100.09 | -0.22 | -0.22 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 155.66 | 0.40 | +0.26 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,380.73 | 17.16 | +1.26 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.86 | 0.09 | +0.29 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 100.25 | -0.06 | -0.06 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 156.04 | 0.77 | +0.50 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,380.91 | 17.34 | +1.27 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 425.26 | 7.54 | +1.81 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 23.84 | 1.31 | +5.84 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 39.88 | 1.93 | +5.10 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 428.05 | 10.33 | +2.47 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 24.49 | 1.96 | +8.70 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 40.10 | 2.15 | +5.67 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 100.71 | -1.72 | -1.68 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,408.70 | 21.20 | +0.48 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 76,540.20 | 389.88 | +0.51 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 102.07 | -0.36 | -0.35 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,401.80 | 14.30 | +0.33 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 76,780.75 | 630.43 | +0.83 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -200,10 +200,10 @@
   - 來源：Yahoo 台股；發布時間：2026-09-17T10:10:00Z；台北時間：2026-09-17 18:10
   - 摘要：[FTNN新聞網]記者林欣愉／綜合報導美國聯準會（Fed）16日宣布升息1碼，將聯邦基金利率目標區間調高至3.75%至4%，為2023年7月以來首次升息。這次升息不只牽動...
   - 原文連結：https://tw.stock.yahoo.com/news/fed%E7%9D%BD%E9%81%953%E5%B9%B4%E9%A6%96%E5%BA%A6%E5%8D%87%E6%81%AF-%E7%BE%8E%E5%9C%8B%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%88%A9%E6%81%AF%E6%81%90%E5%A4%9A%E4%BB%98600%E5%84%84-%E6%88%BF%E8%B2%B8-%E5%AD%98%E6%AC%BE%E5%BD%B1%E9%9F%BF-%E6%AC%A1%E7%9C%8B-101000286.html
-- 事件6：央行大放送鬆綁房貸！專家：年底能回「這數字」就算偷笑了…
-  - 來源：Yahoo 台股；發布時間：2026-09-17T13:54:00Z；台北時間：2026-09-17 21:54
-  - 摘要：央行宣布將自然人第二戶房貸成數上限放寬至7成，同時取消建商18個月內動工限制，市場關注政策鬆綁能否帶動房市回溫，不過馨傳不動產智庫執行長何世昌分析，第二戶房貸成數放寬對房市景氣回溫的實質幫助，短期內恐怕還無法顯見，今年底前房市秋冬冷清的狀況
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%AE%E8%A1%8C%E5%A4%A7%E6%94%BE%E9%80%81%E9%AC%86%E7%B6%81%E6%88%BF%E8%B2%B8-%E5%B0%88%E5%AE%B6-%E5%B9%B4%E5%BA%95%E8%83%BD%E5%9B%9E-%E9%80%99%E6%95%B8%E5%AD%97-%E5%B0%B1%E7%AE%97%E5%81%B7%E7%AC%91%E4%BA%86-135400125.html
+- 事件6：聯準會升息1碼　瀚亞投信：台股震盪向上格局　重回基本面
+  - 來源：Yahoo 台股；發布時間：2026-09-17T16:28:37Z；台北時間：2026-09-18 00:28
+  - 摘要：聯準會9月升息1碼，並暗示年底前再續升1碼。瀚亞投信國內投資部主管姚宗宏表示，9月升息1碼符合市場預期，雖聯準會主席華許談話論調偏鷹，但正面訊號在於聯準會也調高了今年的美國經濟成長率，顯示美國經濟仍有足夠韌性，足以承擔較高利率環境帶來的影響
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%81%AF%E6%BA%96%E6%9C%83%E5%8D%87%E6%81%AF1%E7%A2%BC-%E7%80%9A%E4%BA%9E%E6%8A%95%E4%BF%A1-%E5%8F%B0%E8%82%A1%E9%9C%87%E7%9B%AA%E5%90%91%E4%B8%8A%E6%A0%BC%E5%B1%80-%E9%87%8D%E5%9B%9E%E5%9F%BA%E6%9C%AC%E9%9D%A2-162837885.html
 - 事件7：Federal Reserve issues FOMC statement
   - 來源：Federal Reserve；發布時間：Wed, 16 Sep 2026 18:00:00 GMT；台北時間：2026-09-17 02:00
   - 摘要：Federal Reserve issues FOMC statement
@@ -216,14 +216,14 @@
   - 來源：CNBC；發布時間：Wed, 16 Sep 2026 21:23:51 GMT；台北時間：2026-09-17 05:23
   - 摘要：The Fed on Wednesday delivered a much-expected interest rate hike.
   - 原文連結：https://www.cnbc.com/2026/09/16/here-are-five-key-takeaways-from-wednesdays-fed-rate-hike.html
-- 事件10：Analysis: How Trump could reignite the Fed independence fight after Warsh's rate hike
-  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 12:32:34 GMT；台北時間：2026-09-17 20:32
-  - 摘要：The Federal Reserve unanimously raised interest rates by a quarter point despite repeated calls from President Donald Trump for lower rates.
-  - 原文連結：https://www.cnbc.com/2026/09/16/fed-interest-rates-kevin-warsh-trump.html
-- 事件11：Trump says he told Warsh to vote for hike with the rest of Fed board: 'It's not going to matter'
-  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 12:24:31 GMT；台北時間：2026-09-17 20:24
-  - 摘要：President Donald Trump previously threatened to cut off trade with countries that have trade surpluses with the U.S. if the Fed doesn't cut interest r
-  - 原文連結：https://www.cnbc.com/2026/09/16/trump-fed-interest-rate-warsh.html
+- 事件10：'Hostile act': Trump threatens EU with tariffs over Canada associate membership proposal
+  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 14:28:39 GMT；台北時間：2026-09-17 22:28
+  - 摘要：European Commission President Ursula von der Leyen said EU is opening the door for Canada to become the first associate member of the 27-member bloc.
+  - 原文連結：https://www.cnbc.com/2026/09/17/trump-canada-european-union-tariffs-associate-member-ukraine-.html
+- 事件11：Trump gains a tariff weapon against China and India. Will he use it?
+  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 08:46:04 GMT；台北時間：2026-09-17 16:46
+  - 摘要：U.S. House has paved the way for a legislation that will allow Trump to impose up to 100% tariffs on countries buying Russian oil, giving him leverage
+  - 原文連結：https://www.cnbc.com/2026/09/17/trump-russia-sanctions-india-china-oil-tariffs.html
 - 事件12：SEC clears path for tokenized stocks, bringing the market closer to 24/7 trading
   - 來源：CNBC；發布時間：Thu, 17 Sep 2026 13:00:28 GMT；台北時間：2026-09-17 21:00
   - 摘要：The long awaited Innovation Exemption comes two days after the Senate voted to block the Clarity Act crypto market structure bill from advancing.
@@ -291,11 +291,11 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人空方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人多空淨 OI | unavailable | TAIFEX OpenAPI |
+| 前十大交易人多方 OI | 77,597 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 70,668 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | +6,929 | TAIFEX Proxy |
 | 多空淨 OI 變化 | unavailable | 端點未提供 |
-- 資料日期：unavailable (TypeOfTraders=0 全部交易人；契約月份 unavailable)
+- 資料日期：2026-09-16 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 ### 5．日盤、夜盤法人交易資料
 
@@ -355,9 +355,9 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人空方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人多空淨 OI | unavailable | TAIFEX OpenAPI |
+| 前十大交易人多方 OI | 77,597 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 70,668 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | +6,929 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI 變化 | unavailable | 端點未提供 |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-17 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609F3 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-17 21:57:12 | 本機 |
+| 資料更新時間 | 2026-09-18 01:09:33 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -536,9 +536,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-17；資料時間：2026-09-17 21:57:12；時區：`Asia/Taipei`
+- 資料日期：2026-09-17；資料時間：2026-09-18 01:09:33；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (6)：sbl.sale_bal, sbl.sale_chg, futures.top10_change, options.chain_oi_change, options.pos_change, options.wall_change
+- 未取得欄位 (5)：margin.ratio, futures.top10_change, options.chain_oi_change, options.pos_change, options.wall_change
 - 註記：Gamma 資料日期 2026-09-16 (T0 2026-09-17 尚無，上游 FMTQIK 落後，採最新可得)
 - 註記：夜盤 OHLC 資料日期 2026-09-16 (T0 2026-09-17)，來源 proxy
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
@@ -554,10 +554,11 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`istock.tw 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT96U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
+- 註記：融資維持率未取得 (istock 失敗；官方無每日序列)
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
+- 註記：借券賣出餘額/增減為上櫃值 (上市 TWT93U 無機器接口)
 - 本報告僅整理資料，不提供交易判斷。
