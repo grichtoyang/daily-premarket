@@ -126,6 +126,19 @@ def validate(text: str) -> list[str]:
     return errs
 
 
+def audit_numbers(text: str, data: str) -> list[str]:
+    """數字稽核：報告中的千分位數/百分比/小數必須能在 DATA 找到 (正規化比對)。
+    回傳不匹配清單 (容忍 1 個)。"""
+    def toks(s: str) -> set[str]:
+        out = set()
+        for m in re.finditer(r"[+-]?[\d,]+\.\d+[%％]?", s):
+            out.add(m.group(0).replace(",", "").replace("％", "%").lstrip("+"))
+        return out
+    dt = toks(data)
+    bad = sorted(t for t in toks(text) if t not in dt)
+    return bad[1:] and [f"疑似虛構數字：{bad}"] or []
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="")
@@ -161,6 +174,10 @@ def main() -> int:
             errs = ["API 無回應"]
             continue
         errs = validate(text)
+        if not errs:
+            errs = audit_numbers(text, data_text)
+            if errs:
+                print(f"[WARN] 數字稽核：{errs}")
         if not errs:
             break
         print(f"[WARN] 校驗失敗：{errs}")
