@@ -24,6 +24,28 @@ import requests
 ROOT = Path(__file__).resolve().parent.parent
 TAIPEI = ZoneInfo("Asia/Taipei")
 MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-001", "gemini-flash-latest"]
+
+
+def list_models(key: str, timeout: int = 30) -> list[str]:
+    """問 API 有哪些模型可用，回傳 flash 系候選（新優先）。"""
+    try:
+        r = requests.get("https://generativelanguage.googleapis.com/v1beta/models",
+                         params={"key": key}, timeout=timeout)
+        if r.status_code != 200:
+            print(f"[WARN] list models HTTP {r.status_code}")
+            return []
+        names = []
+        for m in r.json().get("models") or []:
+            name = str(m.get("name", "")).replace("models/", "")
+            methods = m.get("supportedGenerationMethods") or []
+            if "generateContent" in methods and "flash" in name.lower():
+                names.append(name)
+        names.sort(reverse=True)
+        print(f"[INFO] 可用 flash 模型：{names}")
+        return names
+    except Exception as e:  # noqa: BLE001
+        print(f"[WARN] list models failed: {e}")
+        return []
 SAFETY = [{"category": c, "threshold": "BLOCK_ONLY_HIGH"}
           for c in ("HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH",
                     "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT")]
@@ -41,7 +63,9 @@ def last_weekday(d: date) -> date:
 
 
 def call_gemini(prompt: str, key: str, timeout: int = 180) -> str | None:
-    for model in MODELS:
+    found = list_models(key)
+    models = found + [m for m in MODELS if m not in found]
+    for model in models:
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
                f":generateContent?key={key}")
         body = {"contents": [{"parts": [{"text": prompt}]}],
@@ -54,7 +78,7 @@ def call_gemini(prompt: str, key: str, timeout: int = 180) -> str | None:
                 continue
             if r.status_code != 200:
                 print(f"[WARN] {model} HTTP {r.status_code}: {r.text[:300]}")
-                time.sleep(5)
+                time.sleep(20 if r.status_code in (503, 429) else 5)
                 continue
             j = r.json()
             fb = (j.get("promptFeedback") or {}).get("blockReason")
