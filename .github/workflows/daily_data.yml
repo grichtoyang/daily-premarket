@@ -1,0 +1,42 @@
+name: daily-data
+
+on:
+  schedule:
+    - cron: '0 0 * * 1-5'  # UTC 00:00 = Asia/Taipei 08:00 (週一~週五)
+  workflow_dispatch:
+    inputs:
+      t0:
+        description: 'T0 交易日期 YYYY-MM-DD (空白=自動)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Fetch daily data
+        run: |
+          TODAY=$(TZ=Asia/Taipei date +%F)
+          python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data_reports/
+          if git diff --staged --quiet; then
+            echo "no changes"
+          else
+            DATE=$(TZ=Asia/Taipei date +%Y%m%d)
+            git commit -m "chore(data): DATA_REPORT_${DATE}"
+            git push
+          fi
