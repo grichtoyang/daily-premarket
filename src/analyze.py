@@ -72,9 +72,9 @@ def rank_models(names: list[str]) -> list[str]:
     return sorted(set(names), key=score)
 
 
-def call_gemini(prompt: str, key: str, timeout: int = 180, temperature: float = 0.3) -> str | None:
+def call_gemini(prompt: str, key: str, timeout: int = 60, temperature: float = 0.3) -> str | None:
     found = list_models(key)
-    models = rank_models(found) + [m for m in MODELS if m not in found]
+    models = rank_models(found)[:3] + [m for m in MODELS if m not in found][:2]
     for model in models:
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/{model}"
                f":generateContent?key={key}")
