@@ -27,16 +27,22 @@ jobs:
       - name: Fetch daily data
         run: |
           TODAY=$(TZ=Asia/Taipei date +%F)
+          echo "TODAY=$TODAY" >> $GITHUB_ENV
           python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
+      - name: AI analysis (Gemini, free tier)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python src/analyze.py --date "$TODAY" --t0 "${{ inputs.t0 }}" || echo "ANALYZE_FAILED=1" >> $GITHUB_ENV
       - name: Commit report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data_reports/
+          git add data_reports/ reports/
           if git diff --staged --quiet; then
             echo "no changes"
           else
             DATE=$(TZ=Asia/Taipei date +%Y%m%d)
-            git commit -m "chore(data): DATA_REPORT_${DATE}"
+            git commit -m "chore(data): DATA_REPORT_${DATE} + Daily_REPORT"
             git push
           fi
