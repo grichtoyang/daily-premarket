@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-18`
 - T0 交易日期：`2026-09-17`
-- 資料產出時間：`2026-09-18 02:10:43`
+- 資料產出時間：`2026-09-18 02:25:23`
 - 時區：`Asia/Taipei`
 
 ---
@@ -101,12 +101,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,636.39 | 84.58 | +1.12 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 26,392.59 | 414.16 | +1.59 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 29,423.49 | 478.43 | +1.65 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 51,818.99 | 357.09 | +0.69 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 11,599.62 | 353.51 | +3.14 | Yahoo Finance Chart API |
-| VIX | ^VIX | 15.58 | -2.13 | -12.03 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,637.61 | 85.80 | +1.14 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 26,396.37 | 417.94 | +1.61 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 29,426.54 | 481.48 | +1.66 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 51,818.84 | 356.94 | +0.69 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 11,601.97 | 355.86 | +3.16 | Yahoo Finance Chart API |
+| VIX | ^VIX | 15.57 | -2.14 | -12.08 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,707.00 | 150.50 | +1.99 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 29,737.25 | 773.75 | +2.67 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,263.00 | 756.00 | +1.47 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,908.90 | 47.20 | +1.65 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,710.00 | 153.50 | +2.03 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,734.00 | 770.50 | +2.66 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,294.00 | 787.00 | +1.53 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,908.10 | 46.40 | +1.62 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -148,9 +148,9 @@
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
 | USD/TWD | TWD=X | 31.88 | 0.11 | +0.34 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 100.24 | -0.07 | -0.07 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 156.04 | 0.78 | +0.50 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,381.15 | 17.58 | +1.29 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 100.23 | -0.08 | -0.08 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 156.06 | 0.79 | +0.51 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,381.28 | 17.71 | +1.30 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 429.65 | 11.93 | +2.86 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 24.50 | 1.97 | +8.77 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 40.05 | 2.10 | +5.53 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 430.15 | 12.43 | +2.98 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 24.49 | 1.95 | +8.68 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 40.08 | 2.13 | +5.63 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 101.96 | -0.47 | -0.46 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,400.50 | 13.00 | +0.30 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 76,594.07 | 443.75 | +0.58 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 101.72 | -0.71 | -0.69 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,405.00 | 17.50 | +0.40 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 76,699.91 | 549.59 | +0.72 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -221,7 +221,7 @@
   - 摘要：European Commission President Ursula von der Leyen said EU is opening the door for Canada to become the first associate member of the 27-member bloc.
   - 原文連結：https://www.cnbc.com/2026/09/17/trump-canada-european-union-tariffs-associate-member-ukraine-.html
 - 事件11：Jensen Huang says Nvidia will sell twice as many chips next year
-  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 17:52:29 GMT；台北時間：2026-09-18 01:52
+  - 來源：CNBC；發布時間：Thu, 17 Sep 2026 18:23:25 GMT；台北時間：2026-09-18 02:23
   - 摘要：Huang's comment is the latest forecast from Nvidia and points to continuing massive growth for the next six quarters.
   - 原文連結：https://www.cnbc.com/2026/09/17/nvidia-huang-ai-chip-guidance.html
 - 事件12：A Chinese AI company just connected its model to Wall Street's leading data providers
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-17 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609F3 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-18 02:10:43 | 本機 |
+| 資料更新時間 | 2026-09-18 02:25:23 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -536,7 +536,7 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-17；資料時間：2026-09-18 02:10:43；時區：`Asia/Taipei`
+- 資料日期：2026-09-17；資料時間：2026-09-18 02:25:23；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 未取得欄位 (5)：margin.ratio, futures.top10_change, options.chain_oi_change, options.pos_change, options.wall_change
 - 註記：Gamma 資料日期 2026-09-16 (T0 2026-09-17 尚無，上游 FMTQIK 落後，採最新可得)
