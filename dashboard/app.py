@@ -29,7 +29,9 @@ def head(title: str):
 
 st.set_page_config(page_title="每日盤前分析", page_icon="📈", layout="wide")
 st.markdown("<style>div.block-container{padding-top:1rem;max-width:1220px}"
-            "table{font-size:13px}</style>",
+            "table{font-size:13px}"
+            "h1{font-size:clamp(24px,4vw,34px)!important;line-height:1.35!important;"
+            "white-space:normal!important;overflow:visible!important}</style>",
             unsafe_allow_html=True)
 
 # ---------------- 解析 ----------------
