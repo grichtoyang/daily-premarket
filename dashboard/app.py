@@ -142,8 +142,8 @@ GH = "https://github.com/grichtoyang/daily-premarket/blob/master"
 gh_data = f"{GH}/{dpath}"
 gh_ana = f"{GH}/{ana_path}"
 
-st.markdown("<div style='font-size:30px;font-weight:900;color:#1a3a5c;"
-            "line-height:1.4;padding:4px 2px;white-space:normal;'>📈 每日盤前分析 Dashboard</div>",
+st.markdown("<div style='font-size:26px;font-weight:900;color:#1a3a5c;"
+            "line-height:1.4;padding:2px;'>每日盤前分析 Dashboard</div>",
             unsafe_allow_html=True)
 st.caption(f"**{ymd} 盤前報告（資料：{t0d} 收盤）**｜Asia/Taipei｜"
            f"價位無特別標註者皆為**台指期近月 (TX)**｜"
