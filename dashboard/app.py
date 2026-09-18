@@ -30,7 +30,7 @@ def head(title: str):
 
 
 st.set_page_config(page_title="每日盤前分析", page_icon="📈", layout="wide")
-st.markdown("<style>div.block-container{padding-top:1rem;max-width:1220px}"
+st.markdown("<style>div.block-container{padding-top:3.5rem;max-width:1220px}"
             "table{font-size:13px}</style>",
             unsafe_allow_html=True)
 
