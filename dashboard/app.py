@@ -68,8 +68,18 @@ def parse_blocks(md: str) -> dict:
     return out
 
 def section_text(md: str, header: str) -> str:
-    m = re.search(rf"(?m)^#{{1,4}} .*?{re.escape(header)}.*?\n(.*?)(?=^#{{1,4}} |\Z)", md, re.S)
-    return m.group(1).strip() if m else ""
+    """取某標題下、到下一個同級或更高級標題為止的內容。"""
+    m = re.search(rf"(?m)^(#+) .*?{re.escape(header)}.*?$", md)
+    if not m:
+        return ""
+    level = len(m.group(1))
+    out = []
+    for line in md[m.end():].splitlines():
+        hm = re.match(r"^(#+) ", line)
+        if hm and len(hm.group(1)) <= level:
+            break
+        out.append(line)
+    return "\n".join(out).strip()
 
 def num(x) -> float | None:
     try:
