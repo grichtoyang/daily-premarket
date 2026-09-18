@@ -123,13 +123,24 @@ rdate = mdate.group(1) if mdate else latest.get("report_date", "")
 dpath = f"data_reports/DATA_REPORT_{rdate}.md"
 dmd = load_md(dpath) or ""
 ymd = f"{rdate[:4]}-{rdate[4:6]}-{rdate[6:]}" if len(rdate) == 8 else rdate
+t0d = f"{rdate[:4]}-{rdate[4:6]}-{rdate[6:]}" if len(rdate) == 8 else rdate
+try:
+    gen = str(latest.get("generated_at", ""))[:10]
+    datetime.strptime(gen, "%Y-%m-%d")
+    ymd = gen
+except Exception:
+    from datetime import timedelta
+    try:
+        ymd = (datetime.strptime(t0d, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+    except Exception:
+        pass
 blocks = parse_blocks(md)
 GH = "https://github.com/grichtoyang/daily-premarket/blob/master"
 gh_data = f"{GH}/{dpath}"
 gh_ana = f"{GH}/{ana_path}"
 
 st.title("📈 每日盤前分析 Dashboard")
-st.caption(f"**{ymd} 盤前報告（資料：{rdate[:4]}-{rdate[4:6]}-{rdate[6:]} 收盤）**｜Asia/Taipei｜"
+st.caption(f"**{ymd} 盤前報告（資料：{t0d} 收盤）**｜Asia/Taipei｜"
            f"價位無特別標註者皆為**台指期近月 (TX)**｜"
            f"[原始 DATA 報告]({gh_data})")
 
