@@ -129,7 +129,8 @@ gh_data = f"{GH}/{dpath}"
 gh_ana = f"{GH}/{ana_path}"
 
 st.title("📈 每日盤前分析 Dashboard")
-st.caption(f"報告日 {ymd}｜Asia/Taipei｜價位無特別標註者皆為**台指期近月 (TX)**｜"
+st.caption(f"**{ymd} 盤前報告（資料：{rdate[:4]}-{rdate[4:6]}-{rdate[6:]} 收盤）**｜Asia/Taipei｜"
+           f"價位無特別標註者皆為**台指期近月 (TX)**｜"
            f"[原始 DATA 報告]({gh_data})")
 
 tab_sum, tab_spot, tab_mkt, tab_fut, tab_opt = st.tabs(
