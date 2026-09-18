@@ -1,7 +1,7 @@
-"""視覺層 V4：五頁式戰報（總結/Daily，現貨/重要市場/期貨/選擇權/DATA章節）。
+"""視覺層 V5：淺藍專業風，五頁（總結/現貨/重要市場/期貨/選擇權）。
 
-- 總結 ← Daily_REPORT 全文＋機器區圖表
-- 現貨/重要市場/期貨/選擇權 ← DATA_REPORT 對應章節原表呈現＋重點圖
+- 總結 ← Daily_REPORT（verdict 判定卡＋KPI 7x2＋價位梯＋交易計畫＋國際Top3）
+- 其餘四頁 ← DATA_REPORT 對應章節
 只讀不寫，本機執行：streamlit run dashboard/app.py
 """
 from __future__ import annotations
@@ -18,22 +18,22 @@ REPORTS_DIR = ROOT / "reports"
 DATA_DIR = ROOT / "data_reports"
 LATEST = REPORTS_DIR / "latest.json"
 
-NAVY = "#12366b"
+LIGHT_HEAD = ("<div style='border-left:5px solid #7fb3e8;background:#eaf3fd;"
+              "padding:6px 12px;font-size:18px;font-weight:800;color:#1a3a5c;"
+              "border-radius:0 6px 6px 0;margin:14px 0 8px;'>{}</div>")
+
+
+def head(title: str):
+    st.markdown(LIGHT_HEAD.format(title), unsafe_allow_html=True)
+
+
 st.set_page_config(page_title="每日盤前分析", page_icon="📈", layout="wide")
-st.markdown(
-    """<style>
-div.block-container{padding-top:1rem;max-width:1220px}
-h2{background:linear-gradient(90deg,#0b2d63,#1c4d8b);color:#fff;border-radius:6px;
-padding:10px 14px;font-size:22px}
-div[data-testid="stMetric"]{background:#fff;border:1px solid #aebfd6;border-top:4px solid #174b91;
-border-radius:7px;padding:8px}
-</style>""",
-    unsafe_allow_html=True,
-)
+st.markdown("<style>div.block-container{padding-top:1rem;max-width:1220px}"
+            "table{font-size:13px}</style>",
+            unsafe_allow_html=True)
 
 # ---------------- 解析 ----------------
 def md_tables(md: str, section: str) -> list[pd.DataFrame]:
-    """某節內所有 markdown 表格。"""
     m = re.search(rf"{re.escape(section)}([\s\S]*?)(?=^#{{1,4}} |\Z)", md, re.M)
     if not m:
         return []
@@ -56,7 +56,7 @@ def md_table(md: str, section: str, idx: int = 0) -> pd.DataFrame | None:
 
 def parse_blocks(md: str) -> dict:
     out: dict[str, list] = {}
-    for name in ("kpi", "levels", "oidist", "scenarios"):
+    for name in ("kpi", "levels", "oidist", "scenarios", "verdict"):
         m = re.search(rf"```{name}\n(.*?)```", md, re.S)
         rows = []
         if m:
@@ -68,7 +68,6 @@ def parse_blocks(md: str) -> dict:
     return out
 
 def section_text(md: str, header: str) -> str:
-    """取某標題下、到下一個同級或更高級標題為止的內容。"""
     m = re.search(rf"(?m)^(#+) .*?{re.escape(header)}.*?$", md)
     if not m:
         return ""
@@ -83,13 +82,9 @@ def section_text(md: str, header: str) -> str:
 
 def num(x) -> float | None:
     try:
-        v = float(str(x).replace(",", "").replace("+", "").replace("%", ""))
-        return v
+        return float(str(x).replace(",", "").replace("+", "").replace("%", ""))
     except (ValueError, TypeError):
         return None
-
-def kpi_row(cols, label: str, value: str, unit: str = ""):
-    cols.metric(label, f"{value} {unit}".strip())
 
 @st.cache_data(ttl=60)
 def load_latest() -> dict | None:
@@ -134,93 +129,98 @@ gh_data = f"{GH}/{dpath}"
 gh_ana = f"{GH}/{ana_path}"
 
 st.title("📈 每日盤前分析 Dashboard")
-st.caption(f"報告日 {ymd}｜Asia/Taipei｜[原始 DATA 報告]({gh_data})")
+st.caption(f"報告日 {ymd}｜Asia/Taipei｜價位無特別標註者皆為**台指期近月 (TX)**｜"
+           f"[原始 DATA 報告]({gh_data})")
 
 tab_sum, tab_spot, tab_mkt, tab_fut, tab_opt = st.tabs(
     ["總結", "現貨", "重要市場", "期貨", "選擇權"])
 
 # ================= 總結 ← Daily =================
 with tab_sum:
-    st.header("總結")
-    oneline = re.search(r"一句話結論[：:]\s*(.+)", md)
-    bias_txt = oneline.group(1).strip() if oneline else ""
-    bval = 0
-    bword = "震盪"
-    if "偏多" in bias_txt:
-        bword, bval = "偏多", 60
-    elif "偏空" in bias_txt:
-        bword, bval = "偏空", -60
+    head("總結")
+    vd = {r[0]: (r[1] if len(r) > 1 else "") for r in blocks["verdict"]} if blocks["verdict"] else {}
+    direction = vd.get("方向", "")
+    dcolor = {"偏多": "green", "偏空": "red"}.get(direction, "gray")
+    v1, v2 = st.columns([1.3, 1])
+    with v1:
+        oneline = re.search(r"一句話結論[：:]\s*(.+)", md)
+        if oneline:
+            st.info(f"💡 {oneline.group(1).strip()}")
+        if vd:
+            st.markdown(f"**今日盤勢判定：:{dcolor}[{direction}]**　信心：{vd.get('信心', 'N/A')}")
+            for k in sorted(vd):
+                if k.startswith("理由"):
+                    st.markdown(f"- {vd[k]}")
+            if vd.get("注意"):
+                st.warning(f"⚠️ {vd['注意']}")
+    with v2:
+        bval = {"偏多": 60, "偏空": -60}.get(direction, 0)
     jb = re.search(r"劇本[一二三四]", dmd)
     if jb:
         bval += {"劇本一": 15, "劇本二": -10, "劇本三": -15, "劇本四": 10}[jb.group(0)]
         bval = max(-100, min(100, bval))
-    g1, g2 = st.columns([1.4, 1])
-    with g1:
-        if bias_txt:
-            st.info(f"💡 一句話結論：{bias_txt}")
-    with g2:
         fig = go.Figure(go.Indicator(
-            mode="gauge+number", value=bval,
-            title={"text": f"盤前 Bias：{bword}"},
-            gauge={"axis": {"range": [-100, 100]},
-                   "bar": {"color": "#12366b"},
+            mode="gauge+number", value=bval, title={"text": "盤前 Bias"},
+            gauge={"axis": {"range": [-100, 100]}, "bar": {"color": "#1a3a5c"},
                    "steps": [{"range": [-100, -20], "color": "#f8d7da"},
                              {"range": [-20, 20], "color": "#fff3cd"},
                              {"range": [20, 100], "color": "#d4edda"}]}))
-        fig.update_layout(height=220, margin=dict(l=20, r=20, t=40, b=10))
+        fig.update_layout(height=230, margin=dict(l=20, r=20, t=40, b=10))
         st.plotly_chart(fig, use_container_width=True)
+    head("關鍵數據")
     kpis = blocks["kpi"]
     if kpis:
-        cols = st.columns(min(len(kpis), 5))
-        for i, row in enumerate(kpis[:10]):
-            kpi_row(cols[i % len(cols)], row[0], row[1], row[2] if len(row) > 2 else "")
+        for chunk in (kpis[:7], kpis[7:14]):
+            if not chunk:
+                continue
+            cols = st.columns(7)
+            for i, row in enumerate(chunk):
+                cols[i].metric(row[0], f"{row[1]} {row[2] if len(row) > 2 else ''}".strip())
     c1, c2 = st.columns(2)
     with c1:
-        st.subheader("關鍵價位")
+        head("關鍵價位梯")
         lv = blocks["levels"]
-        if lv:
-            labels, prices, colors = [], [], []
-            cmap = {"壓力": "red", "中軸": "gray", "支撐": "green"}
-            for row in lv:
-                if len(row) < 2:
-                    continue
-                p = num(row[1])
-                if p is None:
-                    continue
-                labels.append(f"{row[0]} {row[1]}")
-                prices.append(p)
-                colors.append(cmap.get(row[0], "blue"))
-            order = sorted(range(len(prices)), key=lambda i: prices[i], reverse=True)
-            labels = [labels[i] for i in order]
-            prices = [prices[i] for i in order]
-            colors = [colors[i] for i in order]
-            fig = go.Figure(go.Bar(x=prices, y=labels, orientation="h", marker_color=colors,
-                                   text=prices, textposition="outside"))
-            fig.update_layout(height=260, margin=dict(l=10, r=60, t=30, b=10), showlegend=False,
-                              title="關鍵價位帶 (由高至低)")
+        prices = []
+        for row in lv:
+            if len(row) >= 2 and num(row[1]) is not None:
+                prices.append((row[0], num(row[1]),
+                               {"壓力": "#e74c3c", "中軸": "#7f8c8d", "支撐": "#27ae60"}.get(row[0], "#7fb3e8")))
+        if prices:
+            lo = min(p for _, p, _ in prices) - 100
+            hi = max(p for _, p, _ in prices) + 100
+            fig = go.Figure()
+            for name, p, c in sorted(prices, key=lambda x: x[1]):
+                fig.add_hline(y=p, line_color=c, line_width=2,
+                              annotation_text=f"{name} {p:,.0f}", annotation_position="right")
+            fig.update_layout(height=340, margin=dict(l=10, r=90, t=10, b=30),
+                              yaxis=dict(range=[lo, hi], title="點位 (TX)"),
+                              xaxis=dict(visible=False), showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
+            st.caption("紅＝壓力帶／綠＝支撐帶／灰＝中軸；數字即點位")
     with c2:
-        st.subheader("今日交易計畫")
-    sc = blocks["scenarios"]
-    if sc:
-        hdr = sc[0] if any("情境" in c for c in sc[0]) else None
-        body = sc[1:] if hdr else sc
-        ncols = max(len(r) for r in body) if body else 3
-        cols = (hdr + [""] * ncols)[:ncols] if hdr else ["情境", "條件", "操作", "停損"][:ncols]
-        st.table(pd.DataFrame([((r + [""] * ncols)[:ncols]) for r in body], columns=cols))
-    for sec in ("現貨市場分析", "重要市場環境", "國際事件與新聞解讀", "台指期分析",
-                "選擇權市場分析", "整合判讀", "盤前情境分析", "盤前交易執行框架",
-                "資料完整性與限制", "最終結論"):
+        head("今日交易計畫")
+        sc = blocks["scenarios"]
+        if sc:
+            hdr = sc[0] if any("情境" in c for c in sc[0]) else None
+            body = sc[1:] if hdr else sc
+            ncols = max(len(r) for r in body) if body else 3
+            cols = (hdr + [""] * ncols)[:ncols] if hdr else ["情境", "條件", "操作", "停損"][:ncols]
+            st.table(pd.DataFrame([((r + [""] * ncols)[:ncols]) for r in body], columns=cols))
+    head("今日國際焦點 Top3")
+    news_sec = section_text(dmd, "重大經濟數據")
+    evts = re.findall(r"^- 事件\d+：(.+)$", news_sec, re.M)[:3]
+    if evts:
+        st.table(pd.DataFrame({"事件": evts}))
+    for sec in ("現貨市場分析", "台指期分析", "選擇權市場分析", "整合判讀",
+                "盤前交易執行框架", "最終結論"):
         t = section_text(md, sec)
         if t:
             with st.expander(sec, expanded=(sec == "最終結論")):
                 st.markdown(t.split("## 附錄")[0][:2500])
-    with st.expander("原始 DATA 報告全文"):
-        st.markdown(dmd[:20000] if dmd else "無")
 
 # ================= 現貨 ← DATA 第一章 =================
 with tab_spot:
-    st.header("現貨")
+    head("現貨")
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
@@ -256,23 +256,23 @@ with tab_spot:
                     pass
         a, b = st.columns(2)
         with a:
-            st.subheader("融資融券")
+            head("融資融券")
             t = md_table(dmd, "融資融券")
             if t is not None:
                 st.table(t.iloc[:, :3])
         with b:
-            st.subheader("借券資料")
+            head("借券資料")
             t = md_table(dmd, "借券資料")
             if t is not None:
                 st.table(t.iloc[:, :3])
-        st.subheader("市場成交結構")
+        head("市場成交結構")
         t = md_table(dmd, "市場成交結構")
         if t is not None:
             st.table(t)
 
 # ================= 重要市場 ← DATA 第二章 =================
 with tab_mkt:
-    st.header("重要市場")
+    head("重要市場")
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
@@ -282,7 +282,7 @@ with tab_mkt:
             if t is not None:
                 st.subheader(sec)
                 st.table(t)
-        st.subheader("重大經濟數據、央行事件與重大市場新聞")
+        head("重大事件與新聞")
         news = section_text(dmd, "重大經濟數據")
         evts = re.findall(r"^- 事件\d+：(.+)$", news, re.M)[:10]
         if evts:
@@ -292,7 +292,7 @@ with tab_mkt:
 
 # ================= 期貨 ← DATA 第三章 =================
 with tab_fut:
-    st.header("期貨")
+    head("期貨")
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
@@ -302,7 +302,7 @@ with tab_fut:
             ts = md_tables(dmd, sec)
             if not ts:
                 continue
-            st.subheader(sec)
+            head(sec)
             for t in ts:
                 st.table(t)
         with st.expander("夜盤劇本分類"):
@@ -310,7 +310,7 @@ with tab_fut:
 
 # ================= 選擇權 ← DATA 第四章 =================
 with tab_opt:
-    st.header("選擇權")
+    head("選擇權")
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
@@ -321,36 +321,33 @@ with tab_opt:
         puts = [(int(r[1].replace(",", "")), int(r[2].replace(",", "")))
                 for r in oi if len(r) >= 3 and r[0] == "put"
                 and r[1].replace(",", "").isdigit()]
-        if calls or puts:
-            st.subheader("選擇權 OI 分布")
-            fig = go.Figure()
-            if calls:
-                fig.add_bar(x=[c[0] for c in calls], y=[c[1] for c in calls],
-                            name="Call OI", marker_color="indianred")
-            if puts:
-                fig.add_bar(x=[c[0] for c in puts], y=[c[1] for c in puts],
-                            name="Put OI", marker_color="steelblue")
-            lvmap = {}
+        call_map = {k: v for k, v in calls}
+        put_map = {k: v for k, v in puts}
+        if call_map or put_map:
+            head("選擇權 T 字報價 (OI)")
+            strikes = sorted(set(call_map) | set(put_map), reverse=True)
+            lv_vals = set()
             for row in blocks["levels"]:
                 if len(row) >= 2 and num(row[1]) is not None:
-                    lvmap[row[0]] = num(row[1])
-            for name, color in (("壓力", "red"), ("中軸", "gray"), ("支撐", "green")):
-                if name in lvmap:
-                    fig.add_vline(x=lvmap[name], line_color=color, line_dash="dash",
-                                  annotation_text=name)
-            fig.update_layout(barmode="group", height=380,
-                              margin=dict(l=10, r=10, t=10, b=10),
-                              xaxis_title="履約價", yaxis_title="OI")
-            st.plotly_chart(fig, use_container_width=True)
-            st.caption("⚠️ Walls 為模型結果，非 TAIFEX 官方公布")
+                    lv_vals.add(num(row[1]))
+            trows = []
+            for s in strikes:
+                mark = ""
+                if s in lv_vals:
+                    mark = " ★"
+                trows.append({"Put OI": put_map.get(s, "—"),
+                              "履約價": f"{s:,}{mark}",
+                              "Call OI": call_map.get(s, "—")})
+            st.table(pd.DataFrame(trows))
+            st.caption("★＝關鍵價位（壓力／支撐／中軸）；左 Put 右 Call，仿 T 字報價")
         for sec in ("選擇權交易日期", "Call 總成交量", "Put 總成交量", "Call／Put 比例",
                     "外資 Call", "自營商 Call", "Call OI 集中", "Put OI 集中",
                     "Call OI 增減", "Put OI 增減", "Call Wall", "Put Wall",
                     "Gamma Wall", "Gamma Flip", "Max Pain"):
             for t in md_tables(dmd, sec):
-                st.subheader(sec)
+                head(sec)
                 st.table(t)
 
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
-           "非投資建議，僅供參考")
+           "價位未特別標註者皆為台指期近月 (TX)｜非投資建議，僅供參考")
