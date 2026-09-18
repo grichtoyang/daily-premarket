@@ -31,9 +31,7 @@ def head(title: str):
 
 st.set_page_config(page_title="每日盤前分析", page_icon="📈", layout="wide")
 st.markdown("<style>div.block-container{padding-top:1rem;max-width:1220px}"
-            "table{font-size:13px}"
-            "h1{font-size:clamp(24px,4vw,34px)!important;line-height:1.35!important;"
-            "white-space:normal!important;overflow:visible!important}</style>",
+            "table{font-size:13px}</style>",
             unsafe_allow_html=True)
 
 # ---------------- 解析 ----------------
@@ -142,9 +140,7 @@ GH = "https://github.com/grichtoyang/daily-premarket/blob/master"
 gh_data = f"{GH}/{dpath}"
 gh_ana = f"{GH}/{ana_path}"
 
-st.markdown("<div style='font-size:26px;font-weight:900;color:#1a3a5c;"
-            "line-height:1.4;padding:2px;'>每日盤前分析 Dashboard</div>",
-            unsafe_allow_html=True)
+st.header("每日盤前分析 Dashboard")
 st.caption(f"**{ymd} 盤前報告（資料：{t0d} 收盤）**｜Asia/Taipei｜"
            f"價位無特別標註者皆為**台指期近月 (TX)**｜"
            f"[原始 DATA 報告]({gh_data})")
