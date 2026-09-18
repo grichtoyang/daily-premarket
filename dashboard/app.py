@@ -155,19 +155,27 @@ with tab_sum:
                 st.warning(f"⚠️ {vd['注意']}")
     with v2:
         bval = {"偏多": 60, "偏空": -60}.get(direction, 0)
-    jb = re.search(r"劇本[一二三四]", dmd)
-    if jb:
-        bval += {"劇本一": 15, "劇本二": -10, "劇本三": -15, "劇本四": 10}[jb.group(0)]
-        bval = max(-100, min(100, bval))
+        jb = re.search(r"劇本[一二三四]", dmd)
+        if jb:
+            bval += {"劇本一": 15, "劇本二": -10, "劇本三": -15, "劇本四": 10}[jb.group(0)]
+            bval = max(-100, min(100, bval))
         fig = go.Figure(go.Indicator(
-            mode="gauge+number", value=bval, title={"text": "盤前 Bias"},
+            mode="gauge+number", value=bval, number={"font": {"size": 42}},
+            title={"text": "盤前 Bias", "font": {"size": 15}},
             gauge={"axis": {"range": [-100, 100]}, "bar": {"color": "#1a3a5c"},
                    "steps": [{"range": [-100, -20], "color": "#f8d7da"},
                              {"range": [-20, 20], "color": "#fff3cd"},
                              {"range": [20, 100], "color": "#d4edda"}]}))
-        fig.update_layout(height=230, margin=dict(l=20, r=20, t=40, b=10))
+        fig.update_layout(height=270, margin=dict(l=20, r=20, t=70, b=10))
         st.plotly_chart(fig, use_container_width=True)
     head("關鍵數據")
+
+    def fmt_num(v: str) -> str:
+        s = str(v).strip()
+        if re.fullmatch(r"[+-]?[\d,]+\.00", s):
+            return s.split(".")[0]
+        return s
+
     kpis = blocks["kpi"]
     if kpis:
         for chunk in (kpis[:7], kpis[7:14]):
@@ -175,7 +183,14 @@ with tab_sum:
                 continue
             cols = st.columns(7)
             for i, row in enumerate(chunk):
-                cols[i].metric(row[0], f"{row[1]} {row[2] if len(row) > 2 else ''}".strip())
+                val = fmt_num(row[1]) + (f" {row[2]}" if len(row) > 2 and row[2] else "")
+                cols[i].markdown(
+                    f"<div style='background:#fff;border:1px solid #aebfd6;border-top:4px solid "
+                    f"#7fb3e8;border-radius:7px;padding:8px;min-height:86px'>"
+                    f"<div style='font-size:13px;color:#5e6b80;font-weight:800'>{row[0]}</div>"
+                    f"<div style='font-size:21px;font-weight:900;color:#1a3a5c;white-space:nowrap;"
+                    f"overflow:hidden;text-overflow:ellipsis' title='{val}'>{val}</div></div>",
+                    unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         head("關鍵價位梯")
@@ -186,17 +201,23 @@ with tab_sum:
                 prices.append((row[0], num(row[1]),
                                {"壓力": "#e74c3c", "中軸": "#7f8c8d", "支撐": "#27ae60"}.get(row[0], "#7fb3e8")))
         if prices:
-            lo = min(p for _, p, _ in prices) - 100
-            hi = max(p for _, p, _ in prices) + 100
+            mid = next((p for n, p, _ in prices if n == "中軸"), None)
+            mid = mid if mid is not None else sum(p for _, p, _ in prices) / len(prices)
+            lo, hi = mid - 500, mid + 500
             fig = go.Figure()
             for name, p, c in sorted(prices, key=lambda x: x[1]):
-                fig.add_hline(y=p, line_color=c, line_width=2,
-                              annotation_text=f"{name} {p:,.0f}", annotation_position="right")
-            fig.update_layout(height=340, margin=dict(l=10, r=90, t=10, b=30),
+                src = next((r[2] if len(r) > 2 else "" for r in lv if r[0] == name), "")
+                fig.add_hline(y=p, line_color=c, line_width=2.5,
+                              annotation_text=f"{name} {p:,.0f}｜{src}",
+                              annotation_position="right", annotation_font_size=11)
+            fig.add_hline(y=mid, line_color="#7fb3e8", line_width=1, line_dash="dot",
+                          annotation_text="聚焦中軸±500", annotation_position="left")
+            fig.update_layout(height=360, margin=dict(l=10, r=130, t=10, b=30),
                               yaxis=dict(range=[lo, hi], title="點位 (TX)"),
                               xaxis=dict(visible=False), showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
-            st.caption("紅＝壓力帶／綠＝支撐帶／灰＝中軸；數字即點位")
+            st.caption("選位理由：壓力取夜盤高（隔日第一關）＋Call Wall（上檔鐵板）；"
+                       "中軸取台指期收盤（多空分界）；支撐取三牆合流。紅＝壓力／綠＝支撐／灰＝中軸")
     with c2:
         head("今日交易計畫")
         sc = blocks["scenarios"]
@@ -211,8 +232,8 @@ with tab_sum:
     evts = re.findall(r"^- 事件\d+：(.+)$", news_sec, re.M)[:3]
     if evts:
         st.table(pd.DataFrame({"事件": evts}))
-    for sec in ("現貨市場分析", "台指期分析", "選擇權市場分析", "整合判讀",
-                "盤前交易執行框架", "最終結論"):
+    for sec in ("現貨市場分析", "重要市場環境", "國際事件與新聞解讀", "台指期分析",
+                "選擇權市場分析", "整合判讀", "盤前交易執行框架", "最終結論"):
         t = section_text(md, sec)
         if t:
             with st.expander(sec, expanded=(sec == "最終結論")):
@@ -326,20 +347,45 @@ with tab_opt:
         if call_map or put_map:
             head("選擇權 T 字報價 (OI)")
             strikes = sorted(set(call_map) | set(put_map), reverse=True)
-            lv_vals = set()
+            lv_map = {}
             for row in blocks["levels"]:
                 if len(row) >= 2 and num(row[1]) is not None:
-                    lv_vals.add(num(row[1]))
-            trows = []
+                    lv_map[row[0]] = num(row[1])
+            mid_px = lv_map.get("中軸")
+            near_mid = min(strikes, key=lambda s: abs(s - mid_px)) if mid_px else None
+            trows, rcolors = [], []
             for s in strikes:
-                mark = ""
-                if s in lv_vals:
-                    mark = " ★"
+                mark, color = "", ""
+                for name, val in lv_map.items():
+                    if val == s:
+                        if name.startswith("壓力"):
+                            mark += "▲"
+                            color = "#f8d7da"
+                        elif name.startswith("支撐"):
+                            mark += "▼"
+                            color = "#d4edda"
+                        else:
+                            mark += "★"
+                            color = "#fff3cd" if not color else color
+                if near_mid is not None and s == near_mid and "★" not in mark:
+                    mark += "≈中軸"
+                    color = color or "#e2e3e5"
                 trows.append({"Put OI": put_map.get(s, "—"),
                               "履約價": f"{s:,}{mark}",
                               "Call OI": call_map.get(s, "—")})
-            st.table(pd.DataFrame(trows))
-            st.caption("★＝關鍵價位（壓力／支撐／中軸）；左 Put 右 Call，仿 T 字報價")
+                rcolors.append(color)
+            df = pd.DataFrame(trows)
+            try:
+                sty = df.style.apply(
+                    lambda r: [f"background-color:{rcolors[r.name]}"
+                               if rcolors[r.name] else "" for _ in r],
+                    axis=1)
+                st.dataframe(sty, use_container_width=True, hide_index=True)
+            except Exception:
+                st.table(df)
+            st.caption("▲壓力（紅底）／▼支撐（綠底）／★中軸（灰底）；"
+                       "中軸＝台指期收盤價附近的多空分界參考（取最接近收盤的履約價列，≈中軸）；"
+                       "左 Put 右 Call，仿 T 字報價")
         for sec in ("選擇權交易日期", "Call 總成交量", "Put 總成交量", "Call／Put 比例",
                     "外資 Call", "自營商 Call", "Call OI 集中", "Put OI 集中",
                     "Call OI 增減", "Put OI 增減", "Call Wall", "Put Wall",
