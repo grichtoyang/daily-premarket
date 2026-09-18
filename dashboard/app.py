@@ -205,15 +205,19 @@ with tab_sum:
             mid = mid if mid is not None else sum(p for _, p, _ in prices) / len(prices)
             lo, hi = mid - 500, mid + 500
             fig = go.Figure()
+            placed = []
             for name, p, c in sorted(prices, key=lambda x: x[1]):
                 src = next((r[2] if len(r) > 2 else "" for r in lv if r[0] == name), "")
+                side = "right"
+                if any(abs(p - q) < 180 for q in placed):
+                    side = "left"
+                placed.append(p)
                 fig.add_hline(y=p, line_color=c, line_width=2.5,
                               annotation_text=f"{name} {p:,.0f}｜{src}",
-                              annotation_position="right", annotation_font_size=11)
-            fig.add_hline(y=mid, line_color="#7fb3e8", line_width=1, line_dash="dot",
-                          annotation_text="聚焦中軸±500", annotation_position="left")
-            fig.update_layout(height=360, margin=dict(l=10, r=130, t=10, b=30),
-                              yaxis=dict(range=[lo, hi], title="點位 (TX)"),
+                              annotation_position=side, annotation_font_size=10)
+            fig.add_hline(y=mid, line_color="#7fb3e8", line_width=1, line_dash="dot")
+            fig.update_layout(height=360, margin=dict(l=10, r=150, t=10, b=30),
+                              yaxis=dict(range=[lo, hi], title="點位"),
                               xaxis=dict(visible=False), showlegend=False)
             st.plotly_chart(fig, use_container_width=True)
             st.caption("選位理由：壓力取夜盤高（隔日第一關）＋Call Wall（上檔鐵板）；"
