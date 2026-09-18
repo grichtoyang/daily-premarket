@@ -2,7 +2,7 @@
 
 > 讀 `data_reports/DATA_REPORT_yyyymmdd.md` → 手寫 `reports/Daily_REPORT_yyyymmdd.md`。
 > 鐵律：數字只能來自 DATA_REPORT（衍生百分比須列算式）；缺值寫 N/A，不得臆測；
-> **數據與判斷分開**；模型結果（Walls/Gamma/劇本）必須聲明非官方、未經歷史回測；
+> **數據與判斷分開；所有解讀一律條列式（禁用大段敘述）**；模型結果（Walls/Gamma/劇本）必須聲明非官方、未經歷史回測；
 > 繁體中文，總長 2500~4500 字（不含附錄）。文末附「機器可讀數據」供 Dashboard。
 
 ```markdown
