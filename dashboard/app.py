@@ -143,8 +143,32 @@ tab_sum, tab_spot, tab_mkt, tab_fut, tab_opt = st.tabs(
 with tab_sum:
     st.header("總結")
     oneline = re.search(r"一句話結論[：:]\s*(.+)", md)
-    if oneline:
-        st.info(f"💡 一句話結論：{oneline.group(1).strip()}")
+    bias_txt = oneline.group(1).strip() if oneline else ""
+    bval = 0
+    bword = "震盪"
+    if "偏多" in bias_txt:
+        bword, bval = "偏多", 60
+    elif "偏空" in bias_txt:
+        bword, bval = "偏空", -60
+    jb = re.search(r"劇本[一二三四]", dmd)
+    if jb:
+        bval += {"劇本一": 15, "劇本二": -10, "劇本三": -15, "劇本四": 10}[jb.group(0)]
+        bval = max(-100, min(100, bval))
+    g1, g2 = st.columns([1.4, 1])
+    with g1:
+        if bias_txt:
+            st.info(f"💡 一句話結論：{bias_txt}")
+    with g2:
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number", value=bval,
+            title={"text": f"盤前 Bias：{bword}"},
+            gauge={"axis": {"range": [-100, 100]},
+                   "bar": {"color": "#12366b"},
+                   "steps": [{"range": [-100, -20], "color": "#f8d7da"},
+                             {"range": [-20, 20], "color": "#fff3cd"},
+                             {"range": [20, 100], "color": "#d4edda"}]}))
+        fig.update_layout(height=220, margin=dict(l=20, r=20, t=40, b=10))
+        st.plotly_chart(fig, use_container_width=True)
     kpis = blocks["kpi"]
     if kpis:
         cols = st.columns(min(len(kpis), 5))
@@ -166,15 +190,24 @@ with tab_sum:
                 labels.append(f"{row[0]} {row[1]}")
                 prices.append(p)
                 colors.append(cmap.get(row[0], "blue"))
-            fig = go.Figure(go.Bar(x=prices, y=labels, orientation="h", marker_color=colors))
-            fig.update_layout(height=260, margin=dict(l=10, r=10, t=10, b=10), showlegend=False)
+            order = sorted(range(len(prices)), key=lambda i: prices[i], reverse=True)
+            labels = [labels[i] for i in order]
+            prices = [prices[i] for i in order]
+            colors = [colors[i] for i in order]
+            fig = go.Figure(go.Bar(x=prices, y=labels, orientation="h", marker_color=colors,
+                                   text=prices, textposition="outside"))
+            fig.update_layout(height=260, margin=dict(l=10, r=60, t=30, b=10), showlegend=False,
+                              title="關鍵價位帶 (由高至低)")
             st.plotly_chart(fig, use_container_width=True)
     with c2:
         st.subheader("今日交易計畫")
-        sc = blocks["scenarios"]
-        if sc:
-            hdr = sc[0] if any("情境" in c for c in sc[0]) else None
-            st.table(pd.DataFrame(sc[1:] if hdr else sc, columns=hdr or ["情境", "條件", "操作"]))
+    sc = blocks["scenarios"]
+    if sc:
+        hdr = sc[0] if any("情境" in c for c in sc[0]) else None
+        body = sc[1:] if hdr else sc
+        ncols = max(len(r) for r in body) if body else 3
+        cols = (hdr + [""] * ncols)[:ncols] if hdr else ["情境", "條件", "操作", "停損"][:ncols]
+        st.table(pd.DataFrame([((r + [""] * ncols)[:ncols]) for r in body], columns=cols))
     for sec in ("現貨市場分析", "重要市場環境", "國際事件與新聞解讀", "台指期分析",
                 "選擇權市場分析", "整合判讀", "盤前情境分析", "盤前交易執行框架",
                 "資料完整性與限制", "最終結論"):
