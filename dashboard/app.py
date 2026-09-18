@@ -165,11 +165,12 @@ with tab_sum:
         if sc:
             hdr = sc[0] if any("情境" in c for c in sc[0]) else None
             st.table(pd.DataFrame(sc[1:] if hdr else sc, columns=hdr or ["情境", "條件", "操作"]))
-    for sec in ("國際市場解讀", "台股籌碼解讀", "期貨選擇權解讀",
-                "關鍵價位與今日交易計畫", "資料限制聲明"):
+    for sec in ("現貨市場分析", "重要市場環境", "國際事件與新聞解讀", "台指期分析",
+                "選擇權市場分析", "整合判讀", "盤前情境分析", "盤前交易執行框架",
+                "資料完整性與限制", "最終結論"):
         t = section_text(md, sec)
         if t:
-            with st.expander(sec, expanded=(sec == "關鍵價位與今日交易計畫")):
+            with st.expander(sec, expanded=(sec == "最終結論")):
                 st.markdown(t.split("## 附錄")[0][:2500])
     with st.expander("原始 DATA 報告全文"):
         st.markdown(dmd[:20000] if dmd else "無")
