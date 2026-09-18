@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "reports"
 DATA_DIR = ROOT / "data_reports"
 LATEST = REPORTS_DIR / "latest.json"
+APP_VERSION = "20260918e"
 
 LIGHT_HEAD = ("<div style='border-left:5px solid #7fb3e8;background:#eaf3fd;"
               "padding:6px 12px;font-size:18px;font-weight:800;color:#1a3a5c;"
@@ -415,3 +416,4 @@ with tab_opt:
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
            "價位未特別標註者皆為台指期近月 (TX)｜非投資建議，僅供參考")
+st.caption(f"app v{APP_VERSION}")
