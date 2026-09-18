@@ -7,6 +7,7 @@
 from __future__ import annotations
 import json
 import re
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import streamlit as st
@@ -127,15 +128,14 @@ dpath = f"data_reports/DATA_REPORT_{rdate}.md"
 dmd = load_md(dpath) or ""
 ymd = f"{rdate[:4]}-{rdate[4:6]}-{rdate[6:]}" if len(rdate) == 8 else rdate
 t0d = f"{rdate[:4]}-{rdate[4:6]}-{rdate[6:]}" if len(rdate) == 8 else rdate
+gen = str(latest.get("generated_at", ""))[:10]
 try:
-    gen = str(latest.get("generated_at", ""))[:10]
     datetime.strptime(gen, "%Y-%m-%d")
     ymd = gen
-except Exception:
-    from datetime import timedelta
+except ValueError:
     try:
         ymd = (datetime.strptime(t0d, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-    except Exception:
+    except ValueError:
         pass
 blocks = parse_blocks(md)
 GH = "https://github.com/grichtoyang/daily-premarket/blob/master"
