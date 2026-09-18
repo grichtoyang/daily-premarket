@@ -416,4 +416,4 @@ with tab_opt:
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
            "價位未特別標註者皆為台指期近月 (TX)｜非投資建議，僅供參考")
-st.caption(f"app v{APP_VERSION}")
+st.caption(f"app v{APP_VERSION}｜debug gen={latest.get('generated_at', '?')} sel={sel}")
