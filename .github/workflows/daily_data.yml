@@ -2,8 +2,9 @@ name: daily-data
 
 on:
   schedule:
-    - cron: '0 0 * * 1-5'   # UTC 00:00 = Asia/Taipei 08:00 (週一~週五)：前一日 T0 全日版
-    - cron: '0 6 * * 5'     # UTC 06:00 = Asia/Taipei 週五 14:00：當日 T0 日盤版
+    - cron: '0 0 * * 1-5'   # UTC 00:00 = Asia/Taipei 平日 08:00：T0 自動判定
+    - cron: '0 6 * * 5'     # UTC 06:00 = Asia/Taipei 週五 14:00：T0=當日 日盤版
+    - cron: '0 0 * * 6'     # UTC 00:00 = Asia/Taipei 週六 08:00：T0=週五 全日版 (夜盤已收)
   workflow_dispatch:
     inputs:
       t0:
@@ -30,14 +31,8 @@ jobs:
         run: |
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
-          # 13:45 後的場次 (如週五收盤場) T0 取今天，否則自動取最近交易日
-          HHMM=$(TZ=Asia/Taipei date +%H%M)
-          if [ -z "${{ inputs.t0 }}" ] && [ "$HHMM" -ge 1345 ]; then
-            T0="$TODAY"
-          else
-            T0="${{ inputs.t0 }}"
-          fi
-          python src/fetch_data.py --date "$TODAY" --t0 "$T0"
+          # T0 缺省由 src/t0.py 判定 (13:45/假日/週末規則)；手動觸發可指定 t0
+          python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
       # 分析層：半自動（人工貼 DATA 給 OpenCode 寫 Daily_REPORT），全自動管線保留在 src/analyze.py，日後啟用
       - name: Commit report
         run: |
@@ -48,6 +43,6 @@ jobs:
             echo "no changes"
           else
             DATE=$(TZ=Asia/Taipei date +%Y%m%d)
-            git commit -m "chore(data): DATA_REPORT_${DATE} + Daily_REPORT"
+            git commit -m "chore(data): DATA_REPORT_${DATE}"
             git push
           fi
