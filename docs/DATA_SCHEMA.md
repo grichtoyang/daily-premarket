@@ -6,7 +6,10 @@
 
 - 報告日期： `YYYY-MM-DD` (產出日，Asia/Taipei)；T0 交易日期： `YYYY-MM-DD`。
 - 檔名： `data_reports/DATA_REPORT_yyyymmdd.md` (yyyymmdd 取自 T0，標題同)。
-- `fetch_data.py --date YYYY-MM-DD --t0 YYYY-MM-DD`；`--t0` 缺省取 ≤ date 的最近平日。
+- 分析檔名： `reports/Daily_REPORT_yyyymmdd_日盤.md` 或 `_全日.md`
+  (yyyymmdd 取自 T0；日盤版＝T0 當日 13:45 後可產，夜盤用前一夜＋即時狀態；
+  全日版＝T0 次日 05:00 後可產，夜盤完整；同 T0 兩版並存不覆蓋)。
+- `fetch_data.py --date YYYY-MM-DD --t0 YYYY-MM-DD`；`--t0` 缺省由 `src/t0.py` 判定。
 - TPEX/部分 TWSE 端點忽略 `date` 參數回傳最新 → 程式必須驗 Date (西元 `YYYYMMDD` 或民國 `yyyMMDD`，`roc8()` 轉換)，不符標 unavailable。
 - 時間一律附時區；Yahoo/期貨保留 `retrieved_at` (UTC)，不得把最新報價誤當現貨收盤。
 

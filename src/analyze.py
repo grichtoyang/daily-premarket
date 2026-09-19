@@ -180,7 +180,15 @@ def main() -> int:
         return 2
     today = datetime.now(TAIPEI).date()
     report_date = args.date.strip() or today.isoformat()
-    t0 = args.t0.strip() or last_weekday(date.fromisoformat(report_date)).isoformat()
+    if args.t0.strip():
+        t0, session, hol = args.t0.strip(), "全日", False
+    else:
+        try:
+            from src.t0 import resolve as _resolve
+            _r = _resolve()
+            t0, session, hol = _r["t0"], _r["session"], _r["today_holiday"]
+        except Exception:
+            t0, session, hol = last_weekday(date.fromisoformat(report_date)).isoformat(), "全日", False
     ymd = t0.replace("-", "")
 
     data_path = ROOT / "data_reports" / f"DATA_REPORT_{ymd}.md"
@@ -227,10 +235,11 @@ def main() -> int:
         print(f"[ERROR] Stage B 未通過：{errs}", file=sys.stderr)
         return 1
 
-    out = ROOT / "reports" / f"Daily_REPORT_{ymd}.md"
+    from src.t0 import daily_filename as _fn
+    out = ROOT / "reports" / _fn(t0, session)
     out.write_text(text + "\n", encoding="utf-8")
     latest = {"report_date": ymd,
-              "report_path": f"reports/Daily_REPORT_{ymd}.md",
+              "report_path": f"reports/{_fn(t0, session)}",
               "generated_at": datetime.now(TAIPEI).isoformat(timespec="seconds"),
               "status": "completed"}
     (ROOT / "reports" / "latest.json").write_text(

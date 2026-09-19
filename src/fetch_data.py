@@ -78,7 +78,7 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
     return "\n".join(lines)
 
 def last_weekday(d: date) -> date:
-    """報告日之前的最近平日 (08:00 執行時今日尚未收盤，T0 取前一交易日)。"""
+    """相容舊介面：T0 取今天之前的最近平日。新邏輯請用 src.t0.resolve。"""
     from datetime import timedelta
     d -= timedelta(days=1)
     while d.weekday() >= 5:
@@ -611,7 +611,14 @@ def main() -> None:
     args = ap.parse_args()
     today = datetime.now(TAIPEI).date()
     report_date = args.date.strip() or today.isoformat()
-    t0 = args.t0.strip() or last_weekday(date.fromisoformat(report_date)).isoformat()
+    if args.t0.strip():
+        t0 = args.t0.strip()
+    else:
+        try:
+            from src.t0 import resolve as _resolve
+            t0 = _resolve().get("t0") or last_weekday(date.fromisoformat(report_date)).isoformat()
+        except Exception:
+            t0 = last_weekday(date.fromisoformat(report_date)).isoformat()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
     out.write_text(build(report_date, t0), encoding="utf-8")

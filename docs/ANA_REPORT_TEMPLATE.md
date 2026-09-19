@@ -1,6 +1,7 @@
 # ANA_REPORT_TEMPLATE.md — 分析層報告模板規範 V3.0 (深度版，對標專業交易文件)
 
-> 讀 `data_reports/DATA_REPORT_yyyymmdd.md` → 手寫 `reports/Daily_REPORT_yyyymmdd.md`。
+> 讀 `data_reports/DATA_REPORT_yyyymmdd.md` → 手寫 `reports/Daily_REPORT_yyyymmdd_日盤.md`
+> 或 `_全日.md`（T0＋盤別由 `src/t0.py` 判定；檔名規則見 `docs/DATA_SCHEMA.md`）。
 > 鐵律：數字只能來自 DATA_REPORT（衍生百分比須列算式）；缺值寫 N/A，不得臆測；
 > **數據與判斷分開；所有解讀一律條列式（禁用大段敘述）**；模型結果（Walls/Gamma/劇本）必須聲明非官方、未經歷史回測；
 > 繁體中文，總長 2500~4500 字（不含附錄）。文末附「機器可讀數據」供 Dashboard。
