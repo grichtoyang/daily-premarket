@@ -4,7 +4,7 @@
 GitHub Actions 自動抓資料 → commit `DATA_REPORT_yyyymmdd.md` → push。
 
 ## 早上 (用戶，10 秒)
-貼 `prompts/daily_starter_MiMo.md` 內容給 OpenCode，加一句「今天 T0=yyyymmdd，開工」。
+貼 `prompts/daily_starter_MiMo.md`（MiMo 版）或 `daily_starter_Muse.md`（Muse 版）內容給 OpenCode，加一句「今天 T0=yyyymmdd，開工」。
 
 ## OpenCode 全包 (約 3 分鐘)
 1. `git pull` 取最新 DATA_REPORT。
