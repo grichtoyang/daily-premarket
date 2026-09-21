@@ -586,7 +586,17 @@ def build(report_date: str, t0: str) -> str:
     A("- 資料來源：TAIFEX 經 Cloudflare Worker Proxy")
     A(f"- 資料日期：{t0}；資料時間：{now}；時區：`Asia/Taipei`")
     A("- 日盤／夜盤標記：日盤收盤後 + 夜盤盤後")
-    _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + ["futures.top10_change", "options.chain_oi_change", "options.pos_change", "options.wall_change"]
+    _snap = fx.get("snapchg", {})
+    _snap_unav = []
+    if not _snap.get("chain"):
+        _snap_unav.append("options.chain_oi_change")
+    if not _snap.get("pos"):
+        _snap_unav.append("options.pos_change")
+    if not _snap.get("walls"):
+        _snap_unav.append("options.wall_change")
+    if not _t10chg:
+        _snap_unav.append("futures.top10_change")
+    _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
     A(f"- 未取得欄位 ({len(_all_unav)})：{', '.join(_all_unav) if _all_unav else '無'}")
     for nn in fx["notes"]:
         A(f"- 註記：{nn}")

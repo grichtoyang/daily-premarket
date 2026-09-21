@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "reports"
 DATA_DIR = ROOT / "data_reports"
 LATEST = REPORTS_DIR / "latest.json"
-APP_VERSION = "20260918e"
+APP_VERSION = "20260918f"
 
 LIGHT_HEAD = ("<div style='border-left:5px solid #7fb3e8;background:#eaf3fd;"
               "padding:6px 12px;font-size:18px;font-weight:800;color:#1a3a5c;"
@@ -183,8 +183,15 @@ with tab_sum:
         st.plotly_chart(fig, use_container_width=True)
     head("關鍵數據")
 
-    def fmt_num(v: str) -> str:
+    def fmt_num(v: str, unit: str = "") -> str:
         s = str(v).strip()
+        # 單位是「點」：四捨五入到整數
+        if unit == "點":
+            try:
+                return f"{int(round(float(s.replace(',', '').replace('+', '')))):,}"
+            except (ValueError, TypeError):
+                return s
+        # 一般：.00 去掉
         if re.fullmatch(r"[+-]?[\d,]+\.00", s):
             return s.split(".")[0]
         return s
@@ -196,7 +203,9 @@ with tab_sum:
                 continue
             cols = st.columns(7)
             for i, row in enumerate(chunk):
-                val = fmt_num(row[1]) + (f" {row[2]}" if len(row) > 2 and row[2] else "")
+                unit_raw = row[2] if len(row) > 2 else ""
+                unit_show = unit_raw.replace("億元", "億") if unit_raw else ""
+                val = fmt_num(row[1], unit_raw) + (f" {unit_show}" if unit_show else "")
                 cols[i].markdown(
                     f"<div style='background:#fff;border:1px solid #aebfd6;border-top:4px solid "
                     f"#7fb3e8;border-radius:7px;padding:8px;min-height:86px'>"
@@ -414,4 +423,3 @@ with tab_opt:
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
            "價位未特別標註者皆為台指期近月 (TX)｜非投資建議，僅供參考")
-st.caption(f"app v{APP_VERSION}｜debug gen={latest.get('generated_at', '?')} sel={sel}")
