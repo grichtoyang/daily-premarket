@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.sources import spot, us_market, treasury, taifex, taifex_official, news  # noqa: E402
+from src.sources import spot, us_market, treasury, taifex, taifex_official, news, stockintelli  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_DIR = ROOT / "data_reports"
@@ -237,6 +237,32 @@ def build(report_date: str, t0: str) -> str:
                ("事件／新聞", "來源", "發布時間", "台北時間", "摘要", "原文連結")))
     A("")
     _news_note = _nw["note"]
+    A("")
+    num += 1
+    A(f"### {num}. 產業資金流向 (股市智投)")
+    A("")
+    A("**資料來源：** `StockIntelli API` — https://www.stockintelli.com/market/industry-flow")
+    A("")
+    _si = stockintelli.industry_flow(limit=5)
+    if _si["ok"]:
+        _si_sum = _si.get("summary", {})
+        if _si_sum:
+            A(f"- 交易日：{_si_sum.get('trade_date', MISSING)}")
+            A(f"- 總流入：{_si_sum.get('total_inflow', 0) / 1e8:.1f} 億；總流出：{_si_sum.get('total_outflow', 0) / 1e8:.1f} 億；淨流入：{_si_sum.get('net_flow', 0) / 1e8:.1f} 億")
+        for _direction, _label in [("inflow", "資金流入前5"), ("outflow", "資金流出前5")]:
+            _items = _si.get(_direction, [])
+            if _items:
+                A(f"- **{_label}：**")
+                for _s in _items[:5]:
+                    _name = _s.get("security_name", "?")
+                    _code = _s.get("stock_code", "?")
+                    _net = _s.get("net_flow_value", 0)
+                    _chg = _s.get("price_change_percent", 0)
+                    _sign = "+" if _net > 0 else ""
+                    A(f"  - {_code} {_name}：{_sign}{_net / 1e8:.1f}億 ({_chg:+.2f}%)")
+    else:
+        A("- unavailable (StockIntelli API 速率限制或回應異常)")
+    A("")
     A("## 三、期貨")
     A("")
     A("**資料來源：**")
