@@ -1,10 +1,10 @@
 """大盤融資維持率。
 
-主力來源：玩股網 API (免費、穩定)
-  https://www.wantgoo.com/stock/0000A/margin-trading/historical-lending-balance
-  回傳 JSON 陣列，第一筆為最新；marginRatio 為小數 (1.89922 = 189.92%)。
-
-備援：愛玩股 istock.tw 網頁爬蟲。
+1) 玩股網 API (免費、穩定，但延遲 ~3 天)
+   https://www.wantgoo.com/stock/0000A/margin-trading/historical-lending-balance
+2) 股市智投 stockintelli.com (SSR 頁面爬蟲，通常有當天資料)
+   https://www.stockintelli.com/market/margin-trading
+3) 愛玩股 istock.tw 網頁爬蟲 (最後備援)。
 注意：官方無每日維持率序列，此為民間估算值，來源須透明標示。
 """
 from __future__ import annotations
@@ -46,7 +46,59 @@ def _wantgoo(t0: str, timeout: int = 20) -> dict:
     return out
 
 
-# ---------- 備援：愛玩股 istock.tw ----------
+# ---------- 備援一：股市智投 stockintelli.com ----------
+
+STOCKINTELLI_URL = "https://www.stockintelli.com/market/margin-trading"
+
+
+def _stockintelli(t0: str, timeout: int = 20) -> dict:
+    """stockintelli.com SSR 頁面爬蟲，回傳 {ratio, date, ok}。"""
+    out = {"ratio": None, "date": None, "ok": False}
+    try:
+        r = requests.get(STOCKINTELLI_URL, headers=UA, timeout=timeout)
+        r.raise_for_status()
+        html = r.text
+        # T0 "2026-09-18" → "09/18"
+        mm_dd = t0[5:].replace("-", "/")  # "09/18"
+        # 找整個表格列，取最後一個百分比（維持率在最後一欄）
+        # 格式：<td...>09/18</td>...<td...>189.81%</td></tr>
+        row_pattern = re.compile(
+            rf'{re.escape(mm_dd)}.*?</tr>',
+            re.S,
+        )
+        rm = row_pattern.search(html)
+        if rm:
+            row = rm.group(0)
+            # 取最後一個 XX.XX%
+            pcts = re.findall(r'(\d{2,3}\.\d{1,2})%', row)
+            if pcts:
+                ratio = float(pcts[-1])  # 最後一個百分比 = 維持率
+                if 50 < ratio < 500:  # 合理範圍
+                    out = {"ratio": ratio, "date": t0, "ok": True}
+                else:
+                    print(f"[INFO] stockintelli 維持率數值異常: {ratio}")
+        else:
+            # 備用：找 sr-only 區塊裡的「大盤融資維持率目前 XX.X%」
+            m2 = re.search(
+                r'大盤融資維持率目前\s*(\d{2,3}\.\d)%', html
+            )
+            if m2:
+                ratio = float(m2.group(1))
+                # sr-only 區塊只有最新日期，無法指定 T0，保守檢查
+                if 50 < ratio < 500:
+                    # 從同一區塊抓日期
+                    dm = re.search(r'(\d{4}-\d{2}-\d{2})', html[m2.start() - 300:m2.start()])
+                    date_str = dm.group(1) if dm else None
+                    if date_str == t0:
+                        out = {"ratio": ratio, "date": t0, "ok": True}
+                    else:
+                        print(f"[INFO] stockintelli sr-only 日期 {date_str} 非 T0 ({t0})")
+    except Exception as e:  # noqa: BLE001
+        print(f"[WARN] stockintelli margin ratio failed: {e}")
+    return out
+
+
+# ---------- 備援二：愛玩股 istock.tw ----------
 
 ISTOCK_URL = "https://www.istock.tw/post/twmarginrequirement"
 
@@ -87,12 +139,20 @@ def _istock(t0: str, timeout: int = 30) -> dict:
 # ---------- 對外介面 ----------
 
 def get(t0: str, timeout: int = 30) -> dict:
-    """回傳 {ratio(%), date, ok}。先嘗試玩股網，失敗再用 istock。"""
+    """回傳 {ratio(%), date, ok, source}。依序嘗試 wantgoo → stockintelli → istock。"""
+    # 1) 玩股網 API
     result = _wantgoo(t0, timeout=min(timeout, 20))
     if result["ok"]:
         result["source"] = "wantgoo"
         return result
-    print("[INFO] wantgoo 維持率不可用，嘗試 istock 備援")
+    # 2) 股市智投 (SSR，通常有當天資料)
+    print("[INFO] wantgoo 維持率不可用，嘗試 stockintelli")
+    result = _stockintelli(t0, timeout=min(timeout, 15))
+    if result["ok"]:
+        result["source"] = "stockintelli"
+        return result
+    # 3) 愛玩股 istock.tw
+    print("[INFO] stockintelli 維持率不可用，嘗試 istock 備援")
     result = _istock(t0, timeout=timeout)
     if result["ok"]:
         result["source"] = "istock"
