@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "reports"
 DATA_DIR = ROOT / "data_reports"
 LATEST = REPORTS_DIR / "latest.json"
-APP_VERSION = "20260918f"
+APP_VERSION = "20260921a"
 
 LIGHT_HEAD = ("<div style='border-left:5px solid #7fb3e8;background:#eaf3fd;"
               "padding:6px 12px;font-size:18px;font-weight:800;color:#1a3a5c;"
@@ -336,6 +336,12 @@ with tab_mkt:
             st.table(pd.DataFrame({"事件": evts}))
         with st.expander("新聞明細"):
             st.markdown(news[:4000] if news else "無")
+        head("產業資金流向 (股市智投)")
+        flow_text = section_text(dmd, "產業資金流向")
+        if flow_text:
+            st.markdown(flow_text[:2000])
+        else:
+            st.info("產業資金流向資料未取得")
 
 # ================= 期貨 ← DATA 第三章 =================
 with tab_fut:
