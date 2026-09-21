@@ -188,7 +188,7 @@ with tab_sum:
         # 單位是「點」：四捨五入到整數
         if unit == "點":
             try:
-                return f"{int(round(float(s.replace(',', '').replace('+', '')))):,}"
+                return str(int(round(float(s.replace(',', '').replace('+', '')))))
             except (ValueError, TypeError):
                 return s
         # 一般：.00 去掉
