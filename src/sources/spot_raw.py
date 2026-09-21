@@ -113,6 +113,42 @@ def sbl_tw() -> dict:
         out = {"tw": tw, "otc": otc}
     return out
 
+
+def twse_twt93u_sbl(roc: str) -> dict:
+    """TWT93U 信用額度總量管制餘額表 — 上市借券賣出餘額與增減。
+
+    回傳 {sale_bal, sale_chg, prev_bal, date_ok}。單位：股數 (API 原值)。
+    借券欄位在 data[i][7..13]：前日餘額/當日賣出/當日還券/當日調整/當日餘額/次一營業日可限額
+    """
+    url = f"https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date={roc}"
+    j = _get_json(url)
+    out = {"sale_bal": None, "sale_chg": None, "prev_bal": None, "date_ok": False}
+    if not isinstance(j, dict) or j.get("stat") != "OK":
+        return out
+    data = j.get("data") or []
+    if not data:
+        return out
+    total_prev = 0.0
+    total_bal = 0.0
+    n = 0
+    for row in data:
+        if len(row) < 12:
+            continue
+        prev = _num(row[7])   # 前日餘額 (借券)
+        bal = _num(row[11])   # 當日餘額 (借券)
+        if prev is not None and bal is not None:
+            total_prev += prev
+            total_bal += bal
+            n += 1
+    if n:
+        out = {
+            "sale_bal": total_bal,
+            "sale_chg": total_bal - total_prev,
+            "prev_bal": total_prev,
+            "date_ok": True,
+        }
+    return out
+
 # ---------- 上市成交 ----------
 
 def turnover_tw(roc: str) -> float | None:

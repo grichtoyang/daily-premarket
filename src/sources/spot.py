@@ -154,11 +154,17 @@ def build(t0: str) -> dict:
     # ---- 借券 (TWT96U/TPEX 原值為股數 → 張，1張=1000股) ----
     stw = spot_raw.sbl_tw()
     stp = spot_raw.tpex_sbl(roc)
+    tw_sbl = spot_raw.twse_twt93u_sbl(roc)
     sbl_bal = _add(_add(stw["tw"], stw["otc"]), stp["bal"])
     if sbl_bal is not None:
         sbl_bal /= 1000
-    _sale = stp["sale_bal"] / 1000 if stp["sale_bal"] is not None else None
-    _schg = stp["sale_chg"] / 1000 if stp["sale_chg"] is not None else None
+    # 借券賣出餘額 = 上市 (TWT93U) + 上櫃 (TPEX)
+    _tw_sale = tw_sbl["sale_bal"] / 1000 if tw_sbl["sale_bal"] is not None else None
+    _tp_sale = stp["sale_bal"] / 1000 if stp["sale_bal"] is not None else None
+    _sale = _add(_tw_sale, _tp_sale)
+    _tw_schg = tw_sbl["sale_chg"] / 1000 if tw_sbl["sale_chg"] is not None else None
+    _tp_schg = stp["sale_chg"] / 1000 if stp["sale_chg"] is not None else None
+    _schg = _add(_tw_schg, _tp_schg)
     sbl = {"bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg}
     if sbl_bal is None:
         notes.append("借券餘額未取得")
@@ -167,9 +173,9 @@ def build(t0: str) -> dict:
         unavailable.append("sbl.sale_bal")
     if sbl["sale_chg"] is None:
         unavailable.append("sbl.sale_chg")
-    if stp["sale_bal"] is not None:
-        notes.append("借券賣出餘額/增減為上櫃值 (上市 TWT93U 無機器接口)")
-    sources["sbl"] = "TWSE TWT96U + TPEX margin_sbl"
+    if tw_sbl["sale_bal"] is None and stp["sale_bal"] is not None:
+        notes.append("借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)")
+    sources["sbl"] = "TWSE TWT93U + TPEX margin_sbl"
 
     # ---- 成交結構 (億元) ----
     listed_yi = listed_turnover_yuan / 1e8 if listed_turnover_yuan else None
