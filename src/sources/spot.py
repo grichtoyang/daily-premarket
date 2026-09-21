@@ -143,9 +143,10 @@ def build(t0: str) -> dict:
     mr = maint_ratio.get(t0)
     if mr["ok"]:
         margin["ratio"] = mr["ratio"]
-        sources["margin_ratio"] = "istock.tw 大盤融資維持率 (民間估算；官方無每日序列)"
+        src_name = mr.get("source", "unknown")
+        sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (民間估算；官方無每日序列)"
     else:
-        notes.append("融資維持率未取得 (istock 失敗；官方無每日序列)")
+        notes.append("融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)")
     notes.append("上市 MI_MARGN / TWT96U 無日期欄，採用最新可得")
     for k in ("fin_yi", "fin_chg_yi", "s_bal", "s_chg", "ratio"):
         if margin[k] is None:
