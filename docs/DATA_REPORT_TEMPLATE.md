@@ -1,6 +1,6 @@
 # DATA_REPORT_TEMPLATE.md — 資料層報告模板規範 (資料層 Rule 3/4)
 
-版本： V2.0 | 正本：`D:\Chatgpt 正式文件\每日盤前分析\Github\...​\DATA_REPORT_TEMPLATE.md`
+版本： V2.0 | 正本：`D:\Chatgpt 正式文件\每日盤前分析\Github\cloudflare-github-test-main-09162150\cloudflare-github-test-main\DATA_REPORT_TEMPLATE.md`
 (正本為準；本檔為實作對照摘要，`fetch_data.py` 依此產出)
 
 ## Header (逐字)
