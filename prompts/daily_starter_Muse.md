@@ -8,6 +8,7 @@
 3. 同 T0 文件已存在且完整就不重寫；否則依 docs/ANA_REPORT_TEMPLATE.md 手寫
    reports/Daily_REPORT_yyyymmdd_日盤.md 或 _全日.md
    （數字只出自 DATA，N/A 不臆測，附機器區 kpi/levels/oidist/scenarios/verdict）。
+   - 若 DATA_REPORT 含「產業資金流向」，務必引用至 3.8 並解讀資金輪動方向。
 4. 更新 reports/latest.json（report_date/report_path/generated_at/status），指向最新一份。
 5. 本地驗結構後 git add/commit/push。
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位＋push 的 commit＋Dashboard 更新時間。

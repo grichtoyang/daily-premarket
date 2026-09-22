@@ -9,6 +9,7 @@
 3. 同 T0 文件已存在且完整就不重寫；否則依 docs/ANA_REPORT_TEMPLATE.md 手寫
    reports/Daily_REPORT_yyyymmdd_日盤.md 或 _全日.md
    （數字只出自 DATA_REPORT，N/A 不臆測；衍生百分比須列算式）。
+   - 若 DATA_REPORT 含「產業資金流向」，務必引用至 3.8 並解讀資金輪動方向。
    - 報告必須 12 章＋附錄 A/B，總長 2500~4500 字（不含附錄）。
    - 數據與判斷分開：表照貼、解讀條列式（禁大段敘述）。
    - 模型結果（Walls/Gamma/劇本）聲明非官方、未經歷史回測。
