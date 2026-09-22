@@ -65,8 +65,10 @@ def _get_dates(ep: str, dates: list[str], timeout: int = 40) -> tuple[dict | Non
     return None, None
 
 def _night_ohlc(t0: str, month: str | None) -> dict | None:
-    """夜盤 OHLC：proxy /futures-night-ohlc (V1.3+) 優先，官方 DailyMarketReportFut 備援。
-    回傳含 via/date，或 None。"""
+    """夜盤 OHLC：proxy /futures-night-ohlc (V1.4+) 優先，官方 DailyMarketReportFut 備援。
+    回傳含 via/date，或 None。
+    注意：期交所夜盤日期以收盤日查詢（例 09/21 15:00~09/22 05:00 查 09/22）。
+    Proxy V1.4 內部處理 T0→T0+1 轉換。"""
     import os
     base = os.getenv("TAIFEX_PROXY_BASE_URL", BASE).rstrip("/")
     if month:

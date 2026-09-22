@@ -5140,78 +5140,97 @@ export default {
       try {
         const requestedDate = url.searchParams.get("date");
         const requestedMonth = url.searchParams.get("month");
-        const api = await fetchTAIFEXOpenAPI("/DailyMarketReportFut");
-        if (!api.found) {
+
+        /* ── 1️⃣ Primary: TAIFEX website with T0+1 (correct for night session) ── */
+        let found = false;
+        let target = requestedDate;
+        let row = null;
+        let months = [];
+
+        if (requestedDate) {
+          // Night session 09/21 15:00~09/22 05:00 → query date = 09/22
+          const d = new Date(requestedDate + "T00:00:00Z");
+          d.setUTCDate(d.getUTCDate() + 1);
+          const nextDay = d.toISOString().slice(0, 10);
+          const siteUrl = `${TAIFEX}/cht/3/futDailyMarketReport?date=${nextDay.replace(/-/g, "/")}&Session=F&commodity_id=TX`;
+          try {
+            const resp = await fetch(siteUrl, {
+              headers: {
+                "User-Agent": "Mozilla/5.0 (compatible; TAIFEX-Proxy/V1.4)",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8"
+              }
+            });
+            if (resp.ok) {
+              const html = await resp.text();
+              const rows = parseRows(html);
+              // Find TX rows (skip header rows)
+              const txRows = rows.filter(r => r[0] === "TX" && r[1] && /^\d{6}$/.test(r[1]));
+              months = [...new Set(txRows.map(r => r[1]))].sort();
+              const m = months.includes(requestedMonth) ? requestedMonth : months[months.length - 1];
+              row = txRows.find(r => r[1] === m);
+              if (row) {
+                found = true;
+                target = requestedDate;
+              }
+            }
+          } catch (_) { /* fall through to OpenAPI */ }
+        }
+
+        /* ── 2️⃣ Fallback: OpenAPI (stale but better than nothing) ── */
+        if (!found) {
+          const api = await fetchTAIFEXOpenAPI("/DailyMarketReportFut");
+          if (api.found) {
+            const night = api.rows.filter(r =>
+              r.Contract === "TX" && String(r.TradingSession) === "盤後"
+            );
+            if (night.length) {
+              const dates = [...new Set(night.map(r => apiDateISO(r.Date)).filter(Boolean))].sort();
+              target = (requestedDate && dates.includes(requestedDate))
+                ? requestedDate : dates[dates.length - 1];
+              const day = night.filter(r => apiDateISO(r.Date) === target);
+              months = [...new Set(day.map(r => String(r["ContractMonth(Week)"] || "")))].filter(Boolean).sort();
+              const m = months.includes(requestedMonth) ? requestedMonth : months[months.length - 1];
+              row = day.find(r => String(r["ContractMonth(Week)"]) === m);
+              if (row) {
+                found = true;
+                // remap OpenAPI fields to website column order
+                row = {
+                  0: "TX", 1: m,
+                  2: String(row.Open ?? ""), 3: String(row.High ?? ""),
+                  4: String(row.Low ?? ""), 5: String(row.Last ?? ""),
+                  6: String(row.Change ?? ""), 7: String(row["%"] ?? ""),
+                  8: String(row.Volume ?? ""), 9: String(row.SettlementPrice ?? ""),
+                  10: String(row.OpenInterest ?? ""),
+                  11: String(row.BestBid ?? ""), 12: String(row.BestAsk ?? ""),
+                  13: String(row.HistoricalHigh ?? ""), 14: String(row.HistoricalLow ?? "")
+                };
+              }
+            }
+          }
+        }
+
+        if (!found || !row) {
           return json({
-            ok: false,
-            source: "TAIFEX",
-            dataset: "futures_night_ohlc",
-            market: "TX",
-            error: api.reason || "TAIFEX OpenAPI unavailable",
-            source_url: api.source_url
+            ok: false, source: "TAIFEX", dataset: "futures_night_ohlc",
+            market: "TX", error: "No TX after-hours row"
           }, 502);
         }
-        const night = api.rows.filter(r =>
-          r.Contract === "TX" &&
-          String(r.TradingSession) === "盤後"
-        );
-        if (!night.length) {
-          return json({
-            ok: false,
-            source: "TAIFEX",
-            dataset: "futures_night_ohlc",
-            market: "TX",
-            error: "No TX after-hours row"
-          }, 502);
-        }
-        const dates = [...new Set(night.map(r =>
-          apiDateISO(r.Date)
-        ).filter(Boolean))].sort();
-        // 優先用 requestedDate；找不到才 fallback 到最新
-        const target = (requestedDate && dates.includes(requestedDate))
-          ? requestedDate
-          : dates[dates.length - 1];
-        const day = night.filter(r =>
-          apiDateISO(r.Date) === target
-        );
-        const months = [...new Set(day.map(r =>
-          String(r["ContractMonth(Week)"] || "")
-        ))].filter(Boolean).sort();
-        const month = months.includes(requestedMonth)
-          ? requestedMonth
-          : months[months.length - 1];
-        const row = day.find(r =>
-          String(r["ContractMonth(Week)"]) === month
-        );
-        if (!row) {
-          return json({
-            ok: false,
-            source: "TAIFEX",
-            dataset: "futures_night_ohlc",
-            market: "TX",
-            error: "No TX after-hours row for month"
-          }, 502);
-        }
+
         return json({
-          ok: true,
-          source: "TAIFEX",
-          dataset: "futures_night_ohlc",
-          market: "TX",
-          session: "after_hours",
-          date: target,
-          requested_date: requestedDate,
+          ok: true, source: "TAIFEX", dataset: "futures_night_ohlc",
+          market: "TX", session: "after_hours",
+          date: target, requested_date: requestedDate,
           data: {
-            open: nullableNumber(row.Open),
-            high: nullableNumber(row.High),
-            low: nullableNumber(row.Low),
-            close: nullableNumber(row.Last),
-            change: nullableNumber(row.Change),
-            change_percent: nullableNumber(row["%"]),
-            volume: nullableNumber(row.Volume),
-            settlement_price: nullableNumber(row.SettlementPrice),
-            month
+            open: nullableNumber(row[2]), high: nullableNumber(row[3]),
+            low: nullableNumber(row[4]), close: nullableNumber(row[5]),
+            change: nullableNumber(String(row[6] || "").replace(/[▲▼]/g, "")),
+            change_percent: nullableNumber(String(row[7] || "").replace(/[▲▼]/g, "")),
+            volume: nullableNumber(row[8]),
+            settlement_price: nullableNumber(row[9]),
+            month: months.includes(requestedMonth) ? requestedMonth : months[months.length - 1]
           },
-          parser: { version: "1.3", endpoint: "futures-night-ohlc" }
+          parser: { version: "1.4", endpoint: "futures-night-ohlc" }
         });
       } catch (error) {
         return json({
