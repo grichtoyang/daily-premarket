@@ -387,6 +387,8 @@
 | 支撐側 | 47,530.33（Gamma Flip，09-21 值）、47,500（Put Wall） | TAIFEX Proxy |
 
 - 解讀：重疊三區劃分如上；Gamma 系 09-21 舊值，僅參考，開盤以 48,243 日收為中軸
+- 倒莊監控圖：https://www.wantgoo.com/option/runaway-bankers（會員登入；須人工讀圖）
+- 讀圖重點：N/A（待操作者讀圖補上，如最大倒莊履約價＋方向）
 
 # 七、整合判讀
 
