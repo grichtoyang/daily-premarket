@@ -8,9 +8,11 @@
 注意：官方無每日維持率序列，此為民間估算值，來源須透明標示。
 """
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import re
 import requests
+
+TAIPEI = timezone(timedelta(hours=8))
 
 
 UA = {
@@ -24,7 +26,7 @@ WANTGOO_URL = "https://www.wantgoo.com/stock/0000A/margin-trading/historical-len
 
 
 def _wantgoo(t0: str, timeout: int = 20) -> dict:
-    """玩股網 API，回傳 {ratio, date, ok}。"""
+    """玩股網 API，回傳 {ratio, date, ok}。延遲 1~3 天，取最接近 T0 的資料。"""
     out = {"ratio": None, "date": None, "ok": False}
     try:
         r = requests.get(WANTGOO_URL, headers=UA, timeout=timeout)
@@ -32,15 +34,19 @@ def _wantgoo(t0: str, timeout: int = 20) -> dict:
         data = r.json()
         if not data:
             return out
-        latest = data[0]
-        ts = latest.get("date", 0)
-        dt = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
-        date_str = dt.strftime("%Y-%m-%d")
-        mr = latest.get("marginRatio")
-        if mr is not None and date_str == t0:
-            out = {"ratio": round(mr * 100, 2), "date": t0, "ok": True}
-        elif mr is not None:
-            print(f"[INFO] wantgoo 維持率日期 {date_str} 非 T0 ({t0})")
+        best = None
+        for item in data:
+            ts = item.get("date", 0)
+            dt = datetime.fromtimestamp(ts / 1000, tz=TAIPEI)
+            date_str = dt.strftime("%Y-%m-%d")
+            mr = item.get("marginRatio")
+            if mr is not None and date_str <= t0:
+                best = (date_str, round(mr * 100, 2))
+                break  # API 已按日期降序，第一筆 <= T0 即為最接近
+        if best:
+            out = {"ratio": best[1], "date": best[0], "ok": True}
+            if best[0] != t0:
+                print(f"[INFO] wantgoo 維持率日期 {best[0]} 非 T0 ({t0})，取最接近")
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] wantgoo margin ratio failed: {e}")
     return out
