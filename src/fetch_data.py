@@ -612,6 +612,7 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
                      "夜盤淨", "淨變化 (日-夜)", "資料來源")))
     A("- 方法論：多方＝買Call＋賣Put（看多），空方＝賣Call＋買Put（看空），淨額＝看多－看空"
       "（已用 Call／Put 拆分頁交叉驗算一致）")
+    A("- 公式：多方(買)－空方(賣)＝（買call＋賣put）－（賣call＋買put）＝看多－看空")
     A("")
     A("### 18．選擇權前十大")
     A("")
