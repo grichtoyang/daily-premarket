@@ -330,11 +330,13 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A("")
     _t10 = taifex_official.top10_fut(d["month"] or "", t0)
     _t10_src = "TAIFEX Proxy" if _t10.get("via") == "proxy" else SRC_FX_OFF
-    _t10chg = taifex.snap_top10_change(d["month"] or "", t0, _t10.get("net"))
+    _t10chg = taifex.snap_top10_change(d["month"] or "", t0, _t10.get("net"),
+                                           cur_date=_t10.get("date"))
+    _t10chg_lbl = (f" ({_t10chg['prev_date']}→{_t10chg['cur_date']})" if _t10chg else "")
     A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src),
             ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src),
             ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src),
-            ("多空淨 OI 變化" + (f" ({_t10chg['date']}→{t0})" if _t10chg else ""),
+            ("多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
              SRC_SNAP if _t10chg else "端點未提供")],
            ("項目", "口數", "資料來源")))
@@ -416,7 +418,9 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src),
             ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src),
             ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src),
-            ("前十大交易人多空淨 OI 變化", MISSING, "端點未提供")],
+            ("前十大交易人多空淨 OI 變化" + _t10chg_lbl,
+             _f2s(_t10chg["chg"]) if _t10chg else MISSING,
+             SRC_SNAP if _t10chg else "端點未提供")],
            ("項目", "口數", "資料來源")))
     A("")
     A("#### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)")

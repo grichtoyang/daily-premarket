@@ -413,30 +413,45 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             "unavailable": unav, "notes": notes}
 
 
-def snap_top10_change(month: str, t0: str, cur_net) -> dict | None:
-    """前十大淨變化 (快照 T-1)。回傳 {chg, date} 或 None。"""
+def _iso8(v: str | None) -> str | None:
+    """yyyymmdd / yyyy-mm-dd → yyyy-mm-dd；無法解析回 None。"""
+    s = str(v or "").strip().replace("-", "")
+    if len(s) == 8 and s.isdigit():
+        return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
+    s2 = str(v or "").strip()
+    if len(s2) == 10 and s2[4] == "-" and s2[7] == "-":
+        return s2
+    return None
+
+
+def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None) -> dict | None:
+    """前十大淨變化 (快照 T-1)。
+    上游 OpenAPI 落後約一日，快照內容日期常比快照鍵日期早 (含週末)，
+    故不硬比快照日期，改按契約月份對齊、取該月最新內容日期。
+    回傳 {chg, prev_date, cur_date, snap_date} 或 None。"""
     from datetime import date as _dd, timedelta as _td
     _t1 = (_dd.fromisoformat(t0) - _td(days=1)).isoformat()
     _sb = snapshot_bundle(_t1)
     if not _sb:
         return None
-    _sdate8 = (_sb.get("date") or "").replace("-", "")
-    rows = [r for r in (_sb["data"].get("top10fut") or [])
-            if isinstance(r, dict) and str(r.get("Date", "")) == _sdate8]
-    if not rows:
+    rows = [r for r in (_sb["data"].get("top10fut") or []) if isinstance(r, dict)]
+    if month:
+        _mrows = [r for r in rows if str(r.get("SettlementMonth", "")) == str(month)]
+        if _mrows:
+            rows = _mrows
+    if not rows or cur_net is None:
         return None
-    cands = [r for r in rows if r.get("SettlementMonth") == month] or \
-        sorted(rows, key=lambda r: str(r.get("SettlementMonth", "")), reverse=True)[:1] and \
-        [r for r in rows if r.get("SettlementMonth") == max(
-            r.get("SettlementMonth", "") for r in rows)] or rows[:1]
-    r0 = cands[0] if cands else None
-    if not r0 or cur_net is None:
+    rows.sort(key=lambda r: str(r.get("Date", "")))
+    r0 = rows[-1]
+    prev_date = _iso8(r0.get("Date"))
+    if prev_date is None:
         return None
     try:
         prev = float(r0.get("Top10Buy", 0)) - float(r0.get("Top10Sell", 0))
     except (ValueError, TypeError):
         return None
-    return {"chg": cur_net - prev, "date": _sb["date"]}
+    return {"chg": cur_net - prev, "prev_date": prev_date,
+            "cur_date": _iso8(cur_date) or t0, "snap_date": _sb["date"]}
 
 def _pct(v):
     try:
