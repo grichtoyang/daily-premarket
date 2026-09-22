@@ -290,7 +290,7 @@ def build(report_date: str, t0: str) -> str:
     A("")
     A("### 2．台指期近月夜盤行情")
     A("")
-    _nvia = n.get("via", "proxy") if n.get("close") is not None else "端點未提供"
+    _nvia = ("TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF) if n.get("close") is not None else "端點未提供"
     _nmiss = "端點未提供"
     A(_tbl([("開盤價", _fi(n["open"]), _nvia if n["open"] is not None else _nmiss),
             ("最高價", _fi(n["high"]), _nvia if n["high"] is not None else _nmiss),
