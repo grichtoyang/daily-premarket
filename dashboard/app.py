@@ -428,7 +428,7 @@ with tab_opt:
                     "Call OI 增減", "Put OI 增減", "Call Wall", "Put Wall",
                     "Gamma Wall", "Gamma Flip", "Max Pain"):
             for t in md_tables(dmd, sec):
-                head(sec)
+                head("選擇權法人日/夜盤" if sec == "選擇權法人日盤" else sec)
                 st.table(t)
                 if sec == "選擇權法人日盤" and opt_note:
                     st.caption(opt_note)
