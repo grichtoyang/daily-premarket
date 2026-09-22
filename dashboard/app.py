@@ -359,6 +359,8 @@ with tab_fut:
 # ================= 選擇權 ← DATA 第四章 =================
 with tab_opt:
     head("選擇權")
+    st.link_button("選擇權倒莊監控圖（玩股網，需會員登入）",
+                   "https://www.wantgoo.com/option/runaway-bankers")
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
