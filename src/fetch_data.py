@@ -680,6 +680,46 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     for n in s["notes"]:
         A(f"- 註記：{n}")
     A("- 本報告僅整理資料，不提供交易判斷。")
+    A("")
+    A("## 六、期現選方向對照")
+    A("")
+    A("**規則：** 趨勢偏多／空＝現貨、期貨OI、選擇權日淨三者同向；避險／對沖＝現貨與期選反向；"
+      "日內反轉＝日淨與夜淨反向；缺值標示，不推估。選擇權多空為看多看空口徑。")
+    A("")
+    _foi = fx.get("fut_oi", {})
+    _ftr = fx.get("fut_trade", {})
+    _otr = fx.get("opt_trade", {})
+    def _mx_judge(d):
+        vals = [d[k] for k in ("spot", "foi", "oday")]
+        if any(v is None for v in vals):
+            return "資料不足"
+        ss = [1 if v > 0 else (-1 if v < 0 else 0) for v in vals]
+        if all(x > 0 for x in ss):
+            return "趨勢偏多"
+        if all(x < 0 for x in ss):
+            return "趨勢偏空"
+        if ss[0] != 0 and (ss[0] != ss[1] or ss[0] != ss[2]):
+            return "避險／對沖"
+        for a, b in (("fday", "fnight"), ("oday", "onight")):
+            if d[a] and d[b] and d[a] * d[b] < 0:
+                return "日內反轉"
+        return "分歧"
+    _mx_rows = []
+    for k_spot, k_fx, zh in (("foreign", "foreign", "外資"),
+                             ("trust", "investment_trust", "投信"),
+                             ("dealer", "dealer", "自營商")):
+        _dd = {"spot": inst.get(k_spot),
+               "foi": (_foi.get(k_fx) or {}).get("net"),
+               "fday": (_ftr.get(("day", k_fx)) or {}).get("net"),
+               "fnight": (_ftr.get(("night", k_fx)) or {}).get("net"),
+               "oday": (_otr.get(("day", k_fx)) or {}).get("net"),
+               "onight": (_otr.get(("night", k_fx)) or {}).get("net")}
+        _mx_rows.append(
+            (zh, _f1s(_dd["spot"]), _f2s(_dd["foi"]), _f2s(_dd["fday"]),
+             _f2s(_dd["fnight"]), _f2s(_dd["oday"]), _f2s(_dd["onight"]),
+             _mx_judge(_dd), "twse-proxy／TAIFEX Proxy"))
+    A(_tbl(_mx_rows, ("法人", "現貨買賣超(億)", "期貨OI淨(口)", "期貨日淨",
+                      "期貨夜淨", "選擇權日淨", "選擇權夜淨", "判定", "資料來源")))
     return "\n".join(L) + "\n"
 
 def main() -> None:

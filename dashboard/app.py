@@ -258,6 +258,10 @@ with tab_sum:
     evts = re.findall(r"^- 事件\d+：(.+)$", news_sec, re.M)[:3]
     if evts:
         st.table(pd.DataFrame({"事件": evts}))
+    head("期現選方向對照")
+    mx = md_table(dmd, "期現選方向對照")
+    if mx is not None:
+        st.table(mx)
     for sec in ("現貨市場分析", "重要市場環境", "國際事件與新聞解讀", "台指期分析",
                 "選擇權市場分析", "整合判讀", "盤前交易執行框架", "最終結論"):
         t = section_text(md, sec)
