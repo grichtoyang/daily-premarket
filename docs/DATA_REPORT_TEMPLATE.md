@@ -34,10 +34,11 @@
 
 日盤行情 / 夜盤行情 / 法人多空 OI / 前十大 OI / 日夜盤法人交易 / 期現關係 / 日夜盤籌碼對照
 
-## 四、選擇權 (16 項骨架，Phase 2；本階段 unavailable)
+## 四、選擇權 (18 項骨架)
 
 日期到期 / Call 總量 / Put 總量 / C/P 比例 / 外資部位 / 自營部位 / Call 集中 / Put 集中 /
 Call 增減集中 / Put 增減集中 / Call Wall / Put Wall / Gamma Wall / Gamma Flip / Max Pain /
+選擇權法人日夜盤交易 (options-institutional 日＋夜盤多空淨) / 選擇權前十大 (Call/Put OI＋快照變化)
 來源時間時區狀態
 
 ## 五、資料來源、時間與完整性 (實作追加，滿足「保留來源/時間/時區」規則)

@@ -95,9 +95,17 @@ def top10_fut(month: str, t0: str = "") -> dict:
             "net": (b - s) if b is not None and s is not None else None,
             "month": r.get("SettlementMonth")}
 
-def top10_opt(month: str, callput: str) -> dict:
-    """TXO 買權/賣權前十大。callput: '買權'/'賣權'。"""
-    out = {"date": None, "buy": None, "sell": None, "net": None, "month": None}
+def top10_opt(month: str, callput: str, t0: str = "") -> dict:
+    """TXO 買權/賣權前十大。callput: '買權'/'賣權'。Proxy 優先，官方備援。"""
+    out = {"date": None, "buy": None, "sell": None, "net": None, "month": None,
+           "via": "official", "callput": callput}
+    if t0 and month:
+        kind = "call" if callput == "買權" else "put"
+        p = _proxy_top10(kind, t0, month)
+        if p is not None:
+            b, s = p["buy"], p["sell"]
+            return {"date": _iso(p["date"]), "buy": b, "sell": s, "net": p["net"],
+                    "month": p["month"], "via": "proxy", "callput": callput}
     rows = [r for r in _get("/OpenInterestOfLargeTradersOptions")
             if r.get("Contract") == "TXO" and r.get("CallPut") == callput
             and r.get("TypeOfTraders") == "0"]
@@ -107,7 +115,7 @@ def top10_opt(month: str, callput: str) -> dict:
     b, s = _num(r.get("Top10Buy")), _num(r.get("Top10Sell"))
     return {"date": _iso(r.get("Date", "")), "buy": b, "sell": s,
             "net": (b - s) if b is not None and s is not None else None,
-            "month": r.get("SettlementMonth"), "via": "official"}
+            "month": r.get("SettlementMonth"), "via": "official", "callput": callput}
 
 def putcall_history() -> list:
     """依日期排序的 P/C 歷史 [(date, vol_ratio, oi_ratio)]。Proxy 優先，官方備援。"""

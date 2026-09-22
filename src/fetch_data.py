@@ -588,6 +588,62 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
              _f2s(_wl.get("maxpain")), SRC_SNAP if _wl.get("maxpain") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
     A("")
+    A("### 17．選擇權法人日盤、夜盤交易")
+    A("")
+    _ot = fx.get("opt_trade", {})
+    def _otg(sess, k):
+        return _ot.get((sess, k)) or {}
+    _ot_ok = _otg("day", "foreign").get("long") is not None
+    _ot_src = SRC_FX if _ot_ok else "端點未提供"
+    def _orow(k, zh):
+        dd, nn = _otg("day", k), _otg("night", k)
+        return (zh, _fi(dd.get("long")), _fi(dd.get("short")), _f2s(dd.get("net")),
+                _fi(nn.get("long")), _fi(nn.get("short")), _f2s(nn.get("net")),
+                _f2s(_diff2(dd.get("net"), nn.get("net"))), _ot_src)
+    _o_rows = [_orow("foreign", "外資"), _orow("investment_trust", "投信"),
+               _orow("dealer", "自營商")]
+    _o_tot = lambda s, f: _add3(_otg(s, "foreign").get(f), _otg(s, "investment_trust").get(f),
+                                _otg(s, "dealer").get(f))
+    _o_rows.append(("三大法人合計", _fi(_o_tot("day", "long")), _fi(_o_tot("day", "short")),
+                    _f2s(_o_tot("day", "net")), _fi(_o_tot("night", "long")),
+                    _fi(_o_tot("night", "short")), _f2s(_o_tot("night", "net")),
+                    _f2s(_diff2(_o_tot("day", "net"), _o_tot("night", "net"))), _ot_src))
+    A(_tbl(_o_rows, ("法人", "日盤多單", "日盤空單", "日盤淨", "夜盤多單", "夜盤空單",
+                     "夜盤淨", "淨變化 (日-夜)", "資料來源")))
+    A("")
+    A("### 18．選擇權前十大")
+    A("")
+    _t10c = taifex_official.top10_opt(d["month"] or "", "買權", t0)
+    _t10p = taifex_official.top10_opt(d["month"] or "", "賣權", t0)
+    _t10c_src = "TAIFEX Proxy" if _t10c.get("via") == "proxy" else SRC_FX_OFF
+    _t10p_src = "TAIFEX Proxy" if _t10p.get("via") == "proxy" else SRC_FX_OFF
+    _t10c_chg = taifex.snap_top10_change(d["month"] or "", t0, _t10c.get("net"),
+                                         cur_date=_t10c.get("date"),
+                                         dataset="top10opt", callput="買權")
+    _t10p_chg = taifex.snap_top10_change(d["month"] or "", t0, _t10p.get("net"),
+                                         cur_date=_t10p.get("date"),
+                                         dataset="top10opt", callput="賣權")
+    _t10c_lbl = (f" ({_t10c_chg['prev_date']}→{_t10c_chg['cur_date']})" if _t10c_chg else "")
+    _t10p_lbl = (f" ({_t10p_chg['prev_date']}→{_t10p_chg['cur_date']})" if _t10p_chg else "")
+    A(_tbl([("買權多方 OI", _fi(_t10c["buy"]), _t10c_src),
+            ("買權空方 OI", _fi(_t10c["sell"]), _t10c_src),
+            ("買權多空淨 OI", _f2s(_t10c["net"]), _t10c_src),
+            ("買權多空淨 OI 變化" + _t10c_lbl,
+             _f2s(_t10c_chg["chg"]) if _t10c_chg else MISSING,
+             SRC_SNAP if _t10c_chg else "端點未提供")],
+           ("項目", "口數", "資料來源")))
+    A("")
+    A(_tbl([("賣權多方 OI", _fi(_t10p["buy"]), _t10p_src),
+            ("賣權空方 OI", _fi(_t10p["sell"]), _t10p_src),
+            ("賣權多空淨 OI", _f2s(_t10p["net"]), _t10p_src),
+            ("賣權多空淨 OI 變化" + _t10p_lbl,
+             _f2s(_t10p_chg["chg"]) if _t10p_chg else MISSING,
+             SRC_SNAP if _t10p_chg else "端點未提供")],
+           ("項目", "口數", "資料來源")))
+    A(f"- 資料日期：買權 {_t10c['date'] or MISSING}／賣權 {_t10p['date'] or MISSING} "
+      f"(TypeOfTraders=0 全部交易人；契約月份 {_t10c['month'] or MISSING})")
+    _opt_t10chg_missing = (not _t10c_chg or not _t10p_chg)
+    A("")
     A("### 16．資料來源、時間、時區與狀態")
     A("")
     A("- 資料來源：TAIFEX 經 Cloudflare Worker Proxy")
@@ -603,6 +659,8 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
         _snap_unav.append("options.wall_change")
     if not _t10chg:
         _snap_unav.append("futures.top10_change")
+    if _opt_t10chg_missing:
+        _snap_unav.append("options.top10_change")
     _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
     A(f"- 未取得欄位 ({len(_all_unav)})：{', '.join(_all_unav) if _all_unav else '無'}")
     for nn in fx["notes"]:

@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-22`
 - T0 交易日期：`2026-09-22`
-- 資料產出時間：`2026-09-22 20:09:31`
+- 資料產出時間：`2026-09-22 22:14:33`
 - 時區：`Asia/Taipei`
 
 ---
@@ -67,10 +67,10 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 融資餘額 | unavailable | 億元 | HiStock |
-| 融資增減 | unavailable | 億元 | HiStock |
-| 融券餘額 | 231,582 | 張 | HiStock |
-| 融券增減 | 10,189 | 張 | HiStock |
+| 融資餘額 | 8,133.8 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融資增減 | +36.2 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融券餘額 | 254,622 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融券增減 | -15,846 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融資維持率 | 191.44 | % | wantgoo 大盤融資維持率 (民間估算；官方無每日序列) |
 
 ### 5. 借券資料
@@ -79,9 +79,9 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 2,437,911 | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出餘額 | unavailable | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出增減 | unavailable | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券餘額 | 4,531,221 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出餘額 | 35,783 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出增減 | -3,103 | 張 | TWSE TWT93U + TPEX margin_sbl |
 
 ### 6. 市場成交結構
 
@@ -101,12 +101,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,764.70 | 114.20 | +1.49 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 27,122.09 | 599.55 | +2.26 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 30,482.35 | 838.18 | +2.83 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 52,048.83 | 366.19 | +0.71 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 12,433.17 | 511.48 | +4.29 | Yahoo Finance Chart API |
-| VIX | ^VIX | 14.70 | -0.17 | -1.14 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,773.69 | 8.99 | +0.12 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 27,249.25 | 127.16 | +0.47 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 30,659.80 | 177.46 | +0.58 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 51,915.42 | -133.41 | -0.26 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 12,545.79 | 112.62 | +0.91 | Yahoo Finance Chart API |
+| VIX | ^VIX | 14.62 | -0.25 | -1.68 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,835.75 | 2.25 | +0.03 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 30,776.75 | -8.00 | -0.03 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,642.00 | 167.00 | +0.32 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,912.60 | 15.20 | +0.52 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,837.50 | 4.00 | +0.05 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 30,926.75 | 142.00 | +0.46 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,414.00 | -61.00 | -0.12 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,925.40 | 28.00 | +0.97 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -138,8 +138,8 @@
 | 項目 | API 資料欄位／識別 | 殖利率 | 日變化 | 資料來源 |
 |---|---|---|---|---|
 | 美國 2 年期殖利率 | 2 Yr | 4.76 | 0.00 | U.S. Treasury yield.xml (網頁備援) |
-| 美國 10 年期殖利率 | 10 Yr | 4.96 | -0.04 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.30 | -0.03 | Yahoo Finance (備援) |
+| 美國 10 年期殖利率 | 10 Yr | 4.95 | -0.01 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.29 | -0.01 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.64 | -0.17 | -0.53 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 100.41 | -0.02 | -0.02 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.16 | 0.11 | +0.07 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,355.78 | -29.08 | -2.10 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.63 | -0.18 | -0.56 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 100.48 | 0.05 | +0.05 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.30 | 0.25 | +0.16 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,355.58 | -29.28 | -2.11 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 445.14 | 10.47 | +2.41 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 25.43 | 0.82 | +3.33 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 43.73 | 2.10 | +5.04 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 446.69 | 1.55 | +0.35 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 25.45 | 0.02 | +0.10 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 44.55 | 0.82 | +1.88 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 89.93 | -5.85 | -6.11 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,360.40 | -23.50 | -0.54 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 85,945.01 | -657.91 | -0.76 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 90.77 | -5.01 | -5.23 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,365.80 | -18.10 | -0.41 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 86,337.70 | -265.21 | -0.31 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -196,10 +196,10 @@
   - 來源：Yahoo 台股；發布時間：2026-09-22T09:08:26Z；台北時間：2026-09-22 17:08
   - 摘要：央行今（22）日公布8月五大銀行新承做房貸金額為571億元，月減119億元，終結連三升，央行官員分析，主要有三個原因，其中是傳統鬼月觀望氣氛與颱風假干擾銀行作業之外，還有一部份的人覺得新青安 3.0管制趨嚴已提前「上車」，這也讓新青安占比衰
   - 原文連結：https://tw.stock.yahoo.com/news/%E6%96%B0%E9%9D%92%E5%AE%89%E6%95%88%E6%87%89%E9%80%80%E7%87%92%EF%BC%9F8%E6%9C%88%E4%BA%94%E5%A4%A7%E9%8A%80%E8%A1%8C%E7%94%B3%E8%B2%B8%E5%8D%A0%E6%AF%94%E5%89%B5%E8%BF%9110%E5%80%8B%E6%9C%88%E6%96%B0%E4%BD%8E-090826227.html
-- 事件6：中華汽車Outlander上市助攻  第4季營運拚今年單季新高
-  - 來源：Yahoo 台股；發布時間：2026-09-22T11:53:36Z；台北時間：2026-09-22 19:53
-  - 摘要：中華汽車（2204）日本進口的MITSUBISHI旗艦休旅車OUTLANDER今天正式上市，中華汽車總經理曾鑫城預估，今年底前可賣出至少600輛，加上J SPACE Cossi熱銷助攻，預估第4季營運可望攀至今年單季新高，全年營收可望超越去
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%AD%E8%8F%AF%E6%B1%BD%E8%BB%8Aoutlander%E4%B8%8A%E5%B8%82%E5%8A%A9%E6%94%BB-%E7%AC%AC4%E5%AD%A3%E7%87%9F%E9%81%8B%E6%8B%9A%E4%BB%8A%E5%B9%B4%E5%96%AE%E5%AD%A3%E6%96%B0%E9%AB%98-115336591.html
+- 事件6：美廉社、OK將整合！三商家購大改名組織重整　2.5億分割案細節、股東權益一次看
+  - 來源：Yahoo 台股；發布時間：2026-09-22T14:03:03Z；台北時間：2026-09-22 22:03
+  - 摘要：美廉社母公司三商家購（2945）今（22）日召開重大訊息記者會，宣布董事會通過組織重整案，將旗下美廉社、心樸市集、美廉便利架等零售通路相關資產、負債及營業，以分割方式移轉至100%持股子公司富達零售；三商家購本身則將轉型為投資控股公司，並更
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E5%BB%89%E7%A4%BE-ok%E5%B0%87%E6%95%B4%E5%90%88-%E4%B8%89%E5%95%86%E5%AE%B6%E8%B3%BC%E5%A4%A7%E6%94%B9%E5%90%8D%E7%B5%84%E7%B9%94%E9%87%8D%E6%95%B4-2-5%E5%84%84%E5%88%86%E5%89%B2%E6%A1%88%E7%B4%B0%E7%AF%80-140303783.html
 - 事件7：Federal Reserve Board announces termination of enforcement action with SNB Bancshares and Bank of Eufaula
   - 來源：Federal Reserve；發布時間：Fri, 18 Sep 2026 15:00:00 GMT；台北時間：2026-09-18 23:00
   - 摘要：Federal Reserve Board announces termination of enforcement action with SNB Bancshares and Bank of Eufaula
@@ -220,17 +220,11 @@
   - 來源：CNBC；發布時間：Mon, 21 Sep 2026 22:25:33 GMT；台北時間：2026-09-22 06:25
   - 摘要：Trump, facing low approval on the economy ahead of the midterm election, has an added incentive to emerge from the summit with China's Xi touting trad
   - 原文連結：https://www.cnbc.com/2026/09/21/trump-xi-china-summit-trade-tariffs.html
-- 事件12：U.S. Treasury yields ease as investors await fresh jobs data, Fed comments
-  - 來源：CNBC；發布時間：Tue, 22 Sep 2026 09:16:10 GMT；台北時間：2026-09-22 17:16
-  - 摘要：Economic data, the Iran war and looming UN meetings are in focus.
+- 事件12：10-year Treasury yield slips further below 5% as traders await Fed comments
+  - 來源：CNBC；發布時間：Tue, 22 Sep 2026 13:48:52 GMT；台北時間：2026-09-22 21:48
+  - 摘要：U.S. Treasury yields eased on Tuesday as investors awaited new clues on the state of the U.S. economy.
   - 原文連結：https://www.cnbc.com/2026/09/22/treasury-yield-us-bond-market-trump.html
 
-
-### 9. 產業資金流向 (股市智投)
-
-**資料來源：** `StockIntelli API` — https://www.stockintelli.com/market/industry-flow
-
-- unavailable (StockIntelli API 速率限制或回應異常)
 
 ## 三、期貨
 
@@ -384,7 +378,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-22 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609W4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-22 20:09:31 | 本機 |
+| 資料更新時間 | 2026-09-22 22:14:33 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -536,12 +530,38 @@
 | 對應到期月份 | 202609W4 | TAIFEX Proxy |
 | 與前一交易日的變化 | unavailable | 端點未提供 |
 
+### 17．選擇權法人日盤、夜盤交易
+
+| 法人 | 日盤多單 | 日盤空單 | 日盤淨 | 夜盤多單 | 夜盤空單 | 夜盤淨 | 淨變化 (日-夜) | 資料來源 |
+|---|---|---|---|---|---|---|---|---|
+| 外資 | 152,994 | 156,092 | -3,098 | 48,571 | 48,918 | -347 | -2,751 | TAIFEX Proxy |
+| 投信 | 0 | 3 | -3 | 0 | 3 | -3 | +0 | TAIFEX Proxy |
+| 自營商 | 126,961 | 128,342 | -1,381 | 42,488 | 42,172 | +316 | -1,697 | TAIFEX Proxy |
+| 三大法人合計 | 279,955 | 284,437 | -4,482 | 91,059 | 91,093 | -34 | -4,448 | TAIFEX Proxy |
+
+### 18．選擇權前十大
+
+| 項目 | 口數 | 資料來源 |
+|---|---|---|
+| 買權多方 OI | 11,062 | TAIFEX Proxy |
+| 買權空方 OI | 9,785 | TAIFEX Proxy |
+| 買權多空淨 OI | +1,277 | TAIFEX Proxy |
+| 買權多空淨 OI 變化 (2026-09-18→2026-09-21) | +493 | TAIFEX Proxy snapshots (2026-09-21) |
+
+| 項目 | 口數 | 資料來源 |
+|---|---|---|
+| 賣權多方 OI | 5,939 | TAIFEX Proxy |
+| 賣權空方 OI | 7,011 | TAIFEX Proxy |
+| 賣權多空淨 OI | -1,072 | TAIFEX Proxy |
+| 賣權多空淨 OI 變化 (2026-09-18→2026-09-21) | +73 | TAIFEX Proxy snapshots (2026-09-21) |
+- 資料日期：買權 2026-09-21／賣權 2026-09-21 (TypeOfTraders=0 全部交易人；契約月份 202610)
+
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-22；資料時間：2026-09-22 20:09:31；時區：`Asia/Taipei`
+- 資料日期：2026-09-22；資料時間：2026-09-22 22:14:33；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (5)：margin.fin_yi, margin.fin_chg_yi, sbl.sale_bal, sbl.sale_chg, options.chain_oi_change
+- 未取得欄位 (1)：options.chain_oi_change
 - 註記：Gamma 資料日期 2026-09-21 (T0 2026-09-22 尚無，上游 FMTQIK 落後，採最新可得)
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 - 註記：Gamma Wall/Flip 資料日期 2026-09-21 (來源 options-market-structure-compact (proxy))
@@ -555,13 +575,12 @@
 - listed_breadth：`twse-proxy`
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
-- margin_short：`TWSE MI_MARGN + TPEX margin_balance (張)`
+- margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
 - margin_ratio：`wantgoo 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：HiStock 未取得，融資餘額/增減標 unavailable (官方逐股加總僅有張數)
-- 註記：融券沿用官方逐股加總 (張)
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
+- 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。

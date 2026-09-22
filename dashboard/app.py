@@ -416,7 +416,8 @@ with tab_opt:
                        "中軸＝台指期收盤價附近的多空分界參考（取最接近收盤的履約價列，≈中軸）；"
                        "左 Put 右 Call，仿 T 字報價")
         for sec in ("選擇權交易日期", "Call 總成交量", "Put 總成交量", "Call／Put 比例",
-                    "外資 Call", "自營商 Call", "Call OI 集中", "Put OI 集中",
+                    "外資 Call", "自營商 Call", "選擇權法人日盤", "選擇權前十大",
+                    "Call OI 集中", "Put OI 集中",
                     "Call OI 增減", "Put OI 增減", "Call Wall", "Put Wall",
                     "Gamma Wall", "Gamma Flip", "Max Pain"):
             for t in md_tables(dmd, sec):

@@ -8,7 +8,7 @@ https://taifex.grichtoyang.workers.dev/
 (gamma-levels 上游 502，Gamma Wall/Flip 標 unavailable)
 
 金額欄位單位：千元 (→億元 /1e5)。近月 = 日盤成交量最大契約。
-前十大交易人 proxy 無此端點 → unavailable。
+前十大交易人走 taifex_official (proxy 優先)。
 純數據整理，不做分析判斷。
 """
 from __future__ import annotations
@@ -336,6 +336,18 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if opt_pos["foreign"]["long"] is None:
         notes.append("選擇權法人部位未取得")
 
+    # ---------- 選擇權法人日夜盤交易 (同 期貨 5；夜盤為晨收已結算節) ----------
+    opt_night_t = _by_inst(_rows(P["options-institutional-after-hours"]))
+    opt_trade = {}
+    for sess, src in (("day", oi_inst), ("night", opt_night_t)):
+        for k in ("foreign", "investment_trust", "dealer"):
+            r = src.get(k, {})
+            opt_trade[(sess, k)] = {"long": r.get("long_volume"), "short": r.get("short_volume"),
+                                    "net": r.get("net_volume")}
+    if opt_trade[("day", "foreign")]["long"] is None:
+        unav.append("opt_trade")
+        notes.append("選擇權法人日夜盤交易未取得")
+
     # ---------- Walls ----------
     def _wall(v):
         return v if isinstance(v, dict) else {}
@@ -408,7 +420,8 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
 
     return {"day": day, "night": night, "fut_oi": fut_oi, "fut_trade": fut_trade,
             "basis": basis, "basis_pct": basis_pct, "oi_chg": oi_chg,
-            "opt_tot": opt_tot, "opt_conc": opt_conc, "opt_dist": opt_dist, "opt_pos": opt_pos, "walls": walls,
+            "opt_tot": opt_tot, "opt_conc": opt_conc, "opt_dist": opt_dist, "opt_pos": opt_pos,
+            "opt_trade": opt_trade, "walls": walls,
             "gamma": gamma, "trade_date": t0, "opt_expiry": prim_month, "snapchg": snapchg,
             "unavailable": unav, "notes": notes}
 
@@ -424,8 +437,9 @@ def _iso8(v: str | None) -> str | None:
     return None
 
 
-def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None) -> dict | None:
-    """前十大淨變化 (快照 T-1)。
+def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
+                      dataset: str = "top10fut", callput: str | None = None) -> dict | None:
+    """前十大淨變化 (快照 T-1)。dataset: top10fut (期貨) / top10opt (選擇權，需 callput)。
     上游 OpenAPI 落後約一日，快照內容日期常比快照鍵日期早 (含週末)，
     故不硬比快照日期，改按契約月份對齊、取該月最新內容日期。
     回傳 {chg, prev_date, cur_date, snap_date} 或 None。"""
@@ -434,7 +448,9 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None)
     _sb = snapshot_bundle(_t1)
     if not _sb:
         return None
-    rows = [r for r in (_sb["data"].get("top10fut") or []) if isinstance(r, dict)]
+    rows = [r for r in (_sb["data"].get(dataset) or []) if isinstance(r, dict)]
+    if callput:
+        rows = [r for r in rows if str(r.get("CallPut", "")) == str(callput)]
     if month:
         _mrows = [r for r in rows if str(r.get("SettlementMonth", "")) == str(month)]
         if _mrows:
