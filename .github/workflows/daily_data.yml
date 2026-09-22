@@ -3,7 +3,7 @@ name: daily-data
 on:
   schedule:
     - cron: '0 0 * * 1-5'   # UTC 00:00 = Asia/Taipei 平日 08:00：T0 自動判定
-    - cron: '0 6 * * 1-5'     # UTC 06:00 = Asia/Taipei 平日 14:00：T0=當日 日盤版
+    - cron: '0 12 * * 1-5'     # UTC 12:00 = Asia/Taipei 平日 20:00：T0=當日 日盤版
     - cron: '0 0 * * 6'     # UTC 00:00 = Asia/Taipei 週六 08:00：T0=週五 全日版 (夜盤已收)
   workflow_dispatch:
     inputs:
