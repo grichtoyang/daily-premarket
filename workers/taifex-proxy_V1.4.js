@@ -5141,35 +5141,51 @@ export default {
         const requestedDate = url.searchParams.get("date");
         const requestedMonth = url.searchParams.get("month");
 
-        /* ── 1️⃣ Primary: TAIFEX website. date param = query date directly.
-           (D Session=F → D-1 15:00~D 05:00; client passes T0+1 for 全日, T0 for 日盤) ── */
+        /* ── 1️⃣ Primary: TAIFEX website. queryDate= page date (site ignores `date=`).
+           marketCode=1 → 其他交易時段 (夜盤). Client passes T0+1 for 全日, T0 for 日盤.
+           GET first; if page returns no TX rows (no session cookie), retry via POST form. ── */
         let found = false;
         let target = requestedDate;
         let row = null;
         let months = [];
 
+        const parseTx = (html) => {
+          const rows = parseRows(html);
+          const txRows = rows.filter(r => r[0] === "TX" && r[1] && /^\d{6}$/.test(r[1]));
+          months = [...new Set(txRows.map(r => r[1]))].sort();
+          const m = months.includes(requestedMonth) ? requestedMonth : months[months.length - 1];
+          return txRows.find(r => r[1] === m) || null;
+        };
+
         if (requestedDate) {
-          const siteUrl = `${TAIFEX}/cht/3/futDailyMarketReport?date=${requestedDate.replace(/-/g, "/")}&Session=F&commodity_id=TX`;
+          const pageUrl = `${TAIFEX}/cht/3/futDailyMarketReport`;
+          const qs = `queryDate=${requestedDate.replace(/-/g, "/")}&marketCode=1&MarketCode=1&commodity_id=TX`;
+          const baseHeaders = {
+            "User-Agent": "Mozilla/5.0 (compatible; TAIFEX-Proxy/V1.4)",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+            "Referer": `${pageUrl}`
+          };
           try {
-            const resp = await fetch(siteUrl, {
-              headers: {
-                "User-Agent": "Mozilla/5.0 (compatible; TAIFEX-Proxy/V1.4)",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8"
-              }
-            });
+            let resp = await fetch(`${pageUrl}?${qs}`, { headers: baseHeaders });
             if (resp.ok) {
-              const html = await resp.text();
-              const rows = parseRows(html);
-              // Find TX rows (skip header rows)
-              const txRows = rows.filter(r => r[0] === "TX" && r[1] && /^\d{6}$/.test(r[1]));
-              months = [...new Set(txRows.map(r => r[1]))].sort();
-              const m = months.includes(requestedMonth) ? requestedMonth : months[months.length - 1];
-              row = txRows.find(r => r[1] === m);
-              if (row) {
-                found = true;
-                target = requestedDate;
-              }
+              row = parseTx(await resp.text());
+            }
+            if (!row) {
+              // Cookie-less GET sometimes returns default page — retry as POST form
+              resp = await fetch(pageUrl, {
+                method: "POST",
+                headers: {
+                  ...baseHeaders,
+                  "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: qs
+              });
+              if (resp.ok) row = parseTx(await resp.text());
+            }
+            if (row) {
+              found = true;
+              target = requestedDate;
             }
           } catch (_) { /* fall through to OpenAPI */ }
         }
