@@ -5167,9 +5167,12 @@ export default {
         const dates = [...new Set(night.map(r =>
           apiDateISO(r.Date)
         ).filter(Boolean))].sort();
-        const latest = dates[dates.length - 1];
+        // 優先用 requestedDate；找不到才 fallback 到最新
+        const target = (requestedDate && dates.includes(requestedDate))
+          ? requestedDate
+          : dates[dates.length - 1];
         const day = night.filter(r =>
-          apiDateISO(r.Date) === latest
+          apiDateISO(r.Date) === target
         );
         const months = [...new Set(day.map(r =>
           String(r["ContractMonth(Week)"] || "")
@@ -5195,7 +5198,7 @@ export default {
           dataset: "futures_night_ohlc",
           market: "TX",
           session: "after_hours",
-          date: latest,
+          date: target,
           requested_date: requestedDate,
           data: {
             open: nullableNumber(row.Open),
