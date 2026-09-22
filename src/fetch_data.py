@@ -2,8 +2,10 @@
 
 用法：
     python src/fetch_data.py --date 2026-09-16 --t0 2026-09-15
-    --date  報告日期 (預設今天 Asia/Taipei)
-    --t0    T0 交易日期 (預設自動取 <= date 的最近平日)
+    --date     報告日期 (預設今天 Asia/Taipei)
+    --t0       T0 交易日期 (預設自動取 <= date 的最近平日)
+    --session  日盤/全日 (空白=依 t0.resolve；手動 --t0 時預設全日)
+               影響夜盤 OHLC 查詢日：全日→T0+1，日盤→T0
 
 產出 data_reports/DATA_REPORT_yyyymmdd.md (yyyymmdd 取自 T0)。
 缺值一律 `unavailable`，不推估。
@@ -85,7 +87,7 @@ def last_weekday(d: date) -> date:
         d -= timedelta(days=1)
     return d
 
-def build(report_date: str, t0: str) -> str:
+def build(report_date: str, t0: str, session: str = "全日") -> str:
     now = datetime.now(TAIPEI).strftime("%Y-%m-%d %H:%M:%S")
     s = spot.build(t0)
     tx, lb, ob = s["taiex"], s["listed_breadth"], s["otc_breadth"]
@@ -269,7 +271,7 @@ def build(report_date: str, t0: str) -> str:
     A("1. Cloudflare Workers：TAIFEX Proxy — https://taifex.grichtoyang.workers.dev/")
     A("2. TAIFEX Open API — https://openapi.taifex.com.tw/")
     A("")
-    fx = taifex.build(t0, taiex_close=tx["close"])
+    fx = taifex.build(t0, taiex_close=tx["close"], session=session)
     d, n = fx["day"], fx["night"]
     SRC_FX = "TAIFEX Proxy"
     SRC_FX_OFF = "TAIFEX OpenAPI"
@@ -644,21 +646,31 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="", help="報告日期 YYYY-MM-DD，預設今天 (Asia/Taipei)")
     ap.add_argument("--t0", default="", help="T0 交易日期 YYYY-MM-DD，預設最近平日")
+    ap.add_argument("--session", default="", choices=["日盤", "全日"],
+                    help="報告時段 (影響夜盤查詢日)；空白=依 t0.resolve 判定，手動 --t0 時預設全日")
     args = ap.parse_args()
     today = datetime.now(TAIPEI).date()
     report_date = args.date.strip() or today.isoformat()
+    session = args.session.strip()
     if args.t0.strip():
         t0 = args.t0.strip()
+        if not session:
+            session = "全日"
     else:
         try:
             from src.t0 import resolve as _resolve
-            t0 = _resolve().get("t0") or last_weekday(date.fromisoformat(report_date)).isoformat()
+            _r = _resolve()
+            t0 = _r.get("t0") or last_weekday(date.fromisoformat(report_date)).isoformat()
+            if not session:
+                session = _r.get("session") or "全日"
         except Exception:
             t0 = last_weekday(date.fromisoformat(report_date)).isoformat()
+            if not session:
+                session = "全日"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
-    out.write_text(build(report_date, t0), encoding="utf-8")
-    print(f"[OK] wrote {out} (report_date={report_date}, t0={t0})")
+    out.write_text(build(report_date, t0, session=session), encoding="utf-8")
+    print(f"[OK] wrote {out} (report_date={report_date}, t0={t0}, session={session})")
 
 if __name__ == "__main__":
     main()

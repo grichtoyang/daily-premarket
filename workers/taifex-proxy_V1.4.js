@@ -5141,18 +5141,15 @@ export default {
         const requestedDate = url.searchParams.get("date");
         const requestedMonth = url.searchParams.get("month");
 
-        /* ── 1️⃣ Primary: TAIFEX website with T0+1 (correct for night session) ── */
+        /* ── 1️⃣ Primary: TAIFEX website. date param = query date directly.
+           (D Session=F → D-1 15:00~D 05:00; client passes T0+1 for 全日, T0 for 日盤) ── */
         let found = false;
         let target = requestedDate;
         let row = null;
         let months = [];
 
         if (requestedDate) {
-          // Night session 09/21 15:00~09/22 05:00 → query date = 09/22
-          const d = new Date(requestedDate + "T00:00:00Z");
-          d.setUTCDate(d.getUTCDate() + 1);
-          const nextDay = d.toISOString().slice(0, 10);
-          const siteUrl = `${TAIFEX}/cht/3/futDailyMarketReport?date=${nextDay.replace(/-/g, "/")}&Session=F&commodity_id=TX`;
+          const siteUrl = `${TAIFEX}/cht/3/futDailyMarketReport?date=${requestedDate.replace(/-/g, "/")}&Session=F&commodity_id=TX`;
           try {
             const resp = await fetch(siteUrl, {
               headers: {

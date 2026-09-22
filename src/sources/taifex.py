@@ -64,16 +64,22 @@ def _get_dates(ep: str, dates: list[str], timeout: int = 40) -> tuple[dict | Non
             return p, p.get("date") or d
     return None, None
 
-def _night_ohlc(t0: str, month: str | None) -> dict | None:
+def _night_ohlc(t0: str, month: str | None, session: str = "全日") -> dict | None:
     """夜盤 OHLC：proxy /futures-night-ohlc (V1.4+) 優先，官方 DailyMarketReportFut 備援。
     回傳含 via/date，或 None。
-    注意：期交所夜盤日期以收盤日查詢（例 09/21 15:00~09/22 05:00 查 09/22）。
-    Proxy V1.4 內部處理 T0→T0+1 轉換。"""
+    期交所規則：查日期 D + Session=F → D-1 15:00~D 05:00。
+    全日版：查 T0+1；日盤版：查 T0（前一夜）。"""
+    from datetime import datetime, timedelta
     import os
+    dt0 = datetime.strptime(t0, "%Y-%m-%d")
+    if session == "全日":
+        query_date = (dt0 + timedelta(days=1)).strftime("%Y-%m-%d")
+    else:
+        query_date = t0
     base = os.getenv("TAIFEX_PROXY_BASE_URL", BASE).rstrip("/")
     if month:
         try:
-            r = requests.get(f"{base}/futures-night-ohlc", params={"date": t0, "month": month},
+            r = requests.get(f"{base}/futures-night-ohlc", params={"date": query_date, "month": month},
                              headers={**HEADERS, "accept": "application/json"}, timeout=30)
             if r.status_code == 200:
                 j = r.json()
@@ -156,7 +162,7 @@ def dateless_content_date(now=None) -> str:
         d -= _td(days=1)
     return d.isoformat()
 
-def build(t0: str, taiex_close=None) -> dict:
+def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     unav: list[str] = []
     notes: list[str] = []
     _content = dateless_content_date()
@@ -219,8 +225,9 @@ def build(t0: str, taiex_close=None) -> dict:
              "oi": ah.get("open_interest"), "settle": ah.get("settlement_price"),
              "open": None, "high": None, "low": None, "close": None, "change": None, "pct": None,
              "via": "proxy"}
-    # 夜盤 OHLC：proxy V1.3+ /futures-night-ohlc 優先，官方 DailyMarketReportFut 備援
-    _nh = _night_ohlc(t0, day["month"])
+    # 夜盤 OHLC：proxy V1.4+ /futures-night-ohlc 優先，官方 DailyMarketReportFut 備援
+    # 夜盤查詢日由 session 決定：全日→T0+1，日盤→T0（_night_ohlc 內部轉換）
+    _nh = _night_ohlc(t0, day["month"], session=session)
     if _nh is not None:
         night.update({k: _nh.get(k) for k in ("open", "high", "low", "close", "change", "pct")})
         night["via"] = _nh.get("via", "proxy")
