@@ -15,7 +15,7 @@
    - 模型結果（Walls/Gamma/劇本）聲明非官方、未經歷史回測。
    - 附錄 B 機器區：kpi（14筆固定順序）／verdict（5欄）／levels（4欄+白話）／oidist（Top10×2）／scenarios（含停損第4欄）。
 4. 更新 reports/latest.json（report_date/report_path/generated_at/status），指向最新一份。
-5. 本地驗結構後 git add/commit/push。
+5. 跑閘門 `python src/check_report.py --data data_reports/DATA_REPORT_yyyymmdd.md --report reports/Daily_REPORT_yyyymmdd_日盤.md`（檔名按盤別），[PASS] 才可 git add/commit/push；[FAIL] 就地修到過為止。
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位（壓力/支撐）＋push 的 commit。
 
 定義（台指期全為準）：
