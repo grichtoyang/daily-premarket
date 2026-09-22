@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-22`
 - T0 交易日期：`2026-09-21`
-- 資料產出時間：`2026-09-22 08:08:00`
+- 資料產出時間：`2026-09-22 10:18:24`
 - 時區：`Asia/Taipei`
 
 ---
@@ -71,7 +71,7 @@
 | 融資增減 | +111.1 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 270,468 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | 12,082 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | unavailable | % | istock.tw |
+| 融資維持率 | 191.44 | % | wantgoo 大盤融資維持率 (民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -115,10 +115,10 @@
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
 | 日經225 | ^N225 | 65,018.95 | 882.70 | +1.38 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 6,894.23 | 178.82 | +2.66 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 24,750.78 | 146.49 | +0.60 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,911.87 | 36.27 | +0.94 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 13,640.87 | 230.96 | +1.72 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 7,123.75 | 116.03 | +1.66 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 25,128.20 | 85.49 | +0.34 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,965.39 | 15.48 | +0.39 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 13,897.13 | 167.11 | +1.22 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,836.00 | 178.65 | +2.33 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 30,853.50 | 1,239.82 | +4.19 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,457.00 | 696.00 | +1.34 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,899.70 | 26.47 | +0.92 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,835.75 | 2.25 | +0.03 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 30,883.00 | 98.25 | +0.32 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,404.00 | -71.00 | -0.14 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,895.10 | -2.30 | -0.08 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.74 | -0.07 | -0.21 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 100.42 | 0.20 | +0.20 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.35 | 0.31 | +0.20 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,368.58 | -16.28 | -1.18 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.69 | -0.12 | -0.37 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 100.43 | 0.00 | +0.00 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.50 | 0.45 | +0.29 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,360.98 | -23.88 | -1.72 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 434.67 | 4.41 | +1.02 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 24.61 | 0.14 | +0.57 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 41.63 | 1.64 | +4.10 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 445.14 | 10.47 | +2.41 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 25.43 | 0.82 | +3.33 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 43.73 | 2.10 | +5.04 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,38 +168,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 92.25 | -8.05 | -8.03 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,407.80 | -17.10 | -0.39 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 86,309.99 | 5,167.38 | +6.37 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 92.99 | -2.79 | -2.91 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,381.90 | -2.00 | -0.05 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 85,580.17 | 4,437.56 | +5.47 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：台股衝歷史次高 聯發科5千關到手面板封測同步狂歡
-  - 來源：Yahoo 台股；發布時間：2026-09-21T09:02:49Z；台北時間：2026-09-21 17:02
-  - 摘要：權值電子股點火，台股刷收盤歷史次高！今(21)日加權指數開高走高，終場大漲538.09點、漲幅1.14%，收在47,718.84點；成交金額8,216.14億元，但仍未重返兆元水準。電子指數勁揚1.34%、金融指數上漲0.82%，櫃買指數則
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%96%E8%B3%87%E6%92%92%E5%B9%A3%E9%BB%9E%E7%81%AB%E5%8F%B0%E8%82%A1%E8%A1%9D47718%E9%BB%9E%E6%AD%B7%E5%8F%B2%E6%AC%A1%E9%AB%98-%E8%81%AF%E7%99%BC%E7%A7%91%E9%A6%96%E7%99%BB5%E5%8D%83%E9%87%91%E9%A0%98%E9%9B%BB%E5%AD%90%E8%BB%8D%E5%9C%98%E8%A1%9D%E9%8B%92-%E9%9D%A2%E6%9D%BF%E9%9B%99%E9%9B%84%E7%99%BE%E5%84%84%E6%88%90%E4%BA%A4%E7%82%B8%E6%A6%9C%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-090113322.html
-- 事件2：合庫投信捲職場風暴 投資長停職、公司急發三聲明
-  - 來源：Yahoo 台股；發布時間：2026-09-21T08:00:35Z；台北時間：2026-09-21 16:00
-  - 摘要：合庫金（5880）旗下合庫投信近日遭員工爆料，涉及職場性平、員工個資疑似外洩，以及公股投信「四合一」後續人員安置等爭議。外界並質疑公司高階主管在辦公場所擺放成人影像相關物品、上班時間瀏覽成人網站。據了解，遭指涉的投資長目前已停職配合調查。合
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%90%88%E5%BA%AB%E6%8A%95%E4%BF%A1%E7%88%86%E6%80%A7%E9%A8%B7%E3%80%81%E5%80%8B%E8%B3%87%E7%88%AD%E8%AD%B0-%E5%85%AC%E5%8F%B8%E4%B8%89%E9%BB%9E%E8%81%B2%E6%98%8E-075757784.html
-- 事件3：友達群創不只賣面板 玻璃基板、CPO轉型讓專家喊有意思
-  - 來源：Yahoo 台股；發布時間：2026-09-21T08:10:07Z；台北時間：2026-09-21 16:10
-  - 摘要：台灣面板大廠友達布局轉型半導體先進封裝，市場近日更傳出友達同時吸引台積電、英特爾上門談合作，傳台積電有意取得友達2座廠房、英特爾則是聚焦Micro LED基板先進封裝，讓友達股價今（21）日爆量漲停。對此，財經作家葉育碩直言，這幾年「面板雙
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%8B%E9%81%94%E7%88%86%E9%87%8F%E6%BC%B2%E5%81%9C-%E8%BD%89%E5%9E%8B%E5%85%88%E9%80%B2%E5%B0%81%E8%A3%9D-%E5%8F%B0%E7%A9%8D%E9%9B%BB-%E8%8B%B1%E7%89%B9%E7%88%BE%E9%83%BD%E4%B8%8A%E9%96%80-%E5%B0%88%E5%AE%B6-081007038.html
-- 事件4：鐵飯碗一邊招不到一邊留不住 公職報考腰斬離職也暴增
-  - 來源：Yahoo 台股；發布時間：2026-09-21T09:02:00Z；台北時間：2026-09-21 17:02
-  - 摘要：公職鐵飯碗光環褪色，根據銓敘部統計，公務員辭職人數逐年攀升，113年更突破3千人大關，辭職率升至1.10%，而考選部數據亦顯示，報考公職總人數10年內腰斬近5成，呈現「進不來、留不住」的雙重人力危機。專家分析，土木工程與司法行政等專業職系流
-  - 原文連結：https://tw.stock.yahoo.com/news/%E9%90%B5%E9%A3%AF%E7%A2%97%E4%B8%8D%E9%A6%99%E4%BA%86-%E5%85%AC%E8%81%B7%E5%A0%B1%E8%80%8310%E5%B9%B4-%E8%85%B0%E6%96%AC-%E8%BE%AD%E8%81%B7%E4%BA%BA%E6%95%B8%E6%9A%B4%E5%A2%9E55-090200026.html
-- 事件5：成本升需求弱雙面夾擊 中國面板三巨頭連假停機減產
-  - 來源：Yahoo 台股；發布時間：2026-09-21T09:00:02Z；台北時間：2026-09-21 17:00
-  - 摘要：面板產業面臨成本上升、需求轉弱雙重壓力，市調機構TrendForce最新研究指出，中國三大面板廠BOE（京東方）、TCL CSOT（TCL 華星）及HKC（惠科）預計在中國十一長假期間啟動減產，預估10月5代以上大世代線產能稼動率將月減4.
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%AD%E5%9C%8B3%E5%A4%A7%E9%9D%A2%E6%9D%BF%E5%BB%A0%E5%8D%81-%E9%95%B7%E5%81%87%E5%95%9F%E5%8B%95%E6%B8%9B%E7%94%A2-%E9%9B%86%E9%82%A6-%E7%A8%BC%E5%8B%95%E7%8E%87%E5%B0%87%E9%99%8D%E8%87%B38%E6%88%90%E4%BB%A5%E4%B8%8B-090002865.html
-- 事件6：傳台積電與英特爾上門爭合作！雙虎「這檔」亮燈奪量價雙增王　南茂與「PCB生產設備廠」同漲停三王鼎立
-  - 來源：Yahoo 台股；發布時間：2026-09-22T00:00:00Z；台北時間：2026-09-22 08:00
-  - 摘要：[FTNN新聞網]記者張書翰／綜合報導台股加權指數昨（21）日開高後一路上攻，最終衝上47718.84點，上漲538.09點、漲幅1.14%，創下收盤歷史次高；成交金額達8216...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%82%B3%E5%8F%B0%E7%A9%8D%E9%9B%BB%E8%88%87%E8%8B%B1%E7%89%B9%E7%88%BE%E4%B8%8A%E9%96%80%E7%88%AD%E5%90%88%E4%BD%9C-%E9%9B%99%E8%99%8E-%E9%80%99%E6%AA%94-%E4%BA%AE%E7%87%88%E5%A5%AA%E9%87%8F%E5%83%B9%E9%9B%99%E5%A2%9E%E7%8E%8B-%E5%8D%97%E8%8C%82%E8%88%87-000000442.html
+- 事件1：抽中一張賺近250萬 漢測上櫃首日狂飆坐穩「三哥」
+  - 來源：Yahoo 台股；發布時間：2026-09-22T01:25:08Z；台北時間：2026-09-22 09:25
+  - 摘要：「漢民集團」旗下金雞母、半導體測試設備廠漢測（7856）今（22）日正式掛牌上櫃，蜜月首日最高價站上4475元，較承銷價2250元翻倍飆漲110%，剛掛牌就創上櫃第三高價，僅次於股王信驊（5274）及上櫃股后旺矽（6223）。而這家新股曾虧
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%98%94%E6%97%A5%E6%9B%BE%E9%80%A3%E8%99%A710%E5%B9%B4%EF%BC%81%E6%BC%A2%E6%B8%AC%E6%8E%9B%E7%89%8C%E9%A6%96%E6%97%A5%E7%A0%B44475%E5%85%83%E7%99%BB%E4%B8%8A%E6%AB%83%E3%80%8C%E4%B8%89%E5%93%A5%E3%80%8D%E5%AF%B6%E5%BA%A7-012508764.html
+- 事件2：魏哲家一句「趕上聯發科」台積衝出近月盤中最高價
+  - 來源：Yahoo 台股；發布時間：2026-09-22T01:27:06Z；台北時間：2026-09-22 09:27
+  - 摘要：魏哲家一句「希望台積電股價趕快趕上聯發科」，市場樂看神山股價要起飛，台積電（2330）今（22）日盤中最高觸及2510元，上漲30元，股價創下9月初以來、近一個月盤中最高價。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%AD%8F%E5%93%B2%E5%AE%B6%E4%B8%80%E5%80%8B%E6%9A%97%E8%99%9F%EF%BC%81%E5%8F%B0%E7%A9%8D%E9%9B%BB%E6%BC%B230%E5%85%83%E8%87%B32510%E5%85%83-%E8%BF%91%E4%B8%80%E5%80%8B%E6%9C%88%E7%9B%A4%E4%B8%AD%E6%9C%80%E9%AB%98%E5%83%B9-012706948.html
+- 事件3：iPhone Duo下月開賣 量產卡關良率僅約60%
+  - 來源：Yahoo 台股；發布時間：2026-09-21T22:42:46Z；台北時間：2026-09-22 06:42
+  - 摘要：陸媒報導，蘋果首款折疊機iPhone Duo距10月23日開賣只剩一個多月，但量產爬坡仍未達標，由於蘋果今年最有亮點的新產品就是iPhone Duo，如今量產「卡卡」，恐牽動今年蘋果整體iPhone銷售量，進而影響台積電、大立光、鴻海、新日
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%8A%98%E7%96%8Aiphone%E9%87%8F%E7%94%A2%E5%8D%A1%E9%97%9C-%E7%89%BD%E5%8B%95%E8%98%8B%E6%9E%9C%E4%BB%8A%E5%B9%B4%E6%95%B4%E9%AB%94%E6%89%8B%E6%A9%9F%E9%8A%B7%E5%94%AE%E9%87%8F-224246845.html
+- 事件4：市場熱烈追價友達 法人態度審慎：本業恐轉為虧損
+  - 來源：Yahoo 台股；發布時間：2026-09-21T23:57:42Z；台北時間：2026-09-22 07:57
+  - 摘要：面板大廠友達近期成為市場焦點，傳聞英特爾與台積電有意在先進封裝及Micro LED領域展開合作，帶動友達股價爆量強攻漲停。對此，英特爾不予置評，友達董事長彭双浪則證實正與夥伴開發玻璃基板等技術，但未透露合作細節。然而，法人態度轉趨審慎，分析
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%9D%A2%E6%9D%BF%E5%A4%A7%E5%BB%A0%E7%88%8681%E8%90%AC%E5%BC%B5%E4%BA%AE%E7%87%88%E6%BC%B2%E5%81%9C-%E5%85%A9%E5%A4%A7%E5%B7%A8%E9%A0%AD%E6%90%B6%E5%90%88%E4%BD%9C-%E5%85%A9%E5%A4%A7%E6%B3%95%E4%BA%BA%E5%8D%BB%E7%9C%8B%E8%A1%B0-%E5%8E%9F%E5%9B%A0%E6%9B%9D-204700843.html
+- 事件5：漢測今重磅上櫃 前7月營收已超車去年全年
+  - 來源：Yahoo 台股；發布時間：2026-09-22T00:26:00Z；台北時間：2026-09-22 08:26
+  - 摘要：[FTNN新聞網]記者張書翰／綜合報導半導體測試介面大廠漢測（7856）今（22）日掛牌上櫃，將成為上櫃市場重磅新成員！日前漢測進行上櫃前公開申購，不但承銷價...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%94%B3%E8%B3%BC%E5%87%8D%E7%B5%908656%E5%84%84%E5%85%83%E7%A0%B4%E7%B4%80%E9%8C%84-%E6%BC%A2%E6%B8%AC%E4%BB%8A%E6%8C%BE215%E5%84%84%E9%87%8D%E7%A3%85%E4%B8%8A%E6%AB%83-%E5%89%8D7%E6%9C%88%E7%87%9F%E6%94%B6%E5%8D%B3%E8%B6%85%E8%BB%8A%E5%8E%BB%E5%B9%B4%E5%85%A8%E5%B9%B4-002600084.html
+- 事件6：分潤制度遭「已讀不回」台灣美光工會將發動罷工投票
+  - 來源：Yahoo 台股；發布時間：2026-09-21T13:44:00Z；台北時間：2026-09-21 21:44
+  - 摘要：台灣美光勞資爭議持續延燒，今日美光與桃園工會的調解會議中並未達成共識，預計10月22日將與台中工會再舉行調解會議。美光工會表示，美光公司仍然沒有對員工最關心的「分潤制度」提出具體方案，沒有方案的回應不僅不尊重工會成員，更讓員工的不滿到達了極
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%88%86%E6%BD%A4%E5%88%B6%E5%BA%A6%E6%B2%92%E4%B8%8B%E6%96%87-%E7%BE%8E%E5%85%89%E5%B7%A5%E6%9C%83%E5%B0%87%E7%99%BC%E5%8B%95%E7%BD%B7%E5%B7%A5%E6%8A%95%E7%A5%A8-%E8%AA%BF%E8%A7%A3%E6%B2%92%E5%85%B1%E8%AD%98-%E5%93%A1%E5%B7%A5%E4%B8%8D%E6%BB%BF%E5%88%B0%E6%A5%B5%E9%99%90-134400390.html
 - 事件7：Federal Reserve Board announces termination of enforcement action with SNB Bancshares and Bank of Eufaula
   - 來源：Federal Reserve；發布時間：Fri, 18 Sep 2026 15:00:00 GMT；台北時間：2026-09-18 23:00
   - 摘要：Federal Reserve Board announces termination of enforcement action with SNB Bancshares and Bank of Eufaula
@@ -384,7 +384,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-21 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609W4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-22 08:08:00 | 本機 |
+| 資料更新時間 | 2026-09-22 10:18:24 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -539,9 +539,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-21；資料時間：2026-09-22 08:08:00；時區：`Asia/Taipei`
+- 資料日期：2026-09-21；資料時間：2026-09-22 10:18:24；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (2)：margin.ratio, futures.top10_change
+- 未取得欄位 (1)：futures.top10_change
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 
 ## 五、資料來源、時間與完整性
@@ -554,11 +554,11 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
+- margin_ratio：`wantgoo 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
