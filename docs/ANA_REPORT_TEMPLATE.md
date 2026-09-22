@@ -86,8 +86,8 @@
 ## 附錄B：機器可讀數據（kpi 14 筆固定順序／levels／oidist／scenarios／verdict，格式見既有報告範例）
 
 - kpi：14 筆，直式每行「名稱|數值|單位」，順序固定為
-  加權收盤／台指期基差／外資現貨／外資期貨淨OI／費半／Call Wall／Gamma Wall／
-  台指期收盤／台指夜盤／投信現貨／外資夜盤淨／台積電ADR／Put Wall／VIX。
+  加權收盤／台指夜盤成交量占比／外資現貨／外資期貨淨OI／費半／Call Wall／Gamma Wall／
+  台指期收盤／台指夜盤漲跌／投信現貨／外資夜盤淨／台積電ADR／Put Wall／VIX。
 - verdict：方向／信心／理由1..3（註明出處）／注意（最大風險）。
 - levels：壓力／中軸／支撐／壓力二，各含來源；另附白話說明行。
 - oidist／scenarios：同 V2 格式；scenarios 含停損第 4 欄。

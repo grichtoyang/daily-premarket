@@ -58,8 +58,8 @@ def data_anchors(data: str) -> list[tuple[str, str]]:
 
 CHAPTERS = ["一、", "二、", "三、", "四、", "五、", "六、",
             "七、", "八、", "九、", "十、", "十一、", "十二、"]
-KPI_ORDER = ["加權收盤", "台指期基差", "外資現貨", "外資期貨淨OI", "費半",
-             "Call Wall", "Gamma Wall", "台指期收盤", "台指夜盤", "投信現貨",
+KPI_ORDER = ["加權收盤", "台指夜盤成交量占比", "外資現貨", "外資期貨淨OI", "費半",
+             "Call Wall", "Gamma Wall", "台指期收盤", "台指夜盤漲跌", "投信現貨",
              "外資夜盤淨", "台積電ADR", "Put Wall", "VIX"]
 
 
