@@ -336,12 +336,7 @@ with tab_mkt:
             st.table(pd.DataFrame({"事件": evts}))
         with st.expander("新聞明細"):
             st.markdown(news[:4000] if news else "無")
-        head("產業資金流向 (股市智投)")
-        flow_text = section_text(dmd, "產業資金流向")
-        if flow_text:
-            st.markdown(flow_text[:2000])
-        else:
-            st.info("產業資金流向資料未取得")
+
 
 # ================= 期貨 ← DATA 第三章 =================
 with tab_fut:

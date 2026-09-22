@@ -23,13 +23,12 @@
 5. 借券資料 — 餘額/賣出餘額 (股) + 賣出增減 (unavailable)
 6. 市場成交結構 — 上市/上櫃/合計 (億元；上櫃百萬元→億元)
 
-## 二、重要市場 (9 節，API 優先、失敗 unavailable 不推估，保留 data_source/retrieved_at/timezone)
+## 二、重要市場 (8 節，API 優先、失敗 unavailable 不推估，保留 data_source/retrieved_at/timezone)
 
 1. 美股指數 `^GSPC ^IXIC ^NDX ^DJI ^SOX ^VIX` 2. 亞洲 `^N225 ^KS11 ^HSI 000001.SS 399001.SZ`
 3. 美股期貨 `ES=F NQ=F YM=F RTY=F` 4. 美債 `2 Yr 10 Yr 30 Yr` (FiscalData 主、Yahoo 備)
 5. 匯率 `TWD=X DX-Y.NYB JPY=X KRW=X` 6. ADR `TSM UMC ASX`
-7. 商品 `CL=F GC=F BTC-USD` (期貨勿標現貨；BTC 用最新價) 8. 重大事件/新聞 (Phase 2，本階段 unavailable)
-9. 產業資金流向 (StockIntelli API，流入/流出前5；備援 unavailable)
+7. 商品 `CL=F GC=F BTC-USD` (期貨勿標現貨；BTC 用最新價) 8. 重大事件/新聞
 
 ## 三、期貨 (7 項骨架，Phase 2 接 TAIFEX Proxy；本階段 unavailable)
 

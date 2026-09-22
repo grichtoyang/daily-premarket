@@ -3103,9 +3103,20 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     }
   } catch (_) { /* keep partial bundle */ }
 
+  /* chain 常因上游瞬斷失敗：最多 3 次、間隔 8 秒重試 (cron 無使用者等待，延遲可接受) */
   try {
-    const c = await fetchTXOChainForDate(taifexSlash);
+    let c = { found: false };
+    for (let attempt = 1; attempt <= 3 && !c.found; attempt++) {
+      try {
+        c = await fetchTXOChainForDate(taifexSlash);
+      } catch (_) { c = { found: false }; }
+      if (!c.found) {
+        console.log(`snapshot chain attempt ${attempt} failed`);
+        if (attempt < 3) await new Promise(r => setTimeout(r, 8000));
+      }
+    }
     if (c.found) bundle.data.chain = c.rows;
+    else console.log("snapshot chain all attempts failed — bundle without chain");
   } catch (_) { /* keep partial bundle */ }
 
   const dayPaths = [
