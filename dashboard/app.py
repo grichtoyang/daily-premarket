@@ -427,6 +427,11 @@ with tab_opt:
             for t in md_tables(dmd, sec):
                 head(sec)
                 st.table(t)
+        opt_note = section_text(dmd, "選擇權法人日盤、夜盤交易")
+        opt_note = "\n".join(l.strip() for l in opt_note.splitlines()
+                             if l.strip() and not l.strip().startswith("|"))
+        if opt_note:
+            st.caption(opt_note)
 
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
