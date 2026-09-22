@@ -419,6 +419,9 @@ with tab_opt:
             st.caption("▲壓力（紅底）／▼支撐（綠底）／★中軸（灰底）；"
                        "中軸＝台指期收盤價附近的多空分界參考（取最接近收盤的履約價列，≈中軸）；"
                        "左 Put 右 Call，仿 T 字報價")
+        opt_note = section_text(dmd, "選擇權法人日盤、夜盤交易")
+        opt_note = "\n".join(l.strip() for l in opt_note.splitlines()
+                             if l.strip() and not l.strip().startswith("|"))
         for sec in ("選擇權交易日期", "Call 總成交量", "Put 總成交量", "Call／Put 比例",
                     "外資 Call", "自營商 Call", "選擇權法人日盤", "選擇權前十大",
                     "Call OI 集中", "Put OI 集中",
@@ -427,11 +430,8 @@ with tab_opt:
             for t in md_tables(dmd, sec):
                 head(sec)
                 st.table(t)
-        opt_note = section_text(dmd, "選擇權法人日盤、夜盤交易")
-        opt_note = "\n".join(l.strip() for l in opt_note.splitlines()
-                             if l.strip() and not l.strip().startswith("|"))
-        if opt_note:
-            st.caption(opt_note)
+                if sec == "選擇權法人日盤" and opt_note:
+                    st.caption(opt_note)
 
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
