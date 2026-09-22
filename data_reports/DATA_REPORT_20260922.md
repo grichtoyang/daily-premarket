@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-22`
 - T0 交易日期：`2026-09-22`
-- 資料產出時間：`2026-09-22 19:14:11`
+- 資料產出時間：`2026-09-22 20:09:31`
 - 時區：`Asia/Taipei`
 
 ---
@@ -56,10 +56,10 @@
 
 | 法人別 | 買賣超金額 | 單位 | 資料來源 |
 |---|---|---|---|
-| 外資 | +447.3 | 億元 | twse-proxy /institutional |
-| 投信 | +2.4 | 億元 | twse-proxy /institutional |
+| 外資 | +453.2 | 億元 | twse-proxy /institutional |
+| 投信 | -3.7 | 億元 | twse-proxy /institutional |
 | 自營商 | +158.5 | 億元 | twse-proxy /institutional |
-| 三大法人合計 | +608.2 | 億元 | twse-proxy /institutional |
+| 三大法人合計 | +608.1 | 億元 | twse-proxy /institutional |
 
 ### 4. 融資融券
 
@@ -71,7 +71,7 @@
 | 融資增減 | unavailable | 億元 | HiStock |
 | 融券餘額 | 231,582 | 張 | HiStock |
 | 融券增減 | 10,189 | 張 | HiStock |
-| 融資維持率 | unavailable | % | istock.tw |
+| 融資維持率 | 191.44 | % | wantgoo 大盤融資維持率 (民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -106,7 +106,7 @@
 | Nasdaq 100 | ^NDX | 30,482.35 | 838.18 | +2.83 | Yahoo Finance Chart API |
 | Dow Jones | ^DJI | 52,048.83 | 366.19 | +0.71 | Yahoo Finance Chart API |
 | 費城半導體 SOX | ^SOX | 12,433.17 | 511.48 | +4.29 | Yahoo Finance Chart API |
-| VIX | ^VIX | 14.81 | -0.06 | -0.40 | Yahoo Finance Chart API |
+| VIX | ^VIX | 14.70 | -0.17 | -1.14 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,837.25 | 3.75 | +0.05 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 30,804.75 | 20.00 | +0.06 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,612.00 | 137.00 | +0.26 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,911.80 | 14.40 | +0.50 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,835.75 | 2.25 | +0.03 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 30,776.75 | -8.00 | -0.03 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,642.00 | 167.00 | +0.32 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,912.60 | 15.20 | +0.52 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.62 | -0.19 | -0.60 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 100.37 | -0.06 | -0.06 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.18 | 0.13 | +0.08 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,356.74 | -28.12 | -2.03 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.64 | -0.17 | -0.53 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 100.41 | -0.02 | -0.02 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.16 | 0.11 | +0.07 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,355.78 | -29.08 | -2.10 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 89.96 | -5.82 | -6.08 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,355.60 | -28.30 | -0.65 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 85,945.73 | -657.19 | -0.76 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 89.93 | -5.85 | -6.11 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,360.40 | -23.50 | -0.54 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 85,945.01 | -657.91 | -0.76 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -196,10 +196,10 @@
   - 來源：Yahoo 台股；發布時間：2026-09-22T09:08:26Z；台北時間：2026-09-22 17:08
   - 摘要：央行今（22）日公布8月五大銀行新承做房貸金額為571億元，月減119億元，終結連三升，央行官員分析，主要有三個原因，其中是傳統鬼月觀望氣氛與颱風假干擾銀行作業之外，還有一部份的人覺得新青安 3.0管制趨嚴已提前「上車」，這也讓新青安占比衰
   - 原文連結：https://tw.stock.yahoo.com/news/%E6%96%B0%E9%9D%92%E5%AE%89%E6%95%88%E6%87%89%E9%80%80%E7%87%92%EF%BC%9F8%E6%9C%88%E4%BA%94%E5%A4%A7%E9%8A%80%E8%A1%8C%E7%94%B3%E8%B2%B8%E5%8D%A0%E6%AF%94%E5%89%B5%E8%BF%9110%E5%80%8B%E6%9C%88%E6%96%B0%E4%BD%8E-090826227.html
-- 事件6：三商家購分割美廉社等零售事業 轉型並更名為眾聯投資控股
-  - 來源：Yahoo 台股；發布時間：2026-09-22T10:55:06Z；台北時間：2026-09-22 18:55
-  - 摘要：三商家購（2945）董事會今天決議將以分割方式，將原來經營的美廉社、心樸市集、美廉便利架、「Go美廉」線上平台等零售通路品牌的相關資產負債及營業，分割移轉予持股百分之百之子公司富達零售公司，三商家購則將轉型為投資控股公司，並更名為眾聯投資控
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%89%E5%95%86%E5%AE%B6%E8%B3%BC%E5%88%86%E5%89%B2%E7%BE%8E%E5%BB%89%E7%A4%BE%E7%AD%89%E9%9B%B6%E5%94%AE%E4%BA%8B%E6%A5%AD-%E8%BD%89%E5%9E%8B%E4%B8%A6%E6%9B%B4%E5%90%8D%E7%82%BA%E7%9C%BE%E8%81%AF%E6%8A%95%E8%B3%87%E6%8E%A7%E8%82%A1-105506862.html
+- 事件6：中華汽車Outlander上市助攻  第4季營運拚今年單季新高
+  - 來源：Yahoo 台股；發布時間：2026-09-22T11:53:36Z；台北時間：2026-09-22 19:53
+  - 摘要：中華汽車（2204）日本進口的MITSUBISHI旗艦休旅車OUTLANDER今天正式上市，中華汽車總經理曾鑫城預估，今年底前可賣出至少600輛，加上J SPACE Cossi熱銷助攻，預估第4季營運可望攀至今年單季新高，全年營收可望超越去
+  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%AD%E8%8F%AF%E6%B1%BD%E8%BB%8Aoutlander%E4%B8%8A%E5%B8%82%E5%8A%A9%E6%94%BB-%E7%AC%AC4%E5%AD%A3%E7%87%9F%E9%81%8B%E6%8B%9A%E4%BB%8A%E5%B9%B4%E5%96%AE%E5%AD%A3%E6%96%B0%E9%AB%98-115336591.html
 - 事件7：Federal Reserve Board announces termination of enforcement action with SNB Bancshares and Bank of Eufaula
   - 來源：Federal Reserve；發布時間：Fri, 18 Sep 2026 15:00:00 GMT；台北時間：2026-09-18 23:00
   - 摘要：Federal Reserve Board announces termination of enforcement action with SNB Bancshares and Bank of Eufaula
@@ -384,7 +384,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-22 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609W4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-22 19:14:11 | 本機 |
+| 資料更新時間 | 2026-09-22 20:09:31 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -539,9 +539,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-22；資料時間：2026-09-22 19:14:11；時區：`Asia/Taipei`
+- 資料日期：2026-09-22；資料時間：2026-09-22 20:09:31；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (6)：margin.fin_yi, margin.fin_chg_yi, margin.ratio, sbl.sale_bal, sbl.sale_chg, options.chain_oi_change
+- 未取得欄位 (5)：margin.fin_yi, margin.fin_chg_yi, sbl.sale_bal, sbl.sale_chg, options.chain_oi_change
 - 註記：Gamma 資料日期 2026-09-21 (T0 2026-09-22 尚無，上游 FMTQIK 落後，採最新可得)
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 - 註記：Gamma Wall/Flip 資料日期 2026-09-21 (來源 options-market-structure-compact (proxy))
@@ -556,12 +556,12 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin_short：`TWSE MI_MARGN + TPEX margin_balance (張)`
+- margin_ratio：`wantgoo 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
 - 註記：HiStock 未取得，融資餘額/增減標 unavailable (官方逐股加總僅有張數)
 - 註記：融券沿用官方逐股加總 (張)
-- 註記：融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 本報告僅整理資料，不提供交易判斷。
