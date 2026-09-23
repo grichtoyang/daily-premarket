@@ -114,7 +114,10 @@ if latest is None:
     st.error("尚無報告：找不到 reports/latest.json。")
     st.stop()
 history = list_history()
-sel = st.sidebar.selectbox("歷史報告", history if history else ["(無)"])
+hist_opts = history if history else ["(無)"]
+_latest_name = (latest.get("report_path", "") or "").split("/")[-1]
+_default_idx = hist_opts.index(_latest_name) if _latest_name in hist_opts else 0
+sel = st.sidebar.selectbox("歷史報告", hist_opts, index=_default_idx)
 ana_path = f"reports/{sel}" if history else latest.get("report_path", "")
 md = load_md(ana_path)
 if md is None:
