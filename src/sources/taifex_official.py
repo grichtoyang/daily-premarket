@@ -117,29 +117,37 @@ def top10_opt(month: str, callput: str, t0: str = "") -> dict:
             "net": (b - s) if b is not None and s is not None else None,
             "month": r.get("SettlementMonth"), "via": "official", "callput": callput}
 
-def putcall_history() -> list:
-    """依日期排序的 P/C 歷史 [(date, vol_ratio, oi_ratio)]。Proxy 優先，官方備援。"""
+def putcall_history() -> dict:
+    """依日期排序的 P/C 歷史。回傳 {rows: [{date, vol_ratio, oi_ratio}], via}。
+    Proxy 優先 (2 次重試)，官方備援。"""
     import os
+    import time
     base = os.getenv("TAIFEX_PROXY_BASE_URL", PROXY).rstrip("/")
-    try:
-        import requests
-        from src.utils import HEADERS
-        r = requests.get(f"{base}/put-call-ratio-history",
-                         headers={**HEADERS, "accept": "application/json"}, timeout=30)
-        if r.status_code == 200:
-            j = r.json()
-            if isinstance(j, dict) and j.get("ok") is True and isinstance(j.get("data"), list):
-                return [{"date": x.get("date"), "vol_ratio": x.get("volume_ratio"),
-                         "oi_ratio": x.get("oi_ratio")} for x in j["data"] if x.get("date")]
-    except Exception as e:  # noqa: BLE001
-        print(f"[INFO] proxy put-call-ratio 不可用，改官方備援：{e}")
+    for attempt in range(2):
+        try:
+            import requests
+            from src.utils import HEADERS
+            r = requests.get(f"{base}/put-call-ratio-history",
+                             headers={**HEADERS, "accept": "application/json"}, timeout=30)
+            if r.status_code == 200:
+                j = r.json()
+                if isinstance(j, dict) and j.get("ok") is True and isinstance(j.get("data"), list):
+                    rows = [{"date": x.get("date"), "vol_ratio": x.get("volume_ratio"),
+                             "oi_ratio": x.get("oi_ratio")} for x in j["data"] if x.get("date")]
+                    if rows:
+                        return {"rows": rows, "via": "proxy"}
+            print(f"[INFO] proxy put-call-ratio 未命中 (try {attempt + 1})")
+            time.sleep(4)
+        except Exception as e:  # noqa: BLE001
+            print(f"[INFO] proxy put-call-ratio 不可用 (try {attempt + 1})：{e}")
+            time.sleep(4)
     rows = sorted(_get("/PutCallRatio"), key=lambda r: r.get("Date", ""))
     out = []
     for r in rows:
         d = _iso(r.get("Date", ""))
         out.append({"date": d, "vol_ratio": _num(r.get("PutCallVolumeRatio%")),
                     "oi_ratio": _num(r.get("PutCallOIRatio%"))})
-    return out
+    return {"rows": out, "via": "official"}
 
 def _iso(d8: str) -> str:
     d8 = str(d8).strip()

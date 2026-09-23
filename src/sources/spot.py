@@ -144,9 +144,20 @@ def build(t0: str) -> dict:
     if mr["ok"]:
         margin["ratio"] = mr["ratio"]
         src_name = mr.get("source", "unknown")
-        sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (民間估算；官方無每日序列)"
+        if mr.get("date") and mr["date"] != t0:
+            sources["margin_ratio"] = (f"{src_name} 大盤融資維持率 "
+                                       f"(資料日期 {mr['date']}；民間估算；官方無每日序列)")
+            notes.append(f"融資維持率資料日期 {mr['date']} (T0 {t0} 尚無，採最新可得)")
+        else:
+            sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (民間估算；官方無每日序列)"
     else:
         notes.append("融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)")
+        _pr, _pdate = _prev_data_ratio(t0)
+        if _pr is not None:
+            margin["ratio"] = _pr
+            sources["margin_ratio"] = (f"前值遞補 (DATA {_pdate}；當日三源皆失敗；"
+                                       "民間估算；官方無每日序列)")
+            notes.append(f"融資維持率採前值遞補 (DATA {_pdate})，非 T0 {t0}")
     notes.append("上市 MI_MARGN / TWT96U 無日期欄，採用最新可得")
     for k in ("fin_yi", "fin_chg_yi", "s_bal", "s_chg", "ratio"):
         if margin[k] is None:
@@ -191,3 +202,22 @@ def build(t0: str) -> dict:
                      "dealer": inst.get("dealer"), "total": inst.get("total")},
             "margin": margin, "sbl": sbl, "turnover": turnover,
             "unavailable": unavailable, "notes": notes, "sources": sources}
+
+
+def _prev_data_ratio(t0: str) -> tuple[float | None, str | None]:
+    """三源全滅時，取前一份 DATA_REPORT 的融資維持率 (回傳 ratio, T0)。"""
+    from pathlib import Path as _P
+    try:
+        files = sorted(_P(__file__).resolve().parents[2].glob("data_reports/DATA_REPORT_*.md"))
+        prev = [p for p in files if p.stem.replace("DATA_REPORT_", "") < t0.replace("-", "")]
+        if not prev:
+            return None, None
+        import re as _re
+        txt = prev[-1].read_text(encoding="utf-8")
+        m = _re.search(r"\|\s*融資維持率\s*\|\s*([0-9,]+\.\d+)", txt)
+        dm = _re.search(r"T0 交易日期：`(\d{4}-\d{2}-\d{2})`", txt)
+        if not m:
+            return None, None
+        return float(m.group(1).replace(",", "")), (dm.group(1) if dm else prev[-1].stem)
+    except Exception:
+        return None, None
