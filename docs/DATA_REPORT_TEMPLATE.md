@@ -38,7 +38,9 @@
 
 日期到期 / Call 總量 / Put 總量 / C/P 比例 / 外資部位 / 自營部位 / Call 集中 / Put 集中 /
 Call 增減集中 / Put 增減集中 / Call Wall / Put Wall / Gamma Wall / Gamma Flip / Max Pain /
-選擇權法人日夜盤交易 (options-institutional 日＋夜盤多空淨) / 選擇權前十大 (Call/Put OI＋快照變化)
+選擇權法人日夜盤交易 (options-institutional 日＋夜盤多空淨) / 選擇權前十大 (Call/Put OI＋快照變化) /
+外資自營完整版 (Call/Put 日夜買賣淨＋日淨總量＋日夜增減) / 法人多空力道表 (金額億；日夜多空力道＋淨) /
+大戶流向 (期貨/Call/Put 淨變化全日) / 六、期現選矩陣加期選組合判讀欄
 
 ## 六、期現選方向對照 (機械判定：趨勢偏多空／避險對沖／日內反轉＋分歧，不推估)
 

@@ -20,7 +20,8 @@ DATE_EPS = {"futures-institutional-oi", "futures-institutional-oi-history", "fut
             "options-delta", "options-key-levels", "options-market-structure-compact"}
 FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional",
             "futures-institutional-after-hours", "options-institutional",
-            "options-institutional-after-hours", "options-after-hours"]
+            "options-institutional-after-hours", "options-after-hours",
+            "options-day-call-put"]
 INST_ZH = {"foreign": "外資", "investment_trust": "投信", "dealer": "自營商"}
 
 def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
@@ -336,6 +337,30 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if opt_pos["foreign"]["long"] is None:
         notes.append("選擇權法人部位未取得")
 
+    # ---------- 選擇權買賣權拆分 (日盤新端點＋夜盤；口數金額供完整版/力道表) ----------
+    _dcp = (P.get("options-day-call-put") or {}).get("data") or {}
+    _dcp_c = _by_inst(_dcp.get("call") or [])
+    _dcp_p = _by_inst(_dcp.get("put") or [])
+    _ncp = (P.get("options-after-hours") or {}).get("data") or {}
+    _ncp_c = _by_inst(_ncp.get("call") or [])
+    _ncp_p = _by_inst(_ncp.get("put") or [])
+    opt_split = {}
+    for sess, src in (("day", {"call": _dcp_c, "put": _dcp_p}),
+                      ("night", {"call": _ncp_c, "put": _ncp_p})):
+        for k in ("foreign", "investment_trust", "dealer"):
+            c = (src["call"].get(k) or {})
+            p = (src["put"].get(k) or {})
+            opt_split[(sess, k)] = {
+                "c_long": c.get("long_volume"), "c_short": c.get("short_volume"),
+                "c_net": c.get("net_volume"),
+                "c_lamt": c.get("long_amount"), "c_samt": c.get("short_amount"),
+                "p_long": p.get("long_volume"), "p_short": p.get("short_volume"),
+                "p_net": p.get("net_volume"),
+                "p_lamt": p.get("long_amount"), "p_samt": p.get("short_amount")}
+    if opt_split[("day", "foreign")]["c_net"] is None:
+        unav.append("opt_split")
+        notes.append("選擇權日盤買賣權拆分未取得")
+
     # ---------- 選擇權法人日夜盤交易 (同 期貨 5；夜盤為晨收已結算節) ----------
     opt_night_t = _by_inst(_rows(P["options-institutional-after-hours"]))
     opt_trade = {}
@@ -421,7 +446,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     return {"day": day, "night": night, "fut_oi": fut_oi, "fut_trade": fut_trade,
             "basis": basis, "basis_pct": basis_pct, "oi_chg": oi_chg,
             "opt_tot": opt_tot, "opt_conc": opt_conc, "opt_dist": opt_dist, "opt_pos": opt_pos,
-            "opt_trade": opt_trade, "walls": walls,
+            "opt_trade": opt_trade, "opt_split": opt_split, "walls": walls,
             "gamma": gamma, "trade_date": t0, "opt_expiry": prim_month, "snapchg": snapchg,
             "unavailable": unav, "notes": notes}
 

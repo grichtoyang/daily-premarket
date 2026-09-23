@@ -473,23 +473,28 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A("")
     A("### 5．外資 Call／Put 部位")
     A("")
-    _ps = (_sg.get("pos") or {})
-    _pf, _pd = _ps.get("foreign") or {}, _ps.get("dealer") or {}
-    A(_tbl([("外資 Call 部位 (夜盤淨口數)", _f2s(_op['foreign']['ah_c_net']), SRC_FX),
-            ("外資 Put 部位 (夜盤淨口數)", _f2s(_op['foreign']['ah_p_net']), SRC_FX),
-            ("外資 Call／Put 淨部位 (日盤淨口數)", _f2s(_op['foreign']['net']), SRC_FX),
-            ("外資部位增減" + (f" (日盤淨 {_sdate}→{t0})" if _pf.get("opt_chg") is not None else ""),
-             _f2s(_pf.get("opt_chg")), SRC_SNAP if _pf.get("opt_chg") is not None else "端點未提供")],
-           ("項目", "口數", "資料來源")))
+    _spl = fx.get("opt_split", {})
+    def _sp(sess, k):
+        return _spl.get((sess, k)) or {}
+    def _full_rows(k, zh):
+        dd, nn = _sp("day", k), _sp("night", k)
+        _rows = [("Call日買", _fi(dd.get("c_long"))), ("Call日賣", _fi(dd.get("c_short"))),
+                 ("Call日淨", _f2s(dd.get("c_net"))),
+                 ("Put日買", _fi(dd.get("p_long"))), ("Put日賣", _fi(dd.get("p_short"))),
+                 ("Put日淨", _f2s(dd.get("p_net"))),
+                 ("Call夜買", _fi(nn.get("c_long"))), ("Call夜賣", _fi(nn.get("c_short"))),
+                 ("Call夜淨", _f2s(nn.get("c_net"))),
+                 ("Put夜買", _fi(nn.get("p_long"))), ("Put夜賣", _fi(nn.get("p_short"))),
+                 ("Put夜淨", _f2s(nn.get("p_net"))),
+                 ("日盤淨總量", _f2s(_op[k]['net'])),
+                 ("Call日夜淨增減 (日－夜)", _f2s(_diff2(dd.get("c_net"), nn.get("c_net")))),
+                 ("Put日夜淨增減 (日－夜)", _f2s(_diff2(dd.get("p_net"), nn.get("p_net"))))]
+        return [(f"{zh} {n}", v, SRC_FX) for n, v in _rows]
+    A(_tbl(_full_rows("foreign", "外資"), ("項目", "口數", "資料來源")))
     A("")
     A("### 6．自營商 Call／Put 部位")
     A("")
-    A(_tbl([("自營商 Call 部位 (夜盤淨口數)", _f2s(_op['dealer']['ah_c_net']), SRC_FX),
-            ("自營商 Put 部位 (夜盤淨口數)", _f2s(_op['dealer']['ah_p_net']), SRC_FX),
-            ("自營商 Call／Put 淨部位 (日盤淨口數)", _f2s(_op['dealer']['net']), SRC_FX),
-            ("自營商部位增減" + (f" (日盤淨 {_sdate}→{t0})" if _pd.get("opt_chg") is not None else ""),
-             _f2s(_pd.get("opt_chg")), SRC_SNAP if _pd.get("opt_chg") is not None else "端點未提供")],
-           ("項目", "口數", "資料來源")))
+    A(_tbl(_full_rows("dealer", "自營商"), ("項目", "口數", "資料來源")))
     A("")
     A("### 7．主要 Call OI 集中區")
     A("")
@@ -615,6 +620,40 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A("- 方法論：多方＝買Call＋賣Put（看多），空方＝賣Call＋買Put（看空），淨額＝看多－看空"
       "（已用 Call／Put 拆分頁交叉驗算一致）")
     A("- 公式：多方(買)－空方(賣)＝（買call＋賣put）－（賣call＋買put）＝看多－看空")
+    A("- 速記：多＝BC＋SP、空＝SC＋BP")
+    A("")
+    A("#### 法人多空力道表（金額・億元；上游千元／1e5）")
+    A("")
+    def _yisum(*vs):
+        return None if any(v is None for v in vs) else sum(vs) / 1e5
+    def _prow(k, zh):
+        dd, nn = _sp("day", k), _sp("night", k)
+        _db = _yisum(dd.get("c_lamt"), dd.get("p_samt"))
+        _ds = _yisum(dd.get("c_samt"), dd.get("p_lamt"))
+        _nb = _yisum(nn.get("c_lamt"), nn.get("p_samt"))
+        _ns = _yisum(nn.get("c_samt"), nn.get("p_lamt"))
+        return (zh, _f2(_db), _f2(_ds), _f2s(_diff2(_db, _ds)),
+                _f2(_nb), _f2(_ns), _f2s(_diff2(_nb, _ns)),
+                _f2s(_diff2(_diff2(_db, _ds), _diff2(_nb, _ns))), _ot_src)
+    _p_rows = [_prow("foreign", "外資"), _prow("investment_trust", "投信"),
+               _prow("dealer", "自營商")]
+    def _ptot(s, kind):
+        vals = []
+        for k in ("foreign", "investment_trust", "dealer"):
+            r = _sp(s, k)
+            if kind == "b":
+                vals.append(_yisum(r.get("c_lamt"), r.get("p_samt")))
+            else:
+                vals.append(_yisum(r.get("c_samt"), r.get("p_lamt")))
+        return None if any(v is None for v in vals) else sum(vals)
+    _p_rows.append(("三大法人合計", _f2(_ptot("day", "b")), _f2(_ptot("day", "s")),
+                    _f2s(_diff2(_ptot("day", "b"), _ptot("day", "s"))),
+                    _f2(_ptot("night", "b")), _f2(_ptot("night", "s")),
+                    _f2s(_diff2(_ptot("night", "b"), _ptot("night", "s"))),
+                    _f2s(_diff2(_diff2(_ptot("day", "b"), _ptot("day", "s")),
+                                _diff2(_ptot("night", "b"), _ptot("night", "s")))), _ot_src))
+    A(_tbl(_p_rows, ("法人", "日多方力道", "日空方力道", "日淨多空力道",
+                     "夜多方力道", "夜空方力道", "夜淨多空力道", "日淨－夜淨", "資料來源")))
     A("")
     A("### 18．選擇權前十大")
     A("")
@@ -648,6 +687,18 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A(f"- 資料日期：買權 {_t10c['date'] or MISSING}／賣權 {_t10p['date'] or MISSING} "
       f"(TypeOfTraders=0 全部交易人；契約月份 {_t10c['month'] or MISSING})")
     _opt_t10chg_missing = (not _t10c_chg or not _t10p_chg)
+    A("")
+    A("#### 大戶流向（全日；前十大無日夜拆分）")
+    A("")
+    def _t10r(chg, zh):
+        if chg:
+            return (zh, _f2s(chg["chg"]),
+                    f"{chg['prev_date']}→{chg['cur_date']}", SRC_SNAP)
+        return (zh, MISSING, "—", "端點未提供")
+    A(_tbl([_t10r(_t10chg, "期貨前十大"),
+            _t10r(_t10c_chg, "買權前十大"),
+            _t10r(_t10p_chg, "賣權前十大")],
+           ("項目", "淨變化", "區間", "資料來源")))
     A("")
     A("### 16．資料來源、時間、時區與狀態")
     A("")
@@ -706,6 +757,21 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
             if d[a] and d[b] and d[a] * d[b] < 0:
                 return "日內反轉"
         return "分歧"
+    def _mx_combo(d):
+        sp, fo, cd, pd = d["spot"], d["foi"], d["calld"], d["putd"]
+        if None in (sp, fo, cd, pd):
+            return "資料不足"
+        if sp > 0 and fo < 0:
+            return "強避險"
+        if fo < 0 and pd > 0:
+            return "對沖避險"
+        if fo > 0 and cd > 0:
+            return "趨勢偏多"
+        if fo < 0 and cd < 0 and pd < 0:
+            return "趨勢偏空"
+        if fo > 0 and (cd < 0 or pd < 0):
+            return "分歧"
+        return "分歧"
     _mx_rows = []
     for k_spot, k_fx, zh in (("foreign", "foreign", "外資"),
                              ("trust", "investment_trust", "投信"),
@@ -715,13 +781,15 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
                "fday": (_ftr.get(("day", k_fx)) or {}).get("net"),
                "fnight": (_ftr.get(("night", k_fx)) or {}).get("net"),
                "oday": (_otr.get(("day", k_fx)) or {}).get("net"),
-               "onight": (_otr.get(("night", k_fx)) or {}).get("net")}
+               "onight": (_otr.get(("night", k_fx)) or {}).get("net"),
+               "calld": (_sp("day", k_fx) or {}).get("c_net"),
+               "putd": (_sp("day", k_fx) or {}).get("p_net")}
         _mx_rows.append(
             (zh, _f1s(_dd["spot"]), _f2s(_dd["foi"]), _f2s(_dd["fday"]),
              _f2s(_dd["fnight"]), _f2s(_dd["oday"]), _f2s(_dd["onight"]),
-             _mx_judge(_dd), "twse-proxy／TAIFEX Proxy"))
-    A(_tbl(_mx_rows, ("法人", "現貨買賣超(億)", "期貨OI淨(口)", "期貨日淨",
-                      "期貨夜淨", "選擇權日淨", "選擇權夜淨", "判定", "資料來源")))
+             _mx_judge(_dd), _mx_combo(_dd), "twse-proxy／TAIFEX Proxy"))
+    A(_tbl(_mx_rows, ("法人", "現貨買賣超(億)", "期貨OI淨(口)", "期貨日淨", "期貨夜淨",
+                      "選擇權日淨", "選擇權夜淨", "判定", "期選組合", "資料來源")))
     return "\n".join(L) + "\n"
 
 def main() -> None:
