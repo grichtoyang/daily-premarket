@@ -113,6 +113,22 @@ def check(data: str, report: str) -> tuple[list[str], list[str]]:
     np_ = sum(1 for r in oid if r.startswith("put|"))
     if nc < 5 or np_ < 5:
         errs.append(f"oidist 不足 (call {nc}/put {np_}，需各>=5)")
+    # oidist 每筆履約價+OI 必須能在 DATA 同一行找到（防抄錯到期月份；
+    # 2026-09-23 日盤曾誤貼整段 Put 分布而閘門放行，特加此條）
+    dlines = [_norm_num(l) for l in data.splitlines()]
+    bad_oid = []
+    for r in oid:
+        p = [c.strip() for c in r.split("|")]
+        if len(p) < 3 or p[0] not in ("call", "put"):
+            continue
+        sk, oi = _norm_num(p[1]), _norm_num(p[2])
+        if not sk.replace(".", "").isdigit() or not oi.replace(".", "").isdigit():
+            continue
+        if not any(sk in dl and oi in dl for dl in dlines):
+            bad_oid.append(f"{p[0]}|{p[1]}|{p[2]}")
+    if bad_oid:
+        errs.append("oidist 數字在 DATA 找不到（疑似抄錯列/錯月份）: " +
+                    "; ".join(bad_oid[:10]))
     scen = _block(report, "scenarios")
     if len(scen) < 2:
         errs.append(f"scenarios 過少 ({len(scen)} 列，需>=2)")
