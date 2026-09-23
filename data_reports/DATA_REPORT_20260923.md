@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-09-23`
 - T0 交易日期：`2026-09-23`
-- 資料產出時間：`2026-09-23 19:14:49`
+- 資料產出時間：`2026-09-23 22:06:21`
 - 時區：`Asia/Taipei`
 
 ---
@@ -57,9 +57,9 @@
 | 法人別 | 買賣超金額 | 單位 | 資料來源 |
 |---|---|---|---|
 | 外資 | +373.1 | 億元 | twse-proxy /institutional |
-| 投信 | -42.2 | 億元 | twse-proxy /institutional |
+| 投信 | -47.6 | 億元 | twse-proxy /institutional |
 | 自營商 | +58.2 | 億元 | twse-proxy /institutional |
-| 三大法人合計 | +389.2 | 億元 | twse-proxy /institutional |
+| 三大法人合計 | +383.8 | 億元 | twse-proxy /institutional |
 
 ### 4. 融資融券
 
@@ -67,11 +67,11 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 融資餘額 | unavailable | 億元 | HiStock |
-| 融資增減 | unavailable | 億元 | HiStock |
-| 融券餘額 | 218,839 | 張 | HiStock |
-| 融券增減 | 8,058 | 張 | HiStock |
-| 融資維持率 | unavailable | % | istock.tw |
+| 融資餘額 | 8,172.2 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融資增減 | +38.4 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融券餘額 | 246,733 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融券增減 | -7,889 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
+| 融資維持率 | 193.13 | % | wantgoo 大盤融資維持率 (資料日期 2026-09-22；民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -79,9 +79,9 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 2,476,737 | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出餘額 | unavailable | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出增減 | unavailable | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券餘額 | 4,587,321 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出餘額 | 33,674 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出增減 | -2,109 | 張 | TWSE TWT93U + TPEX margin_sbl |
 
 ### 6. 市場成交結構
 
@@ -101,12 +101,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,764.70 | 114.20 | +1.49 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 27,122.09 | 599.55 | +2.26 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 30,482.35 | 838.18 | +2.83 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 52,048.83 | 366.19 | +0.71 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 12,433.17 | 511.48 | +4.29 | Yahoo Finance Chart API |
-| VIX | ^VIX | 14.17 | -0.70 | -4.71 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,733.20 | -31.50 | -0.41 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 27,052.89 | -69.20 | -0.26 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 30,519.09 | 36.74 | +0.12 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 51,729.03 | -319.80 | -0.61 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 12,508.68 | 75.51 | +0.61 | Yahoo Finance Chart API |
+| VIX | ^VIX | 14.31 | -0.56 | -3.77 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,833.50 | 1.75 | +0.02 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 31,005.75 | -22.75 | -0.07 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,256.00 | -23.00 | -0.04 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,902.40 | -11.70 | -0.40 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,800.50 | -31.25 | -0.40 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 30,836.50 | -192.00 | -0.62 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,062.00 | -217.00 | -0.42 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,880.30 | -33.80 | -1.16 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -138,8 +138,8 @@
 | 項目 | API 資料欄位／識別 | 殖利率 | 日變化 | 資料來源 |
 |---|---|---|---|---|
 | 美國 2 年期殖利率 | 2 Yr | 4.71 | -0.05 | U.S. Treasury yield.xml (網頁備援) |
-| 美國 10 年期殖利率 | 10 Yr | 4.96 | -0.04 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.30 | -0.03 | Yahoo Finance (備援) |
+| 美國 10 年期殖利率 | 10 Yr | 5.03 | 0.07 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.35 | 0.05 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.65 | -0.09 | -0.28 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 100.82 | 0.39 | +0.39 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.88 | 0.51 | +0.32 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,363.63 | -10.05 | -0.73 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.75 | 0.01 | +0.05 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.05 | 0.62 | +0.61 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 158.19 | 0.82 | +0.52 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,367.09 | -6.59 | -0.48 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 445.14 | 10.47 | +2.41 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 25.43 | 0.82 | +3.33 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 43.73 | 2.10 | +5.04 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 447.64 | 2.49 | +0.56 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 24.81 | -0.62 | -2.46 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 43.84 | 0.11 | +0.25 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 90.01 | -4.58 | -4.84 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,352.20 | -24.20 | -0.55 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 85,741.47 | -430.81 | -0.50 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 92.05 | -2.54 | -2.69 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,320.00 | -56.40 | -1.29 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 85,662.92 | -509.36 | -0.59 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -196,10 +196,10 @@
   - 來源：Yahoo 台股；發布時間：2026-09-23T09:17:11Z；台北時間：2026-09-23 17:17
   - 摘要：國內社會新鮮人初入社會，薪資普遍偏低，有時就連健保費都無力繳納。健保署今（23）日表示，健保署南區業務組與雲林、嘉義縣、嘉義市及台南市等4縣市社政單位合作，今年（2026）首度推動「陪青年再走一哩路」關懷專案，跨域合作與健保愛心資源，主動發
   - 原文連結：https://tw.stock.yahoo.com/news/%E8%BF%912%E8%90%AC%E6%96%B0%E9%AE%AE%E4%BA%BA-%E7%B9%B3%E4%B8%8D%E8%B5%B7%E5%81%A5%E4%BF%9D%E8%B2%BB-%E5%81%A5%E4%BF%9D%E7%BD%B2%E9%A6%96%E6%8E%A8%E4%BB%A3%E5%84%9F%E5%B0%88%E6%A1%88-%E7%B4%AF%E8%A8%88%E8%A3%9C%E5%8A%A9189%E8%90%AC-091711336.html
-- 事件6：韓股「價值提升」發威 009829迎資金重估潮
-  - 來源：Yahoo 台股；發布時間：2026-09-23T11:01:55Z；台北時間：2026-09-23 19:01
-  - 摘要：【記者柯安聰台北報導】聯準會（Fed）日前決議升息1碼（25個基點），將聯邦基金利率目標區間調升至3.75%至4.00%，引發全球資本市場高度關注。大華韓國KOSPI 50（009829）經理...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E9%9F%93%E8%82%A1-%E5%83%B9%E5%80%BC%E6%8F%90%E5%8D%87-%E7%99%BC%E5%A8%81-009829%E8%BF%8E%E8%B3%87%E9%87%91%E9%87%8D%E4%BC%B0%E6%BD%AE-110155348.html
+- 事件6：散戶恐慌下車、外資低檔狂撿？「載板大廠」遭恐慌錯殺　 內外資齊喊買進、目標價上看1575元
+  - 來源：Yahoo 台股；發布時間：2026-09-23T14:00:00Z；台北時間：2026-09-23 22:00
+  - 摘要：[FTNN新聞網]記者周雅琦／綜合報導載板大廠欣興（3037）日前因「洗產地」風波遭遇恐慌性賣壓，8月底一度摔出千金股行列，不過隨著事件逐步明朗，股價快速落底...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%95%A3%E6%88%B6%E6%81%90%E6%85%8C%E4%B8%8B%E8%BB%8A-%E5%A4%96%E8%B3%87%E4%BD%8E%E6%AA%94%E7%8B%82%E6%92%BF-%E8%BC%89%E6%9D%BF%E5%A4%A7%E5%BB%A0-%E9%81%AD%E6%81%90%E6%85%8C%E9%8C%AF%E6%AE%BA-%E5%85%A7%E5%A4%96%E8%B3%87%E9%BD%8A%E5%96%8A%E8%B2%B7%E9%80%B2-140000718.html
 - 事件7：Federal Reserve Board announces approval of application by BancFirst Corporation
   - 來源：Federal Reserve；發布時間：Tue, 22 Sep 2026 20:30:00 GMT；台北時間：2026-09-23 04:30
   - 摘要：Federal Reserve Board announces approval of application by BancFirst Corporation
@@ -378,7 +378,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-23 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609W4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-23 19:14:49 | 本機 |
+| 資料更新時間 | 2026-09-23 22:06:21 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -601,9 +601,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-23；資料時間：2026-09-23 19:14:49；時區：`Asia/Taipei`
+- 資料日期：2026-09-23；資料時間：2026-09-23 22:06:21；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (5)：margin.fin_yi, margin.fin_chg_yi, margin.ratio, sbl.sale_bal, sbl.sale_chg
+- 未取得欄位 (0)：無
 - 註記：Gamma 資料日期 2026-09-22 (T0 2026-09-23 尚無，上游 FMTQIK 落後，採最新可得)
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 - 註記：Gamma Wall/Flip 資料日期 2026-09-22 (來源 options-market-structure-compact (proxy))
@@ -617,15 +617,15 @@
 - listed_breadth：`twse-proxy`
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
-- margin_short：`TWSE MI_MARGN + TPEX margin_balance (張)`
+- margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
+- margin_ratio：`wantgoo 大盤融資維持率 (資料日期 2026-09-22；民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：HiStock 未取得，融資餘額/增減標 unavailable (官方逐股加總僅有張數)
-- 註記：融券沿用官方逐股加總 (張)
-- 註記：融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)
+- 註記：融資維持率資料日期 2026-09-22 (T0 2026-09-23 尚無，採最新可得)
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
+- 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
 
 ## 六、期現選方向對照
@@ -635,5 +635,5 @@
 | 法人 | 現貨買賣超(億) | 期貨OI淨(口) | 期貨日淨 | 期貨夜淨 | 選擇權日淨 | 選擇權夜淨 | 判定 | 期選組合 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|---|
 | 外資 | +373.1 | -76,084 | -518 | +203 | -4,323 | +452 | 避險／對沖 | 強避險 | twse-proxy／TAIFEX Proxy |
-| 投信 | -42.2 | +73,559 | -418 | +0 | -3,350 | +0 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
+| 投信 | -47.6 | +73,559 | -418 | +0 | -3,350 | +0 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
 | 自營商 | +58.2 | -3,056 | +441 | +67 | +4,930 | +3,488 | 避險／對沖 | 強避險 | twse-proxy／TAIFEX Proxy |
