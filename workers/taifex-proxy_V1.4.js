@@ -4940,6 +4940,174 @@ export default {
       }
     }
 
+    /* =========================
+       TXO 日盤 Call / Put（與夜盤同結構；只取臺指選擇權節，跳過電子與小計列）
+    ========================= */
+
+    if (
+      url.pathname ===
+      "/options-day-call-put"
+    ) {
+
+      try {
+
+        const result =
+          await fetchTAIFEX(
+            "/cht/3/callsAndPutsDate"
+          );
+
+        if (!result.response.ok) {
+
+          return json({
+            ok: false,
+            source: "TAIFEX",
+            status: result.response.status,
+            error: "TAIFEX request failed"
+          }, 502);
+        }
+
+        const rows = result.rows;
+
+        const call = [];
+        const put = [];
+
+        let currentType = null;
+        let inTXO = false;
+
+        for (const row of rows) {
+
+          if (row.includes("臺指選擇權")) {
+            inTXO = true;
+          } else if (row.some(x =>
+            typeof x === "string" &&
+            x.includes("選擇權") &&
+            !x.includes("臺指")) &&
+            (row.includes("買權") || row.includes("賣權"))) {
+            inTXO = false;
+          }
+
+          if (row.includes("買權")) {
+            currentType = "call";
+          }
+
+          if (row.includes("賣權")) {
+            currentType = "put";
+          }
+
+          if (!inTXO) {
+            continue;
+          }
+
+          if (row.some(x => typeof x === "string" && x.includes("小計"))) {
+            continue;
+          }
+
+          const idx = row.findIndex(x =>
+            x === "自營商" ||
+            x === "投信" ||
+            x === "外資"
+          );
+
+          if (idx < 0 || !currentType) {
+            continue;
+          }
+
+          const institution =
+            institutionCode(row[idx]);
+
+          if (!institution) {
+            continue;
+          }
+
+          const v =
+            row.slice(idx + 1);
+
+          /*
+           * v:
+           * [買方口數,
+           *  買方契約金額,
+           *  賣方口數,
+           *  賣方契約金額,
+           *  買賣差額口數,
+           *  買賣差額金額]
+           */
+
+          const item = {
+
+            institution,
+
+            long_volume:
+              number(v[0]),
+
+            long_amount:
+              number(v[1]),
+
+            short_volume:
+              number(v[2]),
+
+            short_amount:
+              number(v[3]),
+
+            net_volume:
+              number(v[4]),
+
+            net_amount:
+              number(v[5])
+          };
+
+          if (currentType === "call") {
+            call.push(item);
+          }
+
+          if (currentType === "put") {
+            put.push(item);
+          }
+        }
+
+        const found =
+          call.length === 3 &&
+          put.length === 3;
+
+        return json({
+
+          ok: true,
+
+          source: "TAIFEX",
+
+          dataset:
+            "options_calls_puts_day",
+
+          market: "TXO",
+
+          session: "regular",
+
+          date: today(),
+
+          data: {
+            call,
+            put
+          },
+
+          parser: {
+            version: "4.1",
+            found,
+            call_count: call.length,
+            put_count: put.length,
+            row_count: rows.length
+          }
+
+        });
+
+      } catch (error) {
+
+        return json({
+          ok: false,
+          source: "TAIFEX",
+          error: String(error)
+        }, 500);
+      }
+    }
+
     /* 診斷 */
 
     if (
@@ -5431,6 +5599,7 @@ export default {
         "/options-institutional",
         "/options-institutional-after-hours",
         "/options-after-hours",
+        "/options-day-call-put",
         "/futures-top10?date=YYYY-MM-DD",
         "/options-top10?date=YYYY-MM-DD",
         "/futures-night-ohlc?date=YYYY-MM-DD",
