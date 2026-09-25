@@ -79,6 +79,116 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
         lines.append("| " + " | ".join(str(x) for x in r) + " |")
     return "\n".join(lines)
 
+def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
+    """同 T0 保護：次日晨間全日刷新會覆寫同檔，若本次某格缺失而前版同位有值，沿用舊格。
+
+    規則（保守）：
+    - 只處理表格資料列，新舊皆有實值時以新為準（刷新優先）。
+    - 僅當新格 == 'unavailable' 且舊格有值才填入（含來源格隨值沿用）。
+    - 表頭／分隔列／標題／註記行一律不動；有填入才在未取得行後加註記。
+    回傳 (合併後文本, 填入格數)。
+    """
+    import re as _re
+
+    def _parse(text: str) -> tuple[list[str], dict]:
+        import re as _re2
+        lines = text.split("\n")
+        hkey: tuple = (None, None, None)
+        rows: dict = {}
+        for i, ln in enumerate(lines):
+            s = ln.strip()
+            m = _re2.match(r"^(#{2,4})\s+(.*\S)\s*$", s)
+            if m:
+                lv = len(m.group(1))
+                cur = list(hkey)
+                cur[lv - 2] = m.group(2)
+                for k in range(lv - 1, 3):
+                    cur[k] = None
+                hkey = tuple(cur)
+                continue
+            if s.startswith("|") and s.endswith("|"):
+                cells = [c.strip() for c in s.strip("|").split("|")]
+                if cells and all(_re2.fullmatch(r":?-{3,}:?", c or "") for c in cells):
+                    continue  # 分隔列
+                nxt = lines[i + 1].strip() if i + 1 < len(lines) else ""
+                nc = [c.strip() for c in nxt.strip("|").split("|")] if nxt.startswith("|") else []
+                if nc and all(_re2.fullmatch(r":?-{3,}:?", c or "") for c in nc):
+                    continue  # 表頭列（下一行是分隔列）
+                if cells:
+                    rows[(hkey, cells[0])] = cells
+        return lines, rows
+
+    new_lines, _ = _parse(new_text)
+    _, old_rows = _parse(old_text)
+    filled = 0
+    out_lines = []
+    hkey: tuple = (None, None, None)
+    import re as _re3
+    for i, ln in enumerate(new_lines):
+        s = ln.strip()
+        m = _re3.match(r"^(#{2,4})\s+(.*\S)\s*$", s)
+        if m:
+            lv = len(m.group(1))
+            cur = list(hkey)
+            cur[lv - 2] = m.group(2)
+            for k in range(lv - 1, 3):
+                cur[k] = None
+            hkey = tuple(cur)
+            out_lines.append(ln)
+            continue
+        if s.startswith("|") and s.endswith("|"):
+            cells = [c.strip() for c in s.strip("|").split("|")]
+            is_sep = bool(cells) and all(_re3.fullmatch(r":?-{3,}:?", c or "") for c in cells)
+            nxt = new_lines[i + 1].strip() if i + 1 < len(new_lines) else ""
+            nc = [c.strip() for c in nxt.strip("|").split("|")] if nxt.startswith("|") else []
+            is_hdr = bool(nc) and all(_re3.fullmatch(r":?-{3,}:?", c or "") for c in nc)
+            if not is_sep and not is_hdr and cells:
+                old = old_rows.get((hkey, cells[0]))
+                if old:
+                    new_cells = list(cells)
+                    for j in range(len(new_cells)):
+                        if (new_cells[j] == MISSING and j < len(old)
+                                and old[j] not in (MISSING, "")):
+                            new_cells[j] = old[j]
+                            filled += 1
+                    if filled > 0 and new_cells != cells:
+                        out_lines.append("| " + " | ".join(new_cells) + " |")
+                        continue
+        out_lines.append(ln)
+    merged = "\n".join(out_lines)
+    if filled:
+        merged = merged.replace(
+            "\n- 未取得欄位 (",
+            f"\n- 註記：同 T0 保護：{filled} 格沿用前版有值（本次抓取缺失不覆寫）\n- 未取得欄位 (",
+            1)
+    return merged, filled
+
+def _asia_stale_note(mk: dict, t0: str) -> str | None:
+    """亞股與前份 DATA 完全相同即疑似 Yahoo 未更新，回傳註記或 None（永不拋錯）。
+    全缺值時無法判斷，回 None（缺值本就會標 unavailable）。"""
+    try:
+        rows = mk.get("亞洲主要指數") or []
+        cur = [(q.get("symbol"), _f2(q.get("price")), _f2(q.get("change")))
+               for _, q in rows if q.get("price") is not None]
+        if not cur:
+            return None
+        files = sorted(OUT_DIR.glob("DATA_REPORT_*.md"))
+        prev = [p for p in files if p.stem.replace("DATA_REPORT_", "") < t0.replace("-", "")]
+        if not prev:
+            return None
+        import re as _re4
+        txt = prev[-1].read_text(encoding="utf-8")
+        m = _re4.search(r"### 2\. 亞洲主要指數([\s\S]*?)(?=^### |\Z)", txt, _re4.M)
+        if not m:
+            return None
+        seg = m.group(1)
+        if all(pr in seg and ch in seg for _, pr, ch in cur):
+            return (f"亞洲指數與前份 DATA ({prev[-1].name}) 完全相同，"
+                    "疑似 Yahoo 未更新，僅參考不解讀方向")
+        return None
+    except Exception:
+        return None
+
 def last_weekday(d: date) -> date:
     """相容舊介面：T0 取今天之前的最近平日。新邏輯請用 src.t0.resolve。"""
     from datetime import timedelta
@@ -184,6 +294,7 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A("## 二、重要市場")
     A("")
     mk = us_market.get_all()
+    _asia_note = _asia_stale_note(mk, t0)
     titles = {"美股指數": ("美股指數", "收盤／最新值"), "亞洲主要指數": ("亞洲主要指數", "收盤／最新值"),
               "美股指數期貨": ("美股指數期貨", "最新值"), "主要匯率": ("主要匯率", "最新值"),
               "台灣相關ADR": ("台灣相關ADR", "收盤／最新值"), "原油黃金Bitcoin": ("原油黃金Bitcoin", "收盤／最新值")}
@@ -730,6 +841,8 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A("- 期貨選擇權：`TAIFEX Proxy`")
     A(f"- 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；{_news_note}")
     A(f"- 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`{y['10Y']['source']}`")
+    if _asia_note:
+        A(f"- 註記：{_asia_note}")
     for n in s["notes"]:
         A(f"- 註記：{n}")
     A("- 本報告僅整理資料，不提供交易判斷。")
@@ -819,7 +932,15 @@ def main() -> None:
                 session = "全日"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
-    out.write_text(build(report_date, t0, session=session), encoding="utf-8")
+    new_text = build(report_date, t0, session=session)
+    if out.exists():
+        try:
+            new_text, _filled = merge_same_t0(out.read_text(encoding="utf-8"), new_text)
+            if _filled:
+                print(f"[INFO] 同 T0 保護：沿用前版 {_filled} 格有值")
+        except Exception as e:  # noqa: BLE001
+            print(f"[WARN] 同 T0 合併失敗，採本次全新寫入：{e}")
+    out.write_text(new_text, encoding="utf-8")
     print(f"[OK] wrote {out} (report_date={report_date}, t0={t0}, session={session})")
 
 if __name__ == "__main__":

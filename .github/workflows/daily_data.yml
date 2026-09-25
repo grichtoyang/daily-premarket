@@ -32,7 +32,18 @@ jobs:
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
           # T0 缺省由 src/t0.py 判定 (13:45/假日/週末規則)；手動觸發可指定 t0
-          python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
+          # Runner 機房 IP 偶被擋 (wantgoo 前有 Cloudflare，同 T0 多次結果不一)：
+          # 維持率當金絲雀，最多跑 3 次，成功即停；同 T0 合併保護已在 fetch 內。
+          for i in 1 2 3; do
+            python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
+            T0FILE=$(ls -t data_reports/DATA_REPORT_*.md | head -1)
+            if grep -q "| 融資維持率 | [0-9]" "$T0FILE"; then
+              echo "margin ratio ok on attempt $i ($T0FILE)"
+              break
+            fi
+            echo "margin ratio missing, attempt $i/3; sleep 120s"
+            sleep 120
+          done
       # 分析層：半自動（人工貼 DATA 給 OpenCode 寫 Daily_REPORT），全自動管線保留在 src/analyze.py，日後啟用
       - name: Commit report
         run: |
