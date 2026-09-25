@@ -371,6 +371,42 @@ with tab_opt:
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
+        head("選擇權總覽（法人 × 日夜 × 金額）")
+        _mx6 = md_table(dmd, "期現選方向對照")
+        if _mx6 is not None:
+            st.table(_mx6)
+        for _pw in md_tables(dmd, "法人多空力道表"):
+            try:
+                _cols = [c for c in ("法人", "日淨多空力道", "夜淨多空力道", "日淨－夜淨")
+                         if c in _pw.columns]
+                if len(_cols) >= 2:
+                    st.table(_pw[_cols])
+            except Exception:
+                pass
+            break
+        _wall_rows, _exp = [], ""
+        for _sec, _lbl in (("Call Wall", "Call Wall"), ("Put Wall", "Put Wall"),
+                           ("Gamma Wall", "Gamma Wall"), ("Gamma Flip", "Gamma Flip"),
+                           ("Max Pain", "Max Pain")):
+            _t = md_table(dmd, _sec)
+            if _t is None:
+                continue
+            try:
+                _val = ""
+                for _, _r in _t.iterrows():
+                    _c0 = str(_r.iloc[0])
+                    if "價位" in _c0 and "變化" not in _c0:
+                        _val = str(_r.iloc[1])
+                    if "到期月份" in _c0:
+                        _exp = str(_r.iloc[1])
+                if _val:
+                    _wall_rows.append((_lbl, _val))
+            except Exception:
+                pass
+        if _wall_rows:
+            _wdf = pd.DataFrame(_wall_rows, columns=["關鍵價位", "點位"])
+            _wdf["到期月份"] = _exp
+            st.table(_wdf)
         oi = blocks["oidist"]
         calls = [(int(r[1].replace(",", "")), int(r[2].replace(",", "")))
                  for r in oi if len(r) >= 3 and r[0] == "call"
@@ -430,11 +466,14 @@ with tab_opt:
                     "Call OI 集中", "Put OI 集中",
                     "Call OI 增減", "Put OI 增減", "Call Wall", "Put Wall",
                     "Gamma Wall", "Gamma Flip", "Max Pain"):
-            for t in md_tables(dmd, sec):
-                head("選擇權法人日/夜盤" if sec == "選擇權法人日盤" else sec)
-                st.table(t)
-                if sec == "選擇權法人日盤" and opt_note:
-                    st.caption(opt_note)
+            _ttl = "選擇權法人日/夜盤" if sec == "選擇權法人日盤" else sec
+            _tables = list(md_tables(dmd, sec))
+            if _tables:
+                with st.expander(_ttl, expanded=False):
+                    for t in _tables:
+                        st.table(t)
+                    if sec == "選擇權法人日盤" and opt_note:
+                        st.caption(opt_note)
 
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"
