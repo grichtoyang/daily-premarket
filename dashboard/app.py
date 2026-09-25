@@ -423,8 +423,16 @@ with tab_opt:
             for row in blocks["levels"]:
                 if len(row) >= 2 and num(row[1]) is not None:
                     lv_map[row[0]] = num(row[1])
-            mid_px = lv_map.get("中軸")
-            near_mid = min(strikes, key=lambda s: abs(s - mid_px)) if mid_px else None
+            # 價位吸附：精確相等很少發生（如壓力 48404 非履約價），故各關鍵價位
+            # 吸附至最近履約價上色，保證紅綠灰永遠看得到；精確命中仍優先。
+            _snap: dict = {}
+            for _n, _mk, _c in (("壓力", "▲", "#f8d7da"), ("壓力二", "▲", "#f8d7da"),
+                                ("中軸", "★", "#e2e3e5"), ("支撐", "▼", "#d4edda"),
+                                ("支撐二", "▼", "#d4edda")):
+                _v = lv_map.get(_n)
+                if _v is not None and strikes:
+                    _s = min(strikes, key=lambda s: abs(s - _v))
+                    _snap.setdefault(_s, []).append((_n, _mk, _c))
             trows, rcolors = [], []
             for s in strikes:
                 mark, color = "", ""
@@ -439,9 +447,10 @@ with tab_opt:
                         else:
                             mark += "★"
                             color = "#fff3cd" if not color else color
-                if near_mid is not None and s == near_mid and "★" not in mark:
-                    mark += "≈中軸"
-                    color = color or "#e2e3e5"
+                for _n, _mk, _c in _snap.get(s, []):
+                    if _mk not in mark:
+                        mark += _mk
+                        color = color or _c
                 trows.append({"Put OI": put_map.get(s, "—"),
                               "履約價": f"{s:,}{mark}",
                               "Call OI": call_map.get(s, "—")})
@@ -456,7 +465,7 @@ with tab_opt:
             except Exception:
                 st.table(df)
             st.caption("▲壓力（紅底）／▼支撐（綠底）／★中軸（灰底）；"
-                       "中軸＝台指期收盤價附近的多空分界參考（取最接近收盤的履約價列，≈中軸）；"
+                       "關鍵價位吸附至最近履約價上色（精確價位見總結頁關鍵價位梯）；"
                        "左 Put 右 Call，仿 T 字報價")
         opt_note = section_text(dmd, "選擇權法人日盤、夜盤交易")
         opt_note = "\n".join(l.strip() for l in opt_note.splitlines()
