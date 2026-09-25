@@ -43,6 +43,7 @@
 python src/check_report.py --data data_reports/DATA_REPORT_YYYYMMDD.md --report reports/Daily_REPORT_YYYYMMDD_日盤.md
 ```
 PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，不 amend 已發布紀錄）
+慣例：寫報告時 DATA 有 unavailable 即做最後救援（驗源站→補登 DATA→重跑閘門），報告數字恆⊆DATA（見 docs/SOP.md 3.5）
 
 ## 環境注意
 - PowerShell：用 `curl.exe`；無 `grep`/`head`；CJK 用 `$env:PYTHONIOENCODING='utf-8'`

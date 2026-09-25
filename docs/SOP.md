@@ -11,6 +11,9 @@ GitHub Actions 自動抓資料 → commit `DATA_REPORT_yyyymmdd.md` → push。
 2. 用 `src/t0.py` 判定 (T0、盤別 日盤/全日、是否休市)；同 T0 文件已存在且完整就不重寫。
 3. 讀 DATA，依 `docs/ANA_REPORT_TEMPLATE.md` 手寫 `reports/Daily_REPORT_yyyymmdd_日盤.md`
    或 `_全日.md` (數字只出自 DATA，N/A 不臆測，附機器區 kpi/levels/oidist/scenarios/verdict)。
+3.5 最後救援（固定慣例）：掃 DATA「未取得欄位」，逐一驗實際來源（重跑對應 `src/sources/` 函數或直查源站）；
+   有值→先補登進 DATA（標「補登＋來源日期＋來源」）再寫進報告，維持「報告數字⊆DATA」；
+   無值→報告寫 unavailable＋§11 揭露（前例：0924 維持率補登、夜盤節次更正）。
 4. 更新 `reports/latest.json` 指向最新一份。
 5. 本地驗結構 (validate PASS)。
 6. `git add/commit/push` → Streamlit Cloud 1~2 分鐘自動更新 Dashboard。

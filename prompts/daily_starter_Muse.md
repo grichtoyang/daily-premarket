@@ -7,7 +7,8 @@
 2. git pull 取最新 DATA_REPORT_yyyymmdd.md。
 3. 同 T0 文件已存在且完整就不重寫；否則依 docs/ANA_REPORT_TEMPLATE.md 手寫
    reports/Daily_REPORT_yyyymmdd_日盤.md 或 _全日.md
-   （數字只出自 DATA，N/A 不臆測，附機器區 kpi/levels/oidist/scenarios/verdict）。
+   （數字只出自 DATA，N/A 不臆測，附機器區 kpi/levels/oidist/scenarios/verdict；
+   DATA 有 unavailable 先做最後救援：驗源站→有值先補登 DATA 再寫報告，詳 docs/SOP.md 3.5）。
 
 4. 更新 reports/latest.json（report_date/report_path/generated_at/status），指向最新一份。
 5. 跑閘門 `python src/check_report.py --data data_reports/DATA_REPORT_yyyymmdd.md --report reports/Daily_REPORT_yyyymmdd_日盤.md`（檔名按盤別），[PASS] 才可 git add/commit/push；[FAIL] 就地修到過為止。

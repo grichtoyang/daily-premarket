@@ -8,7 +8,8 @@
 2. git pull 取最新 data_reports/DATA_REPORT_yyyymmdd.md。
 3. 同 T0 文件已存在且完整就不重寫；否則依 docs/ANA_REPORT_TEMPLATE.md 手寫
    reports/Daily_REPORT_yyyymmdd_日盤.md 或 _全日.md
-   （數字只出自 DATA_REPORT，N/A 不臆測；衍生百分比須列算式）。
+   （數字只出自 DATA_REPORT，N/A 不臆測；衍生百分比須列算式；
+   DATA 有 unavailable 先做最後救援：驗源站→有值先補登 DATA 再寫報告，詳 docs/SOP.md 3.5）。
 
    - 報告必須 12 章＋附錄 A/B，總長 2500~4500 字（不含附錄）。
    - 數據與判斷分開：表照貼、解讀條列式（禁大段敘述）。
