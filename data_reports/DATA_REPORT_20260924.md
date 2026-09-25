@@ -387,7 +387,7 @@
 |---|---|---|
 | Call 總成交量 | 90,216 | TAIFEX Proxy |
 | Call 總未平倉量 OI | 31,654 | TAIFEX Proxy |
-| Call OI 增減 | unavailable | 端點未提供 |
+| Call OI 增減 (2026-09-22→2026-09-24) | +25,482 | TAIFEX Proxy snapshots (2026-09-22) |
 
 ### 3．Put 總成交量、OI、OI 增減
 
@@ -395,7 +395,7 @@
 |---|---|---|
 | Put 總成交量 | 113,949 | TAIFEX Proxy |
 | Put 總未平倉量 OI | 25,184 | TAIFEX Proxy |
-| Put OI 增減 | unavailable | 端點未提供 |
+| Put OI 增減 (2026-09-22→2026-09-24) | +20,202 | TAIFEX Proxy snapshots (2026-09-22) |
 
 ### 4．Call／Put 比例與變化
 
@@ -502,15 +502,15 @@
 
 | 項目 | 履約價 (增減口數) | 資料來源 |
 |---|---|---|
-| Call OI 增加最多的履約價 | unavailable | 端點未提供 |
-| Call OI 減少最多的履約價 | unavailable | 端點未提供 |
+| Call OI 增加最多的履約價 | 50,500 (+2,132) | TAIFEX Proxy snapshots (2026-09-22) |
+| Call OI 減少最多的履約價 | 47,450 (-2) | TAIFEX Proxy snapshots (2026-09-22) |
 
 ### 10．Put OI 增減集中區
 
 | 項目 | 履約價 (增減口數) | 資料來源 |
 |---|---|---|
-| Put OI 增加最多的履約價 | unavailable | 端點未提供 |
-| Put OI 減少最多的履約價 | unavailable | 端點未提供 |
+| Put OI 增加最多的履約價 | 47,800 (+1,802) | TAIFEX Proxy snapshots (2026-09-22) |
+| Put OI 減少最多的履約價 | 40,900 (-95) | TAIFEX Proxy snapshots (2026-09-22) |
 
 ### 11．Call Wall
 
@@ -603,7 +603,8 @@
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
 - 資料日期：2026-09-24；資料時間：2026-09-25 08:08:27；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (1)：options.chain_oi_change
+- 未取得欄位 (0)：無
+- 註記：chain OI 增減為跨日救援（2026-09-22→2026-09-24；09-23 快照 chain 缺空改取 09-22 同契約到期 20260929 對齊；新掛牌 9 檔計全額，增量主為新系列建倉；管線 T-1 無快照則仍 unavailable）
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 
 ## 五、資料來源、時間與完整性
