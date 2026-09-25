@@ -71,7 +71,7 @@
 | 融資增減 | +96.2 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 235,966 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | -10,767 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | unavailable | % | istock.tw |
+| 融資維持率 | 193.87 | % | wantgoo 大盤融資維持率 (資料日期 2026-09-24；補登；民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -603,7 +603,7 @@
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
 - 資料日期：2026-09-24；資料時間：2026-09-25 08:08:27；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (2)：margin.ratio, options.chain_oi_change
+- 未取得欄位 (1)：options.chain_oi_change
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 
 ## 五、資料來源、時間與完整性
@@ -620,7 +620,7 @@
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)
+- 註記：融資維持率 193.87 為補登（T0 當日值；wantgoo API 193.87＋stockintelli 193.9＋istock 193.87 三源共識；晨跑 runner 端被擋全滅，詳 HANDOFF）
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
