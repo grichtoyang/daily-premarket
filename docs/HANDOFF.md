@@ -37,6 +37,7 @@
 2. 明早驗證 chain OI 增減、前十大上游穩定
 3. Muse session（`ses_f556...`）上游 `invalid_request_error` 無法回應——開**新對話**用 `/models` 換 Muse，勿 resume 舊對話
 4. 未追蹤檔 `test_form.py`、`test_yahoo.py` 不動
+5. 選擇權呈現再重整（dashboard 選擇權頁＋報告 §6，用戶回來細談方向；已做：總覽表／五牆收斂／明細收合／T字吸附上色）
 
 ## 發布閘門（必跑，2026-09-23 深夜已加 oidist 核數）
 ```
