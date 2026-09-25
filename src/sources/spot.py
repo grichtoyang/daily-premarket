@@ -151,7 +151,7 @@ def build(t0: str) -> dict:
         else:
             sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (民間估算；官方無每日序列)"
     else:
-        notes.append("融資維持率未取得 (wantgoo+istock 均失敗；官方無每日序列)")
+        notes.append("融資維持率未取得 (三源皆失敗；官方無每日序列)")
         _pr, _pdate = _prev_data_ratio(t0)
         if _pr is not None:
             margin["ratio"] = _pr
@@ -205,19 +205,20 @@ def build(t0: str) -> dict:
 
 
 def _prev_data_ratio(t0: str) -> tuple[float | None, str | None]:
-    """三源全滅時，取前一份 DATA_REPORT 的融資維持率 (回傳 ratio, T0)。"""
+    """三源全滅時，往前找最近一份有數值的 DATA_REPORT (回傳 ratio, T0)。
+    只看前一份會因缺失連莊而放棄（如 0924 前一份 0923 缺，0921 有值也用不上）。"""
     from pathlib import Path as _P
     try:
         files = sorted(_P(__file__).resolve().parents[2].glob("data_reports/DATA_REPORT_*.md"))
         prev = [p for p in files if p.stem.replace("DATA_REPORT_", "") < t0.replace("-", "")]
-        if not prev:
-            return None, None
         import re as _re
-        txt = prev[-1].read_text(encoding="utf-8")
-        m = _re.search(r"\|\s*融資維持率\s*\|\s*([0-9,]+\.\d+)", txt)
-        dm = _re.search(r"T0 交易日期：`(\d{4}-\d{2}-\d{2})`", txt)
-        if not m:
-            return None, None
-        return float(m.group(1).replace(",", "")), (dm.group(1) if dm else prev[-1].stem)
+        for p in reversed(prev):
+            txt = p.read_text(encoding="utf-8")
+            m = _re.search(r"\|\s*融資維持率\s*\|\s*([0-9,]+\.\d+)", txt)
+            if not m:
+                continue
+            dm = _re.search(r"T0 交易日期：`(\d{4}-\d{2}-\d{2})`", txt)
+            return float(m.group(1).replace(",", "")), (dm.group(1) if dm else p.stem)
+        return None, None
     except Exception:
         return None, None

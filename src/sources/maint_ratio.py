@@ -28,8 +28,10 @@ WANTGOO_URL = "https://www.wantgoo.com/stock/0000A/margin-trading/historical-len
 def _wantgoo(t0: str, timeout: int = 20) -> dict:
     """玩股網 API，回傳 {ratio, date, ok}。延遲 1~3 天，取最接近 T0 的資料。"""
     out = {"ratio": None, "date": None, "ok": False}
+    code = None
     try:
         r = requests.get(WANTGOO_URL, headers=UA, timeout=timeout)
+        code = r.status_code
         r.raise_for_status()
         data = r.json()
         if not data:
@@ -48,7 +50,7 @@ def _wantgoo(t0: str, timeout: int = 20) -> dict:
             if best[0] != t0:
                 print(f"[INFO] wantgoo 維持率日期 {best[0]} 非 T0 ({t0})，取最接近")
     except Exception as e:  # noqa: BLE001
-        print(f"[WARN] wantgoo margin ratio failed: {e}")
+        print(f"[WARN] wantgoo margin ratio failed (HTTP {code}): {e}")
     return out
 
 
@@ -60,8 +62,10 @@ STOCKINTELLI_URL = "https://www.stockintelli.com/market/margin-trading"
 def _stockintelli(t0: str, timeout: int = 20) -> dict:
     """stockintelli.com SSR 頁面爬蟲，回傳 {ratio, date, ok}。"""
     out = {"ratio": None, "date": None, "ok": False}
+    code = None
     try:
         r = requests.get(STOCKINTELLI_URL, headers=UA, timeout=timeout)
+        code = r.status_code
         r.raise_for_status()
         html = r.text
         # T0 "2026-09-18" → "09/18"
@@ -100,7 +104,7 @@ def _stockintelli(t0: str, timeout: int = 20) -> dict:
                     else:
                         print(f"[INFO] stockintelli sr-only 日期 {date_str} 非 T0 ({t0})")
     except Exception as e:  # noqa: BLE001
-        print(f"[WARN] stockintelli margin ratio failed: {e}")
+        print(f"[WARN] stockintelli margin ratio failed (HTTP {code}): {e}")
     return out
 
 
@@ -112,9 +116,11 @@ ISTOCK_URL = "https://www.istock.tw/post/twmarginrequirement"
 def _istock(t0: str, timeout: int = 30) -> dict:
     """istock.tw 爬蟲，回傳 {ratio, date, ok}。"""
     out = {"ratio": None, "date": None, "ok": False}
+    code = None
     try:
         istock_headers = {"User-Agent": UA["User-Agent"]}
         r = requests.get(ISTOCK_URL, headers=istock_headers, timeout=timeout)
+        code = r.status_code
         r.raise_for_status()
         t = re.sub(r"<script.*?</script>", "", r.text, flags=re.S)
         t = re.sub(r"<style.*?</style>", "", t, flags=re.S)
@@ -138,7 +144,7 @@ def _istock(t0: str, timeout: int = 30) -> dict:
         else:
             print("[INFO] istock 找不到維持率更新日期")
     except Exception as e:  # noqa: BLE001
-        print(f"[WARN] istock failed: {e}")
+        print(f"[WARN] istock failed (HTTP {code}): {e}")
     return out
 
 

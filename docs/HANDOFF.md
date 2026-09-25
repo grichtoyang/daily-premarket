@@ -48,3 +48,4 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - PowerShell：用 `curl.exe`；無 `grep`/`head`；CJK 用 `$env:PYTHONIOENCODING='utf-8'`
 - git `.git/objects` 偶發 Permission denied → 分開重試 add/commit
 - 21:30 後 Yahoo 浮動，勿反覆重跑
+- 維持率 runner 端間歇被擋（wantgoo 前有 Cloudflare，同 T0 多次 run 結果不一，本機全通）：`_prev_data_ratio` 已改往前找最近有數值；失敗日誌含 HTTP code；仍缺時手動補登（2026-09-25 補 0924 值 193.87 前例）
