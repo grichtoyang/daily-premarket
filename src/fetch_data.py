@@ -83,8 +83,9 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
     """同 T0 保護：次日晨間全日刷新會覆寫同檔，若本次某格缺失而前版同位有值，沿用舊格。
 
     規則（保守）：
-    - 只處理表格資料列，新舊皆有實值時以新為準（刷新優先）。
-    - 僅當新格 == 'unavailable' 且舊格有值才填入（含來源格隨值沿用）。
+    - 只處理表格資料列；標籤格 (j==0) 永不覆寫，列名去裝飾比對（增減區間後綴不影響對齊）。
+    - 新舊皆有實值時以新為準（刷新優先），唯一例外：新列來源為前值遞補而舊列不是 → 舊值較新，沿用舊列。
+    - 新格 == 'unavailable' 且舊格有值才填入；有填入列的來源格隨值沿用。
     - 表頭／分隔列／標題／註記行一律不動；有填入才在未取得行後加註記。
     回傳 (合併後文本, 填入格數)。
     """
@@ -120,6 +121,16 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
 
     new_lines, _ = _parse(new_text)
     _, old_rows = _parse(old_text)
+
+    def _norm_label(s: str) -> str:
+        # 列名去裝飾（…增減 (2026-09-22→2026-09-24) → …增減），新舊標籤才能對上；
+        # j==0 標籤格永不覆寫，只填數值格。
+        return _re.sub(r"[（(].*$", "", s).strip()
+
+    # 舊表改以正規化標籤索引
+    old_norm: dict = {}
+    for (hkey, first), cells in old_rows.items():
+        old_norm[(hkey, _norm_label(first))] = cells
     filled = 0
     out_lines = []
     hkey: tuple = (None, None, None)
@@ -143,15 +154,26 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
             nc = [c.strip() for c in nxt.strip("|").split("|")] if nxt.startswith("|") else []
             is_hdr = bool(nc) and all(_re3.fullmatch(r":?-{3,}:?", c or "") for c in nc)
             if not is_sep and not is_hdr and cells:
-                old = old_rows.get((hkey, cells[0]))
-                if old:
+                old = old_norm.get((hkey, _norm_label(cells[0])))
+                if old and len(old) == len(cells):
                     new_cells = list(cells)
-                    for j in range(len(new_cells)):
-                        if (new_cells[j] == MISSING and j < len(old)
-                                and old[j] not in (MISSING, "")):
+                    new_last = new_cells[-1]
+                    old_last = old[-1]
+                    # 新列是 fallback（前值遞補）而舊列不是 → 舊值較新，整列優先舊值
+                    _fb = ("遞補" in new_last) and ("遞補" not in old_last)
+                    _touched = False
+                    for j in range(1, len(new_cells)):
+                        if new_cells[j] == MISSING and old[j] not in (MISSING, ""):
                             new_cells[j] = old[j]
                             filled += 1
-                    if filled > 0 and new_cells != cells:
+                            _touched = True
+                        elif _fb and old[j] not in (MISSING, "") and new_cells[j] != old[j]:
+                            new_cells[j] = old[j]
+                            filled += 1
+                            _touched = True
+                    if _touched and old_last not in (MISSING, "") and new_cells[-1] != old_last:
+                        new_cells[-1] = old_last  # 來源格隨值沿用
+                    if new_cells != cells:
                         out_lines.append("| " + " | ".join(new_cells) + " |")
                         continue
         out_lines.append(ln)
