@@ -524,8 +524,8 @@ with tab_opt:
                     pass
                 return _up, _dn, _mx
 
-            _cup, _cdn, _cmx = _mv2("Call OI 增減")
-            _pup, _pdn, _pmx = _mv2("Put OI 增減")
+            _cup, _cdn, _cmx = _mv2("Call OI 增減集中區")
+            _pup, _pdn, _pmx = _mv2("Put OI 增減集中區")
             st.table(pd.DataFrame([
                 ("總 OI 增減", _cell(_ct, "增減"), _cell(_pt, "增減")),
                 ("增加最多", _cup, _pup),
