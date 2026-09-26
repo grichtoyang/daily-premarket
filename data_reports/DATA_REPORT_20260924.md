@@ -504,6 +504,7 @@
 |---|---|---|
 | Call OI 增加最多的履約價 | 50,500 (+2,132) | TAIFEX Proxy snapshots (2026-09-22) |
 | Call OI 減少最多的履約價 | 47,450 (-2) | TAIFEX Proxy snapshots (2026-09-22) |
+| Call 最大 OI 履約價增減 (Call Wall 51,900) | 51,900 (+0) | TAIFEX Proxy snapshots (2026-09-22) |
 
 ### 10．Put OI 增減集中區
 
@@ -511,6 +512,7 @@
 |---|---|---|
 | Put OI 增加最多的履約價 | 47,800 (+1,802) | TAIFEX Proxy snapshots (2026-09-22) |
 | Put OI 減少最多的履約價 | 40,900 (-95) | TAIFEX Proxy snapshots (2026-09-22) |
+| Put 最大 OI 履約價增減 (Put Wall 47,800) | 47,800 (+1,802) | TAIFEX Proxy snapshots (2026-09-22) |
 
 ### 11．Call Wall
 

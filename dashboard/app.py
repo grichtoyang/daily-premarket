@@ -510,7 +510,7 @@ with tab_opt:
         try:
             def _mv2(_sec):
                 _t = md_table(dmd, _sec)
-                _up, _dn = "—", "—"
+                _up, _dn, _mx = "—", "—", "—"
                 try:
                     for _, _r in _t.iterrows():
                         _c0 = str(_r.iloc[0])
@@ -518,16 +518,19 @@ with tab_opt:
                             _up = str(_r.iloc[1])
                         elif "減少" in _c0:
                             _dn = str(_r.iloc[1])
+                        elif "最大" in _c0:
+                            _mx = str(_r.iloc[1])
                 except Exception:
                     pass
-                return _up, _dn
+                return _up, _dn, _mx
 
-            _cup, _cdn = _mv2("Call OI 增減")
-            _pup, _pdn = _mv2("Put OI 增減")
+            _cup, _cdn, _cmx = _mv2("Call OI 增減")
+            _pup, _pdn, _pmx = _mv2("Put OI 增減")
             st.table(pd.DataFrame([
                 ("總 OI 增減", _cell(_ct, "增減"), _cell(_pt, "增減")),
                 ("增加最多", _cup, _pup),
                 ("減少最多", _cdn, _pdn),
+                ("最大OI增減", _cmx, _pmx),
             ], columns=["項目", "Call", "Put"]))
         except Exception:
             pass
