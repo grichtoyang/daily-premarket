@@ -363,50 +363,31 @@ with tab_fut:
         with st.expander("夜盤劇本分類"):
             st.markdown(section_text(dmd, "夜盤劇本分類")[:1500])
 
-# ================= 選擇權 ← DATA 第四章 =================
+# ================= 選擇權 ← DATA 第四章（四分類：綜合判斷／市場結構／市場風向／市場情緒＋備查） =================
 with tab_opt:
     head("選擇權")
-    st.link_button("選擇權倒莊監控圖（玩股網，需會員登入）",
-                   "https://www.wantgoo.com/option/runaway-bankers")
+    _lk1, _lk2 = st.columns(2)
+    with _lk1:
+        st.link_button("選擇權倒莊監控圖（玩股網，需會員登入）",
+                       "https://www.wantgoo.com/option/runaway-bankers")
+    with _lk2:
+        st.link_button("台指選擇權支撐壓力表（玩股網）",
+                       "https://www.wantgoo.com/option/support-resistance")
     if not dmd:
         st.warning(f"找不到 {dpath}")
     else:
-        head("選擇權總覽（法人 × 日夜 × 金額）")
+        _opt_note = section_text(dmd, "選擇權法人日盤、夜盤交易")
+        _opt_note = "\n".join(l.strip() for l in _opt_note.splitlines()
+                              if l.strip() and not l.strip().startswith("|"))
+        # ---------- 綜合判斷（頁首） ----------
+        head("綜合判斷")
         _mx6 = md_table(dmd, "期現選方向對照")
         if _mx6 is not None:
             st.table(_mx6)
-        for _pw in md_tables(dmd, "法人多空力道表"):
-            try:
-                _cols = [c for c in ("法人", "日淨多空力道", "夜淨多空力道", "日淨－夜淨")
-                         if c in _pw.columns]
-                if len(_cols) >= 2:
-                    st.table(_pw[_cols])
-            except Exception:
-                pass
-            break
-        _wall_rows, _exp = [], ""
-        for _sec, _lbl in (("Call Wall", "Call Wall"), ("Put Wall", "Put Wall"),
-                           ("Gamma Wall", "Gamma Wall"), ("Gamma Flip", "Gamma Flip"),
-                           ("Max Pain", "Max Pain")):
-            _t = md_table(dmd, _sec)
-            if _t is None:
-                continue
-            try:
-                _val = ""
-                for _, _r in _t.iterrows():
-                    _c0 = str(_r.iloc[0])
-                    if "價位" in _c0 and "變化" not in _c0:
-                        _val = str(_r.iloc[1])
-                    if "到期月份" in _c0:
-                        _exp = str(_r.iloc[1])
-                if _val:
-                    _wall_rows.append((_lbl, _val))
-            except Exception:
-                pass
-        if _wall_rows:
-            _wdf = pd.DataFrame(_wall_rows, columns=["關鍵價位", "點位"])
-            _wdf["到期月份"] = _exp
-            st.table(_wdf)
+        _ai = section_text(md, "綜合結論") or section_text(md, "整合判讀")
+        if _ai:
+            with st.expander("AI 綜合分析（取自報告）", expanded=False):
+                st.markdown(_ai[:2500])
         oi = blocks["oidist"]
         calls = [(int(r[1].replace(",", "")), int(r[2].replace(",", "")))
                  for r in oi if len(r) >= 3 and r[0] == "call"
@@ -467,22 +448,190 @@ with tab_opt:
             st.caption("▲壓力（紅底）／▼支撐（綠底）／★中軸（灰底）；"
                        "關鍵價位吸附至最近履約價上色（精確價位見總結頁關鍵價位梯）；"
                        "左 Put 右 Call，仿 T 字報價")
-        opt_note = section_text(dmd, "選擇權法人日盤、夜盤交易")
-        opt_note = "\n".join(l.strip() for l in opt_note.splitlines()
-                             if l.strip() and not l.strip().startswith("|"))
-        for sec in ("選擇權交易日期", "Call 總成交量", "Put 總成交量", "Call／Put 比例",
-                    "外資 Call", "自營商 Call", "選擇權法人日盤", "選擇權前十大",
-                    "Call OI 集中", "Put OI 集中",
-                    "Call OI 增減", "Put OI 增減", "Call Wall", "Put Wall",
-                    "Gamma Wall", "Gamma Flip", "Max Pain"):
-            _ttl = "選擇權法人日/夜盤" if sec == "選擇權法人日盤" else sec
-            _tables = list(md_tables(dmd, sec))
-            if _tables:
+        # ---------- 市場結構 ----------
+        head("市場結構")
+        try:
+            _ct, _pt = md_table(dmd, "Call 總成交量"), md_table(dmd, "Put 總成交量")
+
+            def _cell(_t, _key):
+                try:
+                    for _, _r in _t.iterrows():
+                        if _key in str(_r.iloc[0]):
+                            return str(_r.iloc[1])
+                except Exception:
+                    pass
+                return "—"
+
+            st.table(pd.DataFrame([
+                ("總成交量", _cell(_ct, "成交量"), _cell(_pt, "成交量")),
+                ("總 OI", _cell(_ct, "未平倉量"), _cell(_pt, "未平倉量")),
+                ("OI 增減", _cell(_ct, "增減"), _cell(_pt, "增減")),
+            ], columns=["項目", "Call", "Put"]))
+        except Exception:
+            pass
+        try:
+            _cc = md_tables(dmd, "Call OI 分布明細")
+            _pp = md_tables(dmd, "Put OI 分布明細")
+            _cd, _pd = _cc[0], _pp[0]
+            st.table(pd.DataFrame([(
+                f"第{i + 1}大",
+                str(_cd.iloc[i, 1]), str(_cd.iloc[i, 2]),
+                str(_cd.iloc[i, 3]) if _cd.shape[1] > 3 else "—",
+                str(_pd.iloc[i, 1]), str(_pd.iloc[i, 2]),
+                str(_pd.iloc[i, 3]) if _pd.shape[1] > 3 else "—",
+            ) for i in range(min(3, len(_cd), len(_pd)))],
+                columns=["排名", "Call 履約價", "Call OI", "Call 佔比",
+                         "Put 履約價", "Put OI", "Put 佔比"]))
+        except Exception:
+            pass
+        _wall_rows, _exp = [], ""
+        for _sec, _lbl in (("Call Wall", "Call Wall"), ("Put Wall", "Put Wall"),
+                           ("Gamma Wall", "Gamma Wall"), ("Gamma Flip", "Gamma Flip"),
+                           ("Max Pain", "Max Pain")):
+            _t = md_table(dmd, _sec)
+            if _t is None:
+                continue
+            try:
+                _val = ""
+                for _, _r in _t.iterrows():
+                    _c0 = str(_r.iloc[0])
+                    if "價位" in _c0 and "變化" not in _c0:
+                        _val = str(_r.iloc[1])
+                    if "到期月份" in _c0:
+                        _exp = str(_r.iloc[1])
+                if _val:
+                    _wall_rows.append((_lbl, _val))
+            except Exception:
+                pass
+        if _wall_rows:
+            _wdf = pd.DataFrame(_wall_rows, columns=["關鍵價位", "點位"])
+            _wdf["到期月份"] = _exp
+            st.table(_wdf)
+        try:
+            def _mv2(_sec):
+                _t = md_table(dmd, _sec)
+                _up, _dn = "—", "—"
+                try:
+                    for _, _r in _t.iterrows():
+                        _c0 = str(_r.iloc[0])
+                        if "增加" in _c0:
+                            _up = str(_r.iloc[1])
+                        elif "減少" in _c0:
+                            _dn = str(_r.iloc[1])
+                except Exception:
+                    pass
+                return _up, _dn
+
+            _cup, _cdn = _mv2("Call OI 增減")
+            _pup, _pdn = _mv2("Put OI 增減")
+            st.table(pd.DataFrame([
+                ("總 OI 增減", _cell(_ct, "增減"), _cell(_pt, "增減")),
+                ("增加最多", _cup, _pup),
+                ("減少最多", _cdn, _pdn),
+            ], columns=["項目", "Call", "Put"]))
+        except Exception:
+            pass
+        # ---------- 市場風向 ----------
+        head("市場風向")
+        try:
+            def _pos(_sec):
+                _t = md_table(dmd, _sec)
+                _d = {}
+                for _, _r in _t.iterrows():
+                    _d[str(_r.iloc[0])] = str(_r.iloc[1])
+                return _d
+
+            def _g(_d, *_keys):
+                for _k in _keys:
+                    for k, v in _d.items():
+                        if k.endswith(_k):
+                            return v
+                return "—"
+
+            _t17 = md_tables(dmd, "選擇權法人日盤")
+            _nmap = {}
+            if _t17:
+                try:
+                    for _, _r in _t17[0].iterrows():
+                        _nmap[str(_r.iloc[0])] = str(_r.iloc[6])
+                except Exception:
+                    pass
+            _fo, _do = _pos("外資 Call"), _pos("自營商 Call")
+            st.table(pd.DataFrame([
+                ("外資", _g(_fo, "Call日淨"), _g(_fo, "Put日淨"), _g(_fo, "日盤淨總量"),
+                 _g(_fo, "Call夜淨"), _g(_fo, "Put夜淨"), _nmap.get("外資", "—")),
+                ("自營商", _g(_do, "Call日淨"), _g(_do, "Put日淨"), _g(_do, "日盤淨總量"),
+                 _g(_do, "Call夜淨"), _g(_do, "Put夜淨"), _nmap.get("自營商", "—")),
+            ], columns=["法人", "Call日淨", "Put日淨", "日盤淨總",
+                        "Call夜淨", "Put夜淨", "夜盤淨總"]))
+        except Exception:
+            pass
+        for _t17full in md_tables(dmd, "選擇權法人日盤"):
+            st.table(_t17full)
+            if _opt_note:
+                st.caption(_opt_note)
+            break
+        for _pw in md_tables(dmd, "法人多空力道表"):
+            try:
+                _cols = [c for c in ("法人", "日淨多空力道", "夜淨多空力道", "日淨－夜淨")
+                         if c in _pw.columns]
+                if len(_cols) >= 2:
+                    st.table(_pw[_cols])
+            except Exception:
+                pass
+            break
+        for _t10f in md_tables(dmd, "大戶流向"):
+            st.table(_t10f)
+            break
+        # ---------- 市場情緒 ----------
+        head("市場情緒")
+        _pc = md_table(dmd, "Call／Put 比例")
+        if _pc is not None:
+            st.table(_pc)
+        try:
+            _us = md_table(dmd, "美股指數")
+            _vix, _vpct = "", ""
+            for _, _r in _us.iterrows():
+                if str(_r.iloc[0]).strip() == "VIX":
+                    _vix, _vpct = str(_r.iloc[2]), str(_r.iloc[4])
+            _nh, _nl = "", ""
+            _nt = md_table(dmd, "台指期近月夜盤行情")
+            for _, _r in _nt.iterrows():
+                if str(_r.iloc[0]) == "最高價":
+                    _nh = str(_r.iloc[1])
+                if str(_r.iloc[0]) == "最低價":
+                    _nl = str(_r.iloc[1])
+            _amp = ""
+            try:
+                _amp = f"{int(float(_nh.replace(',', '')) - float(_nl.replace(',', ''))):,} 點"
+            except Exception:
+                pass
+            st.table(pd.DataFrame([
+                ("美股 VIX", f"{_vix}（{_vpct}%）" if _vix else "—"),
+                ("台股 VIX", "見玩股網連結"),
+                ("台指夜盤振幅", f"{_amp}（夜高{_nh}－夜低{_nl}）" if _amp else "—"),
+            ], columns=["市場", "數值"]))
+            st.link_button("台股 VIX（玩股網）", "https://www.wantgoo.com/index/vixtwn")
+        except Exception:
+            pass
+        # ---------- 原始數據備查 ----------
+        head("原始數據備查")
+        for _sec in ("選擇權交易日期", "外資 Call", "自營商 Call"):
+            for t in md_tables(dmd, _sec):
+                with st.expander(_sec, expanded=False):
+                    st.table(t)
+        for _sec, _ttl in (("Call OI 分布明細", "Call OI 分布 Top10（備查）"),
+                           ("Put OI 分布明細", "Put OI 分布 Top10（備查）")):
+            _ts = md_tables(dmd, _sec)
+            if _ts:
                 with st.expander(_ttl, expanded=False):
-                    for t in _tables:
+                    for t in _ts:
                         st.table(t)
-                    if sec == "選擇權法人日盤" and opt_note:
-                        st.caption(opt_note)
+        for t in md_tables(dmd, "選擇權前十大"):
+            if "淨變化" in list(t.columns):
+                continue
+            with st.expander("選擇權前十大（備查）", expanded=False):
+                st.table(t)
 
 st.divider()
 st.caption(f"分析報告：[{ana_path}]({gh_ana})｜原始數據：[{dpath}]({gh_data})｜"

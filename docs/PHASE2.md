@@ -7,7 +7,6 @@
 - 規則待定：何謂「異常堆積」（跟歷史比還是跟近月比、閾值），累積幾天數據後再定量。
 - 位置：DATA 選擇權章（市場結構區附表）＋模板＋dashboard 對應。
 
-## 2. 台股 VIX（有源再做）
-- 現狀：TAIFEX OpenAPI 無此端點、Yahoo 無 ^TWVIX、官網 VIX 頁路徑不通。
-- 暫代：P/C ratio＋美 VIX＋夜盤振幅。
-- 找到機讀源再接入情緒區。
+## 2. 台股 VIX（連結呈現，用戶決議）
+- 機讀源仍無（TAIFEX 無端點、Yahoo 無 ^TWVIX），不接數據；改在 dashboard 市場情緒區貼玩股網連結人工讀數：`https://www.wantgoo.com/index/vixtwn`（報告模板 §6.3 同）。
+- 暫代仍保留：P/C ratio＋美 VIX＋夜盤振幅。
