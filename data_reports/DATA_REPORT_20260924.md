@@ -1,8 +1,8 @@
 # DATA_REPORT_20260924
 
-- 報告日期：`2026-09-28`
+- 報告日期：`2026-09-29`
 - T0 交易日期：`2026-09-24`
-- 資料產出時間：`2026-09-28 19:14:57`
+- 資料產出時間：`2026-09-29 08:08:43`
 - 時區：`Asia/Taipei`
 
 ---
@@ -79,7 +79,7 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 4,554,957 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券餘額 | 2,441,375 | 張 | TWSE TWT93U + TPEX margin_sbl |
 | 借券賣出餘額 | 33,958 | 張 | TWSE TWT93U + TPEX margin_sbl |
 | 借券賣出增減 | 284 | 張 | TWSE TWT93U + TPEX margin_sbl |
 
@@ -101,12 +101,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,743.41 | 39.28 | +0.51 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 27,068.72 | 129.35 | +0.48 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 30,608.13 | 129.27 | +0.42 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 51,828.62 | 478.64 | +0.93 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 12,668.93 | 176.39 | +1.41 | Yahoo Finance Chart API |
-| VIX | ^VIX | 16.27 | 1.40 | +9.41 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,683.69 | -59.72 | -0.77 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 26,820.38 | -248.34 | -0.92 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 30,276.81 | -331.32 | -1.08 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 51,481.51 | -347.11 | -0.67 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 12,465.24 | -203.69 | -1.61 | Yahoo Finance Chart API |
+| VIX | ^VIX | 16.07 | 1.20 | +8.07 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -114,11 +114,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 65,877.62 | -486.59 | -0.73 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 6,889.74 | -191.18 | -2.70 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 24,642.51 | 132.42 | +0.54 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,823.62 | -64.75 | -1.67 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 12,858.75 | -458.22 | -3.44 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 66,364.20 | 850.21 | +1.30 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 7,080.92 | 63.01 | +0.90 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 24,510.09 | -251.04 | -1.01 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,888.37 | -48.15 | -1.22 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 13,316.97 | -319.10 | -2.34 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,763.25 | -40.50 | -0.52 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 30,609.75 | -279.50 | -0.90 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 51,860.00 | -303.00 | -0.58 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,839.10 | -20.20 | -0.71 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,750.00 | -53.75 | -0.69 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 30,598.00 | -291.25 | -0.94 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 51,848.00 | -315.00 | -0.60 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,840.60 | -18.70 | -0.65 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -137,9 +137,9 @@
 
 | 項目 | API 資料欄位／識別 | 殖利率 | 日變化 | 資料來源 |
 |---|---|---|---|---|
-| 美國 2 年期殖利率 | 2 Yr | 4.81 | -0.06 | U.S. Treasury yield.xml (網頁備援) |
-| 美國 10 年期殖利率 | 10 Yr | 5.18 | 0.02 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.50 | 0.04 | Yahoo Finance (備援) |
+| 美國 2 年期殖利率 | 2 Yr | 4.92 | 0.11 | U.S. Treasury yield.xml (網頁備援) |
+| 美國 10 年期殖利率 | 10 Yr | 5.24 | 0.06 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.56 | 0.06 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.79 | -0.01 | -0.04 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.16 | 0.19 | +0.18 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.07 | -1.74 | -1.09 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,360.58 | -6.78 | -0.50 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.78 | 0.00 | +0.01 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.19 | 0.22 | +0.22 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.45 | -0.01 | -0.01 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,359.28 | 4.77 | +0.35 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -168,38 +168,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 96.51 | 4.10 | +4.44 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,182.20 | -139.00 | -3.22 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 82,971.02 | -1,487.06 | -1.76 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 93.18 | 0.77 | +0.83 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,158.90 | -162.30 | -3.76 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 83,478.63 | -979.45 | -1.16 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：【張瑞雄專欄】AI爭霸，誰與爭鋒？
-  - 來源：Yahoo 台股；發布時間：2026-09-28T11:00:00Z；台北時間：2026-09-28 19:00
-  - 摘要：這是最好的時代，也是最壞的時代；這是AI狂奔的時代，也是人類開始害怕AI跑得太快的時代；這是資本最相信AI的時代，也是大家最懷疑資本能不能控制AI的時代。有人忙著上市，有人擔心安全；有人把權力交給信託，有人把權力緊緊抓在創辦人手上。大家都說
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%BC%B5%E7%91%9E%E9%9B%84%E5%B0%88%E6%AC%84-ai%E7%88%AD%E9%9C%B8-%E8%AA%B0%E8%88%87%E7%88%AD%E9%8B%92-110000575.html
-- 事件2：美伊停火破局！韓股失守7000關卡、日經慘跌486點　台股明日開市恐承壓
-  - 來源：Yahoo 台股；發布時間：2026-09-28T10:50:00Z；台北時間：2026-09-28 18:50
-  - 摘要：[FTNN新聞網]記者邱梓欣／綜合報導美伊衝突再陷僵局，美國總統川普（DonaldTrump）公開拒絕伊朗提出立即開放荷姆茲海峽的7天停火提議，而伊朗隨即強調，重開...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E4%BC%8A%E5%81%9C%E7%81%AB%E7%A0%B4%E5%B1%80-%E9%9F%93%E8%82%A1%E5%A4%B1%E5%AE%887000%E9%97%9C%E5%8D%A1-%E6%97%A5%E7%B6%93%E6%85%98%E8%B7%8C486%E9%BB%9E-%E5%8F%B0%E8%82%A1%E6%98%8E%E6%97%A5%E9%96%8B%E5%B8%82%E6%81%90%E6%89%BF%E5%A3%93-105000896.html
-- 事件3：承先啟後薪火相傳 金屬中心董事長圓滿交棒
-  - 來源：Yahoo 台股；發布時間：2026-09-28T10:31:59Z；台北時間：2026-09-28 18:31
-  - 摘要：記者王正平/高雄報導 財團法人金屬工業研究發展中心訂29日舉行第25屆董監事會議，會…
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%89%BF%E5%85%88%E5%95%9F%E5%BE%8C%E8%96%AA%E7%81%AB%E7%9B%B8%E5%82%B3-%E9%87%91%E5%B1%AC%E4%B8%AD%E5%BF%83%E8%91%A3%E4%BA%8B%E9%95%B7%E5%9C%93%E6%BB%BF%E4%BA%A4%E6%A3%92-103159884.html
-- 事件4：暴減6.7萬股民！00403A受益人跌破85萬再創低「資產規模遭00881超車」　外資狂掃54萬張入袋
-  - 來源：Yahoo 台股；發布時間：2026-09-28T10:30:00Z；台北時間：2026-09-28 18:30
-  - 摘要：[FTNN新聞網]記者薛明峻／台北報導台股上周衝48601.53點歷史新高後拉回，加權指數上周四收在48024.60點，周線上漲843.85點，漲幅1.79%；備受股民關注的主動式...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%9A%B4%E6%B8%9B6-7%E8%90%AC%E8%82%A1%E6%B0%91-00403a%E5%8F%97%E7%9B%8A%E4%BA%BA%E8%B7%8C%E7%A0%B485%E8%90%AC%E5%86%8D%E5%89%B5%E4%BD%8E-%E8%B3%87%E7%94%A2%E8%A6%8F%E6%A8%A1%E9%81%AD00881%E8%B6%85%E8%BB%8A-%E5%A4%96%E8%B3%87%E7%8B%82%E6%8E%8354%E8%90%AC%E5%BC%B5%E5%85%A5%E8%A2%8B-103000022.html
-- 事件5：台股新制「去槓桿」來了？他警「四貸同堂恐被盯上」點名南韓1慘況
-  - 來源：Yahoo 台股；發布時間：2026-09-28T10:05:28Z；台北時間：2026-09-28 18:05
-  - 摘要：財經中心／綜合報導台股投資人注意，市場資金「疊槓桿」玩法恐迎來重大變化？金管會預計10月底推動銀行、券商「雙向查信用」機制，未來在取得客戶同意後，金融機構可望進一步掌握投資人的借款、股票融資及質押等資訊，對此財經專家葉育碩分析，近期市場常見
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E6%96%B0%E5%88%B6-%E5%8E%BB%E6%A7%93%E6%A1%BF-%E4%BE%86%E4%BA%86-%E4%BB%96%E8%AD%A6-%E5%9B%9B%E8%B2%B8%E5%90%8C%E5%A0%82%E6%81%90%E8%A2%AB%E7%9B%AF%E4%B8%8A-100528690.html
-- 事件6：東京中古公寓28個月首跌 日本升息效應顯現 23區房租卻估5年再漲11%
-  - 來源：Yahoo 台股；發布時間：2026-09-28T09:59:04Z；台北時間：2026-09-28 17:59
-  - 摘要：日本銀行新的政策利率為1.25%，來到1995年以來最高水準。不動產調查公司東京カンテイ公布8月中古公寓價格。東京都平均掛牌價以70平方公尺換算為1億1274萬日圓，比7月少0.2%，是28個月來第一次下跌。跌幅先出現在價格最高的都心。千代
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%9D%B1%E4%BA%AC%E4%B8%AD%E5%8F%A4%E5%85%AC%E5%AF%9328%E5%80%8B%E6%9C%88%E9%A6%96%E8%B7%8C-%E6%97%A5%E6%9C%AC%E5%8D%87%E6%81%AF%E6%95%88%E6%87%89%E9%A1%AF%E7%8F%BE-23%E5%8D%80%E6%88%BF%E7%A7%9F%E5%8D%BB%E4%BC%B05%E5%B9%B4%E5%86%8D%E6%BC%B211-095904133.html
+- 事件1：歌禮宣佈同類首創和同類最佳的口服小分子IL-17A抑制劑ASC50治療斑塊狀銀屑病在美國的28天概念驗證臨床研究取得積極結果
+  - 來源：Yahoo 台股；發布時間：2026-09-29T00:00:00Z；台北時間：2026-09-29 08:00
+  - 摘要：歌禮製藥有限公司（香港聯交所代碼：1672，簡稱「歌禮」）宣佈，ASC50在美國輕度至中度斑塊狀銀屑病患者中開展的一項隨機、雙盲、安慰劑對照的28天概念驗證臨床試驗取得積極結果。該I期研究旨在評估每日一次200毫克ASC50在輕度至中度斑塊
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%AD%8C%E7%A6%AE%E5%AE%A3%E4%BD%88%E5%90%8C%E9%A1%9E%E9%A6%96%E5%89%B5%E5%92%8C%E5%90%8C%E9%A1%9E%E6%9C%80%E4%BD%B3%E7%9A%84%E5%8F%A3%E6%9C%8D%E5%B0%8F%E5%88%86%E5%AD%90il-17a%E6%8A%91%E5%88%B6%E5%8A%91asc50%E6%B2%BB%E7%99%82%E6%96%91%E5%A1%8A%E7%8B%80%E9%8A%80%E5%B1%91%E7%97%85%E5%9C%A8%E7%BE%8E%E5%9C%8B%E7%9A%8428%E5%A4%A9%E6%A6%82%E5%BF%B5%E9%A9%97%E8%AD%89%E8%87%A8%E5%BA%8A%E7%A0%94%E7%A9%B6%E5%8F%96%E5%BE%97%E7%A9%8D%E6%A5%B5%E7%B5%90%E6%9E%9C-000000435.html
+- 事件2：美的將在Data Center World Asia 2026發佈行業首創電力-製冷超融合架構
+  - 來源：Yahoo 台股；發布時間：2026-09-28T23:58:00Z；台北時間：2026-09-29 07:58
+  - 摘要：美的樓宇科技（Midea Building Technologies，簡稱「MBT」）將於9月29日至30日在新加坡濱海灣金沙參加Data Centre World Asia 2026（2026新加坡亞洲數據中心展）。MBT將在T10展位展
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E7%9A%84%E5%B0%87%E5%9C%A8data-center-world-asia-2026%E7%99%BC%E4%BD%88%E8%A1%8C%E6%A5%AD%E9%A6%96%E5%89%B5%E9%9B%BB%E5%8A%9B-235800061.html
+- 事件3：AI代理人危險嗎？黃仁勳：並不反對政府監管
+  - 來源：Yahoo 台股；發布時間：2026-09-28T23:50:00Z；台北時間：2026-09-29 07:50
+  - 摘要：黃仁勳強調，自己絕非反對政府監管，但解決當前威脅的核心關鍵，在於「加速研發安全...
+  - 原文連結：https://tw.stock.yahoo.com/news/ai%E4%BB%A3%E7%90%86%E4%BA%BA%E5%8D%B1%E9%9A%AA%E5%97%8E-%E9%BB%83%E4%BB%81%E5%8B%B3-%E4%B8%A6%E4%B8%8D%E5%8F%8D%E5%B0%8D%E6%94%BF%E5%BA%9C%E7%9B%A3%E7%AE%A1-235000316.html
+- 事件4：破9千元申購最後衝刺！這「航太重鎮」增資倒數　破400機會趕緊抽
+  - 來源：Yahoo 台股；發布時間：2026-09-28T23:50:00Z；台北時間：2026-09-29 07:50
+  - 摘要：[FTNN新聞網]記者張書翰／綜合報導航太與精密機械大廠晟田（4541）為充實營運資金、興建廠房、並購置機器設備，近期辦理現金增資發行新股，預計將增資5000萬...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%A0%B49%E5%8D%83%E5%85%83%E7%94%B3%E8%B3%BC%E6%9C%80%E5%BE%8C%E8%A1%9D%E5%88%BA-%E9%80%99-%E8%88%AA%E5%A4%AA%E9%87%8D%E9%8E%AE-%E5%A2%9E%E8%B3%87%E5%80%92%E6%95%B8-%E7%A0%B4400%E6%A9%9F%E6%9C%83%E8%B6%95%E7%B7%8A%E6%8A%BD-235000751.html
+- 事件5：非農業用地仍作農用 這樣做少繳遺產稅560萬
+  - 來源：Yahoo 台股；發布時間：2026-09-28T23:30:00Z；台北時間：2026-09-29 07:30
+  - 摘要：財政部北區國稅局表示，被繼承人原來所有的「農業用地」，於死亡前經政府依法變更為「非農業用地」，但受限於土地所在地的都市計畫細部計畫尚未完成，或尚未實施市地重劃、區段徵收，導致於被繼承人死亡時仍無法按變更後的用途使用，只要現況仍維持農業使用，
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%9D%9E%E8%BE%B2%E6%A5%AD%E7%94%A8%E5%9C%B0%E4%BB%8D%E4%BD%9C%E8%BE%B2%E7%94%A8-%E9%80%99%E6%A8%A3%E5%81%9A%E5%B0%91%E7%B9%B3%E9%81%BA%E7%94%A2%E7%A8%85560%E8%90%AC-233000657.html
+- 事件6：31萬股民注意！00406A、00400A下周除息「這檔年化配息率飆16%」　最後上車日快筆記
+  - 來源：Yahoo 台股；發布時間：2026-09-28T23:30:00Z；台北時間：2026-09-29 07:30
+  - 摘要：[FTNN新聞網]記者薛明峻／台北報導採月月配的2檔主動式台股ETF主動中信台灣收益（00406A）、主動國泰動能高息（00400A），將於下周先後除息，根據投信日前公...
+  - 原文連結：https://tw.stock.yahoo.com/news/31%E8%90%AC%E8%82%A1%E6%B0%91%E6%B3%A8%E6%84%8F-00406a-00400a%E4%B8%8B%E5%91%A8%E9%99%A4%E6%81%AF-%E9%80%99%E6%AA%94%E5%B9%B4%E5%8C%96%E9%85%8D%E6%81%AF%E7%8E%87%E9%A3%8616-%E6%9C%80%E5%BE%8C%E4%B8%8A%E8%BB%8A%E6%97%A5%E5%BF%AB%E7%AD%86%E8%A8%98-233000718.html
 - 事件7：Federal Reserve Board announces approval of application by Peoples Bancorp Inc.
   - 來源：Federal Reserve；發布時間：Fri, 25 Sep 2026 20:30:00 GMT；台北時間：2026-09-26 04:30
   - 摘要：Federal Reserve Board announces approval of application by Peoples Bancorp Inc.
@@ -216,14 +216,14 @@
   - 來源：Federal Reserve；發布時間：Tue, 22 Sep 2026 20:30:00 GMT；台北時間：2026-09-23 04:30
   - 摘要：Federal Reserve Board announces approval of application by BancFirst Corporation
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/orders20260922a.htm
-- 事件11：U.S., China to lower tariffs on $60 billion of goods. Here's what qualifies
-  - 來源：CNBC；發布時間：Mon, 28 Sep 2026 08:31:33 GMT；台北時間：2026-09-28 16:31
-  - 摘要：The lists included U.S. imports of toys, sports equipment and Christmas decorations, while U.S. farm products appeared on the list of Chinese imports.
-  - 原文連結：https://www.cnbc.com/2026/09/28/us-china-lower-tariffs-trump-xi-meeting.html
-- 事件12：Treasury yields edge higher amid pressure on global government bonds
-  - 來源：CNBC；發布時間：Mon, 28 Sep 2026 11:00:19 GMT；台北時間：2026-09-28 19:00
-  - 摘要：Treasury yields edged higher on Monday as investors look ahead to fresh economic data releases this week.
-  - 原文連結：https://www.cnbc.com/2026/09/28/treasury-yields-bonds-selloff.html
+- 事件11：Feds can't withhold counterterrorism funds from states to force election admin changes, judge rules
+  - 來源：CNBC；發布時間：Mon, 28 Sep 2026 21:52:10 GMT；台北時間：2026-09-29 05:52
+  - 摘要：The judge said FEMA never explained how the election changes it wanted were "tied to the goal of shoring up vulnerabilities to terrorist attacks."
+  - 原文連結：https://www.cnbc.com/2026/09/28/elections-dhs-counterterrorism.html
+- 事件12：Treasury Secretary Scott Bessent hires Wall Street economist David Zervos
+  - 來源：CNBC；發布時間：Mon, 28 Sep 2026 14:14:45 GMT；台北時間：2026-09-28 22:14
+  - 摘要：Zervos is joining the Treasury Department as counselor to Bessent, adding a prominent markets voice to the administration's economic policy team.
+  - 原文連結：https://www.cnbc.com/2026/09/28/david-zervos-treasury-department-scott-bessent.html
 
 
 ## 三、期貨
@@ -378,7 +378,7 @@
 |---|---|---|
 | 交易日期 | 2026-09-24 | TAIFEX Proxy |
 | 到期月份／到期日 | 202609F4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-09-28 19:14:57 | 本機 |
+| 資料更新時間 | 2026-09-29 08:08:43 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -601,10 +601,10 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-09-24；資料時間：2026-09-28 19:14:57；時區：`Asia/Taipei`
+- 資料日期：2026-09-24；資料時間：2026-09-29 08:08:43；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 註記：同 T0 保護：8 格沿用前版有值（本次抓取缺失不覆寫）
-- 未取得欄位 (1)：options.chain_oi_change
+- 註記：同 T0 保護：10 格沿用前版有值（本次抓取缺失不覆寫）
+- 未取得欄位 (3)：sbl.sale_bal, sbl.sale_chg, options.chain_oi_change
 - 註記：無日期端點為最新盤勢快照 (判定資料日期 2026-09-28，非 T0 2026-09-24)，適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 
@@ -626,7 +626,6 @@
 - 註記：融資維持率未取得 (三源皆失敗；官方無每日序列)
 - 註記：融資維持率採前值遞補 (DATA 2026-09-21)，非 T0 2026-09-24
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
-- 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
 
 ## 六、期現選方向對照
