@@ -1,6 +1,7 @@
 """重大經濟數據/央行事件/市場新聞 (台股優先，其次國際)。
 
-台股：tw.stock.yahoo.com/news 列表 (標題+連結) + 內文 datePublished/og:description。
+台股：tw.stock.yahoo.com/news 列表 (標題+連結) + 內文 datePublished/og:description；
+      財訊快報 TodayNews.asp 備援 (Big5 解碼 + articleNo 日期過濾 + 內文全標題，Yahoo 不足時補)。
 國際：Fed 公告 RSS (央行事件) + CNBC 要聞 RSS + MarketWatch 要聞 RSS (備援)。
 investing hk 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查 → Phase 2。
 """
@@ -13,6 +14,7 @@ import requests
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 YAHOO_LIST = "https://tw.stock.yahoo.com/news"
+INVESTOR_LIST = "https://www.investor.com.tw/onlineNews/TodayNews.asp"
 INVEST_FEEDS = {"Federal Reserve": "https://www.federalreserve.gov/feeds/press_all.xml",
                 "CNBC": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
                 "MarketWatch": "https://feeds.marketwatch.com/marketwatch/topstories/"}
@@ -86,6 +88,78 @@ def _tw_news(max_items: int = 6, days: int = 7) -> list[dict]:
         print(f"[WARN] yahoo tw news failed: {e}")
     return out
 
+def _investor_news(max_items: int = 6, days: int = 7) -> list[dict]:
+    """財訊快報台股備援：TodayNews.asp 列表 (Big5 解碼 + articleNo 日期過濾)
+    + 內文全標題/摘要。Yahoo 不足時補位。"""
+    out: list[dict] = []
+    try:
+        r = requests.get(INVESTOR_LIST, headers=UA, timeout=25)
+        r.raise_for_status()
+        t = r.content.decode("cp950", errors="replace")
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        seen = set()
+        for m in re.finditer(
+            r'TODAY_NEWS_TITLE"><a href="NewsContent\.asp\?articleNo=(\d+)">([^<]+)</a>',
+            t,
+        ):
+            art, short = m.group(1), m.group(2).strip().rstrip(".")
+            if len(art) < 12 or not art[2:10].isdigit():
+                continue
+            url = ("https://www.investor.com.tw/onlineNews/NewsContent.asp?articleNo=" + art)
+            if url in seen or len(out) >= max_items:
+                if url in seen:
+                    continue
+                break
+            seen.add(url)
+            try:
+                dt = datetime(int(art[2:6]), int(art[6:8]), int(art[8:10]),
+                              12, 0, tzinfo=TAIPEI)
+            except ValueError:
+                continue
+            if dt.astimezone(timezone.utc) < cutoff - timedelta(days=1):
+                continue
+            title, summary, hm = short, "unavailable", None
+            try:
+                a = requests.get(url, headers=UA, timeout=15)
+                if a.status_code == 200:
+                    h = a.content.decode("cp950", errors="replace")
+                    tm = re.search(r'<meta name="title" content="([^"]+)"', h)
+                    if tm:
+                        full = tm.group(1).split("-財訊")[0].strip()
+                        hm = re.search(r"\((\d{1,2}:\d{2})\)", tm.group(1))
+                        if full:
+                            title = full
+                    if hm:
+                        try:
+                            hh, mm = hm.group(1).split(":")
+                            dt = datetime(int(art[2:6]), int(art[6:8]), int(art[8:10]),
+                                          int(hh), int(mm), tzinfo=TAIPEI)
+                        except ValueError:
+                            pass
+                    if dt.astimezone(timezone.utc) < cutoff:
+                        continue
+                    tx = re.sub(r"<script.*?</script>", "", h, flags=re.S)
+                    tx = re.sub(r"<style.*?</style>", "", tx, flags=re.S)
+                    tx = re.sub(r"<[^>]+>", " ", tx)
+                    tx = re.sub(r"\s+", " ", tx)
+                    anchor = title[:10]
+                    i = tx.find(anchor)
+                    if i >= 0:
+                        seg = tx[i + len(anchor):i + len(anchor) + 200].strip()
+                        seg = re.sub(r"^[，、。；：\s]+", "", seg)
+                        if len(seg) >= 20:
+                            summary = seg[:120]
+            except Exception:  # noqa: BLE001
+                pass
+            out.append({"title": title.strip(), "source": "財訊快報",
+                        "pub": dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                        "taipei": dt.astimezone(TAIPEI).strftime("%Y-%m-%d %H:%M"),
+                        "summary": summary, "link": url})
+    except Exception as e:  # noqa: BLE001
+        print(f"[WARN] investor news failed: {e}")
+    return out
+
+
 def _intl_news(max_items: int = 6, days: int = 7) -> list[dict]:
     out: list[dict] = []
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
@@ -145,9 +219,17 @@ def _intl_news(max_items: int = 6, days: int = 7) -> list[dict]:
 
 def get(tw_n: int = 6, intl_n: int = 6) -> dict:
     tw = _tw_news(tw_n)
+    if len(tw) < tw_n:
+        # 台股備援：Yahoo 不足時財訊快報補位
+        seen = {x["link"] for x in tw}
+        inv = _investor_news(tw_n - len(tw))
+        tw += [x for x in inv if x["link"] not in seen][:tw_n - len(tw)]
+        if len(tw) > len(seen):
+            print(f"[INFO] investor backfilled {len(tw) - len(seen)} tw news")
     intl_all = _intl_news(intl_n)
     seen = {x["link"] for x in tw}
     intl = [x for x in intl_all if x["link"] not in seen][:intl_n]
-    note = ("台股 Yahoo / 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；"
-            "investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/央行路徑待查，未採用")
+    note = ("台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；"
+            "Fed 無摘要；investing 港股為主已退役；"
+            "cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用")
     return {"items": tw + intl, "note": note, "ok": bool(tw + intl)}

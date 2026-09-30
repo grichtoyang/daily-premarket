@@ -24,6 +24,7 @@ ADR `TSM UMC ASX` / 商品 `CL=F GC=F BTC-USD` — 全部已驗 200。
 美債：主 `U.S. Treasury FiscalData API` (yield curve 端點 404) → 2Y 用 `Treasury yield.xml`
 (網頁備援，模板允許)；10Y/30Y 用 Yahoo `^TNX`/`^TYX`。
 重大新聞：台股 `tw.stock.yahoo.com/news` (列表＋內文 datePublished/og:description，前 6 筆) 優先，
+財訊快報 `TodayNews.asp` 備援 (Big5 解碼＋articleNo 日期過濾＋內文全標題，Yahoo 不足時補位)，
 國際 `Fed 公告 RSS`＋`CNBC 要聞 RSS`＋`MarketWatch` 備援 (總經優先兩級＋7日窗＋去重＋分源配額；
 Fed/CNBC/MW 有 description 者取摘要，Fed 無)。
 cnyes (tw_stock_news/wd_stock) CSR、wantgoo 新聞 JS 算繪，無機器接口未採用；
