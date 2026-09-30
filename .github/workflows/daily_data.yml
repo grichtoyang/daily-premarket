@@ -53,7 +53,9 @@ jobs:
           if git diff --staged --quiet; then
             echo "no changes"
           else
-            DATE=$(TZ=Asia/Taipei date +%Y%m%d)
-            git commit -m "chore(data): DATA_REPORT_${DATE}"
+            # 訊息用 T0（檔名基準）而非 DATE，避免休市日訊息與檔案不符
+            T0FILE=$(ls -t data_reports/DATA_REPORT_*.md | head -1)
+            T0=$(basename "$T0FILE" .md | sed 's/DATA_REPORT_//')
+            git commit -m "chore(data): DATA_REPORT_${T0}"
             git push
           fi
