@@ -133,11 +133,11 @@ def check(data: str, report: str) -> tuple[list[str], list[str]]:
     if len(scen) < 2:
         errs.append(f"scenarios 過少 ({len(scen)} 列，需>=2)")
 
-    # 4. 字數（正文 2500~4500，不含附錄；僅警告，表格多時易超）
+    # 4. 字數（正文 8000~13000，不含附錄；僅警告，表格多時易超）
     body = report.split("附錄A")[0] if "附錄A" in report else report
     n = len(re.sub(r"\s", "", body))
-    if not (2000 <= n <= 6000):
-        warns.append(f"正文字數 {n}（模板 2500~4500，供參考）")
+    if not (6000 <= n <= 15000):
+        warns.append(f"正文字數 {n}（模板 8000~13000，供參考）")
 
     # 5. 整數千分位抽查（警告性：DATA 沒有的整數可能是臆測或衍生目標價，人工複核）
     def itoks(s: str) -> set[str]:
@@ -151,6 +151,19 @@ def check(data: str, report: str) -> tuple[list[str], list[str]]:
                     and len(t.lstrip("+-")) != 8]
     if missing_ints:
         warns.append(f"DATA 無此整數（人工複核是否為衍生/目標價）：{missing_ints[:12]}")
+
+    # 6. 缺失數告警（逼出 SOP 3.5 救援；WARN 不擋發布）
+    um = re.search(r"未取得欄位 \((\d+)\)：([^\n]*)", data)
+    if um:
+        try:
+            un = int(um.group(1))
+        except ValueError:
+            un = 0
+        ulist = um.group(2).strip()
+        if un > 2:
+            warns.append(f"未取得欄位 {un} 項偏多（SOP 3.5 救援）：{ulist[:100]}")
+        if "margin.ratio" in ulist:
+            warns.append("維持率缺失（runner 常被擋：先驗源站，見 SOP 3.5）")
 
     return errs, warns
 
