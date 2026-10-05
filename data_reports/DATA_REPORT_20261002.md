@@ -1,8 +1,8 @@
 # DATA_REPORT_20261002
 
-- 報告日期：`2026-10-03`
+- 報告日期：`2026-10-05`
 - T0 交易日期：`2026-10-02`
-- 資料產出時間：`2026-10-03 08:08:26`
+- 資料產出時間：`2026-10-05 08:08:32`
 - 時區：`Asia/Taipei`
 
 ---
@@ -79,7 +79,7 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 4,482,049 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券餘額 | 2,087,838 | 張 | TWSE TWT93U + TPEX margin_sbl |
 | 借券賣出餘額 | 37,776 | 張 | TWSE TWT93U + TPEX margin_sbl |
 | 借券賣出增減 | 1,314 | 張 | TWSE TWT93U + TPEX margin_sbl |
 
@@ -114,9 +114,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 68,956.72 | 2,203.00 | +3.30 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 6,971.35 | 133.31 | +1.95 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 24,613.27 | 89.70 | +0.37 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 68,309.46 | -647.26 | -0.94 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 7,003.74 | 32.39 | +0.46 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 23,972.29 | -640.98 | -2.60 | Yahoo Finance Chart API |
 | 上海綜合 | 000001.SS | 3,842.20 | 11.74 | +0.31 | Yahoo Finance Chart API |
 | 深圳成分 | 399001.SZ | 12,887.62 | -14.33 | -0.11 | Yahoo Finance Chart API |
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,776.50 | 52.50 | +0.68 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 31,049.00 | 288.50 | +0.94 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 51,485.00 | 244.00 | +0.48 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,851.80 | 24.90 | +0.88 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,784.25 | 7.00 | +0.09 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 31,129.50 | 67.75 | +0.22 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 51,517.00 | 40.00 | +0.08 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,855.10 | 4.20 | +0.15 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.80 | -0.09 | -0.28 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.92 | -0.18 | -0.17 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.83 | -0.10 | -0.06 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,342.51 | -18.08 | -1.33 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.83 | -0.05 | -0.16 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.90 | -0.03 | -0.03 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.64 | -0.29 | -0.18 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,342.82 | -17.77 | -1.31 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 459.20 | 3.01 | +0.66 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 25.21 | 0.72 | +2.94 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 44.73 | 0.27 | +0.61 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 472.78 | 13.58 | +2.96 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 26.27 | 1.06 | +4.20 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 47.45 | 2.72 | +6.08 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,38 +168,40 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 91.26 | -1.61 | -1.73 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,172.10 | -30.20 | -0.72 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 84,437.50 | -415.60 | -0.49 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 90.83 | -0.28 | -0.31 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,170.80 | 8.50 | +0.20 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 86,414.57 | 1,650.99 | +1.95 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：台積休兵誰扛新高？臻鼎亮燈 ABF揪矽晶圓開派對
-  - 來源：Yahoo 台股；發布時間：2026-10-02T08:59:45Z；台北時間：2026-10-02 16:59
-  - 摘要：中小型股接棒點火，台股漲122點再創收盤新高！今(2)日加權指數終場上漲122.25點或0.25%，收48,475.74點，本周累計上漲451.14點，周線連三紅，成交金額8,997.10億元。櫃買指數大漲1.94%，電子指數上漲0.22%
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%AC%8A%E5%80%BC%E7%86%84%E7%81%AB%E5%8F%B0%E8%82%A1%E7%BA%8C%E5%89%B5%E9%AB%98%E9%9D%A0%E8%AA%B0%E6%89%9B%EF%BC%9F%E8%87%BB%E9%BC%8E-ky%E6%BC%B2%E5%81%9C%E3%80%81abf%E6%8F%AA%E7%9F%BD%E6%99%B6%E5%9C%93%E6%9A%B4%E8%B5%B0%E7%8B%82%E6%AD%A1%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-085945117.html
-- 事件2：連漲6天狂飆25.61%奪強勢股王！「石英元件廠」AI光通訊訂單看到2027年　3.2T新品已送樣
-  - 來源：Yahoo 台股；發布時間：2026-10-03T00:00:00Z；台北時間：2026-10-03 08:00
-  - 摘要：[FTNN新聞網]記者黃詩雯／綜合報導台股加權指數2日終場上漲122.25點，漲幅0.25%，收在48475.74點，觀察昨日強勢個股表現，石英元件廠晶技（3042）已連續6天上...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E9%80%A3%E6%BC%B26%E5%A4%A9%E7%8B%82%E9%A3%8625-61-%E5%A5%AA%E5%BC%B7%E5%8B%A2%E8%82%A1%E7%8E%8B-%E7%9F%B3%E8%8B%B1%E5%85%83%E4%BB%B6%E5%BB%A0-ai%E5%85%89%E9%80%9A%E8%A8%8A%E8%A8%82%E5%96%AE%E7%9C%8B%E5%88%B02027%E5%B9%B4-000000711.html
-- 事件3：衝向5萬點？美股全面收高　台指期夜盤飆漲677點
-  - 來源：Yahoo 台股；發布時間：2026-10-02T23:39:24Z；台北時間：2026-10-03 07:39
-  - 摘要：即時中心／陳奕劭報導受美國就業數據疲軟緩解升息預期影響，美國股市週五（2日）收高。受美股行情激勵，台指期夜盤今（3）日上漲677點、1.39%，收49,346點，台積電期貨盤後漲35點。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%A1%9D%E5%90%915%E8%90%AC%E9%BB%9E-%E7%BE%8E%E8%82%A1%E5%85%A8%E9%9D%A2%E6%94%B6%E9%AB%98-%E5%8F%B0%E6%8C%87%E6%9C%9F%E5%A4%9C%E7%9B%A4%E9%A3%86%E6%BC%B2677%E9%BB%9E-223255680.html
-- 事件4：美非農數據爆冷！美股收紅、科技7巨頭領軍起漲　這「記憶體」暴跌超過10%
-  - 來源：Yahoo 台股；發布時間：2026-10-02T23:30:00Z；台北時間：2026-10-03 07:30
-  - 摘要：[FTNN新聞網]記者陳宣穎／綜合報導由於美國9月非農業就業數據大幅低於預期，讓市場對聯準會（Fed）10月升息預期降溫，美股週五（2日）主要指數收紅，科技股多...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E9%9D%9E%E8%BE%B2%E6%95%B8%E6%93%9A%E7%88%86%E5%86%B7-%E7%BE%8E%E8%82%A1%E6%94%B6%E7%B4%85-%E7%A7%91%E6%8A%807%E5%B7%A8%E9%A0%AD%E9%A0%98%E8%BB%8D%E8%B5%B7%E6%BC%B2-%E9%80%99-%E8%A8%98%E6%86%B6%E9%AB%94-233000723.html
-- 事件5：死亡前兩年贈與土地 已轉手、仍持有 遺產計價大不同
-  - 來源：Yahoo 台股；發布時間：2026-10-02T23:19:00Z；台北時間：2026-10-03 07:19
-  - 摘要：財政部高雄國稅局提醒，被繼承人死亡前兩年內贈與特定親屬的土地，原則上都要併入遺產課稅，但土地已轉手或仍持有，計入遺產價值的算法有別。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%AD%BB%E4%BA%A1%E5%89%8D%E5%85%A9%E5%B9%B4%E8%B4%88%E8%88%87%E5%9C%9F%E5%9C%B0-%E5%B7%B2%E8%BD%89%E6%89%8B%E3%80%81%E4%BB%8D%E6%8C%81%E6%9C%89-%E9%81%BA%E7%94%A2%E8%A8%88%E5%83%B9%E5%A4%A7%E4%B8%8D%E5%90%8C-231900857.html
-- 事件6：【黃金二三事2-2】黃金存摺怎麼領出實體黃金？代幣化如何縮短提領黃金時間？
-  - 來源：Yahoo 台股；發布時間：2026-10-02T23:15:00Z；台北時間：2026-10-03 07:15
-  - 摘要：你聽過「黃金存摺」嗎？黃金存摺的最大特點，就是所有黃金交易都登載在存摺（或數位帳戶）上，存戶不必負擔保管實體黃金的風險與成本。不過，還是有不少民眾認為「黃金放在身邊比較保險」，究竟黃金存摺的實體黃金怎麼領？以及年底預計上路的黃金存摺業務代幣
-  - 原文連結：https://tw.stock.yahoo.com/news/%E9%BB%83%E9%87%91%E4%BA%8C%E4%B8%89%E4%BA%8B2-2-%E9%BB%83%E9%87%91%E5%AD%98%E6%91%BA%E6%80%8E%E9%BA%BC%E9%A0%98%E5%87%BA%E5%AF%A6%E9%AB%94%E9%BB%83%E9%87%91-%E4%BB%A3%E5%B9%A3%E5%8C%96%E5%A6%82%E4%BD%95%E7%B8%AE%E7%9F%AD%E6%8F%90%E9%A0%98%E9%BB%83%E9%87%91%E6%99%82%E9%96%93-231500231.html
+- 事件1：台股「雙龍頭」法說會 一文掌握一週財經重點
+  - 來源：Yahoo 台股；發布時間：2026-10-04T04:47:20Z；台北時間：2026-10-04 12:47
+  - 摘要：本周【投資早知道】聚焦在台股首檔中小股本主動ETF！台新00416A 10月5日開募；雙龍頭法說行情！台達電大立光接連登場；中國大陸股市復市！外匯儲備信貸數據同步公布 牽動港股與新興市場走向；以及中油宣布油價凍漲！政府補貼累計突破253億。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E9%A6%96%E6%AA%94%E4%B8%AD%E5%B0%8F%E8%82%A1%E6%9C%AC%E4%B8%BB%E5%8B%95etf%E9%96%8B%E5%8B%9F-%E9%9B%99%E9%BE%8D%E9%A0%AD%E6%B3%95%E8%AA%AA%E8%A1%8C%E6%83%85%EF%BC%81%E5%8F%B0%E9%81%94%E9%9B%BB%E5%A4%A7%E7%AB%8B%E5%85%89%E6%8E%A5%E9%80%A3%E7%99%BB%E5%A0%B4-%E4%B8%AD%E5%9C%8B%E5%A4%A7%E9%99%B8%E8%82%A1%E5%B8%82%E5%BE%A9%E5%B8%82%EF%BC%81%E5%A4%96%E5%8C%AF%E5%84%B2%E5%82%99%E4%BF%A1%E8%B2%B8%E6%95%B8%E6%93%9A%E5%90%8C%E6%AD%A5%E5%85%AC%E5%B8%83-%E7%89%BD%E5%8B%95%E6%B8%AF%E8%82%A1%E8%88%87%E6%96%B0%E8%88%88%E5%B8%82%E5%A0%B4%E8%B5%B0%E5%90%91-%E4%B8%AD%E6%B2%B9%E5%AE%A3%E5%B8%83%E6%B2%B9%E5%83%B9%E5%87%8D%E6%BC%B2%EF%BD%9C%E6%8A%95%E8%B3%87%E6%97%A9%E7%9F%A5%E9%81%93-044720123.html
+- 事件2：婚假14日新制上路！竹縣提醒30人以上企業盡速修正工作規則
+  - 來源：Yahoo 台股；發布時間：2026-10-05T00:00:46Z；台北時間：2026-10-05 08:00
+  - 摘要：【互傳媒／記者 宋旭志／新竹 報導】婚假14日新制10月1日正式上路!為保障勞工權益並協助企業落實最新勞動法令
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A9%9A%E5%81%8714%E6%97%A5%E6%96%B0%E5%88%B6%E4%B8%8A%E8%B7%AF-%E7%AB%B9%E7%B8%A3%E6%8F%90%E9%86%9230%E4%BA%BA%E4%BB%A5%E4%B8%8A%E4%BC%81%E6%A5%AD%E7%9B%A1%E9%80%9F%E4%BF%AE%E6%AD%A3%E5%B7%A5%E4%BD%9C%E8%A6%8F%E5%89%87-000046871.html
+- 事件3：PCB股太熱遭盯上！「這檔」6日狂飆39%、尖點本益比衝111倍　23檔入列注意股名單
+  - 來源：Yahoo 台股；發布時間：2026-10-05T00:00:00Z；台北時間：2026-10-05 08:00
+  - 摘要：[FTNN新聞網]記者黃詩雯／綜合報導台股加權指數週五（2日）終場收48,475.74點，上漲122.25點或0.25%，成交金額達8997.1億元，證交所公布23檔注意股，PCB供應...
+  - 原文連結：https://tw.stock.yahoo.com/news/pcb%E8%82%A1%E5%A4%AA%E7%86%B1%E9%81%AD%E7%9B%AF%E4%B8%8A-%E9%80%99%E6%AA%94-6%E6%97%A5%E7%8B%82%E9%A3%8639-%E5%B0%96%E9%BB%9E%E6%9C%AC%E7%9B%8A%E6%AF%94%E8%A1%9D111%E5%80%8D-23%E6%AA%94%E5%85%A5%E5%88%97%E6%B3%A8%E6%84%8F%E8%82%A1%E5%90%8D%E5%96%AE-000000092.html
+- 事件4：四貸同堂｜房貸、增貸、信貸再加股票質借　10月底銀行券商開始跨業查信用
+  - 來源：Yahoo 台股；發布時間：2026-10-04T23:45:00Z；台北時間：2026-10-05 07:45
+  - 摘要：金管會已經宣布，銀行與券商的跨業信用查詢機制預計在2026年10月底上線。
+
+簡單來說，以前銀行主要看銀行這一端的借款，券商主要掌握證券端的融資。新制度上線後，在取得客戶同意的情況下，雙方可以增加掌握另一端的借款資訊。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%9B%9B%E8%B2%B8%E5%90%8C%E5%A0%82%EF%BD%9C%E6%88%BF%E8%B2%B8%E3%80%81%E5%A2%9E%E8%B2%B8%E3%80%81%E4%BF%A1%E8%B2%B8%E5%86%8D%E5%8A%A0%E8%82%A1%E7%A5%A8%E8%B3%AA%E5%80%9F-10%E6%9C%88%E5%BA%95%E9%8A%80%E8%A1%8C%E5%88%B8%E5%95%86%E9%96%8B%E5%A7%8B%E8%B7%A8%E6%A5%AD%E6%9F%A5%E4%BF%A1%E7%94%A8-234500001.html
+- 事件5：PCB同步勁揚！「這檔」飆連7漲37.7%創高　欣興、景碩也收連3紅寫新天價
+  - 來源：Yahoo 台股；發布時間：2026-10-04T23:45:00Z；台北時間：2026-10-05 07:45
+  - 摘要：[FTNN新聞網]記者陳献朋／綜合報導PCB中的載板族群上週股價表現亮眼，南電（8046）週五（2）飆出連7漲37.74%的好成績，收在1460元，創歷史新高，欣興（3037）...
+  - 原文連結：https://tw.stock.yahoo.com/news/pcb%E5%90%8C%E6%AD%A5%E5%8B%81%E6%8F%9A-%E9%80%99%E6%AA%94-%E9%A3%86%E9%80%A37%E6%BC%B237-7-%E5%89%B5%E9%AB%98-234500251.html
+- 事件6：與152萬股民作對！外資9月暴賣0050撤資207億元　00919共4檔高息ETF同挨刀砍出破17萬張
+  - 來源：Yahoo 台股；發布時間：2026-10-04T23:30:00Z；台北時間：2026-10-05 07:30
+  - 摘要：[FTNN新聞網]記者薛明峻／台北報導台股9月一度衝上48601.53點寫歷史新高，加權指數9月30日收在47940.13點，月線狂漲1811.66點，漲幅達3.93%。根據證交所公布...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%88%87152%E8%90%AC%E8%82%A1%E6%B0%91%E4%BD%9C%E5%B0%8D-%E5%A4%96%E8%B3%879%E6%9C%88%E6%9A%B4%E8%B3%A30050%E6%92%A4%E8%B3%87207%E5%84%84%E5%85%83-00919%E5%85%B14%E6%AA%94%E9%AB%98%E6%81%AFetf%E5%90%8C%E6%8C%A8%E5%88%80%E7%A0%8D%E5%87%BA%E7%A0%B417%E8%90%AC%E5%BC%B5-233000117.html
 - 事件7：Federal Reserve Board announces approval of application by Fleur Capital Corporation
   - 來源：Federal Reserve；發布時間：Fri, 2 Oct 2026 20:45:00 GMT；台北時間：2026-10-03 04:45
   - 摘要：Federal Reserve Board announces approval of application by Fleur Capital Corporation
@@ -216,14 +218,14 @@
   - 來源：Federal Reserve；發布時間：Wed, 30 Sep 2026 13:00:00 GMT；台北時間：2026-09-30 21:00
   - 摘要：Federal Reserve Board finalizes changes to enhance the transparency and public accountability of its stress test and reduce volatility in its stress t
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/bcreg20260930a.htm
-- 事件11：DOJ says it will not reopen criminal probe into former Fed Chair Powell
-  - 來源：CNBC；發布時間：Fri, 02 Oct 2026 22:01:17 GMT；台北時間：2026-10-03 06:01
-  - 摘要：The confirmation comes after the Fed's inspector general report that said there were no grounds for a criminal referral over the mismanaged headquarte
-  - 原文連結：https://www.cnbc.com/2026/10/02/doj-says-it-will-not-reopen-criminal-probe-into-former-fed-chair-powell.html
-- 事件12：Labor market faltered in September as jobs increased by just 29,000, unemployment rate rose to 4.2%
-  - 來源：CNBC；發布時間：Fri, 02 Oct 2026 13:45:58 GMT；台北時間：2026-10-02 21:45
-  - 摘要：Nonfarm payrolls rose by just 29,000 in September, well below the 84,000 forecast, and the unemployment rate rose to 4.2%, the Bureau of Labor Statist
-  - 原文連結：https://www.cnbc.com/2026/10/02/jobs-report-september-2026.html
+- 事件11：Treasury Sec. Bessent, IRS crack down on ETF strategy the wealthy are using to avoid capital gains taxes
+  - 來源：CNBC；發布時間：Fri, 02 Oct 2026 13:48:40 GMT；台北時間：2026-10-02 21:48
+  - 摘要：The IRS and Treasury issued a warning this week on an ETF strategy wealthy investors have been using to shield capital gains income from taxes.
+  - 原文連結：https://www.cnbc.com/2026/10/02/treasury-irs-capital-gains-income-tax-section-351-warning.html
+- 事件12：Fed minutes coming this week could give markets important clues about future rate hikes
+  - 來源：MarketWatch；發布時間：Sun, 04 Oct 2026 12:00:00 GMT；台北時間：2026-10-04 20:00
+  - 摘要：Minutes from the September meeting may provide extra context, as the real fed-funds rate is now surprisingly low.
+  - 原文連結：https://www.marketwatch.com/story/fed-minutes-coming-this-week-could-give-markets-important-clues-about-future-rate-hikes-31bfba5b?mod=mw_rss_topstories
 
 
 ## 三、期貨
@@ -378,7 +380,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-02 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F1 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-03 08:08:26 | 本機 |
+| 資料更新時間 | 2026-10-05 08:08:32 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -601,7 +603,7 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-02；資料時間：2026-10-03 08:08:26；時區：`Asia/Taipei`
+- 資料日期：2026-10-02；資料時間：2026-10-05 08:08:32；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 未取得欄位 (0)：無
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
