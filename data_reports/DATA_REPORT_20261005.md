@@ -71,7 +71,7 @@
 | 融資增減 | +8.8 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 254,968 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | -14,794 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | 197.07 | % | wantgoo 大盤融資維持率 (資料日期 2026-10-02；民間估算；官方無每日序列) |
+| 融資維持率 | 200.67 | % | istock 大盤融資維持率 (資料日期 2026-10-05；T0當日；補登；wantgoo 最新為 10-02 值 197.07；民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -504,6 +504,7 @@
 |---|---|---|
 | Call OI 增加最多的履約價 | 52,500 (+2,875) | TAIFEX Proxy snapshots (2026-10-01) |
 | Call OI 減少最多的履約價 | 47,950 (-5) | TAIFEX Proxy snapshots (2026-10-01) |
+| Call 最大 OI 履約價增減 (Call Wall 52,500) | 52,500 (+2,875) | TAIFEX Proxy snapshots (2026-10-01) |
 
 ### 10．Put OI 增減集中區
 
@@ -511,6 +512,7 @@
 |---|---|---|
 | Put OI 增加最多的履約價 | 49,000 (+1,913) | TAIFEX Proxy snapshots (2026-10-01) |
 | Put OI 減少最多的履約價 | 43,300 (-4) | TAIFEX Proxy snapshots (2026-10-01) |
+| Put 最大 OI 履約價增減 (Put Wall 49,000) | 49,000 (+1,913) | TAIFEX Proxy snapshots (2026-10-01) |
 
 ### 11．Call Wall
 
@@ -618,12 +620,12 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`wantgoo 大盤融資維持率 (資料日期 2026-10-02；民間估算；官方無每日序列)`
+- margin_ratio：`istock 大盤融資維持率 (資料日期 2026-10-05；T0當日；補登；wantgoo 最新為 10-02 值 197.07；民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率資料日期 2026-10-02 (T0 2026-10-05 尚無，採最新可得)
+- 註記：融資維持率 200.67 為補登（T0 當日值，istock；wantgoo 最新為 10-02 值 197.07；晨跑 runner 端被擋，詳 HANDOFF）
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
