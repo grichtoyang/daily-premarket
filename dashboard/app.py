@@ -36,11 +36,15 @@ st.markdown("<style>div.block-container{padding-top:3.5rem;max-width:1220px}"
 
 # ---------------- 解析 ----------------
 def md_tables(md: str, section: str) -> list[pd.DataFrame]:
-    m = re.search(rf"{re.escape(section)}([\s\S]*?)(?=^#{{1,4}} |\Z)", md, re.M)
+    # 起點必須是標題行（含關鍵字），避免命中表格列（如增減備註列含 Wall 字樣）
+    m = re.search(rf"(?m)^#+ .*?{re.escape(section)}.*?$", md)
     if not m:
         return []
+    seg = md[m.end():]
+    m2 = re.search(r"(?m)^#{1,4} ", seg)
+    seg = seg[:m2.start()] if m2 else seg
     out = []
-    for tm in re.finditer(r"((?:\|.*\n){3,})", m.group(1)):
+    for tm in re.finditer(r"((?:\|.*\n){3,})", seg):
         lines = [l.strip() for l in tm.group(1).strip().splitlines() if l.strip()]
         if len(lines) < 3:
             continue
