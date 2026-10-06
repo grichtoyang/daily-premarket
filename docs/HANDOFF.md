@@ -54,3 +54,4 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 本機排程為主力（2026-10-01 建 DailyPremarket0800，每日 07:55 跑 scripts/daily_fetch.py＋推送，住宅 IP；Actions 08:00 為備援；筆電已開 WakeToRun＋StartWhenAvailable＋電池可跑，電源選項喚醒計時器用戶自查；首跑 10/2）
 - worker 快照 chain 連空（09-23 起）：cron 14:30 撞日報未發布（walls 同死）；2026-09-30 用戶已改 Cron Trigger 為 `30 7 * * 1-5`（台北 15:30）；10/2 驗收快照 chain；勿碰 write-now（會拿現在 chain 蓋舊日期污染標籤）
 - 新聞增財訊快報備援（TodayNews Big5＋articleNo 日期＋內文；Yahoo 不足時補位；已單測）
+- 報告起草機 src/draft_blocks.py（數字全自動＋解讀全人工；附錄B＋§6草稿；三份 DATA 實測＋閘門格式驗證；下次開工即用）
