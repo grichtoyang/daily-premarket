@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-10-07`
 - T0 交易日期：`2026-10-06`
-- 資料產出時間：`2026-10-07 08:09:08`
+- 資料產出時間：`2026-10-07 08:28:16`
 - 時區：`Asia/Taipei`
 
 ---
@@ -71,7 +71,7 @@
 | 融資增減 | +62.9 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 250,745 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | -4,223 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | 200.67 | % | 前值遞補 (DATA 2026-10-05；當日三源皆失敗；民間估算；官方無每日序列) |
+| 融資維持率 | 200.72 | % | wantgoo 大盤融資維持率 (資料日期 2026-10-05；民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -114,8 +114,8 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 69,946.86 | 1,637.40 | +2.40 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 7,003.74 | 32.39 | +0.46 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 70,675.28 | 728.42 | +1.04 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 6,883.35 | -120.39 | -1.72 | Yahoo Finance Chart API |
 | 香港恆生 | ^HSI | 24,040.34 | 68.05 | +0.28 | Yahoo Finance Chart API |
 | 上海綜合 | 000001.SS | 3,842.20 | 11.74 | +0.31 | Yahoo Finance Chart API |
 | 深圳成分 | 399001.SZ | 12,887.62 | -14.33 | -0.11 | Yahoo Finance Chart API |
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,881.00 | 54.75 | +0.70 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 31,491.25 | 173.50 | +0.55 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 51,824.00 | 266.00 | +0.52 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,846.20 | -21.60 | -0.75 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,883.00 | 56.75 | +0.73 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 31,502.25 | 184.50 | +0.59 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 51,822.00 | 264.00 | +0.51 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,848.30 | -19.50 | -0.68 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.78 | 0.02 | +0.08 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.91 | -0.26 | -0.25 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 158.41 | 0.45 | +0.29 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,339.28 | -4.47 | -0.33 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.77 | 0.02 | +0.07 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.93 | -0.24 | -0.23 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 158.45 | 0.49 | +0.31 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,339.78 | -3.97 | -0.30 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 89.97 | 0.54 | +0.60 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,193.90 | 37.10 | +0.89 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 85,483.89 | -302.70 | -0.35 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 90.21 | 0.78 | +0.87 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,194.20 | 37.40 | +0.90 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 85,440.59 | -346.00 | -0.40 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -288,11 +288,11 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | 82,796 | TAIFEX Proxy |
-| 前十大交易人空方 OI | 76,120 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI | +6,676 | TAIFEX Proxy |
-| 多空淨 OI 變化 (2026-10-02→2026-10-05) | +2,899 | TAIFEX Proxy snapshots (2026-10-05) |
-- 資料日期：2026-10-05 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 前十大交易人多方 OI | 83,288 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 77,176 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | +6,112 | TAIFEX Proxy |
+| 多空淨 OI 變化 (2026-10-02→2026-10-06) | +2,335 | TAIFEX Proxy snapshots (2026-10-05) |
+- 資料日期：2026-10-06 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 ### 5．日盤、夜盤法人交易資料
 
@@ -352,10 +352,10 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | 82,796 | TAIFEX Proxy |
-| 前十大交易人空方 OI | 76,120 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI | +6,676 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI 變化 (2026-10-02→2026-10-05) | +2,899 | TAIFEX Proxy snapshots (2026-10-05) |
+| 前十大交易人多方 OI | 83,288 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 77,176 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | +6,112 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI 變化 (2026-10-02→2026-10-06) | +2,335 | TAIFEX Proxy snapshots (2026-10-05) |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
 
@@ -378,7 +378,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-06 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610W1 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-07 08:09:08 | 本機 |
+| 資料更新時間 | 2026-10-07 08:28:16 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -577,31 +577,31 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 買權多方 OI | 13,778 | TAIFEX Proxy |
-| 買權空方 OI | 12,483 | TAIFEX Proxy |
-| 買權多空淨 OI | +1,295 | TAIFEX Proxy |
-| 買權多空淨 OI 變化 (2026-10-02→2026-10-06) | +498 | TAIFEX Proxy snapshots (2026-10-05) |
+| 買權多方 OI | 13,465 | TAIFEX Proxy |
+| 買權空方 OI | 11,904 | TAIFEX Proxy |
+| 買權多空淨 OI | +1,561 | TAIFEX Proxy |
+| 買權多空淨 OI 變化 (2026-10-02→2026-10-05) | +764 | TAIFEX Proxy snapshots (2026-10-05) |
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 賣權多方 OI | 8,960 | TAIFEX Proxy |
-| 賣權空方 OI | 9,443 | TAIFEX Proxy |
-| 賣權多空淨 OI | -483 | TAIFEX Proxy |
-| 賣權多空淨 OI 變化 (2026-10-02→2026-10-06) | +633 | TAIFEX Proxy snapshots (2026-10-05) |
-- 資料日期：買權 2026-10-06／賣權 2026-10-06 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 賣權多方 OI | 8,331 | TAIFEX Proxy |
+| 賣權空方 OI | 9,219 | TAIFEX Proxy |
+| 賣權多空淨 OI | -888 | TAIFEX Proxy |
+| 賣權多空淨 OI 變化 (2026-10-02→2026-10-05) | +228 | TAIFEX Proxy snapshots (2026-10-05) |
+- 資料日期：買權 2026-10-05／賣權 2026-10-05 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 #### 大戶流向（全日；前十大無日夜拆分）
 
 | 項目 | 淨變化 | 區間 | 資料來源 |
 |---|---|---|---|
-| 期貨前十大 | +2,899 | 2026-10-02→2026-10-05 | TAIFEX Proxy snapshots (2026-10-05) |
-| 買權前十大 | +498 | 2026-10-02→2026-10-06 | TAIFEX Proxy snapshots (2026-10-05) |
-| 賣權前十大 | +633 | 2026-10-02→2026-10-06 | TAIFEX Proxy snapshots (2026-10-05) |
+| 期貨前十大 | +2,335 | 2026-10-02→2026-10-06 | TAIFEX Proxy snapshots (2026-10-05) |
+| 買權前十大 | +764 | 2026-10-02→2026-10-05 | TAIFEX Proxy snapshots (2026-10-05) |
+| 賣權前十大 | +228 | 2026-10-02→2026-10-05 | TAIFEX Proxy snapshots (2026-10-05) |
 
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-06；資料時間：2026-10-07 08:09:08；時區：`Asia/Taipei`
+- 資料日期：2026-10-06；資料時間：2026-10-07 08:28:16；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 未取得欄位 (0)：無
 - 註記：夜盤 OHLC 資料日期 2026-10-07 (T0 2026-10-06)，來源 proxy
@@ -617,13 +617,12 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`前值遞補 (DATA 2026-10-05；當日三源皆失敗；民間估算；官方無每日序列)`
+- margin_ratio：`wantgoo 大盤融資維持率 (資料日期 2026-10-05；民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率未取得 (三源皆失敗；官方無每日序列)
-- 註記：融資維持率採前值遞補 (DATA 2026-10-05)，非 T0 2026-10-06
+- 註記：融資維持率資料日期 2026-10-05 (T0 2026-10-06 尚無，採最新可得)
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
