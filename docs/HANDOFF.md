@@ -62,3 +62,4 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - DATA §18 真值：選擇權前十大＝買權 13,465/11,904/+1,561/+764、賣權 8,331/9,219/-888/+228，資料日期皆 2026-10-05（月選落後一日）；流向 期貨 +2,335（→10-06）／買賣權 +764/+228（→10-05）。報告初版誤植舊鏈值（12,483/9,443/±1,295/483、±498/633、6676、NQ+0.55/日經+2.40/31.76/PE203）已全修。
 - DATA OI 增減有重複列（fetch 寫 52,500/+2,875 與 49,000/+1,913；手補 Wall 列 50,000/+1,453、49,000/+1,401），報告用 Wall 列（模板口徑），DATA 未動。
 - 工具教訓：bash workdir 遇 CJK 會間歇性路徑亂碼→改用 `workdir=D:\Opencode\Proj`＋python 內 `os.chdir`；powershell `>` 寫 UTF-16→改用 python 內寫檔；git add 用 python glob 避 CJK 字面。
+- 2026-10-07 防重演三件套：`src/draft_blocks.py` 加吐 §5.5 前十大／§6.4 比較表／§6.2 流向草稿（含區間＋資料日期，照貼不手改）；新增 `scripts/numcheck.py`（token 稽核＋3 結構檢查＋DATA sha，驗收：今日成品 RC=0、故意改錯 2 處 RC=1 全抓到）；starter prompt 加開工鐵律（凍結 sha→起草機貼數→單輪稽核→gate）。

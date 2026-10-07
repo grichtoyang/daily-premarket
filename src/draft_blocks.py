@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""報告起草機：從 DATA_REPORT 產出附錄B五區塊＋§6 表格草稿。
+"""報告起草機：從 DATA_REPORT 產出附錄B五區塊＋§6/§5.5 表格草稿。
 
 用法：
     python src/draft_blocks.py --data data_reports/DATA_REPORT_20261005.md [--out /tmp/draft.md]
 
-原則：數字全自動（只出自 DATA，當前檔案 bytes，刷新也不怕抄錯版）；
+原則：數字全自動（只出自 DATA，當前檔案 bytes，刷新也不怕抄錯版；
+比較表/流向/前十大含區間與資料日期，一律照貼不手改）；
 解讀全人工（verdict 理由、levels 價位選擇、scenarios 條件一律留白手寫）。
 輸出直接貼進報告對應位置再補解讀。
 """
@@ -189,6 +190,106 @@ def _oi_moves(data: str) -> list[str]:
             f"| 最大OI增減 | {_cmx} | {_pmx} |"]
 
 
+def _seg(data: str, section: str) -> str:
+    """取 section 標題起至下一個同級以上標題止的文字段（找資料日期註記用）。"""
+    m = re.search(rf"(?m)^#+ .*?{re.escape(section)}.*?$", data)
+    if not m:
+        return ""
+    seg = data[m.end():]
+    m2 = re.search(r"(?m)^#{1,4} ", seg)
+    return seg[:m2.start()] if m2 else seg
+
+
+def _date_note(seg: str) -> str:
+    m = re.search(r"(?m)^\s*-\s*資料日期.*?$", seg)
+    if not m:
+        return ""
+    return re.sub(r"^\s*-\s*", "- ", m.group(0).strip())
+
+
+def _interval(label: str) -> str:
+    m = re.search(r"\(([^)]*→[^)]*)\)", str(label))
+    return m.group(1) if m else ""
+
+
+def _t10_fut(data: str) -> list[str]:
+    """§5.5 期貨前十大草稿（貼進 5.5，數字直接用，下加解讀）。"""
+    t = _first_table(data, "前十大交易人多空未平倉部位")
+    vals = {"多方": "—", "空方": "—", "淨": "—", "變化": "—", "區間": ""}
+    if t is not None:
+        for r in t["rows"]:
+            c0 = str(r[0])
+            v = str(r[1]) if len(r) > 1 else "—"
+            if "變化" in c0:
+                vals["變化"] = v
+                vals["區間"] = _interval(c0)
+            elif "淨" in c0:
+                vals["淨"] = v
+            elif "多方" in c0:
+                vals["多方"] = v
+            elif "空方" in c0:
+                vals["空方"] = v
+    iv = f"（{vals['區間']}）" if vals["區間"] else ""
+    lines = ["| 項目 | 口數 |", "|---|---|",
+             f"| 多方 OI | {vals['多方']} |",
+             f"| 空方 OI | {vals['空方']} |",
+             f"| 多空淨 OI | {vals['淨']} |",
+             f"| 多空淨 OI 變化{iv} | {vals['變化']} |"]
+    note = _date_note(_seg(data, "前十大交易人多空未平倉部位"))
+    if note:
+        lines.append(note)
+    return lines
+
+
+def _opt_comps(data: str) -> list[str]:
+    """§6.4 選擇權前十大比較表草稿（買權/賣權欄，貼進 6.4，數字直接用）。"""
+    ts = _tables(data, "選擇權前十大")
+    buy = sell = None
+    if len(ts) >= 2:
+        buy, sell = ts[0], ts[1]
+    def _pick(t, key: str) -> str:
+        if t is None:
+            return "—"
+        for r in t["rows"]:
+            if key in str(r[0]):
+                return str(r[1]) if len(r) > 1 else "—"
+        return "—"
+    def _pick_iv(t, key: str) -> tuple:
+        if t is None:
+            return "—", ""
+        for r in t["rows"]:
+            if key in str(r[0]):
+                return (str(r[1]) if len(r) > 1 else "—"), _interval(r[0])
+        return "—", ""
+    b_long, s_long = _pick(buy, "多方"), _pick(sell, "多方")
+    b_short, s_short = _pick(buy, "空方"), _pick(sell, "空方")
+    b_net, s_net = _pick(buy, "淨 OI"), _pick(sell, "淨 OI")
+    b_chg, b_iv = _pick_iv(buy, "變化")
+    s_chg, s_iv = _pick_iv(sell, "變化")
+    b_ivt = f"（{b_iv}）" if b_iv else ""
+    s_ivt = f"（{s_iv}）" if s_iv else ""
+    lines = ["| 項目 | 買權 | 賣權 |", "|---|---|---|",
+             f"| 多方 OI | {b_long} | {s_long} |",
+             f"| 空方 OI | {b_short} | {s_short} |",
+             f"| 多空淨 OI | {b_net} | {s_net} |",
+             f"| 多空淨 OI 變化 | {b_chg}{b_ivt} | {s_chg}{s_ivt} |"]
+    note = _date_note(_seg(data, "選擇權前十大"))
+    if note:
+        lines.append(note)
+    return lines
+
+
+def _flow(data: str) -> list[str]:
+    """§6.2 大戶流向草稿（貼進 6.2，數值＋區間直接用，下加解讀）。"""
+    t = _first_table(data, "大戶流向")
+    lines = ["| 項目 | 淨變化 | 區間 |", "|---|---|---|"]
+    if t is not None:
+        for r in t["rows"]:
+            if len(r) >= 3:
+                lines.append(f"| {r[0]} | {r[1]} | {r[2]} |")
+    return lines
+
+
 def _vix_block(data: str) -> list[str]:
     us = _first_table(data, "美股指數")
     vx = vxp = ""
@@ -241,6 +342,15 @@ def build(data_path: str) -> str:
     A("")
     A("# DRAFT-§6.3 VIX 三列（貼進 6.3，下加解讀）")
     A("\n".join(_vix_block(data)))
+    A("")
+    A("# DRAFT-§5.5 期貨前十大（貼進 5.5，數字直接用，下加解讀）")
+    A("\n".join(_t10_fut(data)))
+    A("")
+    A("# DRAFT-§6.4 選擇權前十大比較表（貼進 6.4，買權/賣權欄＋區間直接用）")
+    A("\n".join(_opt_comps(data)))
+    A("")
+    A("# DRAFT-§6.2 大戶流向（貼進 6.2，數值＋區間直接用，下加解讀）")
+    A("\n".join(_flow(data)))
     return "\n".join(L) + "\n"
 
 
