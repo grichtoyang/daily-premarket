@@ -143,6 +143,23 @@ def _oidist(data: str) -> list[str]:
     return out
 
 
+def _top10_merge(data: str) -> list[str]:
+    """§6.4 Top10 全表並排（markdown 表格行；整張照貼進 6.4，下加備查註記）。"""
+    lines = ["| # | Call 履約價 | Call OI | Call 佔比 | Put 履約價 | Put OI | Put 佔比 |",
+             "|---|---|---|---|---|---|---|"]
+    try:
+        cc = _tables(data, "Call OI 分布明細")[0]["rows"][:10]
+        pp = _tables(data, "Put OI 分布明細")[0]["rows"][:10]
+        for i in range(min(10, len(cc), len(pp))):
+            c, p = cc[i], pp[i]
+            lines.append(f"| {i + 1} | {c[1]} | {c[2]} | "
+                         f"{c[3] if len(c) > 3 else '—'} | {p[1]} | {p[2]} | "
+                         f"{p[3] if len(p) > 3 else '—'} |")
+    except (IndexError, KeyError):
+        pass
+    return lines
+
+
 def _top3_merge(data: str) -> list[str]:
     """§6.1 Top3 並排表（markdown 表格行）。"""
     lines = ["| 排名 | Call 履約價 | Call OI | Call 佔比 | Put 履約價 | Put OI | Put 佔比 |",
@@ -336,6 +353,9 @@ def build(data_path: str) -> str:
     A("")
     A("# DRAFT-§6.1 Top3 並排（貼進 6.1，下加解讀）")
     A("\n".join(_top3_merge(data)))
+    A("")
+    A("# DRAFT-§6.4 Top10 全表（整張照貼進 6.4，下加備查註記，不手排）")
+    A("\n".join(_top10_merge(data)))
     A("")
     A("# DRAFT-§6 OI 增減並排（貼進 6.1，下加解讀）")
     A("\n".join(_oi_moves(data)))

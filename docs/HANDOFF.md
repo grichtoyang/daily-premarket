@@ -65,3 +65,4 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 2026-10-07 防重演三件套：`src/draft_blocks.py` 加吐 §5.5 前十大／§6.4 比較表／§6.2 流向草稿（含區間＋資料日期，照貼不手改）；新增 `scripts/numcheck.py`（token 稽核＋3 結構檢查＋DATA sha，驗收：今日成品 RC=0、故意改錯 2 處 RC=1 全抓到）；starter prompt 加開工鐵律（凍結 sha→起草機貼數→單輪稽核→gate）。
 - 2026-10-08 首跑新流程（T0=2026-10-07 全日，`dbbbc99`）：自查抓 §6.4 P9/P10 錯位 1 處，numcheck 單輪抓 2 處（30Y 誤植 5.64→5.66、收盤距 5 萬改算式）→零 ERROR→gate RC=0，全程約 10 分鐘。維持率三源失敗走前值遞補 200.72；借券增減僅上櫃值；P/C 0.87；夜盤 -375 劇本三。
 - 同日 08:35 本機排程晚跑改寫 DATA（Yahoo 刷新＋維持率真值 199.17），pull 被未提交報告擋下而 abort（見 logs/fetch.log）；報告只跟維持率 6 行（`ratio-refresh` commit），Yahoo 浮動不追；近三天本機皆晚跑（08:28～08:40，疑筆電睡過 07:55 醒來補跑），與晨間寫作撞車為常態風險。
+- 起草機再補 §6.4 Top10 全表整張貼：驗收時順手抓到已發布報告 §6.4 第 6~8 列 Call 錯位 3 處（token 都在 DATA 裡，numcheck/gate 攔不住，正是手排的代價），已按 draft 值修回。
