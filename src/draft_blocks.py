@@ -296,6 +296,21 @@ def _opt_comps(data: str) -> list[str]:
     return lines
 
 
+def _news_list(data: str) -> list[str]:
+    """§4 事件清單草稿（只寫清單內事件，不憑記憶加；數字抄摘要原文）。"""
+    seg = _seg(data, "重大經濟數據")
+    lines = ["| # | 事件 | 摘要先60字 | 來源 |", "|---|---|---|---|"]
+    titles = list(re.finditer(r"(?m)^\s*-\s*事件(\d+)：(.*)$", seg))
+    sums = re.findall(r"(?m)^\s*-\s*摘要：(.*)$", seg)
+    srcs = re.findall(r"(?m)^\s*-\s*來源：(.*?)[；;]", seg)
+    for i, m in enumerate(titles):
+        no, title = m.group(1), m.group(2).strip()[:36]
+        s = sums[i].strip()[:60] if i < len(sums) else ""
+        src = srcs[i].strip() if i < len(srcs) else ""
+        lines.append(f"| {no} | {title} | {s} | {src} |")
+    return lines
+
+
 def _flow(data: str) -> list[str]:
     """§6.2 大戶流向草稿（貼進 6.2，數值＋區間直接用，下加解讀）。"""
     t = _first_table(data, "大戶流向")
@@ -371,6 +386,9 @@ def build(data_path: str) -> str:
     A("")
     A("# DRAFT-§6.2 大戶流向（貼進 6.2，數值＋區間直接用，下加解讀）")
     A("\n".join(_flow(data)))
+    A("")
+    A("# DRAFT-§4 事件清單（只寫清單內事件，不憑記憶加；數字抄摘要原文）")
+    A("\n".join(_news_list(data)))
     return "\n".join(L) + "\n"
 
 
