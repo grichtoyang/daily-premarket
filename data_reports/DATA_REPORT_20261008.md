@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-10-09`
 - T0 交易日期：`2026-10-08`
-- 資料產出時間：`2026-10-09 08:10:05`
+- 資料產出時間：`2026-10-09 19:15:35`
 - 時區：`Asia/Taipei`
 
 ---
@@ -79,9 +79,9 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 2,425,161 | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出餘額 | 40,407 | 張 | TPEX margin_sbl (僅上櫃值；TWT93U 未取得；SOP 3.5 手動補登) |
-| 借券賣出增減 | -3 | 張 | TPEX margin_sbl (僅上櫃值；TWT93U 未取得；SOP 3.5 手動補登) |
+| 借券餘額 | 4,553,408 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出餘額 | 40,407 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出增減 | -3 | 張 | TWSE TWT93U + TPEX margin_sbl |
 
 ### 6. 市場成交結構
 
@@ -106,7 +106,7 @@
 | Nasdaq 100 | ^NDX | 30,725.81 | -434.27 | -1.39 | Yahoo Finance Chart API |
 | Dow Jones | ^DJI | 51,231.64 | 51.77 | +0.10 | Yahoo Finance Chart API |
 | 費城半導體 SOX | ^SOX | 12,623.71 | -442.44 | -3.39 | Yahoo Finance Chart API |
-| VIX | ^VIX | 15.41 | 0.33 | +2.19 | Yahoo Finance Chart API |
+| VIX | ^VIX | 15.25 | -0.16 | -1.04 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -114,11 +114,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 70,035.71 | -648.27 | -0.92 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 6,803.90 | -137.49 | -1.98 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 24,130.50 | -150.06 | -0.62 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,842.20 | 11.74 | +0.31 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 12,887.62 | -14.33 | -0.11 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 69,030.92 | -11.19 | -0.02 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 6,625.93 | -177.97 | -2.62 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 24,211.35 | 425.56 | +1.79 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,813.79 | 1.89 | +0.05 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 12,641.86 | 20.96 | +0.17 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,824.75 | -28.00 | -0.36 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 30,990.25 | -412.00 | -1.31 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 51,526.00 | 77.00 | +0.15 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,814.60 | 2.40 | +0.09 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,844.25 | 28.00 | +0.36 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 31,194.00 | 224.50 | +0.72 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 51,533.00 | 40.00 | +0.08 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,817.90 | 8.30 | +0.30 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.92 | 0.08 | +0.24 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 102.13 | -0.11 | -0.11 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 158.07 | 0.01 | +0.01 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,342.82 | 3.74 | +0.28 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.91 | 0.06 | +0.20 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 102.19 | 0.05 | +0.05 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 158.29 | 0.23 | +0.15 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,340.90 | 1.82 | +0.14 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -158,9 +158,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 472.20 | -10.10 | -2.09 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 23.31 | 0.12 | +0.52 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 45.76 | -1.02 | -2.18 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 457.99 | -14.21 | -3.01 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 22.82 | -0.49 | -2.10 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 45.26 | -0.50 | -1.09 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -168,38 +168,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 91.26 | 2.98 | +3.38 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,173.10 | 32.40 | +0.78 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 81,746.12 | -1,529.81 | -1.84 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 90.55 | -0.94 | -1.03 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,203.90 | 46.90 | +1.13 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 82,409.98 | 733.64 | +0.90 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：外資國慶前翻臉權值股沒電 台塑被動元件自帶火力開趴
-  - 來源：Yahoo 台股；發布時間：2026-10-08T09:06:57Z；台北時間：2026-10-08 17:06
-  - 摘要：國慶行情變調，外資賣壓出籠，台股失守5日線！今(8)日加權指數終場走跌492.93點、跌幅0.99%，收49,313.44點，本周仍上漲837.7點、周線連四紅，成交金額8721.09億元。在美債殖利率攀升、美股回檔，加上連假前資金調節，壓
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%96%E8%B3%87%E5%9C%8B%E6%85%B6%E5%89%8D%E8%AE%8A%E8%87%89%E5%8F%B0%E8%82%A1%E6%91%94%E7%A0%B4%E4%BA%94%E6%97%A5%E7%B7%9A%EF%BC%81%E6%AC%8A%E5%80%BC%E8%82%A1%E8%BB%9F%E8%85%B3-%E5%8F%B0%E5%A1%91%E9%9B%86%E5%9C%98%E6%8F%AA%E8%A2%AB%E5%8B%95%E5%85%83%E4%BB%B6%E7%95%B6%E6%8A%97%E8%B7%8C%E5%A4%A7%E9%9A%8A-%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-090657722.html
-- 事件2：低軌衛星題材點火！「網通廠」連漲8天飆40%奪強勢股王　9月營收年增76.8%
+- 事件1：半夜滑手機等於成癮？中榮追蹤4000名青少年揭憂鬱警訊　醫示警：別急著沒收3C
+  - 來源：Yahoo 台股；發布時間：2026-10-09T08:11:00Z；台北時間：2026-10-09 16:11
+  - 摘要：【記者王煌忠／台中報導】孩子半夜不睡覺，躲在房間打遊戲、聊天、滑社群、追影片，隔天卻爬不起來、上課精神不濟，許多父母第一反應就是「手機成癮」，甚至直接沒收3C產品。台中榮總精神部研究團隊分析逾4000名從七年級升至八年級青少年資料發現，深夜
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8D%8A%E5%A4%9C%E6%BB%91%E6%89%8B%E6%A9%9F%E7%AD%89%E6%96%BC%E6%88%90%E7%99%AE-%E4%B8%AD%E6%A6%AE%E8%BF%BD%E8%B9%A44000%E5%90%8D%E9%9D%92%E5%B0%91%E5%B9%B4%E6%8F%AD%E6%86%82%E9%AC%B1%E8%AD%A6%E8%A8%8A-%E9%86%AB%E7%A4%BA%E8%AD%A6-%E5%88%A5%E6%80%A5%E8%91%97%E6%B2%92%E6%94%B63c-081100931.html
+- 事件2：打房打假的？阿明用央行數據說給你聽：房價只跌5%，但政策效果藏在這三個地方
+  - 來源：Yahoo 台股；發布時間：2026-10-09T03:55:00Z；台北時間：2026-10-09 11:55
+  - 摘要：「央行打房打半天，房價還不是沒跌多少？」這是阿明最近最常被問的問題。很多朋友看到全國住宅價格指數從高點只跌了不到5%，就覺得政府打房根本打假的。但阿明今天要用央行自己的數據告訴你，打房有沒有用，不能只看房價跌多少。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%89%93%E6%88%BF%E6%89%93%E5%81%87%E7%9A%84%EF%BC%9F%E9%98%BF%E6%98%8E%E7%94%A8%E5%A4%AE%E8%A1%8C%E6%95%B8%E6%93%9A%E8%AA%AA%E7%B5%A6%E4%BD%A0%E8%81%BD%EF%BC%9A%E6%88%BF%E5%83%B9%E5%8F%AA%E8%B7%8C5%EF%BC%8C%E4%BD%86%E6%94%BF%E7%AD%96%E6%95%88%E6%9E%9C%E8%97%8F%E5%9C%A8%E9%80%99%E4%B8%89%E5%80%8B%E5%9C%B0%E6%96%B9-035500854.html
+- 事件3：4檔飆股下週一抓去關！「CCL大廠」狂漲100.72%繼續處置　尖點、德宏也在名單裡
+  - 來源：Yahoo 台股；發布時間：2026-10-09T01:00:00Z；台北時間：2026-10-09 09:00
+  - 摘要：[FTNN新聞網]記者陳宣穎／綜合報導證交所、櫃買中心8日公告最新處置名單，包括2檔上市股CCL大廠騰輝電子-KY（6672）、PCB鑽針廠尖點（8021），以及2檔上櫃股...
+  - 原文連結：https://tw.stock.yahoo.com/news/4%E6%AA%94%E9%A3%86%E8%82%A1%E4%B8%8B%E9%80%B1-%E6%8A%93%E5%8E%BB%E9%97%9C-ccl%E5%A4%A7%E5%BB%A0-%E7%8B%82%E6%BC%B2100-72-010000942.html
+- 事件4：DRAM投片價格大漲45%！力積電9月營收年增近94%創新高　八大公股砸1.1億元搶進逾千張
+  - 來源：Yahoo 台股；發布時間：2026-10-09T00:40:00Z；台北時間：2026-10-09 08:40
+  - 摘要：[FTNN新聞網]記者黃詩雯／綜合報導台股加權指數8日開低走低，終場收在49313.44點，下跌492.93點，跌幅近1%。觀察八大公股買超個股方面，晶圓代工廠力積電（67...
+  - 原文連結：https://tw.stock.yahoo.com/news/dram%E6%8A%95%E7%89%87%E5%83%B9%E6%A0%BC%E5%A4%A7%E6%BC%B245-%E5%8A%9B%E7%A9%8D%E9%9B%BB9%E6%9C%88%E7%87%9F%E6%94%B6%E5%B9%B4%E5%A2%9E%E8%BF%9194-%E5%89%B5%E6%96%B0%E9%AB%98-%E5%85%AB%E5%A4%A7%E5%85%AC%E8%82%A1%E7%A0%B81-1%E5%84%84%E5%85%83%E6%90%B6%E9%80%B2%E9%80%BE%E5%8D%83%E5%BC%B5-004000065.html
+- 事件5：台股殖利率跌破2%！「這5檔ETF」配息率衝20%、1檔績效飆120%　分析師這樣看
+  - 來源：Yahoo 台股；發布時間：2026-10-09T00:15:00Z；台北時間：2026-10-09 08:15
+  - 摘要：[FTNN新聞網]記者陳宣穎／綜合報導台股持續創高，歷史盤中最高點49,968.92點、歷史最高收盤紀錄49,822.55點均落在10月6日，與此同時，大盤的殖利率也跟隨下降...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E6%AE%96%E5%88%A9%E7%8E%87%E8%B7%8C%E7%A0%B42-%E9%80%995%E6%AA%94etf-%E9%85%8D%E6%81%AF%E7%8E%87%E8%A1%9D20-1%E6%AA%94%E7%B8%BE%E6%95%88%E9%A3%86120-%E5%88%86%E6%9E%90%E5%B8%AB%E9%80%99%E6%A8%A3%E7%9C%8B-001500355.html
+- 事件6：【電力人才2-2】台電去年逾百人被中華電信挖走　「AI時代不會被淘汰就是水電工」
   - 來源：Yahoo 台股；發布時間：2026-10-09T00:00:00Z；台北時間：2026-10-09 08:00
-  - 摘要：[FTNN新聞網]記者黃詩雯／綜合報導台股加權指數8日開低走低，終場收在49313.44點，下跌492.93點，跌幅近1%。觀察昨日強勢個股表現，網通廠百一（6152）已連續...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%BD%8E%E8%BB%8C%E8%A1%9B%E6%98%9F%E9%A1%8C%E6%9D%90%E9%BB%9E%E7%81%AB-%E7%B6%B2%E9%80%9A%E5%BB%A0-%E9%80%A3%E6%BC%B28%E5%A4%A9%E9%A3%8640-%E5%A5%AA%E5%BC%B7%E5%8B%A2%E8%82%A1%E7%8E%8B-9%E6%9C%88%E7%87%9F%E6%94%B6%E5%B9%B4%E5%A2%9E76-000000308.html
-- 事件3：瑤池金母大砍臻鼎逾3千張卻留1張！分析師揭背後原因：她也會怕
-  - 來源：Yahoo 台股；發布時間：2026-10-08T23:36:43Z；台北時間：2026-10-09 07:36
-  - 摘要：周代運8日發文表示，部分投資人看到法人賣超，容易直接聯想到印刷電路板（PCB）族群前景轉弱，進而跟著出脫持股。不過，他提醒，00981A屬於主動式ETF，並非被動追蹤指數的基金，經理人可以依照投資策略及資金配置調整持股，因此不能單憑一次大幅
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%91%A4%E6%B1%A0%E9%87%91%E6%AF%8D%E5%A4%A7%E7%A0%8D%E8%87%BB%E9%BC%8E%E9%80%BE3%E5%8D%83%E5%BC%B5%E5%8D%BB%E7%95%991%E5%BC%B5-%E5%88%86%E6%9E%90%E5%B8%AB%E6%8F%AD%E8%83%8C%E5%BE%8C%E5%8E%9F%E5%9B%A0-%E5%A5%B9%E4%B9%9F%E6%9C%83%E6%80%95-233643632.html
-- 事件4：房貸從20年一路拉到40年！三個時代看懂台灣人買房壓力怎麼變
-  - 來源：Yahoo 台股；發布時間：2026-10-08T23:26:00Z；台北時間：2026-10-09 07:26
-  - 摘要：從早期常見的20年房貸，到30年逐漸普及，再到政策型房貸出現40年選項，貸款年限一路拉長。內政部最新統計顯示，2026年第1季新增房貸平均期數已達322期、約26.8年，再創統計新高。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%88%BF%E8%B2%B8%E5%BE%9E20%E5%B9%B4%E4%B8%80%E8%B7%AF%E6%8B%89%E5%88%B040%E5%B9%B4%EF%BC%81%E4%B8%89%E5%80%8B%E6%99%82%E4%BB%A3%E7%9C%8B%E6%87%82%E5%8F%B0%E7%81%A3%E4%BA%BA%E8%B2%B7%E6%88%BF%E5%A3%93%E5%8A%9B%E6%80%8E%E9%BA%BC%E8%AE%8A-232600521.html
-- 事件5：OpenAI營收不如預期+油價回漲　美股漲跌不一
-  - 來源：Yahoo 台股；發布時間：2026-10-08T23:25:12Z；台北時間：2026-10-09 07:25
-  - 摘要：中東局勢緊張再度推動原油價格上揚，再加上OpenAI年化營收不如預期，美股週四（10/8）收盤漲跌不一。
-  - 原文連結：https://tw.stock.yahoo.com/news/openai%E7%87%9F%E6%94%B6%E4%B8%8D%E5%A6%82%E9%A0%90%E6%9C%9F-%E6%B2%B9%E5%83%B9%E5%9B%9E%E6%BC%B2-%E7%BE%8E%E8%82%A1%E6%BC%B2%E8%B7%8C%E4%B8%8D-232512890.html
-- 事件6：搶攻1.6T光通訊、液冷商機！貿聯-KY擴大AI資料中心布局　投信卻連賣4日、再倒貨逾千張提款26.4億元
-  - 來源：Yahoo 台股；發布時間：2026-10-08T23:20:00Z；台北時間：2026-10-09 07:20
-  - 摘要：[FTNN新聞網]記者黃詩雯／綜合報導台股加權指數今（8）日開低走低，終場收在49313.44點，下跌492.93點，跌幅近1%。據證交所籌碼動向，投信買超46.88億元，觀...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%90%B6%E6%94%BB1-6t%E5%85%89%E9%80%9A%E8%A8%8A-%E6%B6%B2%E5%86%B7%E5%95%86%E6%A9%9F-%E8%B2%BF%E8%81%AF-ky%E6%93%B4%E5%A4%A7ai%E8%B3%87%E6%96%99%E4%B8%AD%E5%BF%83%E5%B8%83%E5%B1%80-232000920.html
+  - 摘要：AI時代，各界對「電力即國力」早已琅琅上口；在算力、電力、國力之間畫上等號後，一時間，原本在單位內就像邊緣人般存在的機電人員，突然間就成了各家公司挖角對象。台電內部統計，去年就有100多名員工從台電離職，轉到中華電信工作。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%9B%BB%E5%8A%9B%E4%BA%BA%E6%89%8D2-2-%E5%8F%B0%E9%9B%BB%E5%8E%BB%E5%B9%B4%E9%80%BE%E7%99%BE%E4%BA%BA%E8%A2%AB%E4%B8%AD%E8%8F%AF%E9%9B%BB%E4%BF%A1%E6%8C%96%E8%B5%B0-ai%E6%99%82%E4%BB%A3%E4%B8%8D%E6%9C%83%E8%A2%AB%E6%B7%98%E6%B1%B0%E5%B0%B1%E6%98%AF%E6%B0%B4%E9%9B%BB%E5%B7%A5-000000951.html
 - 事件7：Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficiently detect and report certain suspicious activity related to money laundering
   - 來源：Federal Reserve；發布時間：Thu, 8 Oct 2026 20:30:00 GMT；台北時間：2026-10-09 04:30
   - 摘要：Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficient
@@ -378,7 +378,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-08 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F2 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-09 08:10:05 | 本機 |
+| 資料更新時間 | 2026-10-09 19:15:35 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -601,10 +601,10 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-08；資料時間：2026-10-09 08:10:05；時區：`Asia/Taipei`
+- 資料日期：2026-10-08；資料時間：2026-10-09 19:15:35；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (0)：無（借券賣出餘額/增減 SOP 3.5 手動補登上櫃值；上市 TWT93U 未取得）
-- 註記：借券賣出餘額/增減為僅上櫃值 (TPEX margin_sbl 2026-10-08；上市 TWT93U 未取得)
+- 未取得欄位 (0)：無
+- 註記：無日期端點為最新盤勢快照 (判定資料日期 2026-10-09，非 T0 2026-10-08)，適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 
 ## 五、資料來源、時間與完整性
@@ -625,6 +625,7 @@
 - 註記：融資維持率未取得 (三源皆失敗；官方無每日序列)
 - 註記：融資維持率採前值遞補 (DATA 2026-10-07)，非 T0 2026-10-08
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
+- 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
 
 ## 六、期現選方向對照
