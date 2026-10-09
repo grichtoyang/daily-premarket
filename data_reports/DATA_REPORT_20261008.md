@@ -80,8 +80,8 @@
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
 | 借券餘額 | 2,425,161 | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出餘額 | unavailable | 張 | TWSE TWT93U + TPEX margin_sbl |
-| 借券賣出增減 | unavailable | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券賣出餘額 | 40,407 | 張 | TPEX margin_sbl (僅上櫃值；TWT93U 未取得；SOP 3.5 手動補登) |
+| 借券賣出增減 | -3 | 張 | TPEX margin_sbl (僅上櫃值；TWT93U 未取得；SOP 3.5 手動補登) |
 
 ### 6. 市場成交結構
 
@@ -603,7 +603,8 @@
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
 - 資料日期：2026-10-08；資料時間：2026-10-09 08:10:05；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (2)：sbl.sale_bal, sbl.sale_chg
+- 未取得欄位 (0)：無（借券賣出餘額/增減 SOP 3.5 手動補登上櫃值；上市 TWT93U 未取得）
+- 註記：借券賣出餘額/增減為僅上櫃值 (TPEX margin_sbl 2026-10-08；上市 TWT93U 未取得)
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 
 ## 五、資料來源、時間與完整性
