@@ -90,7 +90,8 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日") -> dict | N
                         return {"open": d.get("open"), "high": d.get("high"), "low": d.get("low"),
                                 "close": d.get("close"), "change": d.get("change"),
                                 "pct": _pct(d.get("change_percent")),
-                                "via": "proxy", "date": j.get("date") or t0}
+                                "via": "proxy", "date": j.get("date") or t0,
+                                "qdate": query_date}
         except Exception as e:  # noqa: BLE001
             print(f"[INFO] proxy night-ohlc 不可用，改官方備援：{e}")
     try:
@@ -111,7 +112,8 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日") -> dict | N
         return {"open": _n(r0.get("Open")), "high": _n(r0.get("High")), "low": _n(r0.get("Low")),
                 "close": close, "change": chg,
                 "pct": (chg / (close - chg) * 100) if chg is not None and close else None,
-                "via": "official", "date": _off._iso(r0.get("Date", ""))}
+                "via": "official", "date": _off._iso(r0.get("Date", "")),
+                "qdate": query_date}
     except Exception as e:  # noqa: BLE001
         print(f"[INFO] official night-ohlc 不可用：{e}")
         return None
@@ -232,8 +234,9 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if _nh is not None:
         night.update({k: _nh.get(k) for k in ("open", "high", "low", "close", "change", "pct")})
         night["via"] = _nh.get("via", "proxy")
-        if _nh.get("date") and _nh["date"] != t0:
-            notes.append(f"夜盤 OHLC 資料日期 {_nh['date']} (T0 {t0})，來源 {_nh.get('via')}")
+        _q = _nh.get("qdate") or t0
+        if _nh.get("date") and _nh["date"] != _q:
+            notes.append(f"夜盤 OHLC 回退：查 {_q} 得 {_nh['date']} (T0 {t0})，來源 {_nh.get('via')}，無新節次")
     else:
         notes.append("夜盤開高低收未取得 (proxy 與官方皆無)，僅成交量/OI/結算價")
 
