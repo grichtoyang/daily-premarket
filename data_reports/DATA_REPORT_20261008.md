@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-10-12`
 - T0 交易日期：`2026-10-08`
-- 資料產出時間：`2026-10-12 08:09:59`
+- 資料產出時間：`2026-10-12 08:18:56`
 - 時區：`Asia/Taipei`
 
 ---
@@ -71,7 +71,7 @@
 | 融資增減 | +53.1 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 252,356 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | -3,158 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | 199.17 | % | 前值遞補 (DATA 2026-10-07；當日三源皆失敗；民間估算；官方無每日序列) |
+| 融資維持率 | 197.12 | % | wantgoo 大盤融資維持率 (民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -126,10 +126,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,877.50 | 17.75 | +0.23 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 31,254.00 | 145.25 | +0.47 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,005.00 | 79.00 | +0.15 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,827.30 | 5.20 | +0.18 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,880.50 | 20.75 | +0.26 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 31,259.50 | 150.75 | +0.48 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,034.00 | 108.00 | +0.21 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,828.70 | 6.60 | +0.23 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -147,10 +147,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 31.91 | -0.02 | -0.05 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 102.20 | -0.01 | -0.01 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 158.15 | 0.08 | +0.05 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,338.58 | -4.41 | -0.33 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 31.91 | -0.02 | -0.06 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 102.16 | -0.05 | -0.05 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 158.12 | 0.06 | +0.04 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,338.48 | -4.51 | -0.34 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -168,9 +168,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 90.84 | -1.01 | -1.10 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,212.70 | -3.60 | -0.09 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 83,633.26 | 721.03 | +0.87 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 90.86 | -0.99 | -1.08 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,225.80 | 9.50 | +0.23 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 83,669.30 | 757.07 | +0.91 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -380,7 +380,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-08 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F2 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-12 08:09:59 | 本機 |
+| 資料更新時間 | 2026-10-12 08:18:56 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -406,9 +406,9 @@
 | Call／Put 成交量比例 | 1.14 | TAIFEX Proxy |
 | Call／Put 未平倉量比例 | 1.58 | TAIFEX Proxy |
 | Put／Call Ratio | 0.63 | TAIFEX Proxy |
-| Call／Put 比例變化 (量比 2026-10-07→2026-10-08) | -7.43 | TAIFEX Proxy |
-| 與前一交易日比較 (OI 比 2026-10-07→2026-10-08) | -2.07 | TAIFEX Proxy |
-**資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX Proxy PutCallRatio`
+| Call／Put 比例變化 | -7.43 | TAIFEX Proxy |
+| 與前一交易日比較 | -2.07 | TAIFEX Proxy |
+**資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX OpenAPI PutCallRatio`
 
 ### 5．外資 Call／Put 部位
 
@@ -603,8 +603,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-08；資料時間：2026-10-12 08:09:59；時區：`Asia/Taipei`
+- 資料日期：2026-10-08；資料時間：2026-10-12 08:18:56；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
+- 註記：同 T0 保護：2 格沿用前版有值（本次抓取缺失不覆寫）
 - 未取得欄位 (0)：無
 - 註記：無日期端點為最新盤勢快照 (判定資料日期 2026-10-09，非 T0 2026-10-08)，適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
@@ -619,13 +620,11 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`前值遞補 (DATA 2026-10-07；當日三源皆失敗；民間估算；官方無每日序列)`
+- margin_ratio：`wantgoo 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率未取得 (三源皆失敗；官方無每日序列)
-- 註記：融資維持率採前值遞補 (DATA 2026-10-07)，非 T0 2026-10-08
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
