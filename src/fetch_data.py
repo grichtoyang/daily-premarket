@@ -5,7 +5,7 @@
     --date     報告日期 (預設今天 Asia/Taipei)
     --t0       T0 交易日期 (預設自動取 <= date 的最近平日)
     --session  日盤/全日 (空白=依 t0.resolve；手動 --t0 時預設全日)
-               影響夜盤 OHLC 查詢日：全日→T0+1，日盤→T0
+               影響夜盤 OHLC 查詢日：夜盤一律查今天（今晨收盤節；舊規則全日→T0+1 在假日後分歧，2026-10-08 教訓）
 
 產出 data_reports/DATA_REPORT_yyyymmdd.md (yyyymmdd 取自 T0)。
 缺值一律 `unavailable`，不推估。
