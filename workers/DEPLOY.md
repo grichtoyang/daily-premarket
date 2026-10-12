@@ -2,6 +2,7 @@
 
 版本：
 - `taifex-proxy_V1.4.js` — V1.3 ＋ 每日快照 (cron＋KV)：`/snapshots/bundle`、`/snapshots/write-now`
+  - 2026-10-12 補丁（未改版號，見檔內 `pageDataDate`）：after-hours／price／institutional／options 四家族共 5 處 `date: today()` 改為頁面實際日期（queryDate input／紅字日期段，ROC 轉 ISO；抓不到標 `date_source: fetch-day`），另加台北曆日；假日後舊值貼新標籤不再發生（repo 端 gate 以 date==查詢日判斷）。部署方式不變（整檔貼上）。
 - `taifex-proxy_V1.3.js` — V1.2 ＋ `/futures-night-ohlc`、`/put-call-ratio-history`
 - `taifex-proxy_V1.2.js` — V1.1 Final_V2 原樣 ＋ `/futures-top10`、`/options-top10`
 - `twse-proxy_V1.1.js` — V1.0 FINAL 原樣 ＋ `/institutional`

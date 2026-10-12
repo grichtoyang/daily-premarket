@@ -2999,6 +2999,27 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/* 台北曆日（抓取日；today() 是 UTC，半夜前後會差一天，資料標籤一律用這個）。 */
+function taipeiToday() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit"
+  }).format(new Date());
+}
+
+/* TAIFEX 網站頁內實際資料日期（查詢表單預設值 queryDate input 優先，
+   其次紅字日期段；ROC 與 ISO 皆吃）。抓不到回 null。
+   背景：無參數頁面永遠回最新已發布，舊程式一律標 today()，
+   假日後就變成舊值貼新標籤（2026-10-12 教訓）。 */
+function pageDataDate(html) {
+  if (!html) return null;
+  let m = html.match(/name="queryDate"[^>]*value=['"](\d{4}\/\d{2}\/\d{2}|\d{3}\/\d{2}\/\d{2})['"]/);
+  if (!m) m = html.match(/日期[:：]?\s*(\d{4}\/\d{2}\/\d{2}|\d{3}\/\d{2}\/\d{2})/);
+  if (!m) return null;
+  const p = m[1].split("/");
+  if (p[0].length === 3) return `${Number(p[0]) + 1911}-${p[1]}-${p[2]}`;
+  return `${p[0]}-${p[1]}-${p[2]}`;
+}
+
 async function institutionalEndpoint(
   path,
   dataset,
@@ -3041,13 +3062,18 @@ async function institutionalEndpoint(
     const parsed =
       parser(result.rows);
 
+    // 資料日期以頁面為準（無參數頁回最新已發布，不等於今天時照實標；
+    // 下游以 date==查詢日判斷新鮮度，見 2026-10-12 教訓）
+    const _pgd = pageDataDate(result.html);
+
     return json({
       ok: true,
       source: "TAIFEX",
       dataset,
       market,
       session,
-      date: today(),
+      date: _pgd || taipeiToday(),
+      date_source: _pgd ? "page" : "fetch-day",
       data: parsed.data,
       parser: {
         version: "4.1",
@@ -3264,12 +3290,15 @@ export default {
         const data =
           parseTXMarket(result.rows);
 
+        const _pgd = pageDataDate(result.html);
+
         return json({
           ok: true,
           source: "TAIFEX",
           dataset: "futures_market",
           market: "TX",
-          date: today(),
+          date: _pgd || taipeiToday(),
+          date_source: _pgd ? "page" : "fetch-day",
           data,
           parser: {
             version: "4.1",
@@ -3315,13 +3344,16 @@ export default {
         const data =
           parseTXMarket(result.rows);
 
+        const _pgd = pageDataDate(result.html);
+
         return json({
           ok: true,
           source: "TAIFEX",
           dataset: "futures_market_after_hours",
           market: "TX",
           session: "after_hours",
-          date: today(),
+          date: _pgd || taipeiToday(),
+          date_source: _pgd ? "page" : "fetch-day",
 
           data: data.map(x => ({
             contract_month:
@@ -4913,7 +4945,9 @@ export default {
 
           session: "after_hours",
 
-          date: today(),
+          date: pageDataDate(result.html) || taipeiToday(),
+
+          date_source: pageDataDate(result.html) ? "page" : "fetch-day",
 
           data: {
             call,
@@ -5081,7 +5115,9 @@ export default {
 
           session: "regular",
 
-          date: today(),
+          date: pageDataDate(result.html) || taipeiToday(),
+
+          date_source: pageDataDate(result.html) ? "page" : "fetch-day",
 
           data: {
             call,
