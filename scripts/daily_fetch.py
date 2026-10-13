@@ -4,7 +4,7 @@
 流程: src/fetch_data.py (cwd=repo 根目錄) → git pull --ff-only →
 git add/commit/push。commit 訊息沿用 T0 命名 (與 CI 一致)。
 全部輸出追加至 logs/fetch.log。故意比 Actions 08:00 早 5 分鐘，
-錯開推送衝突；本機住宅 IP 為主力，Actions 為備援。
+錯開推送衝突；Actions 為主抓，本機為備援（住宅 IP 補被擋的源；見 gapfill）。
 """
 from __future__ import annotations
 

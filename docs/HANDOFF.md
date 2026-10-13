@@ -75,6 +75,7 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 2026-10-13（T0=2026-10-12 全日）：小跌 -11 廣度翻多＋投信翻多＋自營翻多，外資大賣 -522 期貨大空，夜盤 -399 劇本三；修正案驗收成功（新規則首跑直接取到週一夜盤，無回退）；開工鐵律追加 prior-audit（比較級數字逐一對前後 DATA，抓 4 處：維持率舊值/Put集中舊區間/夜振幅算式標記/大戶流向舊值）；借券/融資 SOP 3.5 救援值與 fetch 獨立重跑完全一致。
 - 同日斷根工程（回應「改善加了不少但問題一直冒出來」）：起草機預填 verdict/levels/scenarios＋關鍵數字速查（剩下全部手填數字消滅；驗收抓到殖利率取錯欄即修）；prior-audit 併入 numcheck（--prev）；新增 scripts/open.py＋verify.py 固定指令，臨時腳本退役；下次開工起只走兩條指令。
 - 排程改制收尾：DailyPremarket0800 已停用（用户動手，隨時可開回）；開工改 on-demand（`open.py --fetch` 先抓取再凍結，20 分鐘超時／失敗自動退回已 pull DATA；Actions 照跑不斷炊）。今日總驗收一次通過，無殘留。
+- gapfill 上線（用户定案 Actions 主抓＋本機只補洞）：`scripts/gapfill.py` 只補 unavailable／前值遞補格（融資融券 HiStock／維持率三源 T0 重試＋遞補更新／借券賣出／Yahoo 代號列），不碰正常值（浮動凍結）；今日實測補上維持率真值 196.16（wantgoo 10-12），另抓到日期格式 bug 即修；`open.py --fetch` 改走 gapfill（DATA 缺失才全量）。
 - 排程改制（用户決定）：本機 DailyPremarket0800 取消，開工改 on-demand（`open.py --fetch` 先抓取再凍結；失敗退回已 pull DATA；Actions 08:00/19:00 照跑不斷炊）。撞車類問題不再有第二個寫手。
 - worker 部署已驗證生效（三截圖）：price 端誠實標 10-08 舊值、institutional 端 10-12 新值（+204/+677 確認為週日夜盤真值，已恢復進報告§5.4/§5.6劇本四/§7.3/kpi）、night-ohlc 新節次與手動值一字不差；選擇權夜/結算維持缺失（源頭不明，不硬填）。
 - 同日修 worker 貼標（舊值貼新標籤根因）：`workers/taifex-proxy_V1.4.js` 5 處 `date: today()`（institutional 共用＋price 日/夜＋options 日/夜）改為頁面實際日期（queryDate input／紅字日期段，ROC 轉 ISO；抓不到標 fetch-day）＋台北曆日；已用真實頁面 HTML 驗 extractor（ISO/紅字/ROC/無日期四態全對）。待用户按 DEPLOY.md 整檔貼上部署；部署後驗：after-hours 端點 `date` 應等於頁面日期、`date_source` 為 page。
