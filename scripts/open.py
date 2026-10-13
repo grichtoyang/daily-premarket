@@ -26,6 +26,8 @@ sys.path.insert(0, str(ROOT))
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--t0", required=True, help="YYYYMMDD")
+    ap.add_argument("--fetch", action="store_true",
+                    help="開工先跑一次本機抓取（取代 07:55 排程；失敗自動退回已 pull 的 DATA）")
     args = ap.parse_args()
     now = datetime.now(timezone(timedelta(hours=8)))
     print("NOW=" + now.strftime("%Y-%m-%d %H:%M %A"))
@@ -36,6 +38,18 @@ def main() -> int:
     p = subprocess.run(["git", "pull"], capture_output=True, text=True,
                        cwd=ROOT)
     print("PULL=" + (p.stdout.strip() + p.stderr.strip())[-100:])
+    if args.fetch:
+        print("FETCH_START (timeout 20min; fail->use pulled DATA)")
+        try:
+            f = subprocess.run(
+                [sys.executable, "scripts/daily_fetch.py"],
+                capture_output=True, text=True, cwd=ROOT, timeout=1200)
+            tail = (f.stdout + f.stderr)[-400:]
+            print("FETCH_RC=%d %s" % (f.returncode, tail.replace("\n", "|")))
+            if f.returncode != 0:
+                print("FETCH_FAILED_USE_PULLED_DATA")
+        except subprocess.TimeoutExpired:
+            print("FETCH_TIMEOUT_USE_PULLED_DATA")
     dp = ROOT / "data_reports" / f"DATA_REPORT_{args.t0}.md"
     if not dp.exists():
         print("MISS_DATA=" + str(dp))
