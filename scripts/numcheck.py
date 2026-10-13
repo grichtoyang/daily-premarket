@@ -96,15 +96,21 @@ def _split_sec6(rtext: str):
     return "\n".join(lines[:idx]), "\n".join(lines[idx:])
 
 
-def token_audit(dtext: str, rtext: str):
-    dkeys = set()
-    for tok in NUM_RE.findall(dtext):
+def _keyset(text: str) -> set:
+    """數字 token 正規化集合（含整數截斷變體，供機器區去逗號格式比對）。"""
+    out = set()
+    for tok in NUM_RE.findall(text):
         if not _keep(tok):
             continue
         k = _norm(tok)
-        dkeys.add(k)
+        out.add(k)
         if k[0] == "f":
-            dkeys.add(("f", float(int(k[1]))))
+            out.add(("f", float(int(k[1]))))
+    return out
+
+
+def token_audit(dtext: str, rtext: str):
+    dkeys = _keyset(dtext)
     errs = []
     in_skip = False
     for i, ln in enumerate(rtext.split("\n"), 1):
@@ -125,6 +131,34 @@ def token_audit(dtext: str, rtext: str):
             if not _keep(tok):
                 continue
             if _norm(tok) not in dkeys:
+                errs.append((i, tok))
+    return errs
+
+
+PRIOR_MARKS = ["前", "昨", "上週", "上周", "前報", "持平", "翻", "轉", "擴",
+               "縮", "增", "減", "升", "降", "收斂"]
+
+
+def prior_audit(rtext: str, ptext: str, dtext: str):
+    """比較級宣稱行（前值/翻轉/增減方向詞）的數字必須出自前版或本版 DATA。
+    抓的就是手填舊值放錯版（2026-10-12 教訓：維持率舊值/Put集中舊區間/大戶流向舊值）。"""
+    keys = _keyset(ptext) | _keyset(dtext)
+    errs = []
+    for i, ln in enumerate(rtext.split("\n"), 1):
+        s = ln.strip()
+        if not s or s.startswith(("```", "#", "---", ">")) or "http" in s:
+            continue
+        if not any(w in s for w in PRIOR_MARKS):
+            continue
+        if "算式" in s:
+            continue
+        for tok in NUM_RE.findall(s):
+            core = tok.rstrip("%")
+            if len(core.replace(",", "").replace(".", "")) <= 2:
+                continue
+            if re.fullmatch(r"\d{8}", core):
+                continue
+            if _norm(tok) not in keys:
                 errs.append((i, tok))
     return errs
 
@@ -284,6 +318,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
     ap.add_argument("--report", required=True)
+    ap.add_argument("--prev", default="",
+                    help="前一版 DATA（有的話加做 prior-audit）")
     args = ap.parse_args()
     with open(args.data, encoding="utf-8") as f:
         dtext = f.read()
@@ -292,6 +328,16 @@ def main() -> int:
     sha = hashlib.sha256(dtext.encode("utf-8")).hexdigest()[:12]
     print(f"DATA_SHA={sha}")
     errs = []
+    if args.prev:
+        with open(args.prev, encoding="utf-8") as f:
+            ptext = f.read()
+        for i, tok in prior_audit(rtext, ptext, dtext):
+            ctx = ""
+            for ln in rtext.split("\n"):
+                if tok in ln:
+                    ctx = ascii_only(ln.strip()[:60])
+                    break
+            errs.append(f"PRIOR L{i} [{tok}] :: {ctx}")
     for i, tok in token_audit(dtext, rtext):
         ctx = ""
         for ln in rtext.split("\n"):

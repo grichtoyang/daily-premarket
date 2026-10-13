@@ -322,6 +322,120 @@ def _flow(data: str) -> list[str]:
     return lines
 
 
+def _facts(data: str) -> dict:
+    """關鍵數字速查：報告敘述行只准從這裡複貼，不手打數字。"""
+    F: dict[str, str] = {}
+    t = _first_table(data, "台股大盤行情")
+    F["加權收"] = _cell(t, "收盤")
+    F["加權漲跌"] = _cell(t, "漲跌點數")
+    t2 = _first_table(data, "上市公司")
+    F["上市漲"] = _cell(t2, "上漲家數")
+    F["上市跌"] = _cell(t2, "下跌家數")
+    inst = _first_table(data, "三大法人現貨買賣超")
+    F["外資現貨"] = _cell(inst, "外資")
+    F["投信現貨"] = _cell(inst, "投信")
+    F["自營現貨"] = _cell(inst, "自營")
+    foi = _first_table(data, "法人台指期多空未平倉部位")
+    F["外資OI"] = _cell(foi, "外資多空淨 OI")
+    day = _first_table(data, "台指期近月日盤行情")
+    F["日收"] = _cell(day, "收盤價")
+    F["日漲跌"] = _cell(day, "漲跌點數")
+    F["日高"] = _cell(day, "最高價")
+    F["日低"] = _cell(day, "最低價")
+    night = _first_table(data, "台指期近月夜盤行情")
+    F["夜收"] = _cell(night, "收盤價")
+    F["夜漲跌"] = _cell(night, "漲跌點數")
+    F["夜高"] = _cell(night, "最高價")
+    F["夜低"] = _cell(night, "最低價")
+    t10 = _first_table(data, "前十大交易人多空未平倉部位")
+    F["前十大淨"] = _cell(t10, "多空淨 OI")
+    fx = _first_table(data, "期貨與現貨關係")
+    F["基差"] = _cell(fx, "台指期與加權指數價差")
+    us = _first_table(data, "美股指數")
+
+    def _upct(tbl, name: str) -> str:
+        if tbl is None:
+            return "—"
+        for r in tbl["rows"]:
+            if str(r[0]).strip() == name:
+                return str(r[4]) if len(r) > 4 else "—"
+        return "—"
+
+    F["SP"] = _upct(us, "S&P 500")
+    F["SOX"] = _upct(us, "費城半導體 SOX")
+    F["VIX"] = _upct(us, "VIX")
+    mf = _first_table(data, "美股指數期貨")
+    F["NQ"] = _upct(mf, "Nasdaq100期貨")
+    F["ES"] = _upct(mf, "S&P500期貨")
+    ad = _first_table(data, "台灣相關ADR")
+    F["TSM"] = _upct(ad, "台積電ADR")
+    pc = _first_table(data, "Call／Put 比例")
+    F["PC"] = _cell(pc, "Put／Call Ratio")
+    yl = _first_table(data, "美國國債殖利率")
+    F["Y10"] = F["Y30"] = "—"
+    if yl is not None:
+        for r in yl["rows"]:
+            if "10 年期" in str(r[0]) and len(r) > 2:
+                F["Y10"] = str(r[2])
+            if "30 年期" in str(r[0]) and len(r) > 2:
+                F["Y30"] = str(r[2])
+    for sec, lbl, key in (("Call Wall", "價位", "CW"), ("Put Wall", "價位", "PW"),
+                          ("Gamma Wall", "價位", "GW"), ("Gamma Flip", "價位", "GF"),
+                          ("Max Pain", "價位", "MP")):
+        tt = _first_table(data, sec)
+        v = "—"
+        if tt is not None:
+            for r in tt["rows"]:
+                if "價位" in str(r[0]) and "變化" not in str(r[0]):
+                    v = str(r[1])
+        F[key] = v
+    mg = _first_table(data, "融資融券")
+    F["維持率"] = _cell(mg, "融資維持率")
+    F["融資增"] = _cell(mg, "融資增減")
+    sb = _first_table(data, "借券資料")
+    F["借券賣出"] = _cell(sb, "借券賣出餘額")
+    F["借券增減"] = _cell(sb, "借券賣出增減")
+    mc = _first_table(data, "市場成交結構")
+    F["上市成交"] = _cell(mc, "上市成交金額")
+    F["合計成交"] = _cell(mc, "上市櫃成交金額合計")
+    return F
+
+
+def _verdict_filled(data: str) -> list[str]:
+    """verdict 數字預填：只填數字，方向/信心/取捨留白手寫；理由行只可刪減、不可手改數字。"""
+    F = _facts(data)
+    return ["方向|", "信心|",
+            f"理由1|加權{F['加權漲跌']}收{F['加權收']}、廣度{F['上市漲']}對{F['上市跌']}、"
+            f"法人現貨合計（外資{F['外資現貨']}／投信{F['投信現貨']}／自營{F['自營現貨']}）（twse-proxy）",
+            f"理由2|外資期貨淨空{F['外資OI']}、日盤{F['日漲跌']}基差{F['基差']}、"
+            f"夜盤{F['夜漲跌']}、前十大{F['前十大淨']}（TAIFEX Proxy）",
+            f"理由3|美股S&P{F['SP']}%SOX{F['SOX']}%、美期NQ{F['NQ']}%、"
+            f"ADR台積{F['TSM']}%、P/C {F['PC']}、10Y{F['Y10']}%30Y{F['Y30']}%"
+            f"（Yahoo／TAIFEX Proxy／twse-proxy）",
+            f"注意|開盤位置定調（{F['日收']}／{F['夜收']}）、基差{F['基差']}（TAIFEX Proxy／Yahoo）"]
+
+
+def _levels_filled(data: str) -> list[str]:
+    """levels 預填（映射固定，覺得不對就整列換 DATA 內其他價位，不手打數字）；白話手寫。"""
+    F = _facts(data)
+    return [f"壓力|{_num(F['日高'])}|日盤高",
+            f"壓力二|{_num(F['CW'])}|Call Wall",
+            f"中軸|{_num(F['日收'])}|台指期日收",
+            f"支撐|{_num(F['PW'])}|Put Wall",
+            f"支撐二|{_num(F['夜低'])}|夜低",
+            "白話|"]
+
+
+def _scenarios_filled(data: str) -> list[str]:
+    """scenarios 預填（條件全由 levels 價位機械生成；只改字不改數）。"""
+    F = _facts(data)
+    hi, mid, lo = _num(F["日高"]), _num(F["日收"]), _num(F["夜低"])
+    return [f"開高續攻|開盤>{mid}且站穩|看{hi}日高|跌回{mid}下失效轉區間",
+            f"開平震盪|開盤{lo}~{mid}|上看{mid}、下看{lo}|破{lo}轉弱",
+            f"開低測撐|開盤<{lo}|看{lo}有守|破{lo}轉空",
+            f"破支撐走弱|跌破{lo}且15分鐘站不回|下看{lo}|站回{mid}上全數觀望"]
+
+
 def _vix_block(data: str) -> list[str]:
     us = _first_table(data, "美股指數")
     vx = vxp = ""
@@ -354,17 +468,21 @@ def build(data_path: str) -> str:
     A("\n".join(_kpi(data)))
     A("```")
     A("```verdict")
-    A("方向|\n信心|\n理由1|\n理由2|\n理由3|\n注意|")
+    A("\n".join(_verdict_filled(data)))
     A("```")
     A("```levels")
-    A("壓力|\n壓力二|\n中軸|\n支撐|\n支撐二|\n白話|")
+    A("\n".join(_levels_filled(data)))
     A("```")
     A("```oidist")
     A("\n".join(_oidist(data)))
     A("```")
     A("```scenarios")
-    A("開高續攻|||\n開平震盪|||\n開低測撐|||\n破支撐走弱|||")
+    A("\n".join(_scenarios_filled(data)))
     A("```")
+    A("")
+    A("# DRAFT-關鍵數字速查（敘述行只准從這裡複貼，不手打數字）")
+    F = _facts(data)
+    A("\n".join(f"{k}|{v}" for k, v in F.items()))
     A("")
     A("# DRAFT-§6.1 Top3 並排（貼進 6.1，下加解讀）")
     A("\n".join(_top3_merge(data)))
