@@ -72,5 +72,6 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 同日再爆：期交所已有週日夜盤新節次（proxy 查 10-12 回 DATE=2026-10-12，收 48,705 -644，與官方 10-08 止一致指向連假後首節）：DATA 夜盤段手動更新＋報告改回真值（levels/scenarios/§9/附錄A/kpi/verdict/§11 全換錨 48,705）；dashboard 半成品還原（DATA 修好即不需要）；fetch 回退註記修保留防再發。
 
 - 同日徹底修夜盤查詢（用户要求上班日早上必須有最新夜盤）：根因是規則全日→T0+1（平日等於今天所以沒爆過，假日後分歧取回退舊值）＋回退靜默採用。改法：夜盤一律查今天、回傳日期不符一律視為無新節次（附屬量/結算/法人夜同口徑；options-after-hours 日盤拆分不動）；量取 OHLC 端點；夜漲跌正值 -652（48,705－前結算 49,357，上游自洽，已同步）；平日行為與舊規則等價。live 驗證通過＋read-only build() 全跑通。
+- 2026-10-13（T0=2026-10-12 全日）：小跌 -11 廣度翻多＋投信翻多＋自營翻多，外資大賣 -522 期貨大空，夜盤 -399 劇本三；修正案驗收成功（新規則首跑直接取到週一夜盤，無回退）；開工鐵律追加 prior-audit（比較級數字逐一對前後 DATA，抓 4 處：維持率舊值/Put集中舊區間/夜振幅算式標記/大戶流向舊值）；借券/融資 SOP 3.5 救援值與 fetch 獨立重跑完全一致。
 - worker 部署已驗證生效（三截圖）：price 端誠實標 10-08 舊值、institutional 端 10-12 新值（+204/+677 確認為週日夜盤真值，已恢復進報告§5.4/§5.6劇本四/§7.3/kpi）、night-ohlc 新節次與手動值一字不差；選擇權夜/結算維持缺失（源頭不明，不硬填）。
 - 同日修 worker 貼標（舊值貼新標籤根因）：`workers/taifex-proxy_V1.4.js` 5 處 `date: today()`（institutional 共用＋price 日/夜＋options 日/夜）改為頁面實際日期（queryDate input／紅字日期段，ROC 轉 ISO；抓不到標 fetch-day）＋台北曆日；已用真實頁面 HTML 驗 extractor（ISO/紅字/ROC/無日期四態全對）。待用户按 DEPLOY.md 整檔貼上部署；部署後驗：after-hours 端點 `date` 應等於頁面日期、`date_source` 為 page。
