@@ -52,7 +52,7 @@ def main() -> int:
                 f = subprocess.run(
                     [sys.executable, "scripts/daily_fetch.py", "--from-open"],
                     capture_output=True, text=True, cwd=ROOT, timeout=1500)
-                tail = (f.stdout + f.stderr)[-400:]
+                tail = ((f.stdout or "") + (f.stderr or ""))[-400:]
                 print("FETCH_RC=%d %s" % (f.returncode,
                                           tail.replace("\n", "|")))
                 if f.returncode != 0:
@@ -68,7 +68,7 @@ def main() -> int:
                     [sys.executable, "scripts/gapfill.py",
                      "--t0", args.t0],
                     capture_output=True, text=True, cwd=ROOT, timeout=600)
-                tail = (f.stdout + f.stderr)[-400:]
+                tail = ((f.stdout or "") + (f.stderr or ""))[-400:]
                 print("GAPFILL_RC=%d %s" % (f.returncode,
                                             tail.replace("\n", "|")))
                 if f.returncode != 0:
