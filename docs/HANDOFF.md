@@ -75,6 +75,7 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 2026-10-13（T0=2026-10-12 全日）：小跌 -11 廣度翻多＋投信翻多＋自營翻多，外資大賣 -522 期貨大空，夜盤 -399 劇本三；修正案驗收成功（新規則首跑直接取到週一夜盤，無回退）；開工鐵律追加 prior-audit（比較級數字逐一對前後 DATA，抓 4 處：維持率舊值/Put集中舊區間/夜振幅算式標記/大戶流向舊值）；借券/融資 SOP 3.5 救援值與 fetch 獨立重跑完全一致。
 - 同日斷根工程（回應「改善加了不少但問題一直冒出來」）：起草機預填 verdict/levels/scenarios＋關鍵數字速查（剩下全部手填數字消滅；驗收抓到殖利率取錯欄即修）；prior-audit 併入 numcheck（--prev）；新增 scripts/open.py＋verify.py 固定指令，臨時腳本退役；下次開工起只走兩條指令。
 - 2026-10-14 早 Actions 02:03＋本機 08:27 雙跑撞車（pull 被未追蹤同名檔擋下）： blend 兩版（T10/comps/期貨流向取 origin 版 10-12 basis，官方 API 本機被擋；其餘取 local 版 08:27 新值；夜盤結算/未平倉雙方皆缺；Gamma 取 local 新值）；另發現本機排程停用未生效（今晨仍跑，待查工作排程器）。
+- 同日：前日 DATA_1012 被盤中重寫（05b91fc 12:54 commit；numcheck 實證 121 處不符，已發布報告全部命中舊值）。根治：fetch merge_same_t0 改只填補缺（新舊皆有值沿用舊版；單元測試 6 斷言全過）；DATA_1012 還原發布版（sha 一致）；以後真改進走 gapfill/SOP 明示＋報告重驗，不再靜默覆寫。
 - 2026-10-14 早 Actions 08:00 未產出（git log 無今日 chore）：修 `.github/workflows/daily_data.yml`——timeout 20→45 分（重試本來跑不完）、T0FILE 改只認本輪新檔（舊寫法 fetch 全滅時誤拿昨日檔靜默跳過）、無新檔直接 exit 1（不再假裝成功）。
 - 排程改制收尾：DailyPremarket0800 已停用（用户動手，隨時可開回）；開工改 on-demand（`open.py --fetch` 先抓取再凍結，20 分鐘超時／失敗自動退回已 pull DATA；Actions 照跑不斷炊）。今日總驗收一次通過，無殘留。
 - gapfill 上線（用户定案 Actions 主抓＋本機只補洞）：`scripts/gapfill.py` 只補 unavailable／前值遞補格（融資融券 HiStock／維持率三源 T0 重試＋遞補更新／借券賣出／Yahoo 代號列），不碰正常值（浮動凍結）；今日實測補上維持率真值 196.16（wantgoo 10-12），另抓到日期格式 bug 即修；`open.py --fetch` 改走 gapfill（DATA 缺失才全量）。

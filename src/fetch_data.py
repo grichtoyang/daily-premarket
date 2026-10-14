@@ -82,10 +82,13 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
 def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
     """同 T0 保護：次日晨間全日刷新會覆寫同檔，若本次某格缺失而前版同位有值，沿用舊格。
 
-    規則（保守）：
+    規則（穩定優先，2026-10-14 定案：已發布報告只認凍結版 bytes，
+    同 T0 重跑一律不得靜默改值，否則已驗證報告隔幾小時就變紅）：
     - 只處理表格資料列；標籤格 (j==0) 永不覆寫，列名去裝飾比對（增減區間後綴不影響對齊）。
-    - 新舊皆有實值時以新為準（刷新優先），唯一例外：新列來源為前值遞補而舊列不是 → 舊值較新，沿用舊列。
     - 新格 == 'unavailable' 且舊格有值才填入；有填入列的來源格隨值沿用。
+    - 新舊皆有實值但不同 → 沿用舊值（連 Yahoo 浮動、新聞輪替一併凍結；
+      真正的新值走 gapfill/SOP 3.5 明示補登，報告跟著重驗）。
+      唯一允許新值覆寫的舊例外：新列來源為前值遞補而舊列不是。
     - 表頭／分隔列／標題／註記行一律不動；有填入才在未取得行後加註記。
     回傳 (合併後文本, 填入格數)。
     """
@@ -132,6 +135,7 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
     for (hkey, first), cells in old_rows.items():
         old_norm[(hkey, _norm_label(first))] = cells
     filled = 0
+    kept = 0
     out_lines = []
     hkey: tuple = (None, None, None)
     import re as _re3
@@ -171,6 +175,11 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
                             new_cells[j] = old[j]
                             filled += 1
                             _touched = True
+                        elif (old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
+                                and new_cells[j] != old[j]):
+                            new_cells[j] = old[j]
+                            kept += 1
+                            _touched = True
                     if _touched and old_last not in (MISSING, "") and new_cells[-1] != old_last:
                         new_cells[-1] = old_last  # 來源格隨值沿用
                     if new_cells != cells:
@@ -182,6 +191,11 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
         merged = merged.replace(
             "\n- 未取得欄位 (",
             f"\n- 註記：同 T0 保護：{filled} 格沿用前版有值（本次抓取缺失不覆寫）\n- 未取得欄位 (",
+            1)
+    if kept:
+        merged = merged.replace(
+            "\n- 未取得欄位 (",
+            f"\n- 註記：同 T0 穩定：{kept} 格新舊皆有值，沿用前版（不再靜默覆寫）\n- 未取得欄位 (",
             1)
     return merged, filled
 
