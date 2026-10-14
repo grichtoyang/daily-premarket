@@ -36,6 +36,11 @@ def main() -> int:
     r = resolve()
     print("T0=" + str(r.get("t0")) + " SESSION=" + str(r.get("session"))
           + " HOL=" + str(r.get("today_holiday")))
+    if r.get("cal_fail"):
+        print("CALENDAR_FAIL_T0_MAY_BE_WRONG 休市日曆抓不到，已退為週末判斷；"
+              "若今天是假日後第一天，T0 可能是錯的，先跟用戶確認再動工"
+              "(starter 註：國定假日後第一天先確認)。"
+              f" ERR={r.get('cal_error')}")
     p = subprocess.run(["git", "pull"], capture_output=True, text=True,
                        cwd=ROOT)
     print("PULL=" + (p.stdout.strip() + p.stderr.strip())[-100:])
@@ -45,7 +50,7 @@ def main() -> int:
             print("NO_DATA_FULL_FETCH (timeout 25min; fail->abort)")
             try:
                 f = subprocess.run(
-                    [sys.executable, "scripts/daily_fetch.py"],
+                    [sys.executable, "scripts/daily_fetch.py", "--from-open"],
                     capture_output=True, text=True, cwd=ROOT, timeout=1500)
                 tail = (f.stdout + f.stderr)[-400:]
                 print("FETCH_RC=%d %s" % (f.returncode,

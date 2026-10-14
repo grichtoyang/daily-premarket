@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
-"""本機排程入口 (Windows 工作排程器 DailyPremarket0800, 每日 07:55)。
+"""全量抓取＋推送（已封存排程入口，2026-10-14 定案）。
+
+現況：Windows 工作排程器 DailyPremarket0800 已刪除；日常資料主抓為
+GitHub Actions，本機只走 gapfill 補洞（見 scripts/gapfill.py）。
+本檔僅保留給 `scripts/open.py` 在 DATA 完全缺失時的 NO_DATA 全量路徑，
+或人工明確執行。直接裸執行一律拒絕（防舊排程命令復活造成雙寫手）。
 
 流程: src/fetch_data.py (cwd=repo 根目錄) → git pull --ff-only →
 git add/commit/push。commit 訊息沿用 T0 命名 (與 CI 一致)。
-全部輸出追加至 logs/fetch.log。故意比 Actions 08:00 早 5 分鐘，
-錯開推送衝突；Actions 為主抓，本機為備援（住宅 IP 補被擋的源；見 gapfill）。
+全部輸出追加至 logs/fetch.log。
 """
 from __future__ import annotations
 
+import argparse
 import shutil
 import subprocess
 import sys
@@ -43,6 +48,16 @@ def _sh(fp, *args: str, timeout: int = 1500) -> int:
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser(description="全量抓取（僅 open.py 缺 DATA 時或人工明確呼叫）")
+    ap.add_argument("--from-open", action="store_true",
+                    help="由 scripts/open.py NO_DATA 路徑呼叫")
+    ap.add_argument("--manual", action="store_true",
+                    help="人工明確執行（已知會全量抓取＋推送）")
+    args = ap.parse_args()
+    if not (args.from_open or args.manual):
+        print("REFUSE: 本機排程已取消（2026-10-14），裸執行拒絕；"
+              "如確需全量抓取，請加 --manual（人工）或走 open.py（自動）。")
+        return 2
     LOG.parent.mkdir(exist_ok=True)
     git = shutil.which("git")
     with open(LOG, "a", encoding="utf-8") as fp:

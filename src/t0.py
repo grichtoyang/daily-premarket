@@ -14,6 +14,8 @@ TAIPEI = ZoneInfo("Asia/Taipei")
 HOL_URL = "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule"
 UA = {"User-Agent": "daily-pre-market-analysis/1.0", "accept": "application/json"}
 
+_LAST_CAL_ERROR: str = ""
+
 
 def _roc_to_iso(roc: str) -> str:
     roc = str(roc).strip()
@@ -23,7 +25,9 @@ def _roc_to_iso(roc: str) -> str:
 
 
 def load_closed(year: int, timeout: int = 20) -> set[str]:
-    """回傳該年休市日 ISO set。API 失敗回空集 (退為週末判斷)。"""
+    """回傳該年休市日 ISO set。API 失敗回空集 (退為週末判斷)。
+    失敗原因記在 _LAST_CAL_ERROR，resolve() 轉為 cal_fail 大聲揭露。"""
+    global _LAST_CAL_ERROR
     try:
         r = requests.get(HOL_URL, headers=UA, timeout=timeout)
         r.raise_for_status()
@@ -35,8 +39,10 @@ def load_closed(year: int, timeout: int = 20) -> set[str]:
             d = _roc_to_iso(row.get("Date", ""))
             if len(d) == 10 and d.startswith(str(year)):
                 closed.add(d)
+        _LAST_CAL_ERROR = ""
         return closed
     except Exception as e:  # noqa: BLE001
+        _LAST_CAL_ERROR = str(e)[:160]
         print(f"[WARN] 休市日曆失敗，退為週末判斷：{e}")
         return set()
 
@@ -57,22 +63,27 @@ def prev_trading_day(d: date, closed: set[str]) -> date:
 
 
 def resolve(now: datetime | None = None) -> dict:
-    """回傳 {t0, session(日盤/全日), today_holiday, report_date}。"""
+    """回傳 {t0, session(日盤/全日), today_holiday, report_date,
+    cal_fail(日曆是否抓失敗), cal_error}。"""
     now = now or datetime.now(TAIPEI)
     today = now.date()
     closed = load_closed(today.year)
+    cal_fail = bool(_LAST_CAL_ERROR)
     today_open = is_trading_day(today, closed)
     day_closed = now.hour > 13 or (now.hour == 13 and now.minute >= 45)
     if not today_open:
         t0 = prev_trading_day(today, closed)
         return {"t0": t0.isoformat(), "session": "全日", "today_holiday": True,
-                "report_date": today.isoformat()}
+                "report_date": today.isoformat(), "cal_fail": cal_fail,
+                "cal_error": _LAST_CAL_ERROR}
     if day_closed:
         return {"t0": today.isoformat(), "session": "日盤", "today_holiday": False,
-                "report_date": today.isoformat()}
+                "report_date": today.isoformat(), "cal_fail": cal_fail,
+                "cal_error": _LAST_CAL_ERROR}
     t0 = prev_trading_day(today, closed)
     return {"t0": t0.isoformat(), "session": "全日", "today_holiday": False,
-            "report_date": today.isoformat()}
+            "report_date": today.isoformat(), "cal_fail": cal_fail,
+            "cal_error": _LAST_CAL_ERROR}
 
 
 def daily_filename(t0: str, session: str) -> str:
