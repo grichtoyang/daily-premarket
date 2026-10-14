@@ -41,9 +41,12 @@ def main() -> int:
               "若今天是假日後第一天，T0 可能是錯的，先跟用戶確認再動工"
               "(starter 註：國定假日後第一天先確認)。"
               f" ERR={r.get('cal_error')}")
-    p = subprocess.run(["git", "pull"], capture_output=True, text=True,
-                       cwd=ROOT)
-    print("PULL=" + (p.stdout.strip() + p.stderr.strip())[-100:])
+    p = subprocess.run(["git", "pull", "--ff-only"], capture_output=True,
+                       text=True, cwd=ROOT)
+    print("PULL=" + (((p.stdout or "") + (p.stderr or "")).strip())[-100:])
+    if p.returncode != 0:
+        print("PULL_FAILED_ABORT 本地與遠端分歧，先處理（stash 或合併）再重跑開工")
+        return 2
     if args.fetch:
         dp0 = ROOT / "data_reports" / f"DATA_REPORT_{args.t0}.md"
         if not dp0.exists():
