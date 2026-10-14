@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""報告起草機：從 DATA_REPORT 產出附錄B五區塊＋§6/§5.5 表格草稿。
+"""報告起草機：從 DATA_REPORT 產出附錄B五區塊＋§5/§6 表格草稿。
 
 用法：
     python src/draft_blocks.py --data data_reports/DATA_REPORT_20261005.md [--out /tmp/draft.md]
@@ -8,6 +8,9 @@
 比較表/流向/前十大含區間與資料日期，一律照貼不手改）；
 解讀全人工（verdict 理由、levels 價位選擇、scenarios 條件一律留白手寫）。
 輸出直接貼進報告對應位置再補解讀。
+表格覆蓋：§5.1 日夜 OHLC／§5.3 法人 OI／§5.4 日夜交易／§5.5 前十大／
+§6.1 總量＋Top3＋Walls＋OI 增減／§6.2 拆分＋日夜總表＋力道表＋流向／
+§6.3 VIX／§6.4 比較表＋Top10 全表／§4 事件清單。
 """
 from __future__ import annotations
 
@@ -205,6 +208,89 @@ def _oi_moves(data: str) -> list[str]:
             f"| 增加最多 | {_cup} | {_pup} |",
             f"| 減少最多 | {_cdn} | {_pdn} |",
             f"| 最大OI增減 | {_cmx} | {_pmx} |"]
+
+
+def _cell_iv(t, key: str) -> tuple:
+    """回傳 (值, 區間)；列名含 (A→B) 時一併取出，找不到回 ('—', '')。"""
+    if t is None:
+        return "—", ""
+    for r in t["rows"]:
+        if key in str(r[0]):
+            return (str(r[1]) if len(r) > 1 else "—"), _interval(r[0])
+    return "—", ""
+
+
+def _passthrough(data: str, section: str) -> list[str]:
+    """整表照貼（去掉資料來源欄，附資料日期註記）；找不到回提示行走 SOP 3.5。"""
+    t = _first_table(data, section)
+    if t is None:
+        return ["（DATA 缺「%s」表，人工走 SOP 3.5）" % section]
+    cols = list(t["cols"])
+    cut = len(cols) - 1 if (cols and "來源" in cols[-1]) else len(cols)
+    lines = ["| " + " | ".join(cols[:cut]) + " |",
+             "|" + "|".join(["---"] * cut) + "|"]
+    for r in t["rows"]:
+        cells = [str(c) for c in r[:cut]]
+        if not any(c.strip() for c in cells):
+            continue
+        lines.append("| " + " | ".join(cells) + " |")
+    note = _date_note(_seg(data, section))
+    if note:
+        lines.append(note)
+    return lines
+
+
+def _day_night_ohlc(data: str) -> list[str]:
+    """§5.1 日/夜 OHLC 並排（貼進 5.1，下加解讀；結算僅夜盤有，日盤記 —）。"""
+    day = _first_table(data, "台指期近月日盤行情")
+    night = _first_table(data, "台指期近月夜盤行情")
+    lines = ["| 項目 | 日盤 | 夜盤 |", "|---|---|---|"]
+    for k in ("開盤價", "最高價", "最低價", "收盤價",
+              "漲跌點數", "漲跌幅", "成交量"):
+        lines.append(f"| {k} | {_cell(day, k)} | {_cell(night, k)} |")
+    lines.append(f"| 結算價 | — | {_cell(night, '結算價')} |")
+    return lines
+
+
+def _opt_totals(data: str) -> list[str]:
+    """§6.1 Call/Put 總量並排（貼進 6.1，下加解讀；增減含區間）。"""
+    lines = ["| 項目 | Call | Put |", "|---|---|---|"]
+    for key, lbl in (("總成交量", "總成交量"), ("總未平倉量", "總 OI"),
+                     ("OI 增減", "OI 增減")):
+        tc = _first_table(data, "Call 總成交量")
+        tp = _first_table(data, "Put 總成交量")
+        c, civ = _cell_iv(tc, key)
+        p, piv = _cell_iv(tp, key)
+        cs = f"{c}（{civ}）" if civ else c
+        ps = f"{p}（{piv}）" if piv else p
+        lines.append(f"| {lbl} | {cs} | {ps} |")
+    return lines
+
+
+def _walls_table(data: str) -> list[str]:
+    """§6.1 Walls 表（貼進 6.1，下加解讀；變化含區間，缺值記 —）。"""
+    lines = ["| 項目 | 價位 | 對應到期月份 | 與前一日變化 |",
+             "|---|---|---|---|"]
+    for sec, lbl in (("Call Wall", "Call Wall"), ("Put Wall", "Put Wall"),
+                     ("Gamma Wall", "Gamma Wall"),
+                     ("Gamma Flip", "Gamma Flip"),
+                     ("Max Pain", "Max Pain")):
+        t = _first_table(data, sec)
+        price = tenor = "—"
+        chg, iv = "—", ""
+        if t is not None:
+            for r in t["rows"]:
+                c0 = str(r[0])
+                v = str(r[1]) if len(r) > 1 else "—"
+                if "價位" in c0 and "變化" not in c0 and price == "—":
+                    price = v
+                elif "到期" in c0:
+                    tenor = v
+                elif "變化" in c0:
+                    chg, iv = v, _interval(c0)
+        chgs = f"{chg}（{iv}）" if iv else chg
+        lines.append(f"| {lbl} | {price} | {tenor} | {chgs} |")
+    return lines
 
 
 def _seg(data: str, section: str) -> str:
@@ -504,6 +590,33 @@ def build(data_path: str) -> str:
     A("")
     A("# DRAFT-§6.2 大戶流向（貼進 6.2，數值＋區間直接用，下加解讀）")
     A("\n".join(_flow(data)))
+    A("")
+    A("# DRAFT-§5.1 日/夜 OHLC 並排（貼進 5.1，下加解讀）")
+    A("\n".join(_day_night_ohlc(data)))
+    A("")
+    A("# DRAFT-§5.3 法人期貨 OI 全表（照貼進 5.3，下加解讀）")
+    A("\n".join(_passthrough(data, "法人台指期多空未平倉部位")))
+    A("")
+    A("# DRAFT-§5.4 日夜法人交易全表（照貼進 5.4，下加解讀）")
+    A("\n".join(_passthrough(data, "日盤、夜盤法人交易資料")))
+    A("")
+    A("# DRAFT-§6.1 Call/Put 總量並排（貼進 6.1，下加解讀）")
+    A("\n".join(_opt_totals(data)))
+    A("")
+    A("# DRAFT-§6.1 Walls 表（貼進 6.1，下加解讀）")
+    A("\n".join(_walls_table(data)))
+    A("")
+    A("# DRAFT-§6.2 外資拆分全表（照貼進 6.2，下加解讀）")
+    A("\n".join(_passthrough(data, "外資 Call／Put 部位")))
+    A("")
+    A("# DRAFT-§6.2 自營拆分全表（照貼進 6.2，下加解讀）")
+    A("\n".join(_passthrough(data, "自營商 Call／Put 部位")))
+    A("")
+    A("# DRAFT-§6.2 法人日夜總表（照貼進 6.2，下加解讀）")
+    A("\n".join(_passthrough(data, "選擇權法人日盤、夜盤交易")))
+    A("")
+    A("# DRAFT-§6.2 法人多空力道表（照貼進 6.2，下加解讀＋背離註記）")
+    A("\n".join(_passthrough(data, "法人多空力道表")))
     A("")
     A("# DRAFT-§4 事件清單（只寫清單內事件，不憑記憶加；數字抄摘要原文）")
     A("\n".join(_news_list(data)))
