@@ -65,7 +65,6 @@ def _add2(a, b):
     if b is None:
         return a
     return a + b
-    return f"{float(v):+.2f}" if v is not None else MISSING
 
 def _diff2(a, b):
     return a - b if a is not None and b is not None else None
@@ -382,7 +381,7 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
             A(f"  - 摘要：{it.get('summary', MISSING)}")
             A(f"  - 原文連結：{it['link']}")
     else:
-        A(_tbl([("TBD", "TBD", "TBD", "TBD", "TBD", "TBD")],
+        A(_tbl([(MISSING, MISSING, MISSING, MISSING, MISSING, MISSING)],
                ("事件／新聞", "來源", "發布時間", "台北時間", "摘要", "原文連結")))
     A("")
     _news_note = _nw["note"]
@@ -658,7 +657,7 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
                 for i, r in enumerate(_od["call"])],
                ("#", "履約價", "OI", "佔比", "資料來源")))
     else:
-        A(_tbl([("TBD", MISSING, MISSING, MISSING, "端點未提供")],
+        A(_tbl([(MISSING, MISSING, MISSING, MISSING, "端點未提供")],
                ("#", "履約價", "OI", "佔比", "資料來源")))
     A("")
     A("")
@@ -677,7 +676,7 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
                 for i, r in enumerate(_od["put"])],
                ("#", "履約價", "OI", "佔比", "資料來源")))
     else:
-        A(_tbl([("TBD", MISSING, MISSING, MISSING, "端點未提供")],
+        A(_tbl([(MISSING, MISSING, MISSING, MISSING, "端點未提供")],
                ("#", "履約價", "OI", "佔比", "資料來源")))
     A("")
     A("")
