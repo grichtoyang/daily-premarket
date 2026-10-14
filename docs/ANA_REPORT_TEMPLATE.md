@@ -2,7 +2,7 @@
 
 > 讀 `data_reports/DATA_REPORT_yyyymmdd.md` → 手寫 `reports/Daily_REPORT_yyyymmdd_日盤.md`
 > 或 `_全日.md`（T0＋盤別由 `src/t0.py` 判定；檔名規則見 `docs/DATA_SCHEMA.md`）。
-> 鐵律：數字只能來自 DATA_REPORT（衍生百分比須列算式）；缺值寫 N/A，不得臆測；
+> 鐵律：數字只能來自 DATA_REPORT（衍生百分比須列算式）；缺值寫 unavailable，不得臆測（N/A 舊寫法已退役，見 DATA_SCHEMA）；
 > **數據與判斷分開；所有解讀一律條列式（禁用大段敘述）**；模型結果（Walls/Gamma/劇本）必須聲明非官方、未經歷史回測；
 > 繁體中文，總長 8000~13000 字（不含附錄）。文末附「機器可讀數據」供 Dashboard。
 
@@ -107,8 +107,11 @@
 - levels：壓力／中軸／支撐／壓力二，各含來源；另附白話說明行。
 - oidist／scenarios：同 V2 格式；scenarios 含停損第 4 欄。
 
-## 執行方式 (方式 1：手動)
+## 執行方式 (方式 1：起草機＋單輪驗證，現行)
 
-操作者將當日 DATA_REPORT 全文貼給分析師，取得 Daily_REPORT 全文後存為
-`reports/Daily_REPORT_yyyymmdd.md`，更新 `reports/latest.json`
-(`report_date`/`report_path`/`generated_at`/`status`)，本地驗結構後 commit＋push。
+操作者跑 `python scripts/open.py --t0 yyyymmdd --fetch` 取起草輸出，
+數字一律從起草貼上（照貼不手改，只手寫解讀），寫完跑
+`python scripts/verify.py --t0 yyyymmdd --prev yyyymmdd`（numcheck＋prior-audit＋gate），
+全過才更新 `reports/latest.json`
+(`report_date`/`report_path`/`generated_at`/`status`) 並 commit＋push。
+檔名帶盤別後綴：`reports/Daily_REPORT_yyyymmdd_日盤.md` 或 `_全日.md`。
