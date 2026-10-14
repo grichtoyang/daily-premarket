@@ -81,3 +81,4 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 排程改制（用户決定）：本機 DailyPremarket0800 取消，開工改 on-demand（`open.py --fetch` 先抓取再凍結；失敗退回已 pull DATA；Actions 08:00/19:00 照跑不斷炊）。撞車類問題不再有第二個寫手。
 - worker 部署已驗證生效（三截圖）：price 端誠實標 10-08 舊值、institutional 端 10-12 新值（+204/+677 確認為週日夜盤真值，已恢復進報告§5.4/§5.6劇本四/§7.3/kpi）、night-ohlc 新節次與手動值一字不差；選擇權夜/結算維持缺失（源頭不明，不硬填）。
 - 同日修 worker 貼標（舊值貼新標籤根因）：`workers/taifex-proxy_V1.4.js` 5 處 `date: today()`（institutional 共用＋price 日/夜＋options 日/夜）改為頁面實際日期（queryDate input／紅字日期段，ROC 轉 ISO；抓不到標 fetch-day）＋台北曆日；已用真實頁面 HTML 驗 extractor（ISO/紅字/ROC/無日期四態全對）。待用户按 DEPLOY.md 整檔貼上部署；部署後驗：after-hours 端點 `date` 應等於頁面日期、`date_source` 為 page。
+- 2026-10-14 早 02:03 bot 跑過一次（author 陈晓彤 dates 證實；時間對不上 08:00/19:00/週六任何一班，應為週二 19:00 遲到 7 小時或手動觸發，repo 內無法區分；確定不是 08:00 那班也不是筆電）。另：筆電排程停用未生效（今晨 08:26 照跑＋仍排著明早 07:55，已請用户再檢查工作排程器）。
