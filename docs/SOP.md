@@ -18,5 +18,11 @@ GitHub Actions 自動抓資料 → commit `DATA_REPORT_yyyymmdd.md` → push。
 5. 本地驗結構 (validate PASS)。
 6. `git add/commit/push` → Streamlit Cloud 1~2 分鐘自動更新 Dashboard。
 
+## 修復原則（2026-10-14 定案）
+
+1. 小洞走人工：貼來源 URL＋人工讀數＋補登一行進 DATA（值＋來源＋日期，閘門只認 DATA）；不為小洞加新程式。
+2. 大洞（整批抓不到）才動工具。
+3. 遇到問題先找最容易的解法，不要硬修；功能凍結，只修不加。
+
 ## 用戶驗收 (手機)
 開 Dashboard 網址：總結頁結論＋KPI＋交易計畫；要查數點 DATA 連結。
