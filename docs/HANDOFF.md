@@ -74,6 +74,7 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 同日徹底修夜盤查詢（用户要求上班日早上必須有最新夜盤）：根因是規則全日→T0+1（平日等於今天所以沒爆過，假日後分歧取回退舊值）＋回退靜默採用。改法：夜盤一律查今天、回傳日期不符一律視為無新節次（附屬量/結算/法人夜同口徑；options-after-hours 日盤拆分不動）；量取 OHLC 端點；夜漲跌正值 -652（48,705－前結算 49,357，上游自洽，已同步）；平日行為與舊規則等價。live 驗證通過＋read-only build() 全跑通。
 - 2026-10-13（T0=2026-10-12 全日）：小跌 -11 廣度翻多＋投信翻多＋自營翻多，外資大賣 -522 期貨大空，夜盤 -399 劇本三；修正案驗收成功（新規則首跑直接取到週一夜盤，無回退）；開工鐵律追加 prior-audit（比較級數字逐一對前後 DATA，抓 4 處：維持率舊值/Put集中舊區間/夜振幅算式標記/大戶流向舊值）；借券/融資 SOP 3.5 救援值與 fetch 獨立重跑完全一致。
 - 同日斷根工程（回應「改善加了不少但問題一直冒出來」）：起草機預填 verdict/levels/scenarios＋關鍵數字速查（剩下全部手填數字消滅；驗收抓到殖利率取錯欄即修）；prior-audit 併入 numcheck（--prev）；新增 scripts/open.py＋verify.py 固定指令，臨時腳本退役；下次開工起只走兩條指令。
+- 2026-10-14 早 Actions 08:00 未產出（git log 無今日 chore）：修 `.github/workflows/daily_data.yml`——timeout 20→45 分（重試本來跑不完）、T0FILE 改只認本輪新檔（舊寫法 fetch 全滅時誤拿昨日檔靜默跳過）、無新檔直接 exit 1（不再假裝成功）。
 - 排程改制收尾：DailyPremarket0800 已停用（用户動手，隨時可開回）；開工改 on-demand（`open.py --fetch` 先抓取再凍結，20 分鐘超時／失敗自動退回已 pull DATA；Actions 照跑不斷炊）。今日總驗收一次通過，無殘留。
 - gapfill 上線（用户定案 Actions 主抓＋本機只補洞）：`scripts/gapfill.py` 只補 unavailable／前值遞補格（融資融券 HiStock／維持率三源 T0 重試＋遞補更新／借券賣出／Yahoo 代號列），不碰正常值（浮動凍結）；今日實測補上維持率真值 196.16（wantgoo 10-12），另抓到日期格式 bug 即修；`open.py --fetch` 改走 gapfill（DATA 缺失才全量）。
 - 排程改制（用户決定）：本機 DailyPremarket0800 取消，開工改 on-demand（`open.py --fetch` 先抓取再凍結；失敗退回已 pull DATA；Actions 08:00/19:00 照跑不斷炊）。撞車類問題不再有第二個寫手。

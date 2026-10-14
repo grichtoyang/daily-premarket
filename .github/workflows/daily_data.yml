@@ -18,7 +18,7 @@ permissions:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,19 +31,24 @@ jobs:
         run: |
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
-          # T0 缺省由 src/t0.py 判定 (13:45/假日/週末規則)；手動觸發可指定 t0
-          # Runner 機房 IP 偶被擋 (wantgoo 前有 Cloudflare，同 T0 多次結果不一)：
-          # 維持率當金絲雀，最多跑 3 次，成功即停；同 T0 合併保護已在 fetch 內。
+          START_TS=$(date +%s)
+          # 只認本輪新寫的檔（不用 ls -t 取最新：fetch 全滅時會誤拿昨天的檔，
+          # grep 舊檔必然通過→靜默跳過，2026-10-14 早上教訓）
           for i in 1 2 3; do
             python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
-            T0FILE=$(ls -t data_reports/DATA_REPORT_*.md | head -1)
-            if grep -q "| 融資維持率 | [0-9]" "$T0FILE"; then
+            T0FILE=$(find data_reports -name 'DATA_REPORT_*.md' -newermt "@$START_TS" | head -1)
+            if [ -n "$T0FILE" ] && grep -q "| 融資維持率 | [0-9]" "$T0FILE"; then
               echo "margin ratio ok on attempt $i ($T0FILE)"
+              echo "T0FILE=$T0FILE" >> $GITHUB_ENV
               break
             fi
-            echo "margin ratio missing, attempt $i/3; sleep 120s"
+            echo "fetch incomplete, attempt $i/3; sleep 120s"
             sleep 120
           done
+          if [ -z "${T0FILE:-}" ]; then
+            echo "FATAL: no fresh DATA produced; failing loudly (do not silent-skip)"
+            exit 1
+          fi
       # 分析層：半自動（人工貼 DATA 給 OpenCode 寫 Daily_REPORT），全自動管線保留在 src/analyze.py，日後啟用
       - name: Commit report
         run: |
@@ -53,8 +58,8 @@ jobs:
           if git diff --staged --quiet; then
             echo "no changes"
           else
+            if [ -z "${T0FILE:-}" ]; then echo "no T0FILE ref"; exit 1; fi
             # 訊息用 T0（檔名基準）而非 DATE，避免休市日訊息與檔案不符
-            T0FILE=$(ls -t data_reports/DATA_REPORT_*.md | head -1)
             T0=$(basename "$T0FILE" .md | sed 's/DATA_REPORT_//')
             git commit -m "chore(data): DATA_REPORT_${T0}"
             git push
