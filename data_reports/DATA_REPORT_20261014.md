@@ -1,8 +1,8 @@
 # DATA_REPORT_20261014
 
-- 報告日期：`2026-10-14`
+- 報告日期：`2026-10-15`
 - T0 交易日期：`2026-10-14`
-- 資料產出時間：`2026-10-14 23:45:25`
+- 資料產出時間：`2026-10-15 10:38:00`
 - 時區：`Asia/Taipei`
 
 ---
@@ -176,30 +176,30 @@
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：台股反攻卻遇神山殺尾盤 南亞、國巨帶隊吸金
-  - 來源：Yahoo 台股；發布時間：2026-10-14T09:03:43Z；台北時間：2026-10-14 17:03
-  - 摘要：塑化、電子題材撐場，台股反彈284點仍未站回4萬9！今(14)日加權指數終場上漲284.52點、漲幅0.59%，收48,625.83點，成交金額9302.50億元。盤中一度強彈逾700點、重返49K，尾盤賣壓使漲幅收斂；櫃買指數上漲1.40
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%A5%9E%E5%B1%B1%E5%B0%BE%E7%9B%A4%E9%81%AD%E6%8F%90%E6%AC%BE200%E5%84%84%E5%8F%B0%E8%82%A1%E4%BB%8D%E6%BC%B2284%E9%BB%9E%EF%BC%81%E5%8D%97%E4%BA%9E%E7%8B%82%E9%A3%86%E5%A5%AA%E5%90%B8%E9%87%91%E7%8E%8B-%E5%9C%8B%E5%B7%A8%E9%A0%98%E8%A2%AB%E5%8B%95%E5%85%83%E4%BB%B6%E6%90%B6%E9%8B%92%E9%A0%AD%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-090343717.html
-- 事件2：0056盤中飆新高股民嗨翻 前兩大持股成助攻關鍵
-  - 來源：Yahoo 台股；發布時間：2026-10-14T10:19:00Z；台北時間：2026-10-14 18:19
-  - 摘要：元大高股息（0056）盤中衝上59.7元刷新歷史新高，吸引168萬名股東關注。受惠持股南亞搭上AI轉型浪潮股價強勢，以及華南金亮眼獲利推升，0056展現強勁爆發力，近三個月績效達15.3%。加上本季祭出創高配息，推升市場買氣，引發網友熱烈討
-  - 原文連結：https://tw.stock.yahoo.com/news/168%E8%90%AC%E8%82%A1%E6%9D%B1%E7%88%BD%E7%BF%BB-0056%E5%88%B7%E6%96%B0%E9%AB%98%E7%8B%82%E5%8B%9D%E5%A4%A7%E7%9B%A4-%E6%8E%A8%E6%89%8B%E6%98%AF%E9%80%992%E6%AA%94-101900591.html
-- 事件3：晶心科一張價差逾12萬 特力屋和暢16日同步申購
-  - 來源：Yahoo 台股；發布時間：2026-10-14T09:07:50Z；台北時間：2026-10-14 17:07
-  - 摘要：新的一輪台股紅包抽籤接力登場！本周共有晶心科（6533）、和暢科技（6825）等 3 檔即將開放申購，若再加上目前正在申購中的股票，累計已有6檔可試手氣。其中，最受矚目的晶心科若幸運抽中一張，潛在獲利預計高達12萬元。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%8A%BD%E4%B8%AD1%E5%BC%B5%E7%88%BD%E8%B3%BA12%E8%90%AC%EF%BC%81%E7%89%B9%E5%8A%9B%E5%B1%8B%E3%80%81%E6%99%B6%E5%BF%83%E7%A7%91%E7%AD%893%E6%AA%94%E5%8F%B0%E8%82%A1%E7%B4%85%E5%8C%85%E7%94%B3%E8%B3%BC%E5%80%92%E6%95%B8%E4%B8%AD-090750172.html
-- 事件4：高息ETF不是只會配息 3檔今年跑贏大盤冠軍漲近8成
-  - 來源：Yahoo 台股；發布時間：2026-10-14T10:24:00Z；台北時間：2026-10-14 18:24
-  - 摘要：高股息ETF今年也有亮眼表現！股添樂分析，00929、00939、00878今年以來漲幅超越大盤，00918、00929等ETF年化配息率也受關注。0056、00878、00919如何比較？投資人應留意總報酬與配息風險。（記者唐家興）
-  - 原文連結：https://tw.stock.yahoo.com/news/%E9%AB%98%E8%82%A1%E6%81%AFetf%E4%BB%8A%E5%B9%B4%E8%AA%B0%E6%9C%80%E8%B3%BA-%E8%A1%A8%E7%9C%8B%E6%87%82-3%E6%AA%94%E8%B3%BA%E8%B4%8F%E5%A4%A7%E7%9B%A4-%E7%AC%AC1%E5%90%8D%E7%8C%9B%E6%BC%B2%E8%BF%918%E6%88%90-100400095.html
-- 事件5：美債殖利率衝高股市也震盪 利率匯率風險一次看懂
-  - 來源：Yahoo 台股；發布時間：2026-10-13T10:00:00Z；台北時間：2026-10-13 18:00
-  - 摘要：美債是市場判斷經濟前景與走向的重要參考指標，近來，美國10年、20年、30年公債殖利率接連觸及24年來高點，牽動全球金融市場震盪。市場看法眾說紛紜，有人擔憂美債殖利率會持續高漲，也有人認為會有回落空間。美債究竟是什麼？美債殖利率又是怎麼算出
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E5%82%B5%E6%AE%96%E5%88%A9%E7%8E%87%E5%89%B520%E5%A4%9A%E5%B9%B4%E4%BE%86%E6%96%B0%E9%AB%98%E2%8B%AF%E7%BE%8E%E8%82%A1%E3%80%81%E5%8F%B0%E8%82%A1%E9%83%BD%E5%8F%97%E5%BD%B1%E9%9F%BF%EF%BC%81%E7%BE%8E%E5%82%B5%E6%AE%96%E5%88%A9%E7%8E%87%E6%80%8E%E9%BA%BC%E7%AE%97%EF%BC%9F%E5%B9%BE%E4%B9%8E%E6%B2%92%E6%9C%89%E4%BF%A1%E7%94%A8%E9%A2%A8%E9%9A%AA%E4%B8%8D%E7%AD%89%E6%96%BC%E6%B2%92%E6%9C%89%E9%A2%A8%E9%9A%AA%EF%BC%9F%EF%BD%9C%E7%9C%8B%E5%9C%96%E8%AA%AA%E8%82%A1%E5%B8%82-100000569.html
-- 事件6：光通訊股回神強彈！「這封測廠」亮燈連收6紅飆55%、華星光、眾達都漲停　聯亞、聯鈞噴逾半根、立碁漲7%
-  - 來源：Yahoo 台股；發布時間：2026-10-14T09:50:00Z；台北時間：2026-10-14 17:50
-  - 摘要：[FTNN新聞網]記者王凱暄／綜合報導台股加權指數今（14）日開高走高，盤中一度站回4萬9大關，奈何漲幅收斂，終場收在48625.83點，上漲284.52點，漲幅0.59%，成...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%85%89%E9%80%9A%E8%A8%8A%E8%82%A1%E5%9B%9E%E7%A5%9E%E5%BC%B7%E5%BD%88-%E9%80%99%E5%B0%81%E6%B8%AC%E5%BB%A0-%E4%BA%AE%E7%87%88%E9%80%A3%E6%94%B66%E7%B4%85%E9%A3%8655-%E8%8F%AF%E6%98%9F%E5%85%89-%E7%9C%BE%E9%81%94%E9%83%BD%E6%BC%B2%E5%81%9C-095000673.html
+- 事件1：散戶搶買0050 不到1小時爆逾2000萬零股成交量
+  - 來源：Yahoo 台股；發布時間：2026-10-15T02:00:59Z；台北時間：2026-10-15 10:00
+  - 摘要：權王台積電（2330）法說會前押寶行情落空，盤中大跌70元，卻意外引爆國民ETF元大台灣 50（0050）的抄底買氣。0050 開盤不到一小時便爆出 超過2000萬股的零股成交量、吸金逾24億元，顯示散戶正積極進場撿便宜。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%95%A3%E6%88%B6%E5%A4%A7%E8%BB%8D%E6%90%B6%E8%B2%B70050%EF%BC%81%E4%B8%8D%E5%88%B01%E5%B0%8F%E6%99%82%E7%88%86%E9%80%BE2000%E8%90%AC%E8%82%A1-020059939.html
+- 事件2：亞股同步下殺 韓股又觸發熔斷機制、日股跌近3.9%
+  - 來源：Yahoo 台股；發布時間：2026-10-15T01:41:48Z；台北時間：2026-10-15 09:41
+  - 摘要：亞股今（15）早又現史詩級崩跌走勢！日股急殺2600點之多，跌破6萬7、6萬6二大整數大關，跌幅近3.9%，而韓股跌更重，今早一度大跌6.8%，更一度觸發熔斷機制，這已是二天內2度觸發，台股下午有護國神山台積電法說會，但今早沒逃過空方氣焰，
+  - 原文連結：https://tw.stock.yahoo.com/news/%E4%BA%9E%E8%82%A1%E4%B9%9F%E5%B4%A9%EF%BC%81%E6%97%A5%E8%82%A1%E6%80%A5%E6%AE%BA2600%E9%BB%9E-%E9%9F%93%E8%82%A1%E9%87%8D%E6%8C%AB7%E5%8F%88%E8%A7%B8%E7%99%BC%E5%81%B4%E8%BB%8A%E6%A9%9F%E5%88%B6-%E6%97%A5%E9%9F%93etf%E9%87%8D%E6%8C%AB%E9%80%BE8-014148296.html
+- 事件3：千金股跌到剩48檔 股王一度摔8%、川湖失守萬金
+  - 來源：Yahoo 台股；發布時間：2026-10-15T02:33:23Z；台北時間：2026-10-15 10:33
+  - 摘要：AI疑慮與升息憂慮夾擊，台股今（15）日盤中重挫近1500點，失守4萬8千點大關，千金股成為資金拋售重心，跌幅普遍落在5%至8%，慘剩48檔。其中，旺矽（6223）、緯穎（6669）盤中跌停，「股王」信驊（5274）也殺聲隆隆重挫逾8%，最
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8D%83%E9%87%91%E8%82%A1%E6%B7%AA%E9%87%8D%E7%81%BD%E5%8D%80%E5%89%A948%E6%AA%94%EF%BC%81%E7%B7%AF%E7%A9%8E%E6%97%BA%E7%9F%BD%E6%85%98%E8%B7%8C%E5%81%9C-%E8%82%A1%E7%8E%8B%E4%BF%A1%E9%A9%8A%E8%B7%8C8-%E8%82%A1%E5%90%8E%E5%B7%9D%E6%B9%96%E7%97%9B%E5%A4%B1%E8%90%AC%E9%87%91%E5%9C%B0%E4%BD%8D-023117293.html
+- 事件4：台積電法說行情落空 盤中跌70元創今年第7大
+  - 來源：Yahoo 台股；發布時間：2026-10-15T01:19:50Z；台北時間：2026-10-15 09:19
+  - 摘要：晶圓代工龍頭台積電於今（15）日要召開第三季法說會，儘管法說會外資給予全年營收成長 46%、Q4 毛利率突破 67% 的高預期，但今日股價並未出現「押寶行情」，台積電盤中一度跌70元至2420元，跌點創今年第七大。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E7%A9%8D%E9%9B%BB%E6%B3%95%E8%AA%AA%E6%9C%83%E6%8A%BC%E5%AF%B6%E8%A1%8C%E6%83%85%E8%90%BD%E7%A9%BA%EF%BC%81%E7%9B%A4%E4%B8%AD%E8%B7%8C70%E5%85%83%E3%80%8C%E4%BB%8A%E5%B9%B4%E7%AC%AC7%E5%A4%A7%E3%80%8D-%E5%88%86%E6%9E%90%E5%B8%AB%EF%BC%9A%E8%A7%80%E6%9C%9B%E5%B0%B1%E5%A5%BD-012036356.html
+- 事件5：219萬投資人領錢 11檔台股ETF共發312億股利
+  - 來源：Yahoo 台股；發布時間：2026-10-15T00:41:40Z；台北時間：2026-10-15 08:41
+  - 摘要：台股ETF股利發放高峰日就是今天！逾219萬人一早就被錢香醒，總計有包括群益台灣精選高息(00919）、大華優利高填息30（00918）、野村臺灣新科技50（00935）、凱基優選高股息30（00915)等11檔台股ETF發放逾312億元現
+  - 原文連結：https://tw.stock.yahoo.com/news/219%E8%90%AC%E6%8A%95%E8%B3%87%E4%BA%BA-%E6%97%A9%E9%A0%98%E7%B4%85%E5%8C%85-11%E6%AA%94%E5%8F%B0%E8%82%A1etf-312%E5%84%84%E8%82%A1%E5%88%A9%E7%99%BC%E6%94%BE%E5%B0%B1%E6%98%AF%E4%BB%8A%E5%A4%A9-004140112.html
+- 事件6：台股早盤大跳水跌逾1400點 台積電跌70元
+  - 來源：Yahoo 台股；發布時間：2026-10-15T01:36:01Z；台北時間：2026-10-15 09:36
+  - 摘要：美國通膨數據高於預期，引發市場對聯邦準備理事會（Fed）進一步升息的疑慮，美股主要指數14日收黑。台北股市今天（15日）早盤狂瀉逾1400點，摜破48000點，最低至47153.87點。台積電最多跌70元至2420元。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E6%97%A9%E7%9B%A4%E7%8B%82%E7%80%89%E9%80%BE1400%E9%BB%9E%E6%91%9C%E7%A0%B448000%E9%BB%9E-%E5%8F%B0%E7%A9%8D%E9%9B%BB%E8%B7%8C70%E5%85%83-013601704.html
 - 事件7：Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into the economic condition of American families
   - 來源：Federal Reserve；發布時間：Fri, 9 Oct 2026 14:00:00 GMT；台北時間：2026-10-09 22:00
   - 摘要：Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into
@@ -208,22 +208,22 @@
   - 來源：Federal Reserve；發布時間：Thu, 8 Oct 2026 20:30:00 GMT；台北時間：2026-10-09 04:30
   - 摘要：Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficient
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261008a.htm
-- 事件9：Minutes of the Federal Open Market Committee, September 15-16, 2026
-  - 來源：Federal Reserve；發布時間：Wed, 7 Oct 2026 18:00:00 GMT；台北時間：2026-10-08 02:00
-  - 摘要：Minutes of the Federal Open Market Committee, September 15-16, 2026
-  - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/monetary20261007a.htm
-- 事件10：Here's the inflation breakdown for September 2026 — in one chart
+- 事件9：How high inflation became a 'fact of life' in the U.S.
+  - 來源：CNBC；發布時間：Wed, 14 Oct 2026 17:20:23 GMT；台北時間：2026-10-15 01:20
+  - 摘要：U.S. inflation has stayed elevated for years, raising concern at the Federal Reserve that consumers may come to expect stubbornly high prices.
+  - 原文連結：https://www.cnbc.com/2026/10/14/high-inflation-fed-expectations.html
+- 事件10：SK Hynix shares plunge 10% amid Asia tech rout as Fed rate hike fears, AI funding worries mount
+  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 01:07:01 GMT；台北時間：2026-10-15 09:07
+  - 摘要：A sell-off in global technology hardware stocks deepened Thursday.
+  - 原文連結：https://www.cnbc.com/2026/10/15/sk-hynix-samsung-softbank-stocks-asia-tech-rout-ai-funding-worries.html
+- 事件11：CoreWeave shares tumble as bond yields near 15% on concern about AI borrowing binge
+  - 來源：CNBC；發布時間：Wed, 14 Oct 2026 20:46:32 GMT；台北時間：2026-10-15 04:46
+  - 摘要：Shares of CoreWeave sank 15%, while yields in its bonds blew out further.
+  - 原文連結：https://www.cnbc.com/2026/10/14/coreweave-stock-bond-yields-ai-debt.html
+- 事件12：Here's the inflation breakdown for September 2026 — in one chart
   - 來源：CNBC；發布時間：Wed, 14 Oct 2026 14:56:25 GMT；台北時間：2026-10-14 22:56
   - 摘要：The consumer price index rose by 3.7% in September, on the back of higher gasoline and energy prices largely due to the Iran war.
   - 原文連結：https://www.cnbc.com/2026/10/14/cpi-inflation-breakdown-september-2026.html
-- 事件11：BlackRock's Larry Fink warns a data center moratorium could trigger a recession
-  - 來源：CNBC；發布時間：Wed, 14 Oct 2026 15:19:08 GMT；台北時間：2026-10-14 23:19
-  - 摘要：Local opposition to data center construction has been a feature of the midterm elections set for Tuesday, Nov. 3.
-  - 原文連結：https://www.cnbc.com/2026/10/14/blackrocks-fink-warns-data-center-moratorium-could-spark-a-recession.html
-- 事件12：10-year Treasury yield jumps as September core inflation comes in hotter than expected
-  - 來源：CNBC；發布時間：Wed, 14 Oct 2026 13:48:01 GMT；台北時間：2026-10-14 21:48
-  - 摘要：Treasury yields moved higher after the latest inflation reading.
-  - 原文連結：https://www.cnbc.com/2026/10/14/us-treasury-yields-cpi-inflation-report.html
 
 
 ## 三、期貨
@@ -291,8 +291,8 @@
 | 前十大交易人多方 OI | 81,651 | TAIFEX Proxy |
 | 前十大交易人空方 OI | 77,535 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI | +4,116 | TAIFEX Proxy |
-| 多空淨 OI 變化 (2026-10-12→2026-10-13) | -1,737 | TAIFEX Proxy snapshots (2026-10-13) |
-- 資料日期：2026-10-13 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 多空淨 OI 變化 (2026-10-12→2026-10-14) | -1,737 | TAIFEX Proxy snapshots (2026-10-13) |
+- 資料日期：2026-10-14 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 ### 5．日盤、夜盤法人交易資料
 
@@ -355,7 +355,7 @@
 | 前十大交易人多方 OI | 81,651 | TAIFEX Proxy |
 | 前十大交易人空方 OI | 77,535 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI | +4,116 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI 變化 (2026-10-12→2026-10-13) | -1,737 | TAIFEX Proxy snapshots (2026-10-13) |
+| 前十大交易人多空淨 OI 變化 (2026-10-12→2026-10-14) | -1,737 | TAIFEX Proxy snapshots (2026-10-13) |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
 
@@ -404,8 +404,8 @@
 | Call／Put 成交量比例 | 0.96 | TAIFEX Proxy |
 | Call／Put 未平倉量比例 | 1.08 | TAIFEX Proxy |
 | Put／Call Ratio | 0.93 | TAIFEX Proxy |
-| Call／Put 比例變化 (量比 2026-10-12→2026-10-13) | -13.59 | TAIFEX Proxy |
-| 與前一交易日比較 (OI 比 2026-10-12→2026-10-13) | -15.83 | TAIFEX Proxy |
+| Call／Put 比例變化 (量比 2026-10-13→2026-10-14) | -13.59 | TAIFEX Proxy |
+| 與前一交易日比較 (OI 比 2026-10-13→2026-10-14) | -15.83 | TAIFEX Proxy |
 **資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX Proxy PutCallRatio`
 
 ### 5．外資 Call／Put 部位
@@ -580,15 +580,15 @@
 | 買權多方 OI | 17,620 | TAIFEX Proxy |
 | 買權空方 OI | 16,704 | TAIFEX Proxy |
 | 買權多空淨 OI | +916 | TAIFEX Proxy |
-| 買權多空淨 OI 變化 (2026-10-12→2026-10-13) | -299 | TAIFEX Proxy snapshots (2026-10-13) |
+| 買權多空淨 OI 變化 (2026-10-12→2026-10-14) | -299 | TAIFEX Proxy snapshots (2026-10-13) |
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
 | 賣權多方 OI | 10,608 | TAIFEX Proxy |
 | 賣權空方 OI | 10,282 | TAIFEX Proxy |
 | 賣權多空淨 OI | +326 | TAIFEX Proxy |
-| 賣權多空淨 OI 變化 (2026-10-12→2026-10-13) | +332 | TAIFEX Proxy snapshots (2026-10-13) |
-- 資料日期：買權 2026-10-13／賣權 2026-10-13 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 賣權多空淨 OI 變化 (2026-10-12→2026-10-14) | +332 | TAIFEX Proxy snapshots (2026-10-13) |
+- 資料日期：買權 2026-10-14／賣權 2026-10-14 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 #### 大戶流向（全日；前十大無日夜拆分）
 
@@ -601,12 +601,13 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-14；資料時間：2026-10-14 23:45:25；時區：`Asia/Taipei`
+- 資料日期：2026-10-14；資料時間：2026-10-15 10:38:00；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
+- 註記：同 T0 保護：2 格沿用前版有值（本次抓取缺失不覆寫）
+- 註記：同 T0 穩定：194 格新舊皆有值，沿用前版（不再靜默覆寫）
 - 未取得欄位 (0)：無
-- 註記：Gamma 資料日期 2026-10-13 (T0 2026-10-14 尚無，上游 FMTQIK 落後，採最新可得)
+- 註記：futures-price-after-hours 日期 2026-10-14 非今日 2026-10-15，視為無新節次，不採用
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
-- 註記：Gamma Wall/Flip 資料日期 2026-10-13 (來源 options-market-structure-compact (proxy))
 
 ## 五、資料來源、時間與完整性
 
