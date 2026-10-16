@@ -5,7 +5,7 @@
     --date     報告日期 (預設今天 Asia/Taipei)
     --t0       T0 交易日期 (預設自動取 <= date 的最近平日)
     --session  日盤/全日 (空白=依 t0.resolve；手動 --t0 時預設全日)
-               影響夜盤 OHLC 查詢日：夜盤一律查今天（今晨收盤節；舊規則全日→T0+1 在假日後分歧，2026-10-08 教訓）
+               影響夜盤查詢日：全日→T0+1，日盤→今天（期交所查 D 得 D-1 當晚節；10-16 官網截圖實證）
 
 產出 data_reports/DATA_REPORT_yyyymmdd.md (yyyymmdd 取自 T0)。
 缺值一律 `unavailable`，不推估。
@@ -78,7 +78,7 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
         lines.append("| " + " | ".join(str(x) for x in r) + " |")
     return "\n".join(lines)
 
-def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
+def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日") -> tuple[str, int]:
     """同 T0 保護：次日晨間全日刷新會覆寫同檔，若本次某格缺失而前版同位有值，沿用舊格。
 
     規則（穩定優先，2026-10-14 定案：已發布報告只認凍結版 bytes，
@@ -89,9 +89,22 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
       真正的新值走 gapfill/SOP 3.5 明示補登，報告跟著重驗）。
       唯一允許新值覆寫的舊例外：新列來源為前值遞補而舊列不是。
     - 表頭／分隔列／標題／註記行一律不動；有填入才在未取得行後加註記。
+    - 盤別規則（C1，2026-10-16：同一 T0 檔先被 19:00 日盤寫、隔晨全日後寫，
+      舊規則會把後寫的正確夜盤蓋回去）：
+      舊檔=日盤、新檔=全日 → 以新檔為準（仍對舊檔做 MISSING 填空）；
+      舊檔=全日、新檔=日盤（延遲班次倒插）→ 保留舊檔（全日為權威）；
+      盤別相同或未知 → 維持上述穩定優先行為。
     回傳 (合併後文本, 填入格數)。
     """
     import re as _re
+    _m0 = _re.search(r"(?m)^- 產出盤別：`?(\S+?)`?\s*$", old_text)
+    old_session = _m0.group(1) if _m0 else ""
+    if old_session == "日盤" and new_session == "全日":
+        prefer_new = True
+    elif old_session == "全日" and new_session == "日盤":
+        return old_text, 0
+    else:
+        prefer_new = False
 
     def _parse(text: str) -> tuple[list[str], dict]:
         import re as _re2
@@ -174,7 +187,8 @@ def merge_same_t0(old_text: str, new_text: str) -> tuple[str, int]:
                             new_cells[j] = old[j]
                             filled += 1
                             _touched = True
-                        elif (old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
+                        elif (not prefer_new
+                                and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
                                 and new_cells[j] != old[j]):
                             new_cells[j] = old[j]
                             kept += 1
@@ -256,6 +270,7 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A(f"- T0 交易日期：`{t0}`")
     A(f"- 資料產出時間：`{now}`")
     A("- 時區：`Asia/Taipei`")
+    A(f"- 產出盤別：`{session}`")
     A("")
     A("---")
     A("")
@@ -945,7 +960,7 @@ def main() -> None:
     ap.add_argument("--date", default="", help="報告日期 YYYY-MM-DD，預設今天 (Asia/Taipei)")
     ap.add_argument("--t0", default="", help="T0 交易日期 YYYY-MM-DD，預設最近平日")
     ap.add_argument("--session", default="", choices=["日盤", "全日"],
-                    help="報告時段 (影響夜盤查詢日)；空白=依 t0.resolve 判定，手動 --t0 時預設全日")
+                    help="報告時段；空白=依 t0.resolve 判定（全日查 T0+1，日盤查今天），手動 --t0 時預設全日")
     args = ap.parse_args()
     today = datetime.now(TAIPEI).date()
     report_date = args.date.strip() or today.isoformat()
@@ -970,7 +985,7 @@ def main() -> None:
     new_text = build(report_date, t0, session=session)
     if out.exists():
         try:
-            new_text, _filled = merge_same_t0(out.read_text(encoding="utf-8"), new_text)
+            new_text, _filled = merge_same_t0(out.read_text(encoding="utf-8"), new_text, session)
             if _filled:
                 print(f"[INFO] 同 T0 保護：沿用前版 {_filled} 格有值")
         except Exception as e:  # noqa: BLE001

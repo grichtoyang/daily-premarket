@@ -446,11 +446,22 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _sdate = (_sb or {}).get("date")
     _sd = (_sb or {}).get("data") or {}
     snapchg = {"date": _sdate}
+    # C2 跨到期換月檢查：快照主力到期 vs 當前主力到期不同 → 日對日差值無意義
+    # （實證：10-14 快照主力 202610W2，當前 202610F3；舊寫法會拿 F3 今值減 W2 舊值）。
+    # 注意：不能只比到期集合是否相交（兩邊常同時含新舊合約），必須比主力。
+    _roll, _roll_old = _chain_rollover(
+        _sd.get("chain", []),
+        ((_sd.get("walls") or {}).get("primary_expiry") or {}).get("contract_month"),
+        prim_month)
+    if _sdate and _roll:
+        snapchg["chain"] = None
+        snapchg["walls"] = None
+        notes.append(f"跨到期換月（舊{_roll_old}→新{prim_month}），日對日 OI/Walls 變化不適用")
     if _sdate:
         # chain：總量增減 + 增減集中 (primary 到期月，按 month|expiry|strike|type 對齊)
         _pmap = {(x.get("contract_month"), x.get("contract_expiry_date"), x.get("strike"), x.get("type")): x
                  for x in _sd.get("chain", []) if isinstance(x, dict)}
-        if _pmap and prim_month:
+        if not _roll and _pmap and prim_month:
             _moves = []
             for r in [x for x in chain if x.get("contract_month") == prim_month]:
                 p = _pmap.get((r.get("contract_month"), r.get("contract_expiry_date"),
@@ -479,11 +490,12 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             _pos[_k] = {"fut_chg": _diff(_cf, _sf), "opt_chg": _diff(_co, _so)}
         snapchg["pos"] = _pos
         # walls
-        _sw = _sd.get("walls") or {}
-        snapchg["walls"] = {
-            "call": _diff((walls["call"] or {}).get("strike"), (_sw.get("call_wall") or {}).get("strike")),
-            "put": _diff((walls["put"] or {}).get("strike"), (_sw.get("put_wall") or {}).get("strike")),
-            "maxpain": _diff((walls["maxpain"] or {}).get("strike"), (_sw.get("max_pain") or {}).get("strike"))}
+        if not _roll:
+            _sw = _sd.get("walls") or {}
+            snapchg["walls"] = {
+                "call": _diff((walls["call"] or {}).get("strike"), (_sw.get("call_wall") or {}).get("strike")),
+                "put": _diff((walls["put"] or {}).get("strike"), (_sw.get("put_wall") or {}).get("strike")),
+                "maxpain": _diff((walls["maxpain"] or {}).get("strike"), (_sw.get("max_pain") or {}).get("strike"))}
 
     return {"day": day, "night": night, "fut_oi": fut_oi, "fut_trade": fut_trade,
             "basis": basis, "basis_pct": basis_pct, "oi_chg": oi_chg,
@@ -491,6 +503,26 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             "opt_trade": opt_trade, "opt_split": opt_split, "walls": walls,
             "gamma": gamma, "trade_date": t0, "opt_expiry": prim_month, "snapchg": snapchg,
             "unavailable": unav, "notes": notes}
+
+
+def _chain_rollover(snap_rows, snap_walls_primary, cur_primary):
+    """快照主力到期 vs 當前主力到期是否換月。純函式，可單測。
+    old 取快照 walls 主力，無則取快照 chain Call OI 最大月份；任一未知 → (False, old)。
+    回傳 (is_rollover, old_primary)。"""
+    old = snap_walls_primary
+    if not old and snap_rows:
+        _m = {}
+        for x in snap_rows:
+            if isinstance(x, dict) and x.get("type") == "call":
+                try:
+                    _m[str(x.get("contract_month"))] = _m.get(
+                        str(x.get("contract_month")), 0) + int(x.get("open_interest") or 0)
+                except (ValueError, TypeError):
+                    pass
+        old = max(_m, key=_m.get) if _m else None
+    if not old or not cur_primary or old == cur_primary:
+        return False, old
+    return True, old
 
 
 def _iso8(v: str | None) -> str | None:
