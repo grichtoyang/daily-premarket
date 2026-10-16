@@ -24,3 +24,10 @@
 - `*-contributor-free` 為 Zen 免費 SKU：免 key、免綁卡，但限時／可能限流／地區受限，且**對話內容可能被供應商（Meta）用於訓練**。
 - 若 SKU 下架，改 agent 檔的 `model:` 欄位；可用模型查 `https://opencode.ai/zen/v1/models`。
 - supervisor 的 `bash`：既定指令（open/verify/numcheck/test/check_report 與 git 唯讀）已放行，其餘仍需人工核可。
+
+## 移植到其他專案
+複製下列三項到新專案，再改內文：
+1. `.opencode/agents/supervisor.md`：把 body 的本專案路徑換成該專案的（`prompts/daily_starter_*`、`scripts/open.py`、`docs/SOP.md`、`docs/ANA_REPORT_TEMPLATE.md`、`reports/latest.json`），並調整 `permission.bash` 的放行指令。
+2. `.opencode/agents/muse-worker.md`：把自測指令改成該專案的驗證方式。
+3. `opencode.json`（`default_agent: supervisor`）。
+最後**完全關閉並重啟 opencode** 才生效。
