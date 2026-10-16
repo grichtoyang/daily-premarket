@@ -1,8 +1,8 @@
 # DATA_REPORT_20261015
 
-- 報告日期：`2026-10-15`
+- 報告日期：`2026-10-16`
 - T0 交易日期：`2026-10-15`
-- 資料產出時間：`2026-10-15 23:32:37`
+- 資料產出時間：`2026-10-16 10:33:08`
 - 時區：`Asia/Taipei`
 
 ---
@@ -176,54 +176,54 @@
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：外資瘋砍台股綠成一片誰在漲？金融、電信守住紅盤
-  - 來源：Yahoo 台股；發布時間：2026-10-15T09:19:45Z；台北時間：2026-10-15 17:19
-  - 摘要：電子、塑化全面失守，電信、金融撐場，台股仍重挫1655點、摜破4萬7！今(15)日加權指數終場下跌1655.96點、跌幅3.41%，收46,969.87點，創史上第六大收盤跌點，成交金額放大至1兆3226.70億元。美國通膨升溫與AI融資疑
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%96%E8%B3%87%E5%8F%B2%E4%B8%8A%E6%9C%80%E7%8B%A0%E6%8F%90%E6%AC%BE3025%E5%84%84%EF%BC%81%E5%8F%B0%E8%82%A1%E5%B4%A91655%E9%BB%9E%E5%A4%B1%E5%AE%884%E8%90%AC7-%E9%87%91%E8%9E%8D%E3%80%81%E9%9B%BB%E4%BF%A1%E6%88%90%E3%80%8C%E7%B6%A0%E6%B5%B7%E9%81%BF%E9%A2%A8%E6%B8%AF%E3%80%8D%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-091945041.html
-- 事件2：格芯一邊搶客一邊當台積隊友 日本出資新廠短期難撼神山地位
-  - 來源：Yahoo 台股；發布時間：2026-10-15T10:26:47Z；台北時間：2026-10-15 18:26
-  - 摘要：日本去年為了降低美國關稅，承諾對美國投資最高5500億美元。如今，這筆承諾變成真正的晶圓廠。美國晶圓代工大廠格芯（GlobalFoundries，GF）10月14日宣布，將在紐約州馬爾他（Malta）的現有廠區興建最多兩座12吋晶圓廠，總規
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%97%A5%E6%9C%AC%E7%A0%B8210%E5%84%84%E7%BE%8E%E5%85%83%E8%B5%B4%E7%BE%8E%E8%93%8B%E6%99%B6%E7%89%87%E5%BB%A0-%E6%97%A5%E6%8A%95%E8%B3%87%E6%8F%9B%E5%B7%9D%E6%99%AE%E9%97%9C%E7%A8%85%E6%B8%9B%E5%85%8D-%E5%8F%B0%E7%A9%8D%E9%9B%BB%E5%B0%87%E9%9D%A2%E8%87%A8%E4%BB%80%E9%BA%BC%E8%AE%8A%E5%8C%96-102647343.html
-- 事件3：川普喊台灣20年買氣上看2.5兆 龔明鑫揭長約談到漂亮價
-  - 來源：Yahoo 台股；發布時間：2026-10-15T09:30:22Z；台北時間：2026-10-15 17:30
-  - 摘要：美國總統川普宣布台灣將採購並投資阿拉斯加天然氣計畫，價格上看2.5兆元台幣，經濟部長龔明鑫今（15）日表示，相關安排是「先採購，後面才有投資」，考量台灣天然氣需求持續增加，加上中東供應風險升高，未來將逐步提高美國天然氣占比，預計2029年後
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%B7%9D%E6%99%AE%E5%96%8A%E5%8F%B0%E7%81%A320%E5%B9%B4%E7%A0%B825%E5%85%86%E8%B2%B7%E9%98%BF%E6%8B%89%E6%96%AF%E5%8A%A0%E5%A4%A9%E7%84%B6%E6%B0%A3-%E9%BE%94%E6%98%8E%E9%91%AB%E9%80%8F%E9%9C%B2%EF%BC%9A%E5%83%B9%E6%A0%BC%E9%9D%9E%E5%B8%B8%E5%A5%BD-093253939.html
-- 事件4：6天狂飆逾五成隴華被抓去關 立碁也入列明起處置至22日
-  - 來源：Yahoo 台股；發布時間：2026-10-15T10:39:10Z；台北時間：2026-10-15 18:39
-  - 摘要：證交所與櫃買中心公告新增2檔處置股，包含上市股隴華及上櫃股立碁，自明（16）日起至10月22日止進行處置。隴華因股價漲幅過大且成交量暴增，將採每10分鐘撮合一次；立碁則因本益比與股價淨值比偏高且週轉率過高，採2分鐘撮合。投資人操作應審慎評估
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A2%9E2%E6%AA%94%E6%8A%93%E5%8E%BB%E9%97%9C-6%E5%A4%A9%E9%A3%86%E6%BC%B251-%E9%80%99%E6%AA%94%E8%A1%9B%E6%98%9F%E9%80%9A%E8%A8%8A%E8%82%A1%E5%85%A5%E5%88%97-102500460.html
-- 事件5：8月經常性薪資平均數中位數兩樣情 一邊近5萬一邊不到4萬
-  - 來源：Yahoo 台股；發布時間：2026-10-15T10:38:13Z；台北時間：2026-10-15 18:38
-  - 摘要：行政院主計總處今（15）日公布8月薪資統計，今年1至8月工業及服務業全體受僱員工每人每月經常性薪資（指每月給付受僱員工之工作報酬，包括本薪與按月給付之固定津貼及獎金）平均數為4萬9110元，年增2.94%，增幅為近4年同期次高；加計獎金、紅
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%BD%A0%E6%9C%89%E5%97%8E%EF%BC%9F%E5%89%8D8%E6%9C%88%E7%B6%93%E5%B8%B8%E6%80%A7%E8%96%AA%E8%B3%87%E5%B9%B3%E5%9D%87%E9%81%944%E8%90%AC9110%E5%85%83-%E5%A2%9E%E5%B9%85%E5%89%B5%E8%BF%914%E5%B9%B4%E5%90%8C%E6%9C%9F%E6%AC%A1%E9%AB%98-100949302.html
-- 事件6：43歲中年失業！他傻傻只買「這2檔ETF」財富自由了
-  - 來源：Yahoo 台股；發布時間：2026-10-15T08:45:52Z；台北時間：2026-10-15 16:45
-  - 摘要：財經中心／綜合報導許多人投資都夢想有天財富自由，提前退休享受生活，不過要賺大錢一定得靠飆股嗎？財經作家施昇輝就分享親身經歷，他43歲被迫離開職場時，還得養大3名子女，根本不敢想像有天能財富自由；直到後來改變投資策略，只長期買進0050、00
-  - 原文連結：https://tw.stock.yahoo.com/news/43%E6%AD%B2%E4%B8%AD%E5%B9%B4%E5%A4%B1%E6%A5%AD-%E4%BB%96%E5%82%BB%E5%82%BB%E5%8F%AA%E8%B2%B7-%E9%80%992%E6%AA%94etf-%E8%B2%A1%E5%AF%8C%E8%87%AA%E7%94%B1%E4%BA%86-084552444.html
+- 事件1：00919花了20天填息達陣 近142萬受益人息利雙收
+  - 來源：Yahoo 台股；發布時間：2026-10-16T01:59:28Z；台北時間：2026-10-16 09:59
+  - 摘要：擁有逾百萬受益人的群益台灣精選高息ETF（00919）第14次除息，今（16）日順利完成盤中填息，本次耗時20天，年化配息率達13.77%。受惠大盤開高，00919早盤以32.5元開出後持續走揚，隨即攀上32.74元填息價位，完成盤中填息；
+  - 原文連結：https://tw.stock.yahoo.com/news/00919%E5%A1%AB%E6%81%AF%E4%BA%86%EF%BC%81%E6%AD%B7%E6%99%8220%E5%A4%A9-%E8%BF%91142%E8%90%AC%E6%8A%95%E8%B3%87%E4%BA%BA%E6%81%AF%E5%88%A9%E9%9B%99%E6%94%B6-015928107.html
+- 事件2：台郡又亮紅燈、3天暴衝32% 軟板概念股士氣旺
+  - 來源：Yahoo 台股；發布時間：2026-10-16T01:44:31Z；台北時間：2026-10-16 09:44
+  - 摘要：輝達題材加身「紅燈三連閃」！軟板大廠台郡（6269）在輝達PTFE高速傳輸材料題材續燒下，繼前2日亮燈漲停之後，今天再度在開盤不久即鎖上紅燈，鎖死漲停價82元，三天以來大漲32%，吸引2萬張買單排隊，同樣受惠PTFE題材的台虹（8039）也
+  - 原文連結：https://tw.stock.yahoo.com/news/3%E5%A4%A9%E7%8B%82%E5%99%B432%EF%BC%81%E8%BC%9D%E9%81%94%E9%A1%8C%E6%9D%90%E5%8A%A0%E8%BA%AB%E5%8F%B0%E9%83%A1%E5%86%8D%E5%A5%94%E6%BC%B2%E5%81%9C-%E5%8F%B0%E8%99%B9%E7%AD%89%E8%BB%9F%E6%9D%BF%E6%A6%82%E5%BF%B5%E8%82%A1%E5%85%A8%E5%99%B4%E5%87%BA-014431043.html
+- 事件3：繼Google後再拚大單 聯發科連7跌止步企圖收復季線
+  - 來源：Yahoo 台股；發布時間：2026-10-16T02:05:59Z；台北時間：2026-10-16 10:05
+  - 摘要：IC設計龍頭聯發科（2454）傳出接獲字節跳動（TikTok母公司）AI ASIC（客製化晶片）訂單，成為聯發科繼Google之後，第二家大型CSP（雲端服務供應商）客戶，外電報導字節跳動繼與博通（Broadcom）及高通（Qualcomm
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%84%A6%E9%BB%9E%E8%82%A1-%E8%81%AF%E7%99%BC%E7%A7%91-%E6%8E%A5%E7%8D%B2%E5%AD%97%E7%AF%80%E8%B7%B3%E5%8B%95asic%E5%A4%A7%E5%96%AE-%E8%82%A1%E5%83%B9%E7%B5%82%E6%AD%A2%E9%80%A37%E8%B7%8C-020559574.html
+- 事件4：玉山金併購效應爆發 稅後淨利大幅攀升總資產破6.6兆
+  - 來源：Yahoo 台股；發布時間：2026-10-16T00:20:00Z；台北時間：2026-10-16 08:20
+  - 摘要：玉山金控發布併入三商美邦人壽後的首份獲利成果報告。根據其公告的2026年9月自結營運狀況，金控9月單月稅後淨利來到38.1億元，前9月累計稅後淨利則大幅攀升至318.5億元，相比去年同期成長21.54%，推升每股稅後盈餘（EPS）達到1.9
+  - 原文連結：https://tw.stock.yahoo.com/news/%E4%BD%B5%E8%B3%BC%E6%95%88%E6%87%89%E7%88%86%E7%99%BC-%E7%8E%89%E5%B1%B1%E9%87%91%E5%89%8D%E4%B8%89%E5%AD%A3%E7%8D%B2%E5%88%A9%E7%8B%82%E5%A2%9E21-%E7%B8%BD%E8%B3%87%E7%94%A2%E7%A0%B46-6%E5%85%86%E5%AF%AB%E6%96%B0%E7%AF%87%E7%AB%A0-002000356.html
+- 事件5：「瑤池金母」昨加入抄底一張不賣 反手加碼金像電等3檔
+  - 來源：Yahoo 台股；發布時間：2026-10-15T16:23:50Z；台北時間：2026-10-16 00:23
+  - 摘要：台股今（15）日重挫1655點，指數收在46969點，其中外資更一口氣賣超3025.55億元，創下歷史最大單日賣超紀錄；散戶則是掀起一波抄底潮，資金湧入0050與正2。而由經理人「瑤池金母」陳釧瑤操盤的主動式ETF 00981A，今日也一張
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%91%A4%E6%B1%A0%E9%87%91%E6%AF%8D-%E5%8B%87%E6%95%A2%E6%8A%84%E5%BA%95-%E5%8F%B0%E8%82%A1%E5%A4%A7%E8%B7%8C00981a-%E5%BC%B5%E4%B8%8D%E8%B3%A3-%E5%8F%8D%E6%89%8B%E5%8A%A0%E7%A2%BC-162350378.html
+- 事件6：美科技巨頭回穩 台股早盤反彈漲逾250點重返47K
+  - 來源：Yahoo 台股；發布時間：2026-10-16T01:16:12Z；台北時間：2026-10-16 09:16
+  - 摘要：據《中時新聞網》報導，摩爾投顧分析師林漢偉針對台股後市指出，台股短線有機會出現跌深反彈，主要受到美股科技巨頭股價回穩，以及台指期夜盤上漲493點等因素帶動，電子權值股有望出現止跌訊號。不過，台積電ADR已跌破季線，加上外資大舉賣超現貨、期貨
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1-%E5%8F%B2%E8%A9%A9%E7%B4%9A%E5%B4%A9%E8%B7%8C-%E5%BE%8C%E5%8F%8D%E5%BD%88-%E6%BC%B2%E9%80%BE250%E9%BB%9E%E9%87%8D%E8%BF%9447k-011612697.html
 - 事件7：Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into the economic condition of American families
   - 來源：Federal Reserve；發布時間：Fri, 9 Oct 2026 14:00:00 GMT；台北時間：2026-10-09 22:00
   - 摘要：Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/other20261009a.htm
-- 事件8：Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficiently detect and report certain suspicious activity related to money laundering
-  - 來源：Federal Reserve；發布時間：Thu, 8 Oct 2026 20:30:00 GMT；台北時間：2026-10-09 04:30
-  - 摘要：Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficient
-  - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261008a.htm
-- 事件9：Analysis: Why a $2 trillion deficit and 5% Treasury yields are becoming America's biggest economic challenge
-  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 12:11:15 GMT；台北時間：2026-10-15 20:11
-  - 摘要：Treasury yields above 5% are raising borrowing costs for households and the federal government, highlighting the challenge of financing $2 trillion de
-  - 原文連結：https://www.cnbc.com/2026/10/15/treasury-yields-deficit-national-debt-ai.html
-- 事件10：U.S. Treasury dismisses IMF debt warning and 'messy' forecasting
-  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 13:42:32 GMT；台北時間：2026-10-15 21:42
-  - 摘要：The exchange comes as U.S. debt exceeds $40 trillion and 10-year Treasury yields remain above 5%, intensifying scrutiny of the fiscal outlook.
-  - 原文連結：https://www.cnbc.com/2026/10/15/zervos-imf-us-debt-warning.html
-- 事件11：Treasury yields slide as investors flee to safety of bonds amid tech rout
-  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 13:24:41 GMT；台北時間：2026-10-15 21:24
-  - 摘要：Investors rotated into bonds amid a broader flight to safety.
-  - 原文連結：https://www.cnbc.com/2026/10/15/us-treasury-yields-investors-economic-data-.html
-- 事件12：&#x2018;Some people did everything right': I lost my home in the Great Recession. I rent in my 50s. Why is that judged as failure?
-  - 來源：MarketWatch；發布時間：Thu, 15 Oct 2026 10:15:00 GMT；台北時間：2026-10-15 18:15
+- 事件8：Economists: Hot PPI shows Fed's work is not done
+  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 15:37:59 GMT；台北時間：2026-10-15 23:37
+  - 摘要：'We see real risks the Fed will deliver another rate hike in two weeks' time,' one Fedwatcher warns
+  - 原文連結：https://www.cnbc.com/2026/10/15/pce-ppi-september-fed-reserve-rate-hike.html
+- 事件9：&#x2018;Some people did everything right': I lost my home in the Great Recession. I rent in my 50s. Why is that judged as failure?
+  - 來源：MarketWatch；發布時間：Thu, 15 Oct 2026 22:31:00 GMT；台北時間：2026-10-16 06:31
   - 摘要：&#x201d;I earn $110,000 a year.&#x201d;
   - 原文連結：https://www.marketwatch.com/story/i-earn-110-000-a-year-i-lost-my-home-in-the-great-recession-im-renting-in-my-50s-why-is-that-judged-as-failure-d1371d67?mod=mw_rss_topstories
+- 事件10：India's rupee forecast to weaken toward 100-per-dollar level even as RBI pushes back
+  - 來源：CNBC；發布時間：Fri, 16 Oct 2026 00:54:25 GMT；台北時間：2026-10-16 08:54
+  - 摘要：The RBI's latest moves have helped the rupee recover from 96.79 rupees per dollar to the 95-level over recent days.
+  - 原文連結：https://www.cnbc.com/2026/10/16/india-rupee-rbi-dollar-iran-war.html
+- 事件11：Here's our monthly update on our 32 stocks, including 2 more names to buy
+  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 19:08:05 GMT；台北時間：2026-10-16 03:08
+  - 摘要：Jim Cramer identified two of his favorite stocks to buy and the names he's not willing to touch just yet.
+  - 原文連結：https://www.cnbc.com/investingclub/2026/10/15/heres-our-monthly-update-on-our-32-stocks-including-2-more-names-to-buy.html
+- 事件12：Nvidia and Cisco confirm multimillion-dollar donations to Trump's White House ballroom
+  - 來源：CNBC；發布時間：Thu, 15 Oct 2026 22:48:12 GMT；台北時間：2026-10-16 06:48
+  - 摘要：Big Tech gave millions to Trump's White House ballroom, documents show
+  - 原文連結：https://www.cnbc.com/2026/10/15/trump-ballroom-nvidia-cisco-donations.html
 
 
 ## 三、期貨
@@ -291,8 +291,8 @@
 | 前十大交易人多方 OI | 81,741 | TAIFEX Proxy |
 | 前十大交易人空方 OI | 77,670 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI | +4,071 | TAIFEX Proxy |
-| 多空淨 OI 變化 (2026-10-13→2026-10-14) | -45 | TAIFEX Proxy snapshots (2026-10-14) |
-- 資料日期：2026-10-14 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 多空淨 OI 變化 (2026-10-13→2026-10-15) | -45 | TAIFEX Proxy snapshots (2026-10-14) |
+- 資料日期：2026-10-15 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 ### 5．日盤、夜盤法人交易資料
 
@@ -355,7 +355,7 @@
 | 前十大交易人多方 OI | 81,741 | TAIFEX Proxy |
 | 前十大交易人空方 OI | 77,670 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI | +4,071 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI 變化 (2026-10-13→2026-10-14) | -45 | TAIFEX Proxy snapshots (2026-10-14) |
+| 前十大交易人多空淨 OI 變化 (2026-10-13→2026-10-15) | -45 | TAIFEX Proxy snapshots (2026-10-14) |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
 
@@ -404,8 +404,8 @@
 | Call／Put 成交量比例 | 1.34 | TAIFEX Proxy |
 | Call／Put 未平倉量比例 | 2.07 | TAIFEX Proxy |
 | Put／Call Ratio | 0.48 | TAIFEX Proxy |
-| Call／Put 比例變化 (量比 2026-10-13→2026-10-14) | 14.71 | TAIFEX Proxy |
-| 與前一交易日比較 (OI 比 2026-10-13→2026-10-14) | 5.49 | TAIFEX Proxy |
+| Call／Put 比例變化 (量比 2026-10-14→2026-10-15) | 14.71 | TAIFEX Proxy |
+| 與前一交易日比較 (OI 比 2026-10-14→2026-10-15) | 5.49 | TAIFEX Proxy |
 **資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX Proxy PutCallRatio`
 
 ### 5．外資 Call／Put 部位
@@ -577,39 +577,37 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 買權多方 OI | unavailable | TAIFEX OpenAPI |
-| 買權空方 OI | unavailable | TAIFEX OpenAPI |
-| 買權多空淨 OI | unavailable | TAIFEX OpenAPI |
-| 買權多空淨 OI 變化 | unavailable | 端點未提供 |
+| 買權多方 OI | 22,175 | TAIFEX OpenAPI |
+| 買權空方 OI | 25,773 | TAIFEX OpenAPI |
+| 買權多空淨 OI | -3,598 | TAIFEX OpenAPI |
+| 買權多空淨 OI 變化 (2026-10-13→2026-10-15) | -4,514 | 端點未提供 |
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 賣權多方 OI | unavailable | TAIFEX OpenAPI |
-| 賣權空方 OI | unavailable | TAIFEX OpenAPI |
-| 賣權多空淨 OI | unavailable | TAIFEX OpenAPI |
-| 賣權多空淨 OI 變化 | unavailable | 端點未提供 |
-- 資料日期：買權 unavailable／賣權 unavailable (TypeOfTraders=0 全部交易人；契約月份 unavailable)
+| 賣權多方 OI | 13,668 | TAIFEX OpenAPI |
+| 賣權空方 OI | 12,300 | TAIFEX OpenAPI |
+| 賣權多空淨 OI | +1,368 | TAIFEX OpenAPI |
+| 賣權多空淨 OI 變化 (2026-10-13→2026-10-15) | +1,042 | 端點未提供 |
+- 資料日期：買權 2026-10-15／賣權 2026-10-15 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 #### 大戶流向（全日；前十大無日夜拆分）
 
 | 項目 | 淨變化 | 區間 | 資料來源 |
 |---|---|---|---|
 | 期貨前十大 | -45 | 2026-10-13→2026-10-14 | TAIFEX Proxy snapshots (2026-10-14) |
-| 買權前十大 | unavailable | — | 端點未提供 |
-| 賣權前十大 | unavailable | — | 端點未提供 |
+| 買權前十大 | -4,514 | — | 端點未提供 |
+| 賣權前十大 | +1,042 | — | 端點未提供 |
 
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-15；資料時間：2026-10-15 23:32:37；時區：`Asia/Taipei`
+- 資料日期：2026-10-15；資料時間：2026-10-16 10:33:08；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (1)：options.top10_change
-- 註記：gapfill 自動補登 L74 維持率＝191.61（wantgoo 2026-10-14）
-- 註記：Gamma 資料日期 2026-10-14 (T0 2026-10-15 尚無，上游 FMTQIK 落後，採最新可得)
+- 註記：同 T0 保護：2 格沿用前版有值（本次抓取缺失不覆寫）
+- 註記：同 T0 穩定：183 格新舊皆有值，沿用前版（不再靜默覆寫）
+- 未取得欄位 (0)：無
+- 註記：futures-price-after-hours 日期 2026-10-15 非今日 2026-10-16，視為無新節次，不採用
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
-- 註記：Gamma Wall/Flip 資料日期 2026-10-14 (來源 options-market-structure-compact (proxy))
-- 註記：夜盤 OHLC 手動補登（官網 10-16 盤後終值：開46,926/高47,417/低46,456/收47,366/+435/量41,283；結算價/OI 官網未公布維持 unavailable；原 23:32 快照為前一節次；SOP 3.5）
-- 註記：法人夜盤交易拆分 session 歸屬待驗（OHLC 已更正，拆分端點無日期可驗；劇本以外資夜盤-2,103 為準保留）
 
 ## 五、資料來源、時間與完整性
 
