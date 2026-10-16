@@ -35,11 +35,19 @@ jobs:
         run: |
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
+          # 排定班別釘死（用觸發的 cron 精確匹配，不看牆鐘；手動觸發則留空走自動判定）
+          SCHED='${{ github.event.schedule }}'
+          case "$SCHED" in
+            '0 0 * * 1-5') SLOT=morning;;
+            '0 0 * * 6') SLOT=weekend;;
+            '0 11 * * 1-5') SLOT=evening;;
+            *) SLOT='';;
+          esac
           START_TS=$(date +%s)
           # 只認本輪新寫的檔（不用 ls -t 取最新：fetch 全滅時會誤拿昨天的檔，
           # grep 舊檔必然通過→靜默跳過，2026-10-14 早上教訓）
           for i in 1 2 3; do
-            python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"
+            python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"}
             T0FILE=$(find data_reports -name 'DATA_REPORT_*.md' -newermt "@$START_TS" | head -1)
             if [ -n "$T0FILE" ] && grep -q "| 融資維持率 | [0-9]" "$T0FILE"; then
               echo "margin ratio ok on attempt $i ($T0FILE)"

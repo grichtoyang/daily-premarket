@@ -958,6 +958,16 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                       "選擇權日淨", "選擇權夜淨", "判定", "期選組合", "資料來源")))
     return "\n".join(L) + "\n"
 
+def _norm_t0_arg(s: str) -> str:
+    """--t0 兼容 YYYYMMDD／YYYY-MM-DD，一律轉 ISO。純函式，可單測。
+    （open.py 傳 compact，CI/人工傳 ISO，單一咽喉點收斂。）"""
+    import re as _re5
+    s = (s or "").strip()
+    if _re5.fullmatch(r"\d{8}", s):
+        return f"{s[:4]}-{s[4:6]}-{s[6:8]}"
+    return s
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="", help="報告日期 YYYY-MM-DD，預設今天 (Asia/Taipei)")
@@ -976,12 +986,12 @@ def main() -> None:
     if slot:
         from src.t0 import slot_params as _sp
         _q = _sp(slot, report_date)
-        t0 = args.t0.strip() or _q["t0"]
+        t0 = _norm_t0_arg(args.t0) or _q["t0"]
         if not session:
             session = _q["session"]
         print(f"[INFO] slot={slot} sched={report_date} → T0={t0} session={session}")
-    elif args.t0.strip():
-        t0 = args.t0.strip()
+    elif _norm_t0_arg(args.t0):
+        t0 = _norm_t0_arg(args.t0)
         if not session:
             session = "全日"
     else:

@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from src.fetch_data import _norm_t0_arg
 from src.fetch_data import merge_same_t0
 from src.sources.taifex import _chain_rollover
 from src.t0 import slot_params
@@ -100,6 +101,22 @@ tagged = old.replace("- T0 交易日期：`2026-10-14`",
                      "- T0 交易日期：`2026-10-14`\n- 產出者：`local`\n- 排定班別：`morning`")
 m7, _ = merge_same_t0(tagged, new, "全日")
 check("T7 標頭行不影響取新", "| 收盤價 | 47,945 |" in m7)
+
+# T8 鏈級：--t0 格式收斂＋open 組參 ISO（OPEN-3）
+check("T8 compact轉ISO", _norm_t0_arg("20261012") == "2026-10-12")
+check("T8 ISO不變", _norm_t0_arg("2026-10-12") == "2026-10-12")
+check("T8 空字串", _norm_t0_arg("") == "")
+check("T8 亂字串原樣", _norm_t0_arg("abc") == "abc")
+try:
+    import scripts.open as _op
+    _fc = _op._fetch_cmd("evening", "2026-10-15", "20261015")
+    _fs = " ".join(_fc)
+    check("T8b open組參--t0為ISO", "--t0" in _fc and "2026-10-15" in _fc
+          and "20261015" not in _fs)
+    check("T8b open組參帶slot", "--slot" in _fc and "evening" in _fc
+          and "2026-10-15" in _fc)
+except Exception as e:  # noqa: BLE001
+    check(f"T8b open import失敗: {e}", False)
 
 print(f"FAILURES={len(fails)}")
 raise SystemExit(1 if fails else 0)

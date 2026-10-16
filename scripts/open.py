@@ -26,6 +26,16 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 
+def _fetch_cmd(slot: str, report_date: str, t0compact: str) -> list:
+    """組 NO_DATA 全量抓取指令（純函式，可單測）：--t0 一律轉 ISO，
+    避免 compact 污染標頭與 ISO 比對（OPEN-3）。"""
+    t = (t0compact or "").strip()
+    if len(t) == 8 and t.isdigit():
+        t = f"{t[:4]}-{t[4:6]}-{t[6:8]}"
+    return [sys.executable, "scripts/daily_fetch.py", "--from-open",
+            "--slot", slot, "--date", report_date, "--t0", t]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--t0", required=True, help="YYYYMMDD")
@@ -72,8 +82,7 @@ def main() -> int:
             print("NO_DATA_FULL_FETCH (timeout 25min; fail->abort)")
             try:
                 f = subprocess.run(
-                    [sys.executable, "scripts/daily_fetch.py", "--from-open",
-                     "--slot", slot, "--date", report_date, "--t0", args.t0],
+                    _fetch_cmd(slot, report_date, args.t0),
                     capture_output=True, text=True, cwd=ROOT, timeout=1500)
                 tail = ((f.stdout or "") + (f.stderr or ""))[-400:]
                 print("FETCH_RC=%d %s" % (f.returncode,
