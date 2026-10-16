@@ -3,8 +3,11 @@
 
 用法（repo 根目錄）：
     python scripts/open.py --t0 20261012
+    python scripts/open.py --t0 20261012 --fetch --slot morning [--date 2026-10-13]
 
-取代臨時腳本 step1/frz/draft piecemeal，不在 repo 外留狀態。
+--slot（morning/evening/weekend）只在 --fetch 且 DATA 缺失需全量抓取時使用，
+用排定班別釘死盤別/T0；缺省時由 --t0/--date 推導（T0==報表日→evening，否則全日，
+報表日週六→weekend），推導過程印出，不讀牆鐘。
 """
 from __future__ import annotations
 
@@ -26,12 +29,28 @@ sys.path.insert(0, str(ROOT))
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--t0", required=True, help="YYYYMMDD")
+    ap.add_argument("--date", default="",
+                    help="報表日期 YYYY-MM-DD（預設今天；補跑請顯式給排定日）")
+    ap.add_argument("--slot", default="", choices=["morning", "evening", "weekend"],
+                    help="排定班別（全量抓取時釘死盤別/T0；缺省由 --t0/--date 推導）")
     ap.add_argument("--fetch", action="store_true",
                     help="開工先補洞（Actions 為主，本機只補 unavailable／遞補；"
                          "DATA 缺失才全量抓取；失敗自動退回已 pull 的 DATA）")
     args = ap.parse_args()
     now = datetime.now(timezone(timedelta(hours=8)))
     print("NOW=" + now.strftime("%Y-%m-%d %H:%M %A"))
+    report_date = args.date.strip() or now.date().isoformat()
+    t0iso = f"{args.t0[:4]}-{args.t0[4:6]}-{args.t0[6:8]}"
+    slot = args.slot.strip()
+    if not slot:
+        if t0iso == report_date:
+            slot = "evening"
+        else:
+            slot = ("weekend" if datetime.fromisoformat(report_date).weekday() == 5
+                    else "morning")
+        print(f"SLOT_DERIVED={slot} (t0={t0iso} report={report_date})")
+    else:
+        print(f"SLOT_EXPLICIT={slot} (report={report_date})")
     from src.t0 import resolve
     r = resolve()
     print("T0=" + str(r.get("t0")) + " SESSION=" + str(r.get("session"))
@@ -53,7 +72,8 @@ def main() -> int:
             print("NO_DATA_FULL_FETCH (timeout 25min; fail->abort)")
             try:
                 f = subprocess.run(
-                    [sys.executable, "scripts/daily_fetch.py", "--from-open"],
+                    [sys.executable, "scripts/daily_fetch.py", "--from-open",
+                     "--slot", slot, "--date", report_date, "--t0", args.t0],
                     capture_output=True, text=True, cwd=ROOT, timeout=1500)
                 tail = ((f.stdout or "") + (f.stderr or ""))[-400:]
                 print("FETCH_RC=%d %s" % (f.returncode,

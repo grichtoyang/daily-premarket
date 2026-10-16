@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 import argparse
+import os
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -246,7 +247,7 @@ def last_weekday(d: date) -> date:
         d -= timedelta(days=1)
     return d
 
-def build(report_date: str, t0: str, session: str = "全日") -> str:
+def build(report_date: str, t0: str, session: str = "全日", slot: str = "") -> str:
     now = datetime.now(TAIPEI).strftime("%Y-%m-%d %H:%M:%S")
     s = spot.build(t0)
     tx, lb, ob = s["taiex"], s["listed_breadth"], s["otc_breadth"]
@@ -271,6 +272,8 @@ def build(report_date: str, t0: str, session: str = "全日") -> str:
     A(f"- 資料產出時間：`{now}`")
     A("- 時區：`Asia/Taipei`")
     A(f"- 產出盤別：`{session}`")
+    A(f"- 產出者：`{'actions' if os.getenv('GITHUB_ACTIONS') == 'true' else 'local'}`")
+    A(f"- 排定班別：`{slot or 'manual'}`")
     A("")
     A("---")
     A("")
@@ -961,11 +964,23 @@ def main() -> None:
     ap.add_argument("--t0", default="", help="T0 交易日期 YYYY-MM-DD，預設最近平日")
     ap.add_argument("--session", default="", choices=["日盤", "全日"],
                     help="報告時段；空白=依 t0.resolve 判定（全日查 T0+1，日盤查今天），手動 --t0 時預設全日")
+    ap.add_argument("--slot", default="", choices=["morning", "evening", "weekend"],
+                    help="排定班別（備援用，釘死盤別/T0 不看牆鐘；需搭配 --date 一起給）")
     args = ap.parse_args()
     today = datetime.now(TAIPEI).date()
     report_date = args.date.strip() or today.isoformat()
+    slot = (args.slot or "").strip()
+    if slot and not args.date.strip():
+        ap.error("--slot 需搭配 --date（排定日期）一起給，不可用今天默認")
     session = args.session.strip()
-    if args.t0.strip():
+    if slot:
+        from src.t0 import slot_params as _sp
+        _q = _sp(slot, report_date)
+        t0 = args.t0.strip() or _q["t0"]
+        if not session:
+            session = _q["session"]
+        print(f"[INFO] slot={slot} sched={report_date} → T0={t0} session={session}")
+    elif args.t0.strip():
         t0 = args.t0.strip()
         if not session:
             session = "全日"
@@ -982,7 +997,7 @@ def main() -> None:
                 session = "全日"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
-    new_text = build(report_date, t0, session=session)
+    new_text = build(report_date, t0, session=session, slot=slot)
     if out.exists():
         try:
             new_text, _filled = merge_same_t0(out.read_text(encoding="utf-8"), new_text, session)

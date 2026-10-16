@@ -86,5 +86,21 @@ def resolve(now: datetime | None = None) -> dict:
             "cal_error": _LAST_CAL_ERROR}
 
 
+def slot_params(slot: str, sched_iso: str, closed: set[str] | None = None) -> dict:
+    """班別→(T0, session)，純函式：只吃排定日期，不讀牆鐘（備援半夜跑也不會判錯盤別）。
+    morning：T0＝排定日前一交易日／全日；evening：排定日開市→T0＝當日／日盤，
+      休市→退為前一交易日／全日；weekend：T0＝排定日前一交易日／全日（週六即週五）。
+    closed 缺省時載入 sched 年份日曆（與 resolve 同口徑）；測試時傳 set() 即不碰網路。"""
+    if slot not in ("morning", "evening", "weekend"):
+        raise ValueError(f"unknown slot: {slot}")
+    sched = date.fromisoformat(sched_iso)
+    if closed is None:
+        closed = load_closed(sched.year)
+    if slot == "evening" and is_trading_day(sched, closed):
+        return {"t0": sched.isoformat(), "session": "日盤", "slot": slot}
+    t0 = prev_trading_day(sched, closed)
+    return {"t0": t0.isoformat(), "session": "全日", "slot": slot}
+
+
 def daily_filename(t0: str, session: str) -> str:
     return f"Daily_REPORT_{t0.replace('-', '')}_{session}.md"

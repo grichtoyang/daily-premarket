@@ -20,7 +20,7 @@
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位＋push 的 commit＋Dashboard 更新時間。
 
 固定指令（勿用臨時腳本）：
-- 開工：`python scripts/open.py --t0 yyyymmdd --fetch`（先 gapfill 補洞再凍結＋起草，DATA 缺失才全量抓取；失敗自動退回已 pull 的 DATA；本機 07:55 排程已取消，on-demand 取代之，Actions 照跑）
+- 開工：`python scripts/open.py --t0 yyyymmdd --fetch`（先 gapfill 補洞再凍結＋起草，DATA 缺失才全量抓取；失敗自動退回已 pull 的 DATA；本機 07:55 排程已取消，on-demand 取代之，Actions 照跑；跨日補跑加 `--slot morning/evening/weekend --date 排定日` 釘死盤別）
 - 驗證：`python scripts/verify.py --t0 yyyymmdd --prev yyyymmdd`（numcheck＋prior-audit＋gate 一次完成；`--expect-sha` 可鎖基線）
 
 定義（台指期全為準）：

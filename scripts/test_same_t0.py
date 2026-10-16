@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.fetch_data import merge_same_t0
 from src.sources.taifex import _chain_rollover
+from src.t0 import slot_params
 
 fails: list = []
 
@@ -73,6 +74,32 @@ ok4, _ = _chain_rollover([], None, "202610F3")
 check("T5 空快照不觸發", ok4 is False)
 ok5, _ = _chain_rollover(rows_w2, "202610W2", None)
 check("T5 當前未知不觸發", ok5 is False)
+
+# T6 班別→參數（純函式，只吃排定日期；closed=set() 不碰網路；週末=週六）
+# 平日早班→前一交易日／全日；19:00 班即使半夜跑→當日／日盤；週末→週五／全日
+r = slot_params("morning", "2026-10-16", set())
+check("T6 平日早班", r["t0"] == "2026-10-15" and r["session"] == "全日")
+r = slot_params("morning", "2026-10-19", set())
+check("T6 週一早班往前跨週末", r["t0"] == "2026-10-16" and r["session"] == "全日")
+r = slot_params("evening", "2026-10-15", set())
+check("T6 平日晚班", r["t0"] == "2026-10-15" and r["session"] == "日盤")
+r = slot_params("evening", "2026-10-16", set())
+check("T6 19點班半夜補跑仍判當日日盤", r["t0"] == "2026-10-16" and r["session"] == "日盤")
+r = slot_params("evening", "2026-10-11", set())
+check("T6 假日晚班退為前日全日", r["t0"] == "2026-10-09" and r["session"] == "全日")
+r = slot_params("weekend", "2026-10-17", set())
+check("T6 週六班", r["t0"] == "2026-10-16" and r["session"] == "全日")
+try:
+    slot_params("midnight", "2026-10-16", set())
+    check("T6 非法班別拋錯", False)
+except ValueError:
+    check("T6 非法班別拋錯", True)
+
+# T7 新標頭行不影響合併（產出者/排定班別僅供稽核）
+tagged = old.replace("- T0 交易日期：`2026-10-14`",
+                     "- T0 交易日期：`2026-10-14`\n- 產出者：`local`\n- 排定班別：`morning`")
+m7, _ = merge_same_t0(tagged, new, "全日")
+check("T7 標頭行不影響取新", "| 收盤價 | 47,945 |" in m7)
 
 print(f"FAILURES={len(fails)}")
 raise SystemExit(1 if fails else 0)
