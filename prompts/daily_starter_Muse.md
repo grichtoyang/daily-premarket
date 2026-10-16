@@ -14,7 +14,7 @@
 5. 先跑數字稽核 `python scripts/numcheck.py --data data_reports/DATA_REPORT_yyyymmdd.md --report reports/Daily_REPORT_yyyymmdd_日盤.md`（檔名按盤別），[ERROR] 就地修到零為止；再跑閘門 `python src/check_report.py`（同參數），[PASS] 才可 git add/commit/push；[FAIL] 就地修到過為止。
 6. 開工鐵律（2026-10-07 起，避免手填數字錯誤重演）：
    - 先記 DATA sha256（numcheck 首行 DATA_SHA）；寫報告途中若 DATA 被改寫（sha 變了），以新 DATA 為準重對一次。
-   - 表格數字一律從起草機輸出貼上：kpi/oidist/Top3/Top10全表/OI增減/VIX/§5.5前十大/§6.4比較表/§6.2流向/§4事件清單/預填verdict/levels/scenarios/關鍵數字速查（含區間與資料日期）照貼不手改（§6.4 全表整張貼，不手排；§4 只寫清單內事件，數字抄摘要原文，不憑記憶加；verdict/levels/scenarios 只改字不改數；敘述行數字只准從速查表複貼）；只手寫解讀、verdict 理由取捨、levels 白話、scenarios 條件。
+   - 表格數字一律從起草機輸出貼上：kpi/oidist/Top3/Top10全表/OI增減/VIX/§5.5前十大/§6.4比較表/§6.2流向/§4事件清單/預填verdict/levels/scenarios/關鍵數字速查（含區間與資料日期）照貼不手改（§6.4 全表整張貼，不手排；§4 只寫清單內事件，數字抄摘要原文，不憑記憶加；§4.1/§4.2每條須對應DATA事件號，逐條比對_news_list；verdict/levels/scenarios 只改字不改數；敘述行數字只准從速查表複貼）；只手寫解讀、verdict 理由取捨、levels 白話、scenarios 條件。
    - 貼之前先對錨：draft 首行加權收盤必須等於 DATA §1 收盤（防貼到舊版起草或憑記憶填數；2026-10-16 教訓：力道合計夜半列＋舊新聞殘留，verify 首輪抓 5 處）。
    - 驗證只做單輪：numcheck 一次列出全部問題→一次修完→重跑確認零 ERROR→gate。若稽核輸出與已驗證狀態矛盾，先重跑該檢查，不連坐推翻之前結論。
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位＋push 的 commit＋Dashboard 更新時間。

@@ -41,7 +41,7 @@ curl -s "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=2026-09-16
 
 ```bash
 curl -s https://taifex.grichtoyang.workers.dev/health
-# version 應為 "V1.3 — V1.2 + night-ohlc & put-call-ratio-history (additive)"
+# version 應為 "V1.4 — V1.3 + daily snapshots (KV) (additive)"
 
 curl -s "https://taifex.grichtoyang.workers.dev/futures-night-ohlc?date=2026-09-16&month=202610"
 # ok:true, data.open/high/low/close
