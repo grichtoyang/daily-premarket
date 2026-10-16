@@ -1,0 +1,26 @@
+# OpenCode supervisor × Muse worker（本專案設定）
+
+## 角色
+- `supervisor`（primary）：模型 `opencode/deepseek-v4.1-flash-free`。只讀稽核／調度，**不改檔**（`edit: deny`）；任何檔案修改一律派給 `muse-worker`。
+- `muse-worker`（subagent）：模型 `opencode/muse-spark-1.3-contributor-free`。唯一動檔者，`edit: allow`、`bash: ask`。
+
+## 位置
+- `.opencode/agents/supervisor.md`
+- `.opencode/agents/muse-worker.md`
+- `opencode.json`（`default_agent: supervisor`）
+
+## 用法
+- 新對話預設即 `supervisor`；用 Tab 可切換主代理。
+- 可直接與 supervisor 對話；要叫 Muse 可 `@muse-worker`，或由 supervisor 派工。
+- 對 supervisor 說一句「產出今日盤前分析」→ 依 `prompts/daily_starter_Muse.md` 與 `docs/SOP.md` 執行完整開工流程。
+
+## 生效條件
+- 設定只於啟動時載入、**不熱重載**；任何改動後需**完全關閉並重啟 opencode**。
+
+## 還原
+- 刪除 `.opencode/` 與 `opencode.json`，重啟即可。
+
+## 注意
+- `*-contributor-free` 為 Zen 免費 SKU：免 key、免綁卡，但限時／可能限流／地區受限，且**對話內容可能被供應商（Meta）用於訓練**。
+- 若 SKU 下架，改 agent 檔的 `model:` 欄位；可用模型查 `https://opencode.ai/zen/v1/models`。
+- supervisor 的 `bash`：既定指令（open/verify/numcheck/test/check_report 與 git 唯讀）已放行，其餘仍需人工核可。
