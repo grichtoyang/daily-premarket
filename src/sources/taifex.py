@@ -65,23 +65,40 @@ def _get_dates(ep: str, dates: list[str], timeout: int = 40) -> tuple[dict | Non
             return p, p.get("date") or d
     return None, None
 
-def _night_query_date(now=None) -> str:
-    """夜盤查詢日一律用今天 (Asia/Taipei)：要的是今晨收盤那一節。
-    舊規則（全日→T0+1）在平日等於今天，假日後分歧（T0+1 指向無交易日）
-    而取到回退舊值（2026-10-08 全日版教訓）；改查今日後兩者恆等。"""
+def _night_query_date(t0=None, session="全日", now=None) -> str:
+    """夜盤查詢日（期交所語義：查日期 D → D-1 15:00~D 05:00 節，2026-10-16 官網截圖實證）。
+    全日版要 T0 當晚節（15:00 T0 → 05:00 T0+1）→ 查 T0+1；
+    日盤版要前一夜（今晨收盤節）→ 查今天（此時 T0 即今天）。
+    10-12 改查今天是誤診（假日無節次的回退被當成規則錯），此次改回；
+    嚴格把關（回傳日期不符視為無新節次）保留，假日照樣安全。"""
+    from datetime import date as _date
     from datetime import datetime as _dt
+    from datetime import timedelta as _td
     from zoneinfo import ZoneInfo as _ZI
-    return (now or _dt.now(_ZI("Asia/Taipei"))).date().isoformat()
+    now = now or _dt.now(_ZI("Asia/Taipei"))
+    if session != "日盤" and t0:
+        return (_date.fromisoformat(t0) + _td(days=1)).isoformat()
+    return now.date().isoformat()
 
 
-def _night_ohlc(t0: str, month: str | None, session: str = "全日") -> dict | None:
+def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -> dict | None:
     """夜盤 OHLC：proxy /futures-night-ohlc (V1.4+) 優先，官方 DailyMarketReportFut 備援。
     回傳含 via/date/qdate，或 None。
-    期交所規則：查日期 D + Session=F → D-1 15:00~D 05:00。
-    查詢日一律今天（今晨收盤節）；回傳 date 必須等於查詢日，否則視為無新節次。
+    期交所規則：查日期 D + Session=F → D-1 15:00~D 05:00（查詢日為節次收盤日）。
+    全日查 T0+1、日盤查今天（_night_query_date）；回傳 date 必須等於查詢日，否則視為無新節次。
+    節次完整性：全日節在 T0+1 05:00 收盤，此前查詢只抓得到半成品，一律不採用。
     官方備援同理，只收查詢日當天列。"""
     import os
-    query_date = _night_query_date()
+    from datetime import datetime as _dt2
+    from zoneinfo import ZoneInfo as _ZI2
+    now = now or _dt2.now(_ZI2("Asia/Taipei"))
+    query_date = _night_query_date(t0, session, now)
+    if session != "日盤":
+        _end = _dt2.fromisoformat(query_date).replace(
+            tzinfo=_ZI2("Asia/Taipei")).replace(hour=5, minute=0)
+        if now < _end:
+            print(f"[INFO] 夜盤節未收盤（T0 {t0} 節次 {_end} 才收），不採用半成品")
+            return None
     base = os.getenv("TAIFEX_PROXY_BASE_URL", BASE).rstrip("/")
     if month:
         try:
@@ -184,7 +201,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # 夜盤附屬端點（量/結算/法人夜交易）同口徑把關：payload 日期必須等於今天，
     # 否則視為無新節次，不採用（回退舊值曾靜默混入，2026-10-08 全日版教訓）。
     # options-after-hours 不在此列（它供日盤買賣權拆分，非純夜盤歸屬）。
-    _today = _night_query_date()
+    _today = _night_query_date(t0, session)
     for _ep in ("futures-price-after-hours", "futures-institutional-after-hours",
                 "options-institutional-after-hours"):
         _p = P.get(_ep)
@@ -248,7 +265,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
              "open": None, "high": None, "low": None, "close": None, "change": None, "pct": None,
              "via": "proxy"}
     # 夜盤 OHLC：proxy V1.4+ /futures-night-ohlc 優先，官方 DailyMarketReportFut 備援
-    # 夜盤查詢日一律今天（今晨收盤節）；回傳非今天一律視為無新節次（_night_ohlc 內部把關）
+    # 全日查 T0+1、日盤查今天（今晨收盤節）；回傳非查詢日一律視為無新節次（_night_ohlc 內部把關＋完整性檢查）
     _nh = _night_ohlc(t0, day["month"], session=session)
     if _nh is not None:
         night.update({k: _nh.get(k) for k in ("open", "high", "low", "close", "change", "pct")})
