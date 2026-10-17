@@ -32,7 +32,9 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
       - name: Fetch daily data
+        timeout-minutes: 18
         run: |
+          echo "PYTHONUNBUFFERED=1" >> $GITHUB_ENV
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
           # 排定班別釘死（用觸發的 cron 精確匹配，不看牆鐘；手動觸發則留空走自動判定）
@@ -46,16 +48,20 @@ jobs:
           START_TS=$(date +%s)
           # 只認本輪新寫的檔（不用 ls -t 取最新：fetch 全滅時會誤拿昨天的檔，
           # grep 舊檔必然通過→靜默跳過，2026-10-14 早上教訓）
-          for i in 1 2 3; do
-            python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"}
+          for i in 1 2; do
+            if timeout 480 python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"}; then
+              echo "fetch attempt $i rc=0"
+            else
+              echo "fetch attempt $i failed/timed out (rc=$?)"
+            fi
             T0FILE=$(find data_reports -name 'DATA_REPORT_*.md' -newermt "@$START_TS" | head -1)
             if [ -n "$T0FILE" ] && grep -q "| 融資維持率 | [0-9]" "$T0FILE"; then
               echo "margin ratio ok on attempt $i ($T0FILE)"
               echo "T0FILE=$T0FILE" >> $GITHUB_ENV
               break
             fi
-            echo "fetch incomplete, attempt $i/3; sleep 120s"
-            sleep 120
+            echo "fetch incomplete, attempt $i/2; sleep 90s"
+            sleep 90
           done
           if [ -z "${T0FILE:-}" ]; then
             echo "FATAL: no fresh DATA produced; failing loudly (do not silent-skip)"
