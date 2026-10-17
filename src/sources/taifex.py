@@ -65,9 +65,29 @@ def _get_dates(ep: str, dates: list[str], timeout: int = 40) -> tuple[dict | Non
             return p, p.get("date") or d
     return None, None
 
+def _next_trading_day(d):
+    """T0 的下一個交易日。期交所報表把「T0 15:00 → T0+1 05:00」的夜盤掛在 T0 的下一個交易日
+    （不是日曆 T0+1）。2026-10-17 實證：查 2026-10-19 得 10/16 夜盤 47269/47380/46107/46140/-1144
+    （漲跌基準 47,284 = 10/16 結算價）；查 2026-10-17 全空。週五 T0 若用日曆 T0+1 必抓不到。
+    假日曆抓不到時退為週末判斷（與 src.t0 同口徑）。"""
+    from datetime import timedelta as _tdd
+    from src.t0 import load_closed, is_trading_day
+    _y = d.year
+    closed = load_closed(_y)
+    for _ in range(14):
+        d = d + _tdd(days=1)
+        if d.year != _y:
+            _y = d.year
+            closed = load_closed(_y)
+        if is_trading_day(d, closed):
+            return d
+    return d
+
 def _night_query_date(t0=None, session="全日", now=None) -> str:
     """夜盤查詢日（期交所語義：查日期 D → D-1 15:00~D 05:00 節，2026-10-16 官網截圖實證）。
-    全日版要 T0 當晚節（15:00 T0 → 05:00 T0+1）→ 查 T0+1；
+    全日版要 T0 當晚節（15:00 T0 → 05:00 T0+1）→ 查 T0 的下一個交易日
+    （報表把該節掛在下一個交易日，不是日曆 T0+1；2026-10-17 實證：查 2026-10-19
+    得 10/16 夜盤，查 2026-10-17 全空；週五 T0 用日曆 T0+1 必失效）；
     日盤版要前一夜（今晨收盤節）→ 查今天（此時 T0 即今天）。
     10-12 改查今天是誤診（假日無節次的回退被當成規則錯），此次改回；
     嚴格把關（回傳日期不符視為無新節次）保留，假日照樣安全。"""
@@ -77,7 +97,7 @@ def _night_query_date(t0=None, session="全日", now=None) -> str:
     from zoneinfo import ZoneInfo as _ZI
     now = now or _dt.now(_ZI("Asia/Taipei"))
     if session != "日盤" and t0:
-        return (_date.fromisoformat(t0) + _td(days=1)).isoformat()
+        return _next_trading_day(_date.fromisoformat(t0)).isoformat()
     return now.date().isoformat()
 
 
@@ -85,16 +105,18 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
     """夜盤 OHLC：proxy /futures-night-ohlc (V1.4+) 優先，官方 DailyMarketReportFut 備援。
     回傳含 via/date/qdate，或 None。
     期交所規則：查日期 D + Session=F → D-1 15:00~D 05:00（查詢日為節次收盤日）。
-    全日查 T0+1、日盤查今天（_night_query_date）；回傳 date 必須等於查詢日，否則視為無新節次。
-    節次完整性：全日節在 T0+1 05:00 收盤，此前查詢只抓得到半成品，一律不採用。
+    全日查 T0 的下一個交易日、日盤查今天（_night_query_date）；回傳 date 必須等於查詢日，否則視為無新節次。
+    節次完整性：全日節在 T0+1（日曆）05:00 收盤，此前查詢只抓得到半成品，一律不採用。
     官方備援同理，只收查詢日當天列。"""
     import os
     from datetime import datetime as _dt2
+    from datetime import timedelta as _td2
     from zoneinfo import ZoneInfo as _ZI2
     now = now or _dt2.now(_ZI2("Asia/Taipei"))
     query_date = _night_query_date(t0, session, now)
     if session != "日盤":
-        _end = _dt2.fromisoformat(query_date).replace(
+        _end_src = (_dt2.fromisoformat(t0) + _td2(days=1)) if t0 else _dt2.fromisoformat(query_date)
+        _end = _end_src.replace(
             tzinfo=_ZI2("Asia/Taipei")).replace(hour=5, minute=0)
         if now < _end:
             print(f"[INFO] 夜盤節未收盤（T0 {t0} 節次 {_end} 才收），不採用半成品")
