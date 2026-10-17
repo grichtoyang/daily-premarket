@@ -27,7 +27,7 @@ INST_ZH = {"foreign": "外資", "investment_trust": "投信", "dealer": "自營�
 def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
     import time
     url = f"{BASE}/{ep}?date={t0}" if ep in DATE_EPS else f"{BASE}/{ep}"
-    for attempt in range(3):
+    for attempt in range(2):
         try:
             r = requests.get(url, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
             if r.status_code == 200:
@@ -69,35 +69,57 @@ def _next_trading_day(d):
     """T0 的下一個交易日。期交所報表把「T0 15:00 → T0+1 05:00」的夜盤掛在 T0 的下一個交易日
     （不是日曆 T0+1）。2026-10-17 實證：查 2026-10-19 得 10/16 夜盤 47269/47380/46107/46140/-1144
     （漲跌基準 47,284 = 10/16 結算價）；查 2026-10-17 全空。週五 T0 若用日曆 T0+1 必抓不到。
-    假日曆抓不到時退為週末判斷（與 src.t0 同口徑）。"""
+    日曆不可用（load_closed 失敗，src.t0._LAST_CAL_ERROR 非空）→ 回 None（B3 fail-loud）：
+    舊行為退週末判斷會把假日當交易日，夜盤查詢日靜默偏一節。"""
+    import src.t0 as _cal
     from datetime import timedelta as _tdd
-    from src.t0 import load_closed, is_trading_day
+
+    def _load(y):
+        """載入休市日曆；失敗（例外或 _LAST_CAL_ERROR 非空）→ 警告並回 None。"""
+        try:
+            closed = _cal.load_closed(y)
+        except Exception as e:  # noqa: BLE001
+            print(f"[WARN] 交易日曆不可用（load_closed 例外：{e}），不退週末判斷（fail-loud）")
+            return None
+        if _cal._LAST_CAL_ERROR:
+            print(f"[WARN] 交易日曆不可用（{_cal._LAST_CAL_ERROR}），不退週末判斷（fail-loud）")
+            return None
+        return closed
+
     _y = d.year
-    closed = load_closed(_y)
+    closed = _load(_y)
+    if closed is None:
+        return None
     for _ in range(14):
         d = d + _tdd(days=1)
         if d.year != _y:
             _y = d.year
-            closed = load_closed(_y)
-        if is_trading_day(d, closed):
+            closed = _load(_y)
+            if closed is None:
+                return None
+        if _cal.is_trading_day(d, closed):
             return d
     return d
 
-def _night_query_date(t0=None, session="全日", now=None) -> str:
+def _night_query_date(t0=None, session="全日", now=None) -> str | None:
     """夜盤查詢日（期交所語義：查日期 D → D-1 15:00~D 05:00 節，2026-10-16 官網截圖實證）。
     全日版要 T0 當晚節（15:00 T0 → 05:00 T0+1）→ 查 T0 的下一個交易日
     （報表把該節掛在下一個交易日，不是日曆 T0+1；2026-10-17 實證：查 2026-10-19
     得 10/16 夜盤，查 2026-10-17 全空；週五 T0 用日曆 T0+1 必失效）；
     日盤版要前一夜（今晨收盤節）→ 查今天（此時 T0 即今天）。
     10-12 改查今天是誤診（假日無節次的回退被當成規則錯），此次改回；
-    嚴格把關（回傳日期不符視為無新節次）保留，假日照樣安全。"""
+    嚴格把關（回傳日期不符視為無新節次）保留，假日照樣安全。
+    交易日曆不可用時回 None（B3 fail-loud，不猜測）。"""
     from datetime import date as _date
     from datetime import datetime as _dt
     from datetime import timedelta as _td
     from zoneinfo import ZoneInfo as _ZI
     now = now or _dt.now(_ZI("Asia/Taipei"))
     if session != "日盤" and t0:
-        return _next_trading_day(_date.fromisoformat(t0)).isoformat()
+        _nxt = _next_trading_day(_date.fromisoformat(t0))
+        if _nxt is None:
+            return None
+        return _nxt.isoformat()
     return now.date().isoformat()
 
 
@@ -114,6 +136,11 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
     from zoneinfo import ZoneInfo as _ZI2
     now = now or _dt2.now(_ZI2("Asia/Taipei"))
     query_date = _night_query_date(t0, session, now)
+    if query_date is None:
+        import src.t0 as _cal
+        print(f"[WARN] 夜盤 OHLC 不採用：交易日曆不可用（{_cal._LAST_CAL_ERROR or 'load_closed 失敗'}），"
+              f"夜盤查詢日無法判定（T0 {t0}，session {session}），不猜測（B3 fail-loud）")
+        return None
     if session != "日盤":
         _end_src = (_dt2.fromisoformat(t0) + _td2(days=1)) if t0 else _dt2.fromisoformat(query_date)
         _end = _end_src.replace(
@@ -224,11 +251,19 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # 否則視為無新節次，不採用（回退舊值曾靜默混入，2026-10-08 全日版教訓）。
     # options-after-hours 不在此列（它供日盤買賣權拆分，非純夜盤歸屬）。
     _today = _night_query_date(t0, session)
+    if _today is None:
+        import src.t0 as _cal0
+        notes.append(f"交易日曆不可用（{_cal0._LAST_CAL_ERROR or 'load_closed 失敗'}），"
+                     "夜盤查詢日無法判定，夜盤附屬端點一律不採用（B3 fail-loud）")
     for _ep in ("futures-price-after-hours", "futures-institutional-after-hours",
                 "options-institutional-after-hours"):
         _p = P.get(_ep)
         _d = (_p or {}).get("date")
-        if _p is not None and _d is not None and _d != _today:
+        if _p is None:
+            continue
+        if _today is None:
+            P[_ep] = None
+        elif _d is not None and _d != _today:
             notes.append(f"{_ep} 日期 {_d} 非今日 {_today}，視為無新節次，不採用")
             P[_ep] = None
     # Gamma 端點需 TAIEX 收盤 (FMTQIK 落後約一日)：有值才算命中，否則向 T-1…遞補並標示實際日期
@@ -299,7 +334,12 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         if _nh.get("date") and _nh["date"] != _q:
             notes.append(f"夜盤 OHLC 回退：查 {_q} 得 {_nh['date']} (T0 {t0})，來源 {_nh.get('via')}，無新節次")
     else:
-        notes.append("夜盤開高低收未取得 (proxy 與官方皆無)，僅成交量/OI/結算價")
+        import src.t0 as _cal1
+        # 全日節 _night_ohlc 內必經 load_closed：_LAST_CAL_ERROR 非空 ⟺ 本次曆失敗，歸因準確
+        if session != "日盤" and _cal1._LAST_CAL_ERROR:
+            notes.append(f"夜盤開高低收未取得（交易日曆不可用：{_cal1._LAST_CAL_ERROR}），僅成交量/OI/結算價")
+        else:
+            notes.append("夜盤開高低收未取得 (proxy 與官方皆無)，僅成交量/OI/結算價")
 
     # ---------- 期貨 3：法人 OI + 變化 ----------
     oi = _by_inst(_rows(P["futures-institutional-oi"]))
