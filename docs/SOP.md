@@ -37,7 +37,7 @@ GitHub Actions 自動抓資料 → commit `DATA_REPORT_yyyymmdd.md` → push。
   2. `python scripts/verify.py --t0 <T0> --prev <prev> [--expect-sha <sha12>]`（權威、含 numcheck＋prior-audit＋gate）
   3. `python src/check_report.py --data data_reports/DATA_REPORT_<T0>.md --report reports/Daily_REPORT_<T0>_<盤別>.md`（gate 本體；注意在 `src/` 不是 `scripts/`；參數同 numcheck）
 - supervisor 派工前必須先在「前一份已知良好報告」上實跑一次該指令，確認可執行，才寫進派工令。
-- 派工令必含：目的／精確目標檔／驗收方式／不可動範圍／停手上限／回報格式。
+- 派工令必含：目的／精確目標檔／驗收方式／不可動範圍／停手上限／回報格式。　（驗收必含數字對照：派工令中出現的任何數字，**必須附 DATA 出處**＝檔名＋欄位／行號；**嚴禁 supervisor 自創、憑記憶或沿用舊值**。測試與樣本任務亦同。違者視同違反鐵律「數字只出自 DATA」。）
 
 ## 3.8 交付前檢查清單（C3，2026-10-17 定案；實測抓到 2 個瑕疵）
 - 附錄B：`kpi` 14 筆順序正確、`verdict` 方向/信心非空、`levels` 的 `白話` 非空且數字只用 DATA 既有價位。
@@ -45,6 +45,7 @@ GitHub Actions 自動抓資料 → commit `DATA_REPORT_yyyymmdd.md` → push。
 - 首行 `- 報告日期：` ＝產出日（T0+1）；`- 資料基準：` 指向同一 T0 的 DATA。
 - `reports/latest.json` 四欄齊全、`report_date`＝T0、`status=completed`。
 - 交付前：`git status --porcelain` 只應出現本次預期的檔案；commit 後：`git status --porcelain` 應為空。未經批准不得 commit／push（worker／修復情境；日常全包流程仍依上方第 6 步）。
+- 節號格式一致：各節標題樣式相同且連續（例「## 五、交易計畫」；錯例「## 五 交易計畫」漏頓號）。
 
 ## 修復原則（2026-10-14 定案）
 

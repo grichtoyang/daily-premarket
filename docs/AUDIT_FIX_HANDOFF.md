@@ -102,3 +102,10 @@
 - **M3**：已修——版本字串已為 V1.4：`workers/DEPLOY.md:4`（`taifex-proxy_V1.4.js`）、`:44`（`version 應為 "V1.4 — V1.3 + daily snapshots (KV) (additive)"`，commit `b22bdf7`）。注意：稽核單原記 `docs/DEPLOY.md:6/44`，實際檔案在 `workers/DEPLOY.md`（`docs/DEPLOY.md` 不存在）。
 - **M4**：已修——`reports/Daily_REPORT_20261015_全日.md:443` 現為「到期換約注意202610F3為第3週序列（週選）」（commit `b22bdf7`），非「當月月選」。
 - 附註：2026-10-17 另有兩項改動（工作區修改、未 commit）：(a) `.github/workflows/daily_data.yml` 有界失敗——`Fetch daily data` **step 級** `timeout-minutes: 12`＋每次 fetch 嘗試 `timeout 480`＋`PYTHONUNBUFFERED=1`＋sleep 90；(b) `src/sources/taifex.py` 夜盤日曆 fail-loud（`_next_trading_day`／`_night_query_date` 在 `src.t0._LAST_CAL_ERROR` 非空時回 None，夜盤欄落 unavailable＋註記）。另：2026-10-14 commit `6aa493f` 已有 `src/t0.py` 層級的日曆 fail-loud（`_LAST_CAL_ERROR`→`resolve()` `cal_fail`），兩者層級不同。
+
+### 2026-10-17｜supervisor 探針數字造假事件（留痕）
+- 經過：supervisor 為測試 worker 長文生成能力，在派工令中自創「加權指數 27,428」作為基準值並要求全文一致。真值見 `data_reports/DATA_REPORT_20261016.md` L21／L327＝**47,111.26**（台指期近月 47,242）。
+- 模型行為：`opencode/big-pickle` 照給定基準全文一致、無漂移；但**未察覺**「加權 27,428 vs 台指期 47,242 → 價差 −19,683 點」的量級矛盾。
+- 責任歸屬：**100% 在 supervisor**（違反鐵律「數字只出自 DATA」），模型無過。
+- 防線確認：數字正確性**不得託付模型**；唯一權威＝`numcheck`／`check_report` 對 DATA 逐項比對。
+- 決議：(1) 派工令數字必附 DATA 出處、禁自創（本次寫入 SOP §3.7 與 `prompts/daily_starter.md` 第 8 條）；(2) `opencode/big-pickle` 格式／遵令合格、**速度不合格**（3,597 字元 ≈ 12 分 15 秒）→ 進入更換模型評估。
