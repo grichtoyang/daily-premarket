@@ -9,6 +9,7 @@
    reports/Daily_REPORT_yyyymmdd_日盤.md 或 _全日.md
    （數字只出自 DATA，N/A 不臆測，附機器區 kpi/levels/oidist/scenarios/verdict；
    DATA 有 unavailable 先做最後救援：驗源站→有值先補登 DATA 再寫報告，詳 docs/SOP.md 3.5）。
+   （長文分 4 段寫作照下方第 7 條；驗收指令白名單見第 8 條。）
 
 4. 更新 reports/latest.json（report_date/report_path/generated_at/status），指向最新一份。
 5. 先跑數字稽核 `python scripts/numcheck.py --data data_reports/DATA_REPORT_yyyymmdd.md --report reports/Daily_REPORT_yyyymmdd_日盤.md`（檔名按盤別），[ERROR] 就地修到零為止；再跑閘門 `python src/check_report.py`（同參數），[PASS] 才可 git add/commit/push；[FAIL] 就地修到過為止。
@@ -17,6 +18,24 @@
    - 表格數字一律從起草機輸出貼上：kpi/oidist/Top3/Top10全表/OI增減/VIX/§5.5前十大/§6.4比較表/§6.2流向/§4事件清單/預填verdict/levels/scenarios/關鍵數字速查（含區間與資料日期）照貼不手改（§6.4 全表整張貼，不手排；§4 只寫清單內事件，數字抄摘要原文，不憑記憶加；§4.1/§4.2每條須對應DATA事件號，逐條比對_news_list；verdict/levels/scenarios 只改字不改數；敘述行數字只准從速查表複貼）；只手寫解讀、verdict 理由取捨、levels 白話、scenarios 條件。
    - 貼之前先對錨：draft 首行加權收盤必須等於 DATA §1 收盤（防貼到舊版起草或憑記憶填數；2026-10-16 教訓：力道合計夜半列＋舊新聞殘留，verify 首輪抓 5 處）。
    - 驗證只做單輪：numcheck 一次列出全部問題→一次修完→重跑確認零 ERROR→gate。若稽核輸出與已驗證狀態矛盾，先重跑該檢查，不連坐推翻之前結論。
+7. 分段寫作協定（C1，2026-10-17 定案；實證：單次 8,000~13,000 字生成，免費 flash 模型連續空回 2 次，拆 4 段後 4/4 成功）：
+   - 固定 4 段：(1) 首行＋§一＋§二、(2) §三＋§四＋§五、(3) §六＋§七、(4) §八＋§九＋§十＋§十一＋§十二＋附錄A＋附錄B（附錄B 機器可讀區塊最後貼）。
+   - 每段一個 worker 任務；只准 Edit 追加（取檔尾最後一行當錨點），禁止整檔重寫；每段落地後立刻可被檢查（檔案必須存在）。
+   - worker 禁跑任何檢查指令；numcheck／verify／gate 一律由 supervisor 在全部段落完成後執行。
+   - 修正上限 2 次，且只准 patch 出錯的那幾行；第 3 次失敗 → 停手回報原始輸出，不得繼續嘗試。
+     （此上限指 worker 修段落的次數；全部段落完成後 supervisor 的 numcheck 修復迴圈仍修到零為止，兩者層級不同）
+   - 全段落完成後：numcheck（必帶 --data）→ 修正 → 更新 latest.json → verify.py。
+8. 驗收指令白名單（C2，2026-10-17 定案；實證：派工令寫錯指令 → worker 空轉 30 分鐘）——只有這三條可作為驗收：
+   - `python scripts/numcheck.py --data data_reports/DATA_REPORT_<T0>.md --report reports/Daily_REPORT_<T0>_<盤別>.md`（必帶 --data）
+   - `python scripts/verify.py --t0 <T0> --prev <prev> [--expect-sha <sha12>]`（權威、含 numcheck＋prior-audit＋gate）
+   - `python src/check_report.py --data data_reports/DATA_REPORT_<T0>.md --report reports/Daily_REPORT_<T0>_<盤別>.md`（gate 本體；注意在 src/ 不是 scripts/；參數同 numcheck）
+   - supervisor 派工前必須先在「前一份已知良好報告」上實跑一次該指令，確認可執行，才寫進派工令；派工令必含：目的／精確目標檔／驗收方式／不可動範圍／停手上限／回報格式。
+9. 交付前檢查清單（C3，2026-10-17 定案；實測抓到 2 個瑕疵）：
+   - 附錄B：kpi 14 筆順序正確、verdict 方向/信心非空、levels 的 白話 非空且數字只用 DATA 既有價位。
+   - levels 支撐由近到遠（支撐＝較近、支撐二＝較遠），與前一份報告慣例一致。
+   - 首行 `- 報告日期：`＝產出日（T0+1）；`- 資料基準：`指向同一 T0 的 DATA。
+   - reports/latest.json 四欄齊全、report_date＝T0、status=completed。
+   - 交付前：`git status --porcelain` 只應出現本次預期的檔案（外加既有未追蹤檔 `test_form.py`／`test_yahoo.py`）；commit 後：`git status --porcelain` 應只剩那兩個既有未追蹤檔。未經批准不得 commit／push（worker／修復情境；日常全包流程仍依上方第 5 步）。
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位＋push 的 commit＋Dashboard 更新時間。
 
 固定指令（勿用臨時腳本）：

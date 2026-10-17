@@ -85,3 +85,20 @@
 3. C1/C2 的單元測試輸出；
 4. OpenCode 複核方式：重跑上述 verify ＋直接呼叫 `merge_same_t0` 正/反案例
    ＋ proxy `?date=2026/10/14`、`?date=2026/10/16` 交叉比對。
+
+---
+
+## 5. 2026-10-17 狀態更新（清帳）
+
+> 逐項標記現況（照實填，不宣稱未完成的事）；證據以檔案行號＋commit 為準。
+
+- **C1**：盤別部分已實作——`src/fetch_data.py:274` 標頭輸出 `- 產出盤別：`、`:82-108` `merge_same_t0` 日盤/全日 優先規則（舊日盤→新全日以新檔為準；舊全日→新日盤保留舊檔；同盤別維持穩定優先）。「新舊皆有值沿用舊值」凍結夜盤的問題在 2026-10-17 另案處理（merge 覆蓋條件：尚無報告時以新抓取為準；夜盤查詢日改查 T0 的次一交易日，commit `f511e8d`）。
+- **C2**：2026-10-17 已實作——`src/sources/taifex.py:511-521` 換月檢查（`_chain_rollover` 呼叫在 `:514-517`）＋`:570-587` `_chain_rollover` 純函式。注意：實作採「快照主力 vs 當前主力」比對，較原建議「到期日集合不相交」更嚴（兩邊 chain 常同時含新舊合約，集合比對會漏判，見 `:513` 程式註解）；換月時 `snapchg["chain"]/["walls"]=None` → 變化欄位落 `unavailable`＋註記「跨到期換月…日對日 OI/Walls 變化不適用」。（本檔行號為 2026-10-17 工作區狀態；B3 改動在檔頭，若 `src/sources/taifex.py` 再變動，請以函式名 `_chain_rollover` 為準定位。）
+- **H1**：已修（commit `b22bdf7`）——`reports/Daily_REPORT_20261015_全日.md:186` 原「Fed 9月會議紀要（10/7公布）」bullet 已刪（現為「Fed 調查與 PPI」，對應 DATA 事件）；`prompts/daily_starter.md:17`（原 `daily_starter_Muse.md`）已補「§4.1/§4.2每條須對應DATA事件號，逐條比對_news_list」鐵律。
+- **H2**：駁回（稽核當下誤判，留歷史不動）——`reports/Daily_REPORT_20261015_全日.md:479-501` §八 四情境標題「開高續攻／開平震盪／開低測撐／破支撐走弱」命名不重複，情境A觸發「開盤高於47,366」、情境C觸發「開盤低於47,366」與標題方向一致（`docs/HANDOFF.md:92` 同此結論）。
+- **H3**：報告面已人工修正——`reports/Daily_REPORT_20261016_全日.md:675-677`：支撐＝46,107 夜低、支撐二＝44,500 Put Wall，並補 `白話`。注意：`src/draft_blocks.py:504-512` `_levels_filled` 仍為固定映射（支撐=Put Wall、支撐二=夜低），未改「按接近現價排序」；未來報告仍需人工對調（殘留）。
+- **M1**：已修——`src/fetch_data.py:8` docstring「影響夜盤查詢日：全日→T0+1，日盤→今天」；`:975-976` argparse help「全日查 T0+1，日盤查今天」。符合「全日→T0+1、日盤→今天」。
+- **M2**：已修——`docs/HANDOFF.md:17` 已標「[以下已取代 2026-10-16，留作歷史]」、`:74` 已標「[規則部分已取代，strict-gate 與附屬同口徑保留有效]」，現行規則在 `:91`，同檔不再自相矛盾。
+- **M3**：已修——版本字串已為 V1.4：`workers/DEPLOY.md:4`（`taifex-proxy_V1.4.js`）、`:44`（`version 應為 "V1.4 — V1.3 + daily snapshots (KV) (additive)"`，commit `b22bdf7`）。注意：稽核單原記 `docs/DEPLOY.md:6/44`，實際檔案在 `workers/DEPLOY.md`（`docs/DEPLOY.md` 不存在）。
+- **M4**：已修——`reports/Daily_REPORT_20261015_全日.md:443` 現為「到期換約注意202610F3為第3週序列（週選）」（commit `b22bdf7`），非「當月月選」。
+- 附註：2026-10-17 另有兩項改動（工作區修改、未 commit）：(a) `.github/workflows/daily_data.yml` 有界失敗——`Fetch daily data` **step 級** `timeout-minutes: 12`＋每次 fetch 嘗試 `timeout 480`＋`PYTHONUNBUFFERED=1`＋sleep 90；(b) `src/sources/taifex.py` 夜盤日曆 fail-loud（`_next_trading_day`／`_night_query_date` 在 `src.t0._LAST_CAL_ERROR` 非空時回 None，夜盤欄落 unavailable＋註記）。另：2026-10-14 commit `6aa493f` 已有 `src/t0.py` 層級的日曆 fail-loud（`_LAST_CAL_ERROR`→`resolve()` `cal_fail`），兩者層級不同。
