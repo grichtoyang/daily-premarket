@@ -1,17 +1,17 @@
-# OpenCode supervisor × Muse worker（本專案設定）
+# OpenCode supervisor × worker（本專案設定）
 
 ## 角色
-- `supervisor`（primary）：模型 `opencode/deepseek-v4.1-flash-free`。只讀稽核／調度，**不改檔**（`edit: deny`）；任何檔案修改一律派給 `muse-worker`。
-- `muse-worker`（subagent）：模型 `opencode/glm-5.3-flash-free`。唯一動檔者，`edit: allow`、`bash: ask`。
+- `supervisor`（primary）：模型 `opencode/deepseek-v4.1-flash-free`。只讀稽核／調度，**不改檔**（`edit: deny`）；任何檔案修改一律派給 `worker`。
+- `worker`（subagent）：模型 `opencode/glm-5.3-flash-free`。唯一動檔者，`edit: allow`、`bash: ask`。
 
 ## 位置
 - `.opencode/agents/supervisor.md`
-- `.opencode/agents/muse-worker.md`
+- `.opencode/agents/worker.md`
 - `opencode.json`（`default_agent: supervisor`）
 
 ## 用法
 - 新對話預設即 `supervisor`；用 Tab 可切換主代理。
-- 可直接與 supervisor 對話；要叫 Muse 可 `@muse-worker`，或由 supervisor 派工。
+- 可直接與 supervisor 對話；要叫 worker 可 `@worker`，或由 supervisor 派工。
 - 對 supervisor 說一句「產出今日盤前分析」→ 依 `prompts/daily_starter_Muse.md` 與 `docs/SOP.md` 執行完整開工流程。
 
 ## 生效條件
@@ -30,6 +30,6 @@
 ## 移植到其他專案
 複製下列三項到新專案，再改內文：
 1. `.opencode/agents/supervisor.md`：把 body 的本專案路徑換成該專案的（`prompts/daily_starter_*`、`scripts/open.py`、`docs/SOP.md`、`docs/ANA_REPORT_TEMPLATE.md`、`reports/latest.json`），並調整 `permission.bash` 的放行指令。
-2. `.opencode/agents/muse-worker.md`：把自測指令改成該專案的驗證方式。
+2. `.opencode/agents/worker.md`：把自測指令改成該專案的驗證方式。
 3. `opencode.json`（`default_agent: supervisor`）。
 最後**完全關閉並重啟 opencode** 才生效。

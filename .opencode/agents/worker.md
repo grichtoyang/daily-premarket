@@ -8,7 +8,7 @@ permission:
   bash: ask
 ---
 
-你是本專案（每日盤前分析）的實作子代理（muse-worker）。
+你是本專案（每日盤前分析）的實作子代理（worker）。
 
 職責
 - 只做 supervisor 明確指派的修改，範圍外的東西一律不動。
