@@ -9,7 +9,7 @@ from src.utils import HEADERS
 
 API = "https://api.finmindtrade.com/api/v4/data"
 
-def taiex_ohlc(t0: str, timeout: int = 20, retries: int = 3) -> dict:
+def taiex_ohlc(t0: str, timeout: int = 20, retries: int = 2) -> dict:
     """回傳 {open, high, low, money_yuan, date}，取不到回全 None。"""
     import time
     out = {"open": None, "high": None, "low": None, "money_yuan": None, "date": None, "ok": False}

@@ -7,7 +7,7 @@ GitHub Actions，本機只走 gapfill 補洞（見 scripts/gapfill.py）。
 或人工明確執行。直接裸執行一律拒絕（防舊排程命令復活造成雙寫手）。
 
 流程: src/fetch_data.py (cwd=repo 根目錄，盤別/T0 一律顯式傳參，不看牆鐘)
-→ git pull --rebase → git add/commit/push（push 失敗重試 3 次；rebase 衝突不自動解）。
+→ git pull --rebase → git add/commit/push（push 失敗重試 2 次；rebase 衝突不自動解）。
 commit 訊息沿用 T0 命名 (與 CI 一致)。
 全部輸出追加至 logs/fetch.log。
 """
@@ -106,11 +106,11 @@ def main() -> int:
         else:
             _log(fp, "no changes, skip commit")
         _pushed = False
-        for _try in range(3):
+        for _try in range(2):
             if _sh(fp, git, "push", timeout=600) == 0:
                 _pushed = True
                 break
-            _log(fp, f"push retry {_try + 1}/3：先 rebase 再推")
+            _log(fp, f"push retry {_try + 1}/2：先 rebase 再推")
             if _sh(fp, git, "pull", "--rebase", timeout=300) != 0:
                 break
         if not _pushed:

@@ -44,7 +44,7 @@ def _get(path: str, timeout: int = 60):
     if path not in _cache:
         _cache[path] = []
         import time
-        for attempt in range(3):
+        for attempt in range(2):
             try:
                 r = requests.get(BASE + path, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
                 r.raise_for_status()

@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 TAIPEI = ZoneInfo("Asia/Taipei")
 HEADERS = {"User-Agent": "daily-premarket/1.0 (+github-actions)"}
 
-def fetch_with_retry(url: str, timeout: int = 15, retries: int = 3, params=None) -> requests.Response | None:
+def fetch_with_retry(url: str, timeout: int = 15, retries: int = 2, params=None) -> requests.Response | None:
     last_err = None
     for i in range(retries):
         try:

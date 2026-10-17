@@ -4,7 +4,7 @@
     GEMINI_API_KEY=xxx python src/analyze.py --date 2026-09-17 --t0 2026-09-16
     --t0 缺省取最近平日 (與 fetch_data 一致)
 
-流程：組 prompt → 調 API (最多 3 次，含 1 次格式修正重試) → 結構校驗 →
+流程：組 prompt → 調 API (最多 2 次) → 結構校驗 →
       寫 reports/Daily_REPORT_yyyymmdd.md + reports/latest.json。
 Key 只從環境變數讀，不進 repo。
 """
