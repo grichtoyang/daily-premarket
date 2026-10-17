@@ -79,7 +79,8 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
         lines.append("| " + " | ".join(str(x) for x in r) + " |")
     return "\n".join(lines)
 
-def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日") -> tuple[str, int]:
+def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
+                  protect: bool = True) -> tuple[str, int]:
     """同 T0 保護：次日晨間全日刷新會覆寫同檔，若本次某格缺失而前版同位有值，沿用舊格。
 
     規則（穩定優先，2026-10-14 定案：已發布報告只認凍結版 bytes，
@@ -95,6 +96,10 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日") -> 
       舊檔=日盤、新檔=全日 → 以新檔為準（仍對舊檔做 MISSING 填空）；
       舊檔=全日、新檔=日盤（延遲班次倒插）→ 保留舊檔（全日為權威）；
       盤別相同或未知 → 維持上述穩定優先行為。
+    - protect=False（B1，2026-10-17：該 T0 尚無報告、無凍結對象，或 --force-rewrite
+      人工明示）：取消「新舊皆有實值沿用舊值」，改以本次新抓取覆蓋並計數於
+      「同 T0 覆蓋」註記；MISSING 填空、_fb 遞補取舊、標籤格永不覆寫、
+      盤別規則全部照舊。
     回傳 (合併後文本, 填入格數)。
     """
     import re as _re
@@ -149,6 +154,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日") -> 
         old_norm[(hkey, _norm_label(first))] = cells
     filled = 0
     kept = 0
+    overwritten = 0
     out_lines = []
     hkey: tuple = (None, None, None)
     import re as _re3
@@ -188,12 +194,16 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日") -> 
                             new_cells[j] = old[j]
                             filled += 1
                             _touched = True
-                        elif (not prefer_new
+                        elif (not prefer_new and protect
                                 and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
                                 and new_cells[j] != old[j]):
                             new_cells[j] = old[j]
                             kept += 1
                             _touched = True
+                        elif (not prefer_new and not protect
+                                and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
+                                and new_cells[j] != old[j]):
+                            overwritten += 1  # 取新值（new_cells 原樣保留），僅計數供註記
                     if _touched and old_last not in (MISSING, "") and new_cells[-1] != old_last:
                         new_cells[-1] = old_last  # 來源格隨值沿用
                     if new_cells != cells:
@@ -210,6 +220,11 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日") -> 
         merged = merged.replace(
             "\n- 未取得欄位 (",
             f"\n- 註記：同 T0 穩定：{kept} 格新舊皆有值，沿用前版（不再靜默覆寫）\n- 未取得欄位 (",
+            1)
+    if overwritten:
+        merged = merged.replace(
+            "\n- 未取得欄位 (",
+            f"\n- 註記：同 T0 覆蓋：{overwritten} 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）\n- 未取得欄位 (",
             1)
     return merged, filled
 
@@ -976,6 +991,8 @@ def main() -> None:
                     help="報告時段；空白=依 t0.resolve 判定（全日查 T0+1，日盤查今天），手動 --t0 時預設全日")
     ap.add_argument("--slot", default="", choices=["morning", "evening", "weekend"],
                     help="排定班別（備援用，釘死盤別/T0 不看牆鐘；需搭配 --date 一起給）")
+    ap.add_argument("--force-rewrite", action="store_true",
+                    help="同 T0 重抓時強制以本次抓取覆蓋舊檔（人工指定；§16 加註記）")
     args = ap.parse_args()
     today = datetime.now(TAIPEI).date()
     report_date = args.date.strip() or today.isoformat()
@@ -1008,9 +1025,22 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
     new_text = build(report_date, t0, session=session, slot=slot)
+    if args.force_rewrite:
+        new_text = new_text.replace(
+            "\n- 未取得欄位 (",
+            "\n- 註記：--force-rewrite 明示覆蓋（人工指定）\n- 未取得欄位 (",
+            1)
     if out.exists():
+        has_report = bool(list((ROOT / "reports").glob(
+            f"Daily_REPORT_{t0.replace('-', '')}_*.md")))
+        protect = has_report and not args.force_rewrite
+        if protect:
+            print("[INFO] 同 T0 保護模式：已有報告，沿用前版")
+        else:
+            print("[INFO] 同 T0 覆蓋模式：尚無報告，以本次抓取為準")
         try:
-            new_text, _filled = merge_same_t0(out.read_text(encoding="utf-8"), new_text, session)
+            new_text, _filled = merge_same_t0(
+                out.read_text(encoding="utf-8"), new_text, session, protect=protect)
             if _filled:
                 print(f"[INFO] 同 T0 保護：沿用前版 {_filled} 格有值")
         except Exception as e:  # noqa: BLE001

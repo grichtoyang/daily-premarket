@@ -118,5 +118,22 @@ try:
 except Exception as e:  # noqa: BLE001
     check(f"T8b open import失敗: {e}", False)
 
+# T9 B1：該 T0 尚無報告（protect=False）→ 新舊皆有值且不同取「新」值，並加覆蓋註記
+# （fixture 補 `- 未取得欄位 (` 行，讓註記插入點存在，模擬真實 DATA 結構）
+old9 = doc("全日", "48,433", "48,755", "21,801") + "\n- 未取得欄位 (0)：無\n"
+new9 = doc("全日", "48,801", "47,945", "38,271") + "\n- 未取得欄位 (0)：無\n"
+m9, f9 = merge_same_t0(old9, new9, "全日", protect=False)
+check("T9 覆蓋模式取新值", "| 收盤價 | 47,945 |" in m9 and "| 開盤價 | 48,801 |" in m9
+      and "| 成交量 | 38,271 |" in m9)
+check("T9 覆蓋註記含計數", "同 T0 覆蓋：3 格以本次新抓取覆蓋" in m9 and "無凍結對象" in m9)
+check("T9 舊值不殘留", "48,755" not in m9 and "21,801" not in m9)
+check("T9 無填補", f9 == 0)
+
+# T10 同情境但 protect=True（預設）→ 仍取「舊」值，確保預設行為不變
+m10, _f10 = merge_same_t0(old9, new9, "全日", protect=True)
+check("T10 保護模式沿用舊值", "| 收盤價 | 48,755 |" in m10 and "| 開盤價 | 48,433 |" in m10
+      and "| 成交量 | 21,801 |" in m10)
+check("T10 穩定註記且無覆蓋註記", "同 T0 穩定" in m10 and "同 T0 覆蓋" not in m10)
+
 print(f"FAILURES={len(fails)}")
 raise SystemExit(1 if fails else 0)
