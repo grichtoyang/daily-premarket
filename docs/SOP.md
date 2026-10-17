@@ -44,8 +44,7 @@ GitHub Actions 自動抓資料 → commit `DATA_REPORT_yyyymmdd.md` → push。
 - `levels` 支撐由近到遠（支撐＝較近、支撐二＝較遠），與前一份報告慣例一致。
 - 首行 `- 報告日期：` ＝產出日（T0+1）；`- 資料基準：` 指向同一 T0 的 DATA。
 - `reports/latest.json` 四欄齊全、`report_date`＝T0、`status=completed`。
-- 交付前：`git status --porcelain` 只應出現本次預期的檔案（外加既有未追蹤檔 `test_form.py`／`test_yahoo.py`）；commit 後：`git status --porcelain` 應只剩那兩個既有未追蹤檔。未經批准不得 commit／push
-  （worker／修復情境；日常全包流程仍依上方第 6 步）。
+- 交付前：`git status --porcelain` 只應出現本次預期的檔案；commit 後：`git status --porcelain` 應為空。未經批准不得 commit／push（worker／修復情境；日常全包流程仍依上方第 6 步）。
 
 ## 修復原則（2026-10-14 定案）
 

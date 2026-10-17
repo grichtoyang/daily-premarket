@@ -35,7 +35,7 @@
    - levels 支撐由近到遠（支撐＝較近、支撐二＝較遠），與前一份報告慣例一致。
    - 首行 `- 報告日期：`＝產出日（T0+1）；`- 資料基準：`指向同一 T0 的 DATA。
    - reports/latest.json 四欄齊全、report_date＝T0、status=completed。
-   - 交付前：`git status --porcelain` 只應出現本次預期的檔案（外加既有未追蹤檔 `test_form.py`／`test_yahoo.py`）；commit 後：`git status --porcelain` 應只剩那兩個既有未追蹤檔。未經批准不得 commit／push（worker／修復情境；日常全包流程仍依上方第 5 步）。
+   - 交付前：`git status --porcelain` 只應出現本次預期的檔案；commit 後：`git status --porcelain` 應為空。未經批准不得 commit／push（worker／修復情境；日常全包流程仍依上方第 5 步）。
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位＋push 的 commit＋Dashboard 更新時間。
 
 固定指令（勿用臨時腳本）：

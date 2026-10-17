@@ -36,7 +36,7 @@
 1. **Phase 2**（見 `docs/PHASE2.md`，待用戶批准）：遠月 OI 掃描陽春版；台股 VIX 找機讀源（目前判定無源不做）
 2. 明早驗證 chain OI 增減、前十大上游穩定
 3. Muse session（`ses_f556...`）上游 `invalid_request_error` 無法回應——開**新對話**用 `/models` 換 Muse，勿 resume 舊對話
-4. 未追蹤檔 `test_form.py`、`test_yahoo.py` 不動
+4. 未追蹤檔 `test_form.py`、`test_yahoo.py` 不動（2026-10-17 更新：兩檔已刪除）
 5. 選擇權呈現四分類已定版實作（綜合判斷／市場結構／市場風向／市場情緒＋備查；模板 §6＋dashboard；T字吸附上色；台股 VIX 改連結呈現）
 
 ## 發布閘門（必跑，2026-09-23 深夜已加 oidist 核數）
