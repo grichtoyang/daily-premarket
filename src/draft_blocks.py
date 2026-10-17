@@ -502,13 +502,28 @@ def _verdict_filled(data: str) -> list[str]:
 
 
 def _levels_filled(data: str) -> list[str]:
-    """levels 預填（映射固定，覺得不對就整列換 DATA 內其他價位，不手打數字）；白話手寫。"""
+    """levels 預填：支撐/壓力依價位遠近排序（近者在前），標籤跟著價位走；
+    數值無法解析時維持原固定映射（日盤高/Call Wall、Put Wall/夜低）；白話手寫。"""
     F = _facts(data)
-    return [f"壓力|{_num(F['日高'])}|日盤高",
-            f"壓力二|{_num(F['CW'])}|Call Wall",
+    hi, hi_lbl = _num(F["日高"]), "日盤高"
+    hi2, hi2_lbl = _num(F["CW"]), "Call Wall"
+    lo, lo_lbl = _num(F["PW"]), "Put Wall"
+    lo2, lo2_lbl = _num(F["夜低"]), "夜低"
+    try:  # 壓力：較小者為「壓力」（較近），較大者為「壓力二」
+        if float(hi) > float(hi2):
+            hi, hi_lbl, hi2, hi2_lbl = hi2, hi2_lbl, hi, hi_lbl
+    except (ValueError, TypeError):
+        pass
+    try:  # 支撐：較大者為「支撐」（較近），較小者為「支撐二」
+        if float(lo) < float(lo2):
+            lo, lo_lbl, lo2, lo2_lbl = lo2, lo2_lbl, lo, lo_lbl
+    except (ValueError, TypeError):
+        pass
+    return [f"壓力|{hi}|{hi_lbl}",
+            f"壓力二|{hi2}|{hi2_lbl}",
             f"中軸|{_num(F['日收'])}|台指期日收",
-            f"支撐|{_num(F['PW'])}|Put Wall",
-            f"支撐二|{_num(F['夜低'])}|夜低",
+            f"支撐|{lo}|{lo_lbl}",
+            f"支撐二|{lo2}|{lo2_lbl}",
             "白話|"]
 
 
