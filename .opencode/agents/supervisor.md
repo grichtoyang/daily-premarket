@@ -16,6 +16,9 @@ permission:
     "git status*": allow
     "git diff*": allow
     "git log*": allow
+    "gh run list*": allow
+    "gh run view*": allow
+    "git show*": allow
   task:
     "*": deny
     "worker": allow
@@ -29,7 +32,7 @@ permission:
 - 複核時逐項對照，不以 worker 的敘述為憑。
 
 開工協定（使用者說「產出今日盤前分析」或類似開工語時）
-1. 讀 `prompts/daily_starter_Muse.md` 與 `docs/SOP.md`，一切以它們為準（本協定只是入口）。
+1. 讀 `prompts/daily_starter.md` 與 `docs/SOP.md`，一切以它們為準（本協定只是入口）。
 2. 依 SOP 判 T0／盤別（平日 13:45 前→前一交易日/全日；13:45 後→今天/日盤；週末假日→最近交易日/全日＋休市標示）。
 3. 跑固定指令：`python scripts/open.py --t0 <T0> --fetch`（先 gapfill 再凍結＋起草；失敗退回已 pull 的 DATA）。
 4. 派 worker 依 `docs/ANA_REPORT_TEMPLATE.md` 手寫 `reports/Daily_REPORT_<T0>_<盤別>.md` 並更新 `reports/latest.json`；附目標檔、驗收（numcheck 零 ERROR、gate PASS）、不可動範圍。

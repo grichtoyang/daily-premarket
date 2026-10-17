@@ -5,7 +5,14 @@ model: opencode/glm-5.3-flash-free
 temperature: 0.1
 permission:
   edit: allow
-  bash: ask
+  bash:
+    "*": ask
+    "python scripts/verify.py*": allow
+    "python scripts/numcheck.py*": allow
+    "python scripts/test_same_t0.py*": allow
+    "python src/check_report.py*": allow
+    "git status*": allow
+    "git diff*": allow
 ---
 
 你是本專案（每日盤前分析）的實作子代理（worker）。
