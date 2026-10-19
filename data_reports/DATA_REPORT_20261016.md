@@ -1,12 +1,12 @@
 # DATA_REPORT_20261016
 
-- 報告日期：`2026-10-19`
+- 報告日期：`2026-10-17`
 - T0 交易日期：`2026-10-16`
-- 資料產出時間：`2026-10-19 10:20:59`
+- 資料產出時間：`2026-10-17 13:01:48`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
-- 產出者：`actions`
-- 排定班別：`morning`
+- 產出者：`local`
+- 排定班別：`weekend`
 
 ---
 
@@ -179,54 +179,54 @@
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：國巨3交易日慘跌15% 最大苦主身家蒸發138億
-  - 來源：Yahoo 台股；發布時間：2026-10-19T01:45:16Z；台北時間：2026-10-19 09:45
-  - 摘要：被動元件族群今日承壓下挫，其中坐擁近62萬股東的國巨（2327）再度吞下半根跌停，國巨近3日連日下挫，已經跌破600元大關，最低來到529元，波段跌幅高達15%，其中最大苦主也包含國巨創辦人暨現任董事長陳泰銘，短短3日身價蒸發138億元。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%BF%9162%E8%90%AC%E8%82%A1%E6%9D%B1%E5%BF%83%E9%85%B8%E5%9C%8B%E5%B7%A83%E5%A4%A9%E8%B5%B0%E8%B7%8C15-%E6%9C%80%E5%A4%A7%E8%8B%A6%E4%B8%BB%E9%99%B3%E6%B3%B0%E9%8A%98%E8%BA%AB%E5%AE%B6%E4%B9%9F%E8%92%B8%E7%99%BC138%E5%84%84%E5%85%83-014516419.html
-- 事件2：千金股殺聲隆隆一度剩47檔 股王信驊一張蒸發98萬
-  - 來源：Yahoo 台股；發布時間：2026-10-19T01:56:28Z；台北時間：2026-10-19 09:56
-  - 摘要：油價與美債殖利率維持高檔，加上市場對AI龐大資本支出能否轉化為獲利的疑慮升溫，美股四大指數全面收黑，拖累台股今（19）日盤中補跌逾860點，最低下探46,243.55點，失守4萬7千點大關。千金股殺聲隆隆一度剩47檔，「股王」信驊（5274
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8D%83%E9%87%91%E8%82%A1%E6%AE%BA%E8%81%B2%E9%9A%86%E9%9A%86%E4%B8%80%E5%BA%A6%E5%89%A947%E6%AA%94-%E8%82%A1%E7%8E%8B%E4%BF%A1%E9%A9%8A%E8%B7%8C%E8%BF%916%E3%80%8C%E4%B8%80%E5%BC%B5%E8%92%B8%E7%99%BC98%E8%90%AC%E5%85%83%E3%80%8D-015520105.html
-- 事件3：台積電破季線台股早盤跌668點 台塑化逆勢漲3%
-  - 來源：Yahoo 台股；發布時間：2026-10-19T01:15:00Z；台北時間：2026-10-19 09:15
-  - 摘要：受美股下跌、台指期夜盤重挫千點影響，台股今（19）日開低震盪，下跌668點，來到46354點失守47K關卡，跌幅1.56%，預估成交量9000億；櫃買指數則來到388.98點，下跌11.49點，跌幅2.96%。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E4%B8%8B%E8%B7%8C668%E9%BB%9E-%E5%8F%B0%E7%A9%8D%E9%9B%BB%E7%A0%B4%E5%AD%A3%E7%B7%9A-%E5%8F%B0%E5%A1%91%E5%8C%96%E9%80%86%E5%8B%A2%E6%BC%B23-011500767.html
-- 事件4：輝達傳指定「用台積3奈米製程晶粒」韓媒：三星點頭
-  - 來源：Yahoo 台股；發布時間：2026-10-18T16:51:00Z；台北時間：2026-10-19 00:51
-  - 摘要：三星在晶圓代工領域上正試圖追趕台積電，不過韓媒《首爾經濟日報》（Seoul Economic Daily）今（18）日最新報導指出，輝達（NVIDIA）為了自家產品的品質一致，已要求三星、SK海力士及美光，在輝達的客製化高頻寬記憶體（NVH
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%BC%9D%E9%81%94%E6%8C%87%E5%AE%9A-%E5%BE%8B%E5%BE%97%E7%94%A8%E5%8F%B0%E7%A9%8D%E9%9B%BB3%E5%A5%88%E7%B1%B3-%E8%A8%98%E6%86%B6%E9%AB%943%E5%A4%A7%E5%BB%A0%E9%83%BD%E8%A2%AB%E9%BB%9E%E5%90%8D-%E9%9F%93%E5%AA%92-%E4%B8%89%E6%98%9F%E9%BB%9E%E9%A0%AD%E4%BA%86-165100027.html
-- 事件5：央行備妥銀彈應戰匯市 近期穩匯「規模恐有百億美元」
-  - 來源：Yahoo 台股；發布時間：2026-10-18T22:24:03Z；台北時間：2026-10-19 06:24
-  - 摘要：台北股匯市面臨壓力測試。美股四大指數十七日全面翻黑，台指期夜盤更是暴跌逾千點，台股今天偏空氛圍急遽升溫；而外資上周大舉賣超台股匯出資金，導致新台幣匯價重貶，據了解，中央銀行內部上周五開會因應，備妥銀彈做好本周持續穩匯的準備，避免匯價過度波動
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%82%A1%E5%8C%AF%E9%9B%99%E8%AD%A6%E5%A0%B1-%E5%A4%AE%E8%A1%8C%E5%82%99%E5%A6%A5%E9%8A%80%E5%BD%88%E6%87%89%E6%88%B0-222403673.html
-- 事件6：新台幣再重貶逾1角 日圓兌美元早盤回升157
-  - 來源：Yahoo 台股；發布時間：2026-10-19T01:28:25Z；台北時間：2026-10-19 09:28
-  - 摘要：[NOWNEWS今日新聞]美元指數跌破102，不過，在台股走跌之下，新台幣兌美元今（19）日早盤再重貶逾1角，一度下探32.49元。就國際匯市來看，美元指數一度跌至101.58，之後反彈來到101.9...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%82%A1%E5%8C%AF%E9%BD%8A%E6%8C%AB-%E6%96%B0%E5%8F%B0%E5%B9%A3%E5%86%8D%E9%87%8D%E8%B2%B6%E9%80%BE1%E8%A7%92%E8%A6%8B32-49%E5%85%83-012825511.html
+- 事件1：00946十一月除息0.058元！連15個月不變　想領息最晚這天買
+  - 來源：Yahoo 台股；發布時間：2026-10-16T10:53:56Z；台北時間：2026-10-16 18:53
+  - 摘要：群益科技高息成長ETF（00946）預估每股配發0.058元，維持連15個月配息水準不變，除息交易日選定11月4日，想參與領息的投資人，來看看最晚哪一天要買進？哪一天入帳？
+  - 原文連結：https://tw.stock.yahoo.com/news/00946%E5%8D%81-%E6%9C%88%E9%99%A4%E6%81%AF0-058%E5%85%83-%E9%80%A315%E5%80%8B%E6%9C%88%E4%B8%8D%E8%AE%8A-%E6%83%B3%E9%A0%98%E6%81%AF%E6%9C%80%E6%99%9A%E9%80%99%E5%A4%A9%E8%B2%B7-105356369.html
+- 事件2：爸媽贊助200萬頭期款！ 他想丟股市「5年後再買房」 網勸：不是穩賺
+  - 來源：Yahoo 台股；發布時間：2026-10-16T10:33:00Z；台北時間：2026-10-16 18:33
+  - 摘要：資金該「買房」或「買股」是熱議話題。有網友表示有2百萬資金，若買房家人會再贊助2百萬，但他擔心買房後資金被卡住，考慮「投入股市5年後再買房」，引發兩派網友激辯。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%88%B8%E5%AA%BD%E8%B4%8A%E5%8A%A9200%E8%90%AC%E9%A0%AD%E6%9C%9F%E6%AC%BE-%E4%BB%96%E6%83%B3%E4%B8%9F%E8%82%A1%E5%B8%82-5%E5%B9%B4%E5%BE%8C%E5%86%8D%E8%B2%B7%E6%88%BF-%E7%B6%B2%E5%8B%B8-%E4%B8%8D%E6%98%AF%E7%A9%A9%E8%B3%BA-103300429.html
+- 事件3：00939配息新高0.15元！今創歷史新高價　11月3日除息
+  - 來源：Yahoo 台股；發布時間：2026-10-16T09:58:37Z；台北時間：2026-10-16 17:58
+  - 摘要：每月配息的統一台灣高息動能ETF (00939)，11月即將除息，預計每受益權單位配發0.15元，是掛牌以來的最高配息金額。本次除息交易日為11月3日，想領息的投資人，最晚要在11月2日買進，就能在11月25日領到錢。
+  - 原文連結：https://tw.stock.yahoo.com/news/00939%E9%85%8D%E6%81%AF%E6%96%B0%E9%AB%980-15%E5%85%83-%E4%BB%8A%E5%89%B5%E6%AD%B7%E5%8F%B2%E6%96%B0%E9%AB%98%E5%83%B9-11%E6%9C%883%E6%97%A5%E9%99%A4%E6%81%AF-095837685.html
+- 事件4：她14歲打工照顧中風父…8旬母離家多年來討扶養費 女兒仍得付
+  - 來源：Yahoo 台股；發布時間：2026-10-16T09:58:32Z；台北時間：2026-10-16 17:58
+  - 摘要：新竹一名8旬老婦年邁無力謀生，向60歲女兒請求扶養；女兒控母親自幼沉迷賭博、外遇離家，自己14歲就得打工，要求免除扶養義務。新竹地院認定無法證明母親未盡扶養責任，裁定女兒每月須付1萬2500元。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A5%B914%E6%AD%B2%E6%89%93%E5%B7%A5%E7%85%A7%E9%A1%A7%E4%B8%AD%E9%A2%A8%E7%88%B6-8%E6%97%AC%E6%AF%8D%E9%9B%A2%E5%AE%B6%E5%A4%9A%E5%B9%B4%E4%BE%86%E8%A8%8E%E6%89%B6%E9%A4%8A%E8%B2%BB-%E5%A5%B3%E5%85%92%E4%BB%8D%E5%BE%97%E4%BB%98-095832555.html
+- 事件5：政府積極推動亞資中心！賴清德：先留資、再引資 持續壯大金融市場
+  - 來源：Yahoo 台股；發布時間：2026-10-16T08:58:00Z；台北時間：2026-10-16 16:58
+  - 摘要：政府積極推動亞洲資產管理中心計畫，總統賴清德今天（16日）接受網路財經頻道《游皓庭的財經視角》專訪時表示，亞資管理中心是要先將把資金留下來，先留資、再引資，透過引資創造台灣更好的投資動能，持續壯大台灣的金融市場，目前政策推動順利。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%94%BF%E5%BA%9C%E7%A9%8D%E6%A5%B5%E6%8E%A8%E5%8B%95%E4%BA%9E%E8%B3%87%E4%B8%AD%E5%BF%83-%E8%B3%B4%E6%B8%85%E5%BE%B7-%E5%85%88%E7%95%99%E8%B3%87-%E5%86%8D%E5%BC%95%E8%B3%87-%E6%8C%81%E7%BA%8C%E5%A3%AF%E5%A4%A7%E9%87%91%E8%9E%8D%E5%B8%82%E5%A0%B4-085800107.html
+- 事件6：買房撞上股市大跌！他月底要繳150萬工程款「錢都在ETF」　過來人建議：會怕就趕快賣
+  - 來源：Yahoo 台股；發布時間：2026-10-16T08:05:00Z；台北時間：2026-10-16 16:05
+  - 摘要：[FTNN新聞網]實習記者鄭巧薰／綜合報導股市投資除了追求報酬為，也得留意資金調度問題。近日一名網友在PTT發文表示，上個月才買下一間預售屋，月底就得繳約15...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%B2%B7%E6%88%BF%E6%92%9E%E4%B8%8A%E8%82%A1%E5%B8%82%E5%A4%A7%E8%B7%8C-%E4%BB%96%E6%9C%88%E5%BA%95%E8%A6%81%E7%B9%B3150%E8%90%AC%E5%B7%A5%E7%A8%8B%E6%AC%BE-%E9%8C%A2%E9%83%BD%E5%9C%A8etf-%E9%81%8E%E4%BE%86%E4%BA%BA%E5%BB%BA%E8%AD%B0-%E6%9C%83%E6%80%95%E5%B0%B1%E8%B6%95%E5%BF%AB%E8%B3%A3-080500364.html
 - 事件7：Federal Reserve Board announces termination of enforcement actions with Gardner Bancshares, Inc. and Small Business Bank
   - 來源：Federal Reserve；發布時間：Fri, 16 Oct 2026 15:00:00 GMT；台北時間：2026-10-16 23:00
   - 摘要：Federal Reserve Board announces termination of enforcement actions with Gardner Bancshares, Inc. and Small Business Bank
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm
-- 事件8：&#x2018;Some people did everything right': I lost my home in the Great Recession. I rent in my 50s. Why is that judged as failure?
-  - 來源：MarketWatch；發布時間：Sun, 18 Oct 2026 16:15:00 GMT；台北時間：2026-10-19 00:15
-  - 摘要：&#x201d;I earn $110,000 a year.&#x201d;
-  - 原文連結：https://www.marketwatch.com/story/i-earn-110-000-a-year-i-lost-my-home-in-the-great-recession-im-renting-in-my-50s-why-is-that-judged-as-failure-d1371d67?mod=mw_rss_topstories
-- 事件9：Top Wall Street analysts are bullish on the growth potential of these 3 stocks
-  - 來源：CNBC；發布時間：Sun, 18 Oct 2026 12:34:51 GMT；台北時間：2026-10-18 20:34
-  - 摘要：Amid fear of rate hikes and oil prices, investors can look past volatility and track Street analysts' stock picks with strong long-term growth potenti
-  - 原文連結：https://www.cnbc.com/2026/10/18/top-analysts-are-bullish-on-the-growth-potential-of-these-3-stocks.html
-- 事件10：Semiconductor market to remain solid ‘at least through next year,’ South Korea finance minister says
-  - 來源：CNBC；發布時間：Sun, 18 Oct 2026 11:10:44 GMT；台北時間：2026-10-18 19:10
-  - 摘要：South Korea's finance minister said semiconductor growth can last at least through 2027 as supply remains tight despite a global chip sell-off.
-  - 原文連結：https://www.cnbc.com/2026/10/17/south-korea-semiconductor-outlook-lee-hyoung-il.html
-- 事件11：These surprising stocks could be some of the biggest drivers of S&P 500 earnings growth
-  - 來源：MarketWatch；發布時間：Sun, 18 Oct 2026 14:00:00 GMT；台北時間：2026-10-18 22:00
-  - 摘要：Boeing, Meta and EchoStar recorded steep charges and expenses a year ago, which are expected to make this latest quarter&#x2019;s results look especia
-  - 原文連結：https://www.marketwatch.com/story/these-surprising-stocks-could-be-some-of-the-biggest-drivers-of-s-p-500-earnings-growth-ea073a07?mod=mw_rss_topstories
-- 事件12：Stocks are heading for a high-stakes showdown, as strong earnings collide with rising borrowing costs
-  - 來源：MarketWatch；發布時間：Sun, 18 Oct 2026 13:00:00 GMT；台北時間：2026-10-18 21:00
-  - 摘要：The idea that the AI trade has been mostly immune to rising bond yields isn&#x2019;t quite right, one strategist notes.
-  - 原文連結：https://www.marketwatch.com/story/stocks-are-heading-for-a-high-stakes-showdown-as-strong-earnings-collide-with-rising-borrowing-costs-6f8ea5b8?mod=mw_rss_topstories
+- 事件8：Analysis: Why a $2 trillion deficit and 5% Treasury yields are becoming America's biggest economic challenge
+  - 來源：CNBC；發布時間：Fri, 16 Oct 2026 22:33:05 GMT；台北時間：2026-10-17 06:33
+  - 摘要：Treasury yields above 5% are raising borrowing costs for households and the federal government, highlighting the challenge of financing $2 trillion de
+  - 原文連結：https://www.cnbc.com/2026/10/15/treasury-yields-deficit-national-debt-ai.html
+- 事件9：Fed's Warsh withholds rate signal, praises recent global tightening
+  - 來源：CNBC；發布時間：Fri, 16 Oct 2026 12:36:00 GMT；台北時間：2026-10-16 20:36
+  - 摘要：Warsh refrained from signaling another interest rate hike this month, pointed to a "synchronous tightening" by central banks in the fight against infl
+  - 原文連結：https://www.cnbc.com/2026/10/16/feds-warsh-says-ai-development-path-will-be-very-bumpy-.html
+- 事件10：The bond market shrugged off two inflation shocks. Why stock investors should pay attention.
+  - 來源：MarketWatch；發布時間：Fri, 16 Oct 2026 21:30:00 GMT；台北時間：2026-10-17 05:30
+  - 摘要：Hot CPI and PPI data should have pushed Treasury yields higher. Instead, bond buyers stepped in to suggest yields have risen high enough to become att
+  - 原文連結：https://www.marketwatch.com/story/the-bond-market-shrugged-off-two-inflation-shocks-why-stock-investors-should-pay-attention-5da4f771?mod=mw_rss_topstories
+- 事件11：Your Social Security check will rise an average of $75 a month &#x2014; will it be able to keep up with inflation?
+  - 來源：MarketWatch；發布時間：Fri, 16 Oct 2026 19:45:00 GMT；台北時間：2026-10-17 03:45
+  - 摘要：The 3.6% COLA for 2027 is aimed at helping more than 68 million beneficiaries keep pace with the cost of living
+  - 原文連結：https://www.marketwatch.com/story/social-securitys-cola-will-be-3-6-in-2027-as-inflation-persists-f7c9dff2?mod=mw_rss_topstories
+- 事件12：Brent oil touches $110 as Iran escalates Hormuz attacks, Ukraine vows to hit Russian refineries
+  - 來源：CNBC；發布時間：Fri, 16 Oct 2026 20:02:21 GMT；台北時間：2026-10-17 04:02
+  - 摘要：U.S. crude oil prices rose sharply Friday as Iran escalated attacks in the Strait of Hormuz this week.
+  - 原文連結：https://www.cnbc.com/2026/10/16/oil-price-today-iran-strait-hormuz-ukraine-russia.html
 
 
 ## 三、期貨
@@ -604,13 +604,12 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-16；資料時間：2026-10-19 10:20:59；時區：`Asia/Taipei`
+- 資料日期：2026-10-16；資料時間：2026-10-17 13:01:48；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 註記：同 T0 保護：2 格沿用前版有值（本次抓取缺失不覆寫）
-- 註記：同 T0 穩定：46 格新舊皆有值，沿用前版（不再靜默覆寫）
 - 未取得欄位 (0)：無
 - 註記：futures-price-after-hours 日期 2026-10-16 非今日 2026-10-19，視為無新節次，不採用
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
+- 註記：本次以「重新抓取覆蓋」寫入（原同 T0 舊值為日曆 T0+1 誤查之 10/15 夜盤節次；程式已修，查 2026-10-19 得 10/16 夜盤 47,269/47,380/46,107/46,140、量 41,046；官網 futDataDown 2026/10/19 盤後列同值）
 
 ## 五、資料來源、時間與完整性
 
@@ -622,13 +621,11 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`前值遞補 (DATA 2026-10-15；當日三源皆失敗；民間估算；官方無每日序列)`
+- margin_ratio：`wantgoo 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率未取得 (三源皆失敗；官方無每日序列)
-- 註記：融資維持率採前值遞補 (DATA 2026-10-15)，非 T0 2026-10-16
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
