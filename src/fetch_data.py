@@ -79,6 +79,168 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
         lines.append("| " + " | ".join(str(x) for x in r) + " |")
     return "\n".join(lines)
 
+# ── F11（2026-10-19）：protect 模式（該 T0 已有已發布報告）三項凍結 ──
+# 表格欄位早由 merge_same_t0 保護，但「表格以外」的內容會被新抓取整段覆寫：
+# 新聞是當天事件流（必然輪替）、標頭四行是已驗證報告的稽核憑據、維持率三源全滅時
+# spot.py 會退成「前值遞補」。三者任一被覆寫，已發布報告對新 DATA 就會驗證轉紅。
+# 以下純函式只在 protect=True 時套用；protect=False（無凍結對象）完全不動。
+
+_HEADER_FIELDS = ("報告日期", "資料產出時間", "產出者", "排定班別")
+
+
+def _freeze_header(old_text: str, new_text: str) -> str:
+    """protect 模式：標頭四行（報告日期／資料產出時間／產出者／排定班別）沿用前版值。
+
+    只改「本次文本已存在且前版有值」的行；前版缺行不補行（補行屬改寫）。
+    """
+    import re as _r
+    _pat = _r.compile(r"^(\s*-\s*(?:%s)：)(.*?)(\s*)$" % "|".join(_HEADER_FIELDS))
+    old_vals: dict = {}
+    for ln in old_text.split("\n"):
+        m = _pat.match(ln)
+        if m and m.group(2).strip():
+            old_vals.setdefault(m.group(1), m.group(2))
+    if not old_vals:
+        return new_text
+    out: list[str] = []
+    for ln in new_text.split("\n"):
+        m = _pat.match(ln)
+        if m and old_vals.get(m.group(1)):
+            ln = m.group(1) + old_vals[m.group(1)] + m.group(3)
+        out.append(ln)
+    return "\n".join(out)
+
+
+_NEWS_ANCHOR = "重大經濟數據、央行事件與重大市場新聞"
+
+
+def _news_span(lines: list[str]) -> tuple[int, int] | None:
+    """新聞區塊行號區間 [start, end)：標題行之後到下一個 '## ' 章節之前。"""
+    start = None
+    for i, ln in enumerate(lines):
+        s = ln.strip()
+        if s.startswith("###") and _NEWS_ANCHOR in s:
+            start = i + 1
+            break
+    if start is None:
+        return None
+    for j in range(start, len(lines)):
+        if lines[j].startswith("## "):
+            return (start, j)
+    return (start, len(lines))
+
+
+def _freeze_news(old_text: str, new_text: str) -> str:
+    """protect 模式：新聞區塊整段沿用前版（本次抓到的新聞丟棄）。
+
+    新聞是事件流不是 T0 快照，同 T0 重跑必然換成當天新聞，等於改寫已發布報告
+    所引用的內容（事件 1-12 的標題／時間／連結會整批位移）。
+    """
+    ol, nl = old_text.split("\n"), new_text.split("\n")
+    os_, ns = _news_span(ol), _news_span(nl)
+    if not os_ or not ns:
+        return new_text
+    seg = ol[os_[0]:os_[1]]
+    if not any(x.strip() for x in seg):
+        return new_text
+    return "\n".join(nl[:ns[0]] + seg + nl[ns[1]:])
+
+
+def _freeze_margin_ratio(old_text: str, new_text: str) -> str:
+    """protect 模式：維持率不得降級成「前值遞補」。
+
+    三源全滅時 spot.py 會取前一份 DATA 的值並在來源欄標「前值遞補」；表格列本身
+    已由 _fb 規則還原前版值，但第五章的 `- margin_ratio：` 來源行與兩條失敗註記
+    仍會外洩，把 DATA 的口徑降級。此處把來源行還原前版並丟棄本次失敗註記。
+    前版本來就是遞補值時不動（避免把舊的降級洗成新的）。
+    """
+    import re as _r
+    _pat = _r.compile(r"^(\s*-\s*margin_ratio：)(.*?)(\s*)$")
+
+    def _val(text: str) -> str | None:
+        for ln in text.split("\n"):
+            m = _pat.match(ln)
+            if m:
+                return m.group(2)
+        return None
+
+    ov, nv = _val(old_text), _val(new_text)
+    if not ov or not nv or "遞補" not in nv or "遞補" in ov:
+        return new_text
+    _drop = ("- 註記：融資維持率未取得", "- 註記：融資維持率採前值遞補")
+    out: list[str] = []
+    for ln in new_text.split("\n"):
+        m = _pat.match(ln)
+        if m:
+            ln = m.group(1) + ov + m.group(3)
+        elif ln.strip().startswith(_drop):
+            continue  # 本次三源失敗的說明與還原後的真值矛盾
+        out.append(ln)
+    return "\n".join(out)
+
+
+_SRC_TIME_PAT = r"^(\s*-\s*資料日期：.*?；資料時間：)([^；]*)(；.*)$"
+
+
+def _freeze_src_time(old_text: str, new_text: str) -> str:
+    """protect 模式（Case A 同盤別重跑）：`四.資料來源` 的資料時間沿用前版。
+
+    `- 資料日期：…；資料時間：<本次抓取時間>` 的「資料時間」就是本次抓取時間，
+    性質與標頭的「資料產出時間」相同。若不凍結，同盤別重跑必然逐字不同 →
+    sha 漂移＋無意義 commit，main() 的「不寫檔」等於白做。
+    只換時間值（資料日期／時區等其餘部分不動）；前版無此行不補行（補行屬改寫）。
+    """
+    import re as _r
+    _pat = _r.compile(_SRC_TIME_PAT)
+    old_t: str | None = None
+    for ln in old_text.split("\n"):
+        m = _pat.match(ln)
+        if m and m.group(2).strip():
+            old_t = m.group(2)
+            break
+    if old_t is None:
+        return new_text
+    out: list[str] = []
+    for ln in new_text.split("\n"):
+        m = _pat.match(ln)
+        if m:
+            ln = m.group(1) + old_t + m.group(3)
+        out.append(ln)
+    return "\n".join(out)
+
+
+_SESSION_RANK = {"日盤": 1, "全日": 2}
+
+
+def _old_session(old_text: str) -> str:
+    """由舊檔自身推得盤別；認不出回 ""（呼叫端須保守視為同盤別 → 走凍結）。
+
+    優先讀標頭 `- 產出盤別：`；該行缺漏時退回 `四.資料來源` 區的
+    `- 日盤／夜盤標記：`（含夜盤 → 全日，僅日盤 → 日盤）。
+    """
+    import re as _r
+    m = _r.search(r"(?m)^- 產出盤別：`?(\S+?)`?\s*$", old_text)
+    if m:
+        return m.group(1)
+    m = _r.search(r"(?m)^- 日盤／夜盤標記：(.+)$", old_text)
+    if m:
+        return "全日" if "夜盤" in m.group(1) else "日盤"
+    return ""
+
+
+def _is_session_upgrade(old_text: str, new_session: str) -> bool:
+    """本次是否盤別升級（Case B：前版日盤 → 本次全日，或任何更高盤別/更多節次）。
+
+    Case B 是每日盤前報告的正規路徑（週二早上的報告＝週一全日＋週二盤前新聞），
+    新聞必須刷新，否則每天早上的報告永遠只拿到前一晚的新聞。
+    前版或本次盤別認不出 → False（保守、安全失敗，走 Case A 凍結）。
+    """
+    o, n = _old_session(old_text), new_session
+    if o not in _SESSION_RANK or n not in _SESSION_RANK:
+        return False
+    return _SESSION_RANK[n] > _SESSION_RANK[o]
+
+
 def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                   protect: bool = True) -> tuple[str, int]:
     """同 T0 保護：次日晨間全日刷新會覆寫同檔，若本次某格缺失而前版同位有值，沿用舊格。
@@ -100,17 +262,33 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
       人工明示）：取消「新舊皆有實值沿用舊值」，改以本次新抓取覆蓋並計數於
       「同 T0 覆蓋」註記；MISSING 填空、_fb 遞補取舊、標籤格永不覆寫、
       盤別規則全部照舊。
+    - protect=True 時另在表格比對之前凍結表格以外的內容（F11，2026-10-19：
+      已發布報告的 T0 被重跑時 DATA 不得被破壞）：
+      · 維持率來源行：兩種情境都凍結（它是 T0 的數值，不是事件流，永不讓
+        「前值遞補」降級覆蓋前版）→ _freeze_margin_ratio。
+      · 同盤別重跑（Case A：週五全日已發布，週一早上又是同 T0 同盤別）→ 新聞
+        凍結沿用前版（否則被換成週一的新聞）、標頭四行凍結、資料時間行凍結。
+      · 盤別升級（Case B：前版日盤 → 本次全日）→ 新聞與標頭、資料時間都允許
+        更新；這是每日盤前報告的正規路徑（週二早上的報告＝週一全日＋週二盤前
+        新聞），凍結等於讓每天早上的報告只拿到前一晚的新聞。
+      判斷不出前版盤別時一律保守走 Case A（凍結）；詳見 _is_session_upgrade。
     回傳 (合併後文本, 填入格數)。
     """
     import re as _re
-    _m0 = _re.search(r"(?m)^- 產出盤別：`?(\S+?)`?\s*$", old_text)
-    old_session = _m0.group(1) if _m0 else ""
+    old_session = _old_session(old_text)
     if old_session == "日盤" and new_session == "全日":
         prefer_new = True
     elif old_session == "全日" and new_session == "日盤":
         return old_text, 0
     else:
         prefer_new = False
+
+    if protect:  # F11：表格以外的三塊（標頭／新聞／維持率來源）也沿用前版
+        new_text = _freeze_margin_ratio(old_text, new_text)  # 維持率：兩種情境都凍結
+        if not _is_session_upgrade(old_text, new_session):
+            new_text = _freeze_header(old_text, new_text)
+            new_text = _freeze_news(old_text, new_text)
+            new_text = _freeze_src_time(old_text, new_text)
 
     def _parse(text: str) -> tuple[list[str], dict]:
         import re as _re2
@@ -1039,10 +1217,13 @@ def main() -> None:
         else:
             print("[INFO] 同 T0 覆蓋模式：尚無報告，以本次抓取為準")
         try:
-            new_text, _filled = merge_same_t0(
-                out.read_text(encoding="utf-8"), new_text, session, protect=protect)
+            old_text = out.read_text(encoding="utf-8")
+            new_text, _filled = merge_same_t0(old_text, new_text, session, protect=protect)
             if _filled:
                 print(f"[INFO] 同 T0 保護：沿用前版 {_filled} 格有值")
+            if protect and new_text == old_text:
+                print("[SKIP] 同 T0 保護：合併結果與前版完全相同，不寫檔（DATA sha 不變）")
+                return
         except Exception as e:  # noqa: BLE001
             print(f"[WARN] 同 T0 合併失敗，採本次全新寫入：{e}")
     out.write_text(new_text, encoding="utf-8")

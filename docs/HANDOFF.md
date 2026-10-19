@@ -93,3 +93,11 @@ PASS → 更新 `reports/latest.json` → commit push（新 fix 走新 commit，
 - 2026-10-16 午後第三方稽核兩輪全過（OPEN-1 情境同步、OPEN-2 因果中性化＋第二輪 OI 表殘留），backlog 五項不擋發布；5+1 commits 已推。
 - 2026-10-16 傍晚備援路徑施工（稽核規格，用戶已確認晚上有人跑，A 完整）：`--slot` 釘死盤別/T0（t0.slot_params 純函式，不讀牆鐘；open.py 用顯式日期推導＋可覆寫；daily_fetch 轉傳＋rebase/retry；fetch_data 寫 產出者/排定班別 標頭；yml 加 concurrency；單測擴至 19 斷言；verify 無回歸）。自動監控不做（維持人工觸發；稽核已撤回）。未 push 待複核。
 - 2026-10-16 夜備援路徑＋OPEN-3 稽核全過已推：C1/C2 時另有 bot 改寫併入史見上；本輪 4b5d7fd（slot/標記/rebase）＋b3c05c6（OPEN-3 ISO＋yml slot＋T8）落地。待觀察：下一班 bot DATA 標頭應出現 產出者：actions＋正確排定班別。
+
+## 同 T0 保護 Case A/B（2026-10-19，F11）
+- **protect 模式**（該 T0 已有已發布報告）下，**維持率來源行**在兩種情境都不得降級為「前值遞補」：**Case A 同盤別重跑** 另凍結新聞區塊、標頭四行、`資料日期…資料時間` 行；**Case B 盤別升級（日盤→全日）** 之新聞／標頭／資料時間照更新；**盤別認不出來 → 保守走 Case A**。合併後與前版逐字相同則不寫檔。
+- **事故處理原則**：已發布報告不得為了配合被改寫的 DATA 而修改；**應 revert 那筆 DATA commit**（2026-10-19 `094efcd` → `0155dc7` 即此例）。
+- **已知取捨**：
+  1. F1 快照 memoize 是**進程內**的（長駐程序需自行設 TTL）。
+  2. F7 三源並行在 wantgoo 成功時，仍多打 2 個備援請求。
+  3. F8 內文預取最多多打 1 個請求／清單。
