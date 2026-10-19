@@ -2,7 +2,7 @@
 
 ## 角色
 - `supervisor`（primary）：模型 `opencode/deepseek-v4.1-flash-free`。只讀稽核／調度，**不改檔**（`edit: deny`）；任何檔案修改一律派給 `worker`。
-- `worker`（subagent）：模型 `opencode/big-pickle`。唯一動檔者，`edit: allow`、`bash: ask`。
+- `worker`（subagent）：模型 `opencode/space-bunny-free`（備援 `opencode/deepseek-v4.1-flash-free`）。唯一動檔者，`edit: allow`、`bash: ask`。
 
 ## 位置
 - `.opencode/agents/supervisor.md`
@@ -26,6 +26,7 @@
 - supervisor 的 `bash`：既定指令（open/verify/numcheck/test/check_report 與 git 唯讀）已放行，其餘仍需人工核可。
 - **免費 SKU 會被撤**：實例 2026-10-17，Zen 下架 `muse-spark-1.3-contributor-free`，worker 派工直接報 `Model ... has been deprecated`。解法：改該 agent 檔的 `model:` 一行 → **完全重啟**（見上「生效條件」）。
 - 2026-10-17：worker 改用 `opencode/big-pickle`；備援 `opencode/space-bunny-free`（ctx 1M／out 512k）。原 `opencode/glm-5.3-flash-free` 在單次 8,000~13,000 字長文生成連續空回 2 次（該 SKU out 上限僅 32k）；`minimax-m3-free` 曾評估但否決（棄用、命短、知識舊）。**換 model 需完全重啟 opencode 才生效**（見上「生效條件」）；重啟後先跑一次「3,000~4,000 字探針」確認輸出非空，再上正式日。（本機快取對 `big-pickle` 標示 out=32k，該欄位對新代號未必準，仍以 runtime 為準。）
+- 2026-10-17（同日第二次切換）：worker 主模型改為 `opencode/space-bunny-free`（ctx 1M／out 512k），備援 `opencode/deepseek-v4.1-flash-free`（使用者指定；與 supervisor 同一 SKU，out 上限 32k，故僅列備援）。切換理由：`big-pickle` 格式／遵令合格但**速度不合格**——實測單次 3,597 字元耗時約 12 分 15 秒。未執行多模型 bake-off（使用者決定直接切換）。
 - 判斷模型能不能用**以 runtime 為準**：opencode 本機模型目錄有快取（`~/.cache/opencode/models.json`），UI 選單可能仍列出已下架的模型；實際呼叫失敗才是事實。
 
 ## 派工模板與驗收白名單（2026-10-17）
