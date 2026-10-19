@@ -151,21 +151,31 @@ def _istock(t0: str, timeout: int = 30) -> dict:
 # ---------- 對外介面 ----------
 
 def get(t0: str, timeout: int = 30) -> dict:
-    """回傳 {ratio(%), date, ok, source}。依序嘗試 wantgoo → stockintelli → istock。"""
-    # 1) 玩股網 API
-    result = _wantgoo(t0, timeout=min(timeout, 20))
-    if result["ok"]:
-        result["source"] = "wantgoo"
-        return result
-    # 2) 股市智投 (SSR，通常有當天資料)
+    """回傳 {ratio(%), date, ok, source}。優先序 wantgoo → stockintelli → istock。
+
+    F7（2026-10-19）：三源改並行（max_workers=3）各自抓完再照原優先序挑選，
+    選用結果、source 標記（istock 失敗時回傳不含 source 鍵）、失敗訊息與
+    例外處理語意全部照舊；只是把「前一個失敗才打下一個」的順序等待改成同時等待。
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=3) as ex:
+        f_wg = ex.submit(_wantgoo, t0, timeout=min(timeout, 20))
+        f_si = ex.submit(_stockintelli, t0, timeout=min(timeout, 15))
+        f_is = ex.submit(_istock, t0, timeout=timeout)
+        # 1) 玩股網 API
+        wg = f_wg.result()
+        # 2) 股市智投 (SSR，通常有當天資料)
+        si = f_si.result()
+        # 3) 愛玩股 istock.tw
+        ist = f_is.result()
+    if wg["ok"]:
+        wg["source"] = "wantgoo"
+        return wg
     print("[INFO] wantgoo 維持率不可用，嘗試 stockintelli")
-    result = _stockintelli(t0, timeout=min(timeout, 15))
-    if result["ok"]:
-        result["source"] = "stockintelli"
-        return result
-    # 3) 愛玩股 istock.tw
+    if si["ok"]:
+        si["source"] = "stockintelli"
+        return si
     print("[INFO] stockintelli 維持率不可用，嘗試 istock 備援")
-    result = _istock(t0, timeout=timeout)
-    if result["ok"]:
-        result["source"] = "istock"
-    return result
+    if ist["ok"]:
+        ist["source"] = "istock"
+    return ist

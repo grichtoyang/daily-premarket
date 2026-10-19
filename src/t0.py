@@ -15,6 +15,10 @@ HOL_URL = "https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule"
 UA = {"User-Agent": "daily-pre-market-analysis/1.0", "accept": "application/json"}
 
 _LAST_CAL_ERROR: str = ""
+# F2（2026-10-19）：load_closed 成功結果 memoize。同一份年度休市日曆在一次抓取中
+# 會被重複請求（taifex._next_trading_day 逐年載入 + t0.resolve + slot_params），
+# 但失敗不得快取，否則一次網路故障會把該年份永久釘成空日曆（退週末判斷）。
+_CLOSED_CACHE: dict[int, set[str]] = {}
 
 
 def _roc_to_iso(roc: str) -> str:
@@ -26,8 +30,13 @@ def _roc_to_iso(roc: str) -> str:
 
 def load_closed(year: int, timeout: int = 20) -> set[str]:
     """回傳該年休市日 ISO set。API 失敗回空集 (退為週末判斷)。
-    失敗原因記在 _LAST_CAL_ERROR，resolve() 轉為 cal_fail 大聲揭露。"""
+    失敗原因記在 _LAST_CAL_ERROR，resolve() 轉為 cal_fail 大聲揭露。
+    F2：同 year 命中快取時直接回傳（回傳副本，維持「每次拿到新 set」的舊語意），
+    並同樣把 _LAST_CAL_ERROR 清空——否則前一次失敗的錯誤字串會外洩到這次呼叫者。"""
     global _LAST_CAL_ERROR
+    if year in _CLOSED_CACHE:
+        _LAST_CAL_ERROR = ""
+        return set(_CLOSED_CACHE[year])
     try:
         r = requests.get(HOL_URL, headers=UA, timeout=timeout)
         r.raise_for_status()
@@ -40,6 +49,7 @@ def load_closed(year: int, timeout: int = 20) -> set[str]:
             if len(d) == 10 and d.startswith(str(year)):
                 closed.add(d)
         _LAST_CAL_ERROR = ""
+        _CLOSED_CACHE[year] = closed
         return closed
     except Exception as e:  # noqa: BLE001
         _LAST_CAL_ERROR = str(e)[:160]

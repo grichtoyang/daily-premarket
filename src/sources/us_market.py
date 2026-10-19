@@ -50,8 +50,18 @@ def quote(sym: str) -> dict:
     return out
 
 def get_all() -> dict:
-    """{group: [(name, quote)]}。"""
-    return {g: [(name, quote(sym)) for name, sym in items] for g, items in GROUPS.items()}
+    """{group: [(name, quote)]}。
+
+    F6（2026-10-19）：25 檔改 ThreadPoolExecutor(max_workers=5) 並行抓取。
+    executor.map 保序回傳，故輸出仍是 GROUPS 定義順序、組內仍是定義順序，
+    逐欄位與逐列順序與改前完全一致（quote() 本身無共享狀態，只讀 requests）。
+    """
+    from concurrent.futures import ThreadPoolExecutor
+    out: dict = {}
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        for g, items in GROUPS.items():
+            out[g] = list(ex.map(lambda it: (it[0], quote(it[1])), items))
+    return out
 
 def ohlc(sym: str) -> dict:
     """最近一根日K的 open/high/low/close/date。失敗回 ok=False。"""

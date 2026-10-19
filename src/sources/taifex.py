@@ -12,6 +12,7 @@ https://taifex.grichtoyang.workers.dev/
 純數據整理，不做分析判斷。
 """
 from __future__ import annotations
+import sys
 import requests
 from src.utils import HEADERS
 
@@ -23,6 +24,12 @@ FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional
             "options-institutional-after-hours", "options-after-hours",
             "options-day-call-put"]
 INST_ZH = {"foreign": "外資", "investment_trust": "投信", "dealer": "自營商"}
+# F1（2026-10-19）：快照 bundle memoize。build() 與 snap_top10_change() 取的是同一份
+# T-1 快照（報表多處引用），同一進程內重複請求同一 (proxy, date) 只快取成功結果；
+# 失敗仍每次重抓（不把一次上游故障釘成永久 unavailable）。
+# 呼叫端只讀不寫（build 取 .get/.items、snap_top10_change 複製 list 後才 sort），
+# 故直接回傳同一物件，不做昂貴的深拷貝。
+_SNAP_CACHE: dict[tuple, dict] = {}
 
 def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
     import time
@@ -36,16 +43,36 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
                     return j
                 # 200 但上游暫時無資料 → 有限重試一次後放棄
                 if attempt == 0:
+                    print(f"[INFO] taifex {ep} ok!=true/無資料 (try {attempt + 1})，4 秒後重試",
+                          file=sys.stderr, flush=True)
                     time.sleep(4)
                     continue
+                print(f"[INFO] taifex {ep} 仍無資料，放棄", file=sys.stderr, flush=True)
                 return None
-            if r.status_code in (429, 502, 503):
+            # F3-a（2026-10-19）：退避只留給真的會自己好的狀況（限流 429／上游忙碌 503／
+            # read timeout）；502 上游閘道錯誤直接重試，不再每次固定睡 3 秒。
+            # 重試次數（2 次）與「失敗即 None」的語意完全不變。
+            if r.status_code in (429, 503):
+                print(f"[INFO] taifex {ep} HTTP {r.status_code} (try {attempt + 1})，退避 3 秒後重試",
+                      file=sys.stderr, flush=True)
                 time.sleep(3)
                 continue
+            if r.status_code == 502:
+                print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，直接重試",
+                      file=sys.stderr, flush=True)
+                continue
+            print(f"[INFO] taifex {ep} HTTP {r.status_code}，放棄", file=sys.stderr, flush=True)
             return None
+        except requests.exceptions.Timeout as e:
+            print(f"[INFO] taifex {ep} read timeout (try {attempt + 1})：{e}",
+                  file=sys.stderr, flush=True)
+            if attempt == 0:
+                time.sleep(3)
         except Exception as e:  # noqa: BLE001
-            print(f"[WARN] taifex {ep} failed (try {attempt + 1}): {e}")
-            time.sleep(2)
+            print(f"[WARN] taifex {ep} failed (try {attempt + 1}): {e}",
+                  file=sys.stderr, flush=True)
+            if attempt == 0:
+                time.sleep(2)
     return None
 
 def _rows(payload: dict | None) -> list:
@@ -195,9 +222,13 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
 def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
     """讀 worker 快照 (V1.4+ /snapshots/bundle)。未部署/無資料回 None。
     日盤部位類僅當 collected_at 與標示日期同日才可信 (cron 當日收盤後收集；
-    手動回填舊日期時其無日期源實為抓取當下值，不可採用)。"""
+    手動回填舊日期時其無日期源實為抓取當下值，不可採用)。
+    F1：同 (proxy, date) 命中 _SNAP_CACHE 直接回傳（只快取成功結果）。"""
     import os, time
     base = os.getenv("TAIFEX_PROXY_BASE_URL", BASE).rstrip("/")
+    _ck = (base, date)
+    if _ck in _SNAP_CACHE:
+        return _SNAP_CACHE[_ck]
     for _try in range(2):
         try:
             r = requests.get(f"{base}/snapshots/bundle", params={"date": date},
@@ -211,7 +242,9 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
                 b = j["data"]
                 inner = b.get("data") if isinstance(b.get("data"), dict) else b
                 trust_pos = str(b.get("collected_at", ""))[:10] == j.get("date")
-                return {"date": j.get("date"), "data": inner, "trust_pos": trust_pos}
+                _res = {"date": j.get("date"), "data": inner, "trust_pos": trust_pos}
+                _SNAP_CACHE[_ck] = _res
+                return _res
             print(f"[WARN] snapshot ok!=true (try {_try + 1})")
             time.sleep(5)
         except Exception as e:  # noqa: BLE001
