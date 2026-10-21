@@ -34,7 +34,8 @@
    - `## 附錄A`、`## 附錄B` 用兩井號。
    - §六 必須是 `# 六、`（`numcheck._split_sec6()` 只認這個前綴，寫成 `## 六、` 會讓 §6 檢查整段失效）。
 4. **維持率**：若為前值遞補，內文與表格註記都要寫「前值遞補（DATA <日期>）」；`unavailable` 照留，不得補值。
-5. **篇幅**：8,000–13,000 字（不含空白）。
+5. **篇幅**：約 8,000–20,000 字（不含空白；表格與出處不計入目標，僅供觀測）。
+   **一次成稿**：不得為了字數重寫、壓縮或刪減表格／出處；寫完就交，字數超出只在回報註明即可。
 6. **另更新** `reports/latest.json`，只 4 欄、`report_date` 用 8 碼無破折號：
    `{"generated_at": "<ISO8601+08:00>", "report_date": "{T0}", "report_path": "{REPORT}", "status": "completed"}`
 7. **收尾必跑**：`python scripts/gate.py --t0 {T0} [--prev <prev>]`，須見 `GATE_PASS`（exit 0）。FAIL 就照錯誤訊息修，不要改 gate／numcheck／check_report。

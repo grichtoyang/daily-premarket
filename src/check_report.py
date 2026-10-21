@@ -133,11 +133,11 @@ def check(data: str, report: str) -> tuple[list[str], list[str]]:
     if len(scen) < 2:
         errs.append(f"scenarios 過少 ({len(scen)} 列，需>=2)")
 
-    # 4. 字數（正文 8000~13000，不含附錄；僅警告，表格多時易超）
+    # 4. 字數（正文 6000~20000，不含附錄；僅警告，表格多時易超；不得為字數重寫／壓縮）
     body = report.split("附錄A")[0] if "附錄A" in report else report
     n = len(re.sub(r"\s", "", body))
-    if not (6000 <= n <= 15000):
-        warns.append(f"正文字數 {n}（模板 8000~13000，供參考）")
+    if not (6000 <= n <= 20000):
+        warns.append(f"正文字數 {n}（模板 8000~20000，供參考；勿為字數重寫）")
 
     # 5. 整數千分位抽查（警告性：DATA 沒有的整數可能是臆測或衍生目標價，人工複核）
     def itoks(s: str) -> set[str]:
