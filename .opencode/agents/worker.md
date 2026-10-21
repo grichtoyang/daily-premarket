@@ -6,7 +6,7 @@ temperature: 0.1
 permission:
   edit: allow
   bash:
-    "*": ask
+    "*": allow
     "python scripts/verify.py*": allow
     "python scripts/numcheck.py*": allow
     "python scripts/test_same_t0.py*": allow
