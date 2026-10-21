@@ -1,7 +1,7 @@
 ---
 description: 受 supervisor 指派執行檔案修改、實作與自測的實作子代理。可編輯檔案與執行驗證指令；不自行擴大範圍。
 mode: subagent
-model: opencode/minimax-m3.1-flash-free
+model: opencode/deepseek-v4.1-flash-free
 temperature: 0.1
 permission:
   edit: allow
