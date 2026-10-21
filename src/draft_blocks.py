@@ -560,6 +560,63 @@ def _vix_block(data: str) -> list[str]:
             f"| 台指夜盤振幅 | {amp if amp else '—'} |"]
 
 
+# §2.x／§3.x 照貼章節（已 grep 核對 DATA 實際標題；不存在者不列）
+_SPOT_SECTIONS = ("台股大盤行情", "上市公司", "上櫃公司", "三大法人現貨買賣超",
+                  "融資融券", "借券資料", "市場成交結構")
+_INTL_SECTIONS = ("美股指數", "亞洲主要指數", "美股指數期貨", "美國國債殖利率",
+                  "主要匯率", "台灣相關ADR", "原油黃金Bitcoin")
+
+
+def _has_section(data: str, section: str) -> bool:
+    """DATA 是否確有該標題（沒有就不產佔位行）。"""
+    return bool(re.search(rf"(?m)^#+ .*?{re.escape(section)}.*?$", data))
+
+
+def _section_tables(data: str, sections) -> list[str]:
+    """§2.x／§3.x 全表照貼：每節前加 `#### 章節名`，缺節直接略過。"""
+    lines: list[str] = []
+    for sec in sections:
+        if not _has_section(data, sec):
+            continue
+        lines.append(f"#### {sec}")
+        lines.extend(_passthrough(data, sec))
+        lines.append("")
+    return lines
+
+
+def _levels_table(data: str) -> list[str]:
+    """§1.3 關鍵價位表：levels 預填搬移排版＋facts 八列，不新增計算。"""
+    lines = ["| 項目 | 價位 | 說明 |", "|---|---|---|"]
+    for row in _levels_filled(data):
+        parts = row.split("|")
+        if len(parts) < 3 or parts[0] == "白話":
+            continue
+        lines.append(f"| {parts[0]} | {parts[1]} | {parts[2]} |")
+    F = _facts(data)
+    for lbl, key in (("Call Wall", "CW"), ("Put Wall", "PW"),
+                     ("Gamma Wall", "GW"), ("Gamma Flip", "GF"),
+                     ("Max Pain", "MP"), ("加權收盤", "加權收"),
+                     ("台指期日收", "日收"), ("台指夜盤收", "夜收")):
+        lines.append(f"| {lbl} | {F[key]} | — |")
+    return lines
+
+
+def _data_limits(data: str) -> list[str]:
+    """§11 資料限制條列（逐行掃 DATA 原文，附行號；各類上限見參數）。"""
+    rows = data.replace("\r\n", "\n").split("\n")
+    groups = (("未取得欄位", ("未取得欄位",), None),
+              ("unavailable", ("unavailable",), 15),
+              ("前值遞補", ("前值遞補",), 10),
+              ("同 T0／非今日／不採用", ("同 T0", "非今日", "不採用"), 10))
+    lines: list[str] = []
+    for title, pats, cap in groups:
+        hits = [(i + 1, l.strip()) for i, l in enumerate(rows)
+                if any(p in l for p in pats)]
+        lines.append(f"**{title}**")
+        lines.extend(f"- L{n}：{t}" for n, t in (hits if cap is None else hits[:cap]))
+    return lines
+
+
 def build(data_path: str) -> str:
     data = Path(data_path).read_text(encoding="utf-8")
     L: list[str] = []
@@ -635,6 +692,18 @@ def build(data_path: str) -> str:
     A("")
     A("# DRAFT-§4 事件清單（只寫清單內事件，不憑記憶加；數字抄摘要原文）")
     A("\n".join(_news_list(data)))
+    A("")
+    A("# DRAFT-§1.3 關鍵價位表（貼進 1.3，數值照貼；白話手寫）")
+    A("\n".join(_levels_table(data)))
+    A("")
+    A("# DRAFT-§2.x 現貨全表（照貼進 2.1–2.6，下加解讀）")
+    A("\n".join(_section_tables(data, _SPOT_SECTIONS)))
+    A("")
+    A("# DRAFT-§3.x 國際市場全表（照貼進 3.1–3.7，下加解讀）")
+    A("\n".join(_section_tables(data, _INTL_SECTIONS)))
+    A("")
+    A("# DRAFT-§11 資料限制（照貼進 11，逐條核對後保留／刪除）")
+    A("\n".join(_data_limits(data)))
     return "\n".join(L) + "\n"
 
 
