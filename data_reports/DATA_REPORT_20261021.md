@@ -1,12 +1,12 @@
 # DATA_REPORT_20261021
 
-- 報告日期：`2026-10-21`
+- 報告日期：`2026-10-22`
 - T0 交易日期：`2026-10-21`
-- 資料產出時間：`2026-10-21 23:48:46`
+- 資料產出時間：`2026-10-22 07:24:52`
 - 時區：`Asia/Taipei`
-- 產出盤別：`日盤`
+- 產出盤別：`全日`
 - 產出者：`actions`
-- 排定班別：`evening`
+- 排定班別：`manual`
 
 ---
 
@@ -82,7 +82,7 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 借券餘額 | 4,578,930 | 張 | TWSE TWT93U + TPEX margin_sbl |
+| 借券餘額 | 4,570,871 | 張 | TWSE TWT93U + TPEX margin_sbl |
 | 借券賣出餘額 | 38,484 | 張 | TWSE TWT93U + TPEX margin_sbl |
 | 借券賣出增減 | -600 | 張 | TWSE TWT93U + TPEX margin_sbl |
 
@@ -104,12 +104,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,754.09 | 41.52 | +0.54 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 26,729.19 | 304.37 | +1.15 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 29,861.40 | 371.12 | +1.26 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 52,647.30 | 151.42 | +0.29 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 11,518.58 | 234.77 | +2.08 | Yahoo Finance Chart API |
-| VIX | ^VIX | 16.58 | -0.73 | -4.22 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,757.17 | 44.60 | +0.58 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 26,702.86 | 278.04 | +1.05 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 29,822.52 | 332.24 | +1.13 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 52,856.09 | 360.21 | +0.69 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 11,505.56 | 221.75 | +1.97 | Yahoo Finance Chart API |
+| VIX | ^VIX | 16.68 | -0.63 | -3.64 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -119,9 +119,9 @@
 |---|---|---|---|---|---|
 | 日經225 | ^N225 | 64,075.42 | -841.28 | -1.30 | Yahoo Finance Chart API |
 | 韓國KOSPI | ^KS11 | 5,552.74 | -215.27 | -3.73 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 23,651.87 | -215.87 | -0.90 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,713.03 | -22.34 | -0.60 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 11,704.35 | -96.94 | -0.82 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 23,867.74 | -319.09 | -1.32 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,735.37 | 4.45 | +0.12 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 11,801.29 | -16.13 | -0.14 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,794.00 | 38.75 | +0.50 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 30,031.75 | 356.50 | +1.20 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,873.00 | 154.00 | +0.29 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,797.60 | 10.70 | +0.38 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,771.50 | 16.25 | +0.21 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,830.00 | 154.75 | +0.52 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,937.00 | 218.00 | +0.41 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,782.20 | -4.70 | -0.17 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -140,9 +140,9 @@
 
 | 項目 | API 資料欄位／識別 | 殖利率 | 日變化 | 資料來源 |
 |---|---|---|---|---|
-| 美國 2 年期殖利率 | 2 Yr | 4.79 | 0.02 | U.S. Treasury yield.xml (網頁備援) |
-| 美國 10 年期殖利率 | 10 Yr | 5.11 | -0.01 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.42 | -0.01 | Yahoo Finance (備援) |
+| 美國 2 年期殖利率 | 2 Yr | 4.81 | 0.02 | U.S. Treasury yield.xml (網頁備援) |
+| 美國 10 年期殖利率 | 10 Yr | 5.15 | 0.03 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.44 | 0.01 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.42 | -0.06 | -0.19 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.78 | 0.05 | +0.05 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 158.12 | -0.40 | -0.25 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,327.21 | -2.79 | -0.21 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.39 | -0.19 | -0.57 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.69 | -0.04 | -0.04 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 158.15 | -0.12 | -0.07 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,325.94 | 2.00 | +0.15 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -161,9 +161,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 427.99 | 2.91 | +0.68 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 19.86 | 0.19 | +0.99 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 42.54 | 1.77 | +4.35 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 431.89 | 6.81 | +1.60 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 19.82 | 0.15 | +0.76 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 42.41 | 1.64 | +4.02 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -171,9 +171,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 96.84 | -4.95 | -4.86 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,156.70 | 14.10 | +0.34 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 84,382.56 | 1,441.56 | +1.74 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 97.80 | -3.99 | -3.92 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,145.00 | 2.40 | +0.06 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 84,290.01 | 1,349.01 | +1.63 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -207,26 +207,26 @@
   - 來源：Federal Reserve；發布時間：Fri, 16 Oct 2026 15:00:00 GMT；台北時間：2026-10-16 23:00
   - 摘要：Federal Reserve Board announces termination of enforcement actions with Gardner Bancshares, Inc. and Small Business Bank
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm
-- 事件8：Housing is flashing warning signs just as the Fed weighs more interest rate hikes
+- 事件8：CoreWeave’s market confidence erodes as bond yields spike and stock sinks
+  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 22:50:35 GMT；台北時間：2026-10-22 06:50
+  - 摘要：CoreWeave shares are down 29% in October, and the spreads in its credit default swaps are widening.
+  - 原文連結：https://www.cnbc.com/2026/10/21/coreweaves-market-confidence-erodes-as-bond-yields-spike-stock-sinks.html
+- 事件9：Housing is flashing warning signs just as the Fed weighs more interest rate hikes
   - 來源：CNBC；發布時間：Wed, 21 Oct 2026 11:20:58 GMT；台北時間：2026-10-21 19:20
   - 摘要：Housing data deteriorated further in September, according to separate reports Tuesday.
   - 原文連結：https://www.cnbc.com/2026/10/20/housing-mortgage-rates-real-estate-federal-reserve.html
-- 事件9：French 10-year bond yield hits 5% for first time since 2002 amid unrest
-  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 10:40:01 GMT；台北時間：2026-10-21 18:40
-  - 摘要：France is grappling with intense pressure to slash spending, while trying to quell violent protests demanding the government spends more.
-  - 原文連結：https://www.cnbc.com/2026/10/21/france-protests-bonds-debt.html
-- 事件10：Goldman Sachs, JPMorgan and Morgan Stanley are dominating the AI stock boom. Here's their edge
+- 事件10：Apple's iPhone Duo in short supply — plus, the 2 stocks fueling an AI rebound
+  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 19:47:38 GMT；台北時間：2026-10-22 03:47
+  - 摘要：Every weekday, the Investing Club releases the Homestretch; an actionable afternoon update just in time for the last hour of trading.
+  - 原文連結：https://www.cnbc.com/investingclub/2026/10/21/apples-iphone-duo-in-short-supply-plus-2-stocks-fueling-an-ai-rebound.html
+- 事件11：Expanding AI trade is turning safety stocks into a 'Texas hedge'
+  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 17:14:14 GMT；台北時間：2026-10-22 01:14
+  - 摘要：The growing AI trade is infiltrating traditionally safe sectors like utilities, making hedging more difficult.
+  - 原文連結：https://www.cnbc.com/2026/10/21/expanding-ai-trade-is-turning-safety-stocks-into-a-texas-hedge.html
+- 事件12：Goldman Sachs, JPMorgan and Morgan Stanley are dominating the AI stock boom. Here's their edge
   - 來源：CNBC；發布時間：Wed, 21 Oct 2026 15:30:50 GMT；台北時間：2026-10-21 23:30
   - 摘要：Wall Street’s Big Three have generated $52 billion in equity trading revenue this year, capturing about 80% of the market on rising margin lending to 
   - 原文連結：https://www.cnbc.com/2026/10/21/goldman-sachs-jpmorgan-morgan-stanley-ai-trading.html
-- 事件11：Tokenized stock trading takes off overseas as Goldman, other U.S. companies object
-  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 12:33:34 GMT；台北時間：2026-10-21 20:33
-  - 摘要：Tokenized stocks are gaining momentum in international markets, even as major U.S. companies are pushing back against efforts to introduce them domest
-  - 原文連結：https://www.cnbc.com/2026/10/21/tokenized-stocks-us-companies-object.html
-- 事件12：Investors look to earnings to reset the bull market. The key level to watch on the S&P 500
-  - 來源：CNBC；發布時間：Tue, 20 Oct 2026 12:52:29 GMT；台北時間：2026-10-20 20:52
-  - 摘要：The key level traders are watching on the S&P 500 that could mean an even bigger decline is ahead.
-  - 原文連結：https://www.cnbc.com/2026/10/20/santoli-key-sp-500-level-to-watch.html
 
 
 ## 三、期貨
@@ -254,14 +254,14 @@
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| 開盤價 | 46,660 | TAIFEX Proxy |
-| 最高價 | 47,253 | TAIFEX Proxy |
-| 最低價 | 46,303 | TAIFEX Proxy |
-| 收盤價 | 47,154 | TAIFEX Proxy |
-| 漲跌點數 | +644 | TAIFEX Proxy |
-| 漲跌幅 | +1.38 | TAIFEX Proxy |
-| 成交量 | 8,063 | TAIFEX Proxy |
-| 夜盤高點及低點 | 47,253 / 46,303 | TAIFEX Proxy |
+| 開盤價 | 46,991 | TAIFEX Proxy |
+| 最高價 | 47,555 | TAIFEX Proxy |
+| 最低價 | 46,983 | TAIFEX Proxy |
+| 收盤價 | 47,482 | TAIFEX Proxy |
+| 漲跌點數 | +469 | TAIFEX Proxy |
+| 漲跌幅 | +1.00 | TAIFEX Proxy |
+| 成交量 | 35,753 | TAIFEX Proxy |
+| 夜盤高點及低點 | 47,555 / 46,983 | TAIFEX Proxy |
 | 結算價 | 47,013 | TAIFEX Proxy |
 | 未平倉量 | 114,962 | TAIFEX Proxy |
 
@@ -291,11 +291,11 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人空方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人多空淨 OI | unavailable | TAIFEX OpenAPI |
-| 多空淨 OI 變化 | unavailable | 端點未提供 |
-- 資料日期：unavailable (TypeOfTraders=0 全部交易人；契約月份 unavailable)
+| 前十大交易人多方 OI | 7,685 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 11,817 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | -4,132 | TAIFEX Proxy |
+| 多空淨 OI 變化 (2026-10-19→2026-10-20) | -6,740 | TAIFEX Proxy snapshots (2026-10-20) |
+- 資料日期：2026-10-20 (TypeOfTraders=0 全部交易人；契約月份 202610)
 
 ### 5．日盤、夜盤法人交易資料
 
@@ -304,20 +304,20 @@
 | 外資日盤多單交易量 | 54,619 | TAIFEX Proxy |
 | 外資日盤空單交易量 | 53,557 | TAIFEX Proxy |
 | 外資日盤多空淨交易量 | +1,062 | TAIFEX Proxy |
-| 外資夜盤多單交易量 | 19,927 | TAIFEX Proxy |
-| 外資夜盤空單交易量 | 19,207 | TAIFEX Proxy |
-| 外資夜盤多空淨交易量 | +720 | TAIFEX Proxy |
-| 外資日盤／夜盤交易量變化 | +342 | TAIFEX Proxy |
+| 外資夜盤多單交易量 | 18,496 | TAIFEX Proxy |
+| 外資夜盤空單交易量 | 19,414 | TAIFEX Proxy |
+| 外資夜盤多空淨交易量 | -918 | TAIFEX Proxy |
+| 外資日盤／夜盤交易量變化 | +1,980 | TAIFEX Proxy |
 | 投信日盤多空淨交易量 | +1,466 | TAIFEX Proxy |
 | 投信夜盤多空淨交易量 | +0 | TAIFEX Proxy |
 | 投信日盤／夜盤交易量變化 | +1,466 | TAIFEX Proxy |
 | 自營商日盤多空淨交易量 | -2,306 | TAIFEX Proxy |
-| 自營商夜盤多空淨交易量 | +141 | TAIFEX Proxy |
-| 自營商日盤／夜盤交易量變化 | -2,447 | TAIFEX Proxy |
+| 自營商夜盤多空淨交易量 | +536 | TAIFEX Proxy |
+| 自營商日盤／夜盤交易量變化 | -2,842 | TAIFEX Proxy |
 | 三大法人日盤多空淨交易量 | +222 | TAIFEX Proxy |
-| 三大法人夜盤多空淨交易量 | +861 | TAIFEX Proxy |
+| 三大法人夜盤多空淨交易量 | -382 | TAIFEX Proxy |
 | 法人日盤交易金額淨額 (億元) | +19.5 | TAIFEX Proxy |
-| 法人夜盤交易金額淨額 (億元) | +80.4 | TAIFEX Proxy |
+| 法人夜盤交易金額淨額 (億元) | -36.1 | TAIFEX Proxy |
 
 ### 6．期貨與現貨關係
 
@@ -328,7 +328,7 @@
 | 台指期與加權指數價差 | +104.23 | TAIFEX Proxy+twse-proxy |
 | 價差百分比 | +0.22 | TAIFEX Proxy+twse-proxy |
 | 日盤基差 | +104.23 | TAIFEX Proxy+twse-proxy |
-| 夜盤價格相對日盤收盤的變化 | +162 | TAIFEX Proxy |
+| 夜盤價格相對日盤收盤的變化 | +490 | TAIFEX Proxy |
 
 ### 7．日盤、夜盤與籌碼變化對照
 
@@ -336,9 +336,9 @@
 
 | 項目 | 日盤 | 夜盤 | 變化 (日-夜) | 資料來源 |
 |---|---|---|---|---|
-| 收盤價 | 46,992 | 47,154 | -162 | TAIFEX Proxy |
-| 成交量 | 40,515 | 8,063 | +32,452 | TAIFEX Proxy |
-- 台指期總 OI 前日變化：+2,081（來源：TAIFEX Proxy）
+| 收盤價 | 46,992 | 47,482 | -490 | TAIFEX Proxy |
+| 成交量 | 40,515 | 35,753 | +4,762 | TAIFEX Proxy |
+- 台指期總 OI 前日變化：+0（來源：TAIFEX Proxy）
 
 
 #### 7.2 法人籌碼日夜盤對照 (淨變化 = 日盤淨 - 夜盤淨；OI 為日盤收盤後總量，前日變化另列)
@@ -346,30 +346,30 @@
 | 法人 | 交易量 |  |  |  |  |  |  | 未平倉量 |  |  |  | 資料來源 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 |  | **日盤多單** | **日盤空單** | **日盤淨** | **夜盤多單** | **夜盤空單** | **夜盤淨** | **淨變化 (日-夜)** | **OI多方** | **OI空方** | **OI淨** | **OI前日變化** |  |
-| 外資 | 54,619 | 53,557 | +1,062 | 19,927 | 19,207 | +720 | +342 | 9,410 | 95,482 | -86,072 | +3,676 | TAIFEX Proxy |
+| 外資 | 54,619 | 53,557 | +1,062 | 18,496 | 19,414 | -918 | +1,980 | 9,410 | 95,482 | -86,072 | +3,676 | TAIFEX Proxy |
 | 投信 | 1,737 | 271 | +1,466 | 0 | 0 | +0 | +1,466 | 86,485 | 2,707 | +83,778 | -611 | TAIFEX Proxy |
-| 自營商 | 8,699 | 11,005 | -2,306 | 2,546 | 2,405 | +141 | -2,447 | 5,149 | 3,433 | +1,716 | -984 | TAIFEX Proxy |
-| 三大法人合計 | 65,055 | 64,833 | +222 | 22,473 | 21,612 | +861 | -639 | 101,044 | 101,622 | -578 | +2,081 | TAIFEX Proxy |
+| 自營商 | 8,699 | 11,005 | -2,306 | 1,231 | 695 | +536 | -2,842 | 5,149 | 3,433 | +1,716 | -984 | TAIFEX Proxy |
+| 三大法人合計 | 65,055 | 64,833 | +222 | 19,727 | 20,109 | -382 | +604 | 101,044 | 101,622 | -578 | +0 | TAIFEX Proxy |
 
 #### 7.3 前十大交易人日夜盤對照 (OI 無日夜拆分，列收盤後總量)
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人空方 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人多空淨 OI | unavailable | TAIFEX OpenAPI |
-| 前十大交易人多空淨 OI 變化 | unavailable | 端點未提供 |
+| 前十大交易人多方 OI | 7,685 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 11,817 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | -4,132 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI 變化 (2026-10-19→2026-10-20) | -6,740 | TAIFEX Proxy snapshots (2026-10-20) |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| 夜盤成交量占比 (夜盤量／(夜盤量＋日盤量)) | 16.60% | TAIFEX Proxy |
-| 夜盤漲跌點數 | +644 | TAIFEX Proxy |
-| 外資夜盤多空淨交易量 | +720 | TAIFEX Proxy |
-| 劇本分類 | 劇本一 | 規則對應 |
-| 劇本條件 | 夜盤上漲＋外資偏多 | 規則對應 |
-| 劇本特徵 | 開高、續漲機率高 | 規則對應 |
+| 夜盤成交量占比 (夜盤量／(夜盤量＋日盤量)) | 46.88% | TAIFEX Proxy |
+| 夜盤漲跌點數 | +469 | TAIFEX Proxy |
+| 外資夜盤多空淨交易量 | -918 | TAIFEX Proxy |
+| 劇本分類 | 劇本二 | 規則對應 |
+| 劇本條件 | 夜盤上漲＋外資偏空 | 規則對應 |
+| 劇本特徵 | 先漲、小心開高走低 | 規則對應 |
 
 ## 四、選擇權
 
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-21 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-21 23:48:46 | 本機 |
+| 資料更新時間 | 2026-10-22 07:24:52 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -421,15 +421,15 @@
 | 外資 Put日買 | 178,176 | TAIFEX Proxy |
 | 外資 Put日賣 | 177,124 | TAIFEX Proxy |
 | 外資 Put日淨 | +1,052 | TAIFEX Proxy |
-| 外資 Call夜買 | 47,285 | TAIFEX Proxy |
-| 外資 Call夜賣 | 47,033 | TAIFEX Proxy |
-| 外資 Call夜淨 | +252 | TAIFEX Proxy |
-| 外資 Put夜買 | 78,388 | TAIFEX Proxy |
-| 外資 Put夜賣 | 77,847 | TAIFEX Proxy |
-| 外資 Put夜淨 | +541 | TAIFEX Proxy |
+| 外資 Call夜買 | 18,352 | TAIFEX Proxy |
+| 外資 Call夜賣 | 18,236 | TAIFEX Proxy |
+| 外資 Call夜淨 | +116 | TAIFEX Proxy |
+| 外資 Put夜買 | 20,801 | TAIFEX Proxy |
+| 外資 Put夜賣 | 21,125 | TAIFEX Proxy |
+| 外資 Put夜淨 | -324 | TAIFEX Proxy |
 | 外資 日盤淨總量 | -7,203 | TAIFEX Proxy |
-| 外資 Call日夜淨增減 (日－夜) | -6,403 | TAIFEX Proxy |
-| 外資 Put日夜淨增減 (日－夜) | +511 | TAIFEX Proxy |
+| 外資 Call日夜淨增減 (日－夜) | -6,267 | TAIFEX Proxy |
+| 外資 Put日夜淨增減 (日－夜) | +1,376 | TAIFEX Proxy |
 
 ### 6．自營商 Call／Put 部位
 
@@ -441,15 +441,15 @@
 | 自營商 Put日買 | 106,651 | TAIFEX Proxy |
 | 自營商 Put日賣 | 117,234 | TAIFEX Proxy |
 | 自營商 Put日淨 | -10,583 | TAIFEX Proxy |
-| 自營商 Call夜買 | 26,221 | TAIFEX Proxy |
-| 自營商 Call夜賣 | 27,893 | TAIFEX Proxy |
-| 自營商 Call夜淨 | -1,672 | TAIFEX Proxy |
-| 自營商 Put夜買 | 40,344 | TAIFEX Proxy |
-| 自營商 Put夜賣 | 40,407 | TAIFEX Proxy |
-| 自營商 Put夜淨 | -63 | TAIFEX Proxy |
+| 自營商 Call夜買 | 15,497 | TAIFEX Proxy |
+| 自營商 Call夜賣 | 16,186 | TAIFEX Proxy |
+| 自營商 Call夜淨 | -689 | TAIFEX Proxy |
+| 自營商 Put夜買 | 18,128 | TAIFEX Proxy |
+| 自營商 Put夜賣 | 14,336 | TAIFEX Proxy |
+| 自營商 Put夜淨 | +3,792 | TAIFEX Proxy |
 | 自營商 日盤淨總量 | +6,668 | TAIFEX Proxy |
-| 自營商 Call日夜淨增減 (日－夜) | -2,243 | TAIFEX Proxy |
-| 自營商 Put日夜淨增減 (日－夜) | -10,520 | TAIFEX Proxy |
+| 自營商 Call日夜淨增減 (日－夜) | -3,226 | TAIFEX Proxy |
+| 自營商 Put日夜淨增減 (日－夜) | -14,375 | TAIFEX Proxy |
 
 ### 7．主要 Call OI 集中區
 
@@ -535,17 +535,17 @@
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| Gamma Wall 價位 | 46,300.00 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
+| Gamma Wall 價位 | 47,000.00 | TAIFEX Proxy (options-gamma-levels) |
 | 對應到期月份 | 202610 | TAIFEX Proxy |
-| 資料日期 | 2026-10-20 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
+| 資料日期 | 2026-10-21 | TAIFEX Proxy (options-gamma-levels) |
 
 ### 14．Gamma Flip
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| Gamma Flip 價位 | 44,513.96 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
+| Gamma Flip 價位 | 46,174.50 | TAIFEX Proxy (options-gamma-levels) |
 | 對應到期月份 | 202610 | TAIFEX Proxy |
-| 資料日期 | 2026-10-20 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
+| 資料日期 | 2026-10-21 | TAIFEX Proxy (options-gamma-levels) |
 
 ### 15．Max Pain
 
@@ -559,10 +559,10 @@
 
 | 法人 | 日盤多單 | 日盤空單 | 日盤淨 | 夜盤多單 | 夜盤空單 | 夜盤淨 | 淨變化 (日-夜) | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 外資 | 306,999 | 314,202 | -7,203 | 125,132 | 125,421 | -289 | -6,914 | TAIFEX Proxy |
-| 投信 | 7 | 9,685 | -9,678 | 2 | 0 | +2 | -9,680 | TAIFEX Proxy |
-| 自營商 | 216,314 | 209,646 | +6,668 | 66,628 | 68,237 | -1,609 | +8,277 | TAIFEX Proxy |
-| 三大法人合計 | 523,320 | 533,533 | -10,213 | 191,762 | 193,658 | -1,896 | -8,317 | TAIFEX Proxy |
+| 外資 | 306,999 | 314,202 | -7,203 | 39,477 | 39,037 | +440 | -7,643 | TAIFEX Proxy |
+| 投信 | 7 | 9,685 | -9,678 | 0 | 0 | +0 | -9,678 | TAIFEX Proxy |
+| 自營商 | 216,314 | 209,646 | +6,668 | 29,833 | 34,314 | -4,481 | +11,149 | TAIFEX Proxy |
+| 三大法人合計 | 523,320 | 533,533 | -10,213 | 69,310 | 73,351 | -4,041 | -6,172 | TAIFEX Proxy |
 - 方法論：多方＝買Call＋賣Put（看多），空方＝賣Call＋買Put（看空），淨額＝看多－看空（已用 Call／Put 拆分頁交叉驗算一致）
 - 公式：多方(買)－空方(賣)＝（買call＋賣put）－（賣call＋買put）＝看多－看空
 - 速記：多＝BC＋SP、空＝SC＋BP
@@ -571,45 +571,45 @@
 
 | 法人 | 日多方力道 | 日空方力道 | 日淨多空力道 | 夜多方力道 | 夜空方力道 | 夜淨多空力道 | 日淨－夜淨 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 外資 | 16.49 | 17.24 | -0.75 | 9.15 | 9.22 | -0.06 | -0.69 | TAIFEX Proxy |
-| 投信 | 0.00 | 6.41 | -6.41 | 0.00 | 0.00 | +0.00 | -6.41 | TAIFEX Proxy |
-| 自營商 | 18.51 | 12.51 | +5.99 | 4.77 | 4.84 | -0.08 | +6.07 | TAIFEX Proxy |
-| 三大法人合計 | 35.00 | 36.17 | -1.16 | 13.92 | 14.06 | -0.14 | -1.03 | TAIFEX Proxy |
+| 外資 | 16.49 | 17.24 | -0.75 | 4.38 | 4.35 | +0.03 | -0.78 | TAIFEX Proxy |
+| 投信 | 0.00 | 6.41 | -6.41 | 0.00 | 0.00 | +0 | -6.41 | TAIFEX Proxy |
+| 自營商 | 18.51 | 12.51 | +5.99 | 3.19 | 5.02 | -1.83 | +7.82 | TAIFEX Proxy |
+| 三大法人合計 | 35.00 | 36.17 | -1.16 | 7.56 | 9.37 | -1.80 | +0.64 | TAIFEX Proxy |
 
 ### 18．選擇權前十大
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 買權多方 OI | 54,137 | TAIFEX Proxy |
-| 買權空方 OI | 67,666 | TAIFEX Proxy |
-| 買權多空淨 OI | -13,529 | TAIFEX Proxy |
-| 買權多空淨 OI 變化 (2026-10-19→2026-10-20) | +1,244 | TAIFEX Proxy snapshots (2026-10-20) |
+| 買權多方 OI | 5,000 | TAIFEX Proxy |
+| 買權空方 OI | 6,459 | TAIFEX Proxy |
+| 買權多空淨 OI | -1,459 | TAIFEX Proxy |
+| 買權多空淨 OI 變化 (2026-10-19→2026-10-21) | +13,314 | TAIFEX Proxy snapshots (2026-10-20) |
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 賣權多方 OI | 29,725 | TAIFEX Proxy |
-| 賣權空方 OI | 21,734 | TAIFEX Proxy |
-| 賣權多空淨 OI | +7,991 | TAIFEX Proxy |
-| 賣權多空淨 OI 變化 (2026-10-19→2026-10-20) | +6,827 | TAIFEX Proxy snapshots (2026-10-20) |
-- 資料日期：買權 2026-10-20／賣權 2026-10-20 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 賣權多方 OI | 7,216 | TAIFEX Proxy |
+| 賣權空方 OI | 8,501 | TAIFEX Proxy |
+| 賣權多空淨 OI | -1,285 | TAIFEX Proxy |
+| 賣權多空淨 OI 變化 (2026-10-19→2026-10-21) | -2,449 | TAIFEX Proxy snapshots (2026-10-20) |
+- 資料日期：買權 2026-10-21／賣權 2026-10-21 (TypeOfTraders=0 全部交易人；契約月份 202611)
 
 #### 大戶流向（全日；前十大無日夜拆分）
 
 | 項目 | 淨變化 | 區間 | 資料來源 |
 |---|---|---|---|
-| 期貨前十大 | unavailable | — | 端點未提供 |
-| 買權前十大 | +1,244 | 2026-10-19→2026-10-20 | TAIFEX Proxy snapshots (2026-10-20) |
-| 賣權前十大 | +6,827 | 2026-10-19→2026-10-20 | TAIFEX Proxy snapshots (2026-10-20) |
+| 期貨前十大 | -6,740 | 2026-10-19→2026-10-20 | TAIFEX Proxy snapshots (2026-10-20) |
+| 買權前十大 | +13,314 | 2026-10-19→2026-10-21 | TAIFEX Proxy snapshots (2026-10-20) |
+| 賣權前十大 | -2,449 | 2026-10-19→2026-10-21 | TAIFEX Proxy snapshots (2026-10-20) |
 
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-21；資料時間：2026-10-21 23:48:46；時區：`Asia/Taipei`
+- 資料日期：2026-10-21；資料時間：2026-10-22 07:24:52；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (1)：futures.top10_change
-- 註記：Gamma 資料日期 2026-10-20 (T0 2026-10-21 尚無，上游 FMTQIK 落後，採最新可得)
+- 註記：同 T0 保護：8 格沿用前版有值（本次抓取缺失不覆寫）
+- 未取得欄位 (0)：無
+- 註記：futures-price-after-hours 日期 2026-10-21 非今日 2026-10-22，視為無新節次，不採用
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
-- 註記：Gamma Wall/Flip 資料日期 2026-10-20 (來源 options-market-structure-compact (proxy))
 
 ## 五、資料來源、時間與完整性
 
@@ -638,6 +638,6 @@
 
 | 法人 | 現貨買賣超(億) | 期貨OI淨(口) | 期貨日淨 | 期貨夜淨 | 選擇權日淨 | 選擇權夜淨 | 判定 | 期選組合 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|---|
-| 外資 | +22.4 | -86,072 | +1,062 | +720 | -7,203 | -289 | 避險／對沖 | 強避險 | twse-proxy／TAIFEX Proxy |
-| 投信 | +128.0 | +83,778 | +1,466 | +0 | -9,678 | +2 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
-| 自營商 | -135.7 | +1,716 | -2,306 | +141 | +6,668 | -1,609 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
+| 外資 | +22.4 | -86,072 | +1,062 | -918 | -7,203 | +440 | 避險／對沖 | 強避險 | twse-proxy／TAIFEX Proxy |
+| 投信 | +128.0 | +83,778 | +1,466 | +0 | -9,678 | +0 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
+| 自營商 | -135.7 | +1,716 | -2,306 | +536 | +6,668 | -4,481 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
