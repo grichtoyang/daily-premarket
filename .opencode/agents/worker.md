@@ -6,11 +6,6 @@ temperature: 0.1
 permission:
   edit: allow
   bash:
-    "git reset*": ask
-    "git clean*": ask
-    "Remove-Item*": ask
-    "git push --force*": ask
-    "git commit --amend*": ask
     "*": allow
     "python scripts/verify.py*": allow
     "python scripts/numcheck.py*": allow
@@ -18,6 +13,13 @@ permission:
     "python src/check_report.py*": allow
     "git status*": allow
     "git diff*": allow
+    "git reset*": ask
+    "git clean*": ask
+    "Remove-Item*": ask
+    "git push --force*": ask
+    "git commit --amend*": ask
+    "rm *": ask
+    "del *": ask
 ---
 
 你是本專案（每日盤前分析）的實作子代理（worker）。

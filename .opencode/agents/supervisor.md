@@ -6,11 +6,6 @@ temperature: 0.1
 permission:
   edit: deny
   bash:
-    "git reset*": ask
-    "git clean*": ask
-    "Remove-Item*": ask
-    "git push --force*": ask
-    "git commit --amend*": ask
     "*": allow
     "python scripts/open.py*": allow
     "python scripts/verify.py*": allow
@@ -24,6 +19,13 @@ permission:
     "gh run list*": allow
     "gh run view*": allow
     "git show*": allow
+    "git reset*": ask
+    "git clean*": ask
+    "Remove-Item*": ask
+    "git push --force*": ask
+    "git commit --amend*": ask
+    "rm *": ask
+    "del *": ask
   task:
     "*": deny
     "worker": allow
