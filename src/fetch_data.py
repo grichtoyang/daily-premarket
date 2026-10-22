@@ -618,7 +618,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("最低價", _fi(d["low"]), SRC_FX),
             ("收盤價", _fi(d["close"]), SRC_FX), ("漲跌點數", _f2s(d["change"]), SRC_FX),
             ("漲跌幅", _pct(d["pct"]), SRC_FX),
-            ("成交量", _fi(d["vol"]), SRC_FX),
+            # 日盤行情只取 regular_volume；total 含前夜盤，會與 §三.7.1 日盤成交量矛盾（2026-10-22 修正）
+            ("成交量", _fi(d.get("vol_day") or d.get("vol")), SRC_FX),
             ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", SRC_FX)],
            ("項目", "數值", "資料來源")))
     A("")

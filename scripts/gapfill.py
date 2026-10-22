@@ -103,7 +103,34 @@ def _fill_margin(lines, t0):
         cells[3] = "HiStock 上市+上櫃 (gapfill 自動補登)"
         lines[i] = "| " + " | ".join(cells) + " |"
         fills.append(f"L{i + 1} {cells[0]}＝{vals[cells[0]]}")
+    if fills:
+        # 補值成功 → 移除「HiStock 未取得／融券沿用官方」等已與真值矛盾的註記
+        _drop_notes(lines, ("- 註記：HiStock 未取得", "- 註記：融券沿用官方逐股加總"))
     return fills, []
+
+
+_MR_PAT = r"^(\s*-\s*margin_ratio：).*$"
+
+
+def _rewrite_margin_ratio(lines, val, src, date):
+    """補登成功後改寫 §五 `- margin_ratio：` 行；找不到就跳過。"""
+    pat = re.compile(_MR_PAT)
+    for i, ln in enumerate(lines):
+        m = pat.match(ln)
+        if m:
+            lines[i] = f"{m.group(1)}gapfill 補登 T0 真值 {val} ({src} {date})"
+            return True
+    return False
+
+
+def _drop_notes(lines, prefixes):
+    """刪除前綴比對到的 §五 註記行（補登後與真值矛盾者）；找不到就跳過。"""
+    drop = tuple(prefixes)
+    keep = [ln for ln in lines
+            if not (ln.lstrip().startswith("- 註記：") and ln.lstrip().startswith(drop))]
+    dropped = len(lines) - len(keep)
+    lines[:] = keep
+    return dropped
 
 
 def _fill_ratio(lines, t0):
@@ -130,6 +157,9 @@ def _fill_ratio(lines, t0):
     cells[3] = (f"{src} 大盤融資維持率 (資料日期 {r.get('date')}；"
                 f"民間估算；官方無每日序列；gapfill 自動補登)")
     lines[idx] = "| " + " | ".join(cells) + " |"
+    # 補值成功 → §五 來源行與失敗註記同步改寫（找不到就跳過，不得報錯）
+    _rewrite_margin_ratio(lines, cells[1], src, r.get("date"))
+    _drop_notes(lines, ("- 註記：融資維持率未取得", "- 註記：融資維持率採前值遞補"))
     return [f"L{idx + 1} 維持率＝{cells[1]}（{src} {r.get('date')}）"], []
 
 
@@ -172,6 +202,9 @@ def _fill_sbl(lines, t0):
             continue
         lines[i] = "| " + " | ".join(cells) + " |"
         fills.append(f"L{i + 1} {cells[0]}＝{cells[1]}")
+    if fills and tw_s is not None:
+        # TWT93U 已取得 → 「僅上櫃值」註記失效
+        _drop_notes(lines, ("- 註記：借券賣出增減僅上櫃值",))
     return fills, []
 
 
