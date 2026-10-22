@@ -2,11 +2,11 @@
 
 - 報告日期：`2026-10-22`
 - T0 交易日期：`2026-10-21`
-- 資料產出時間：`2026-10-22 07:24:52`
+- 資料產出時間：`2026-10-22 10:24:48`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
-- 排定班別：`manual`
+- 排定班別：`morning`
 
 ---
 
@@ -74,7 +74,7 @@
 | 融資增減 | +72.3 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 231,082 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | -23,914 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | 178.93 | % | 前值遞補 (DATA 2026-10-20；當日三源皆失敗；民間估算；官方無每日序列) |
+| 融資維持率 | 178.90 | % | stockintelli 大盤融資維持率 (民間估算；官方無每日序列) |
 
 ### 5. 借券資料
 
@@ -117,11 +117,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 64,075.42 | -841.28 | -1.30 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 5,552.74 | -215.27 | -3.73 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 23,867.74 | -319.09 | -1.32 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,735.37 | 4.45 | +0.12 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 11,801.29 | -16.13 | -0.14 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 64,033.42 | -587.82 | -0.91 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 5,628.26 | -107.40 | -1.87 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 23,146.70 | -505.17 | -2.14 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,679.91 | -33.12 | -0.89 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 11,513.92 | -190.42 | -1.63 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,771.50 | 16.25 | +0.21 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 29,830.00 | 154.75 | +0.52 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,937.00 | 218.00 | +0.41 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,782.20 | -4.70 | -0.17 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,761.25 | -39.00 | -0.50 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,716.75 | -290.25 | -0.97 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,927.00 | -132.00 | -0.25 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,781.40 | -12.80 | -0.46 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.39 | -0.19 | -0.57 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.69 | -0.04 | -0.04 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 158.15 | -0.12 | -0.07 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,325.94 | 2.00 | +0.15 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.46 | -0.11 | -0.35 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.71 | -0.07 | -0.07 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 158.00 | -0.27 | -0.17 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,324.08 | 0.14 | +0.01 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -171,50 +171,50 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 97.80 | -3.99 | -3.92 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,145.00 | 2.40 | +0.06 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 84,290.01 | 1,349.01 | +1.63 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 98.30 | 1.15 | +1.18 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,128.00 | -22.00 | -0.53 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 82,923.32 | -17.68 | -0.02 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：台股強彈594點4萬7卻沒守住「電金」聯手扛反攻旗
-  - 來源：Yahoo 台股；發布時間：2026-10-21T09:43:30Z；台北時間：2026-10-21 17:43
-  - 摘要：電金聯手反攻，台股強彈594點、站回五日線！今(21)日加權指數終場上漲594.84點、漲幅1.28%，收46,887.77點，成交金額8,348.41億元。大盤盤中一度大漲962點、上探47,254.93點，隨後漲勢收斂，4萬7關卡得而復
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%96%E8%B3%87%E7%B5%82%E6%96%BC%E8%BD%89%E8%B2%B7%E4%BA%94%E6%97%A5%E7%B7%9A%E6%90%B6%E5%9B%9E%E3%80%814%E8%90%AC7%E6%B2%92%E5%AE%88%E4%BD%8F%EF%BC%81%E5%8F%B0%E8%82%A1%E6%BC%B2594%E9%BB%9E%E3%80%8C%E9%9B%BB%E9%87%91%E3%80%8D%E8%81%AF%E6%89%8B%E6%94%BE%E7%B4%85%E8%89%B2%E7%85%99%E7%81%AB%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-094330511.html
-- 事件2：SpaceX的AI營收暴增830％ 專家盤點台灣ETF誰最敢押
-  - 來源：Yahoo 台股；發布時間：2026-10-21T10:44:57Z；台北時間：2026-10-21 18:44
-  - 摘要：SpaceX第三季營收年增161%，淨利衝上44億美元！AI算力業務年增830%超越星鏈。財經專家葉育碩點名玉山未來全球算力（009827）持股SpaceX近12%，完整解析其布局亮點與投資策略。（記者唐家興）
-  - 原文連結：https://tw.stock.yahoo.com/news/spacex%E5%96%AE%E5%AD%A3%E7%8B%82%E8%B3%BA1400%E5%84%84-%E5%8F%B0%E7%81%A3etf%E8%AA%B0%E6%9C%80%E6%95%A2%E6%8A%BC-%E8%91%89%E8%82%B2%E7%A2%A9%E9%BB%9E%E5%90%8D%E9%80%99%E6%AA%94-%E6%8C%81%E8%82%A1%E8%BF%9112-103200432.html
-- 事件3：台郡搭輝達題材股價狂飆 自結財報出爐8月仍未轉盈
-  - 來源：Yahoo 台股；發布時間：2026-10-21T08:58:44Z；台北時間：2026-10-21 16:58
-  - 摘要：軟板廠台郡（6269）今日因當沖率、漲幅過高等原因而遭列注意股，因此被強制公布自結獲利，8月台郡單月虧損1.35億元，年減率達535%，每股虧損來到0.01元。
-  - 原文連結：https://tw.stock.yahoo.com/news/6%E5%A4%A9%E9%A3%865%E6%88%90%E5%88%97%E6%B3%A8%E6%84%8F%E8%82%A1%EF%BC%81%E3%80%8C%E8%BC%9D%E9%81%94%E6%A6%82%E5%BF%B5%E8%82%A1%E3%80%8D%E5%8F%B0%E9%83%A1%E8%87%AA%E7%B5%908%E6%9C%88%E6%AF%8F%E8%82%A1%E8%99%A7001%E5%85%83-%E5%B9%B4%E6%B8%9B98-085911152.html
-- 事件4：薔琵逼近搶菜潮來了嗎 兩大量販曝採買仍平穩
-  - 來源：Yahoo 台股；發布時間：2026-10-21T08:57:41Z；台北時間：2026-10-21 16:57
-  - 摘要：薔琵颱風逼近台灣，適逢光復節3天連假將至，民眾是否已提前搶購蔬菜、泡麵及飲用水等防颱物資？萬家福量販與愛買今（21）日表示，目前賣場尚未出現明顯搶購潮，整體採買情況平穩，其中愛買指出，蔬菜、泡麵及飲用水等商品銷量仍與平常持平，也沒有缺貨情況
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%96%94%E7%90%B5%E9%A2%B1%E9%A2%A8%E4%BE%86%E8%A5%B2%E6%90%B6%E8%8F%9C%E6%BD%AE%E8%A6%81%E4%BE%86%E4%BA%86%EF%BC%9F%E8%90%AC%E5%AE%B6%E7%A6%8F%E3%80%81%E6%84%9B%E8%B2%B7%E6%9B%9D%E6%9C%80%E6%96%B0%E8%B2%B7%E6%B0%A3%EF%BC%9A%E5%B0%9A%E6%9C%AA%E7%BC%BA%E8%B2%A8-094231582.html
-- 事件5：存股資優生也要拚斜槓 水泥股從配息到轉型一次看
-  - 來源：Yahoo 台股；發布時間：2026-10-20T10:00:00Z；台北時間：2026-10-20 18:00
-  - 摘要：台泥（1101）是許多傳統存股族的心頭好，日前召開股東臨時會通過歐洲子公司Cimpor International Holdings海外上市案，近期股價衝上16個月新高。不只台泥，10月15日台股狂瀉1655點，水泥族群卻表現抗跌，日前亞泥
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E6%B3%A5%E3%80%81%E4%BA%9E%E6%B3%A5%E9%80%A3%E7%BA%8C%E9%85%8D%E6%81%AF43%E5%B9%B4%E2%8B%AF%E6%98%94%E6%97%A5%E7%9A%84%E5%AD%98%E8%82%A1%E8%B3%87%E5%84%AA%E7%94%9F%E7%8F%BE%E5%9C%A8%E9%82%84%E8%83%BD%E5%AD%98%E5%97%8E%EF%BC%9F%E6%B0%B4%E6%B3%A5%E6%97%8F%E7%BE%A4%E7%9A%84%E7%BE%8E%E9%BA%97%E8%88%87%E5%93%80%E6%84%81-%E5%90%84%E5%AE%B6%E6%8B%9A%E8%BD%89%E5%9E%8B%E5%90%84%E9%A1%AF%E7%A5%9E%E9%80%9A%EF%BC%81%EF%BD%9C%E7%9B%A4%E9%BB%9E%E6%A6%82%E5%BF%B5%E8%82%A1-100000179.html
-- 事件6：美光罷工倒數4》董事長出面仍破局　桃園罷工24小時、台中掀連署反彈
+- 事件1：緯創再度「近關情怯」連兩日叩關200元失利
+  - 來源：Yahoo 台股；發布時間：2026-10-22T01:49:45Z；台北時間：2026-10-22 09:49
+  - 摘要：擁有超過35萬股東的緯創（3231）挑戰重返200元再度「近關情怯」！繼昨日盤中衝上199.5元後，今（22）日最高來到199元、上漲2.05%，卻再度於整數關卡前震盪，甚至翻黑，連續兩個交易日叩關失利。分析師表示，若要有效突破，單日成交量
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%BF%91%E9%97%9C%E6%83%85%E6%80%AF%EF%BC%9F%E7%B7%AF%E5%89%B5200%E5%85%83%E9%80%A3%E5%85%A9%E6%97%A5%E5%8F%A9%E9%97%9C%E5%A4%B1%E5%88%A9%E5%88%86%E6%9E%90%E5%B8%AB%E9%BB%9E%E9%97%9C%E9%8D%B5-014945090.html
+- 事件2：薔琵颱風接近買盤觀望 台積電開漲後陷平盤震盪
+  - 來源：Yahoo 台股；發布時間：2026-10-22T01:37:38Z；台北時間：2026-10-22 09:37
+  - 摘要：薔琵颱風逼近與長假效應，台股人氣消退，儘管昨天「權王」台積電ADR上漲1.6%，台北現股表現相對溫吞，今（22）早開盤漲15元最高來到2435元，隨後平盤上下附近游走。台新投顧總經理黃文清今早接受《Yahoo股市》採訪時表示，市場預期明天有
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%96%94%E7%90%B5%E9%A2%B1%E9%A2%A8%E5%81%87%E6%94%BE%E5%AE%9A%E4%BA%86%EF%BC%9F%E5%8F%B0%E7%A9%8D%E9%9B%BB%E5%B9%B3%E7%9B%A4%E9%9C%87%E7%9B%AA-%E5%88%86%E6%9E%90%E5%B8%AB%EF%BC%9A%E7%AD%89%E9%95%B7%E5%81%87%E5%9B%9E%E4%BE%86%E6%BC%B2-013738802.html
+- 事件3：輝達揪光通訊台鏈搶商機 矽品CPO明年擴產15倍
+  - 來源：Yahoo 台股；發布時間：2026-10-21T22:37:31Z；台北時間：2026-10-22 06:37
+  - 摘要：輝達揪台灣夥伴大擴產搶市，以日月光投控旗下矽品CPO光學引擎產能明年擴充15倍，2028年再翻倍至30倍，增幅驚人最受矚目，意味輝達看好未來兩年光通訊商機大開，已通過輝達認證的波若威、上詮等台灣光通訊廠訂單與基本面將大爆發。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%BC%9D%E9%81%94%E6%8F%AA%E5%8F%B0%E7%81%A3%E5%A4%A5%E4%BC%B4%E5%A4%A7%E6%93%B4%E7%94%A2%E6%90%B6%E5%B8%82-%E5%85%89%E9%80%9A%E8%A8%8A%E6%97%8F%E7%BE%A4%E8%A8%82%E5%96%AE%E5%B0%87%E7%88%86%E7%99%BC-223731828.html
+- 事件4：南亞90天飆231%、高力本益比111倍 12檔注意股一次看
+  - 來源：Yahoo 台股；發布時間：2026-10-22T00:20:00Z；台北時間：2026-10-22 08:20
+  - 摘要：[FTNN新聞網]記者莊蕙如／綜合報導證交所公布10月21日共12檔注意股，熱門股南亞（1303）、高力（8996）、今國光（6209）及台郡（6269）全數入列。其中南亞最...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8D%97%E4%BA%9E90%E5%A4%A9%E7%8B%82%E9%A3%86231-%E9%80%99%E5%85%89%E5%AD%B8%E5%A4%A7%E5%BB%A0-6%E5%A4%A9%E9%80%B1%E8%BD%89%E7%8E%87%E7%A0%B4161-%E5%8F%B0%E9%83%A1%E7%88%86%E9%87%8F11%E5%80%8D-12%E6%AA%94%E6%B3%A8%E6%84%8F%E8%82%A1-002000731.html
+- 事件5：美光才跟台中工會簽勞資協議 桃園今展開24小時罷工
   - 來源：Yahoo 台股；發布時間：2026-10-21T15:25:49Z；台北時間：2026-10-21 23:25
   - 摘要：美光勞資爭議再掀波瀾！美光甫與台中工會簽署協議，桃園工會卻宣布22日罷工24小時。美光派出台灣美光董事長及執行長（CEO）幕僚長參與協商，仍未化解分潤爭議；另一方面，《民報》獨家披露美光新獎酬制度後，相關內容在網路引發討論與轉傳，更出現要求
   - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E5%85%89%E7%BD%B7%E5%B7%A5%E5%80%92%E6%95%B84-%E8%91%A3%E4%BA%8B%E9%95%B7%E5%87%BA%E9%9D%A2%E4%BB%8D%E7%A0%B4%E5%B1%80-%E6%A1%83%E5%9C%92%E7%BD%B7%E5%B7%A524%E5%B0%8F%E6%99%82-%E5%8F%B0%E4%B8%AD%E6%8E%80%E9%80%A3%E7%BD%B2%E5%8F%8D%E5%BD%88-152549950.html
+- 事件6：16張「百億神單」熱賣 前9月吸金4700億再創新高
+  - 來源：Yahoo 台股；發布時間：2026-10-21T14:13:39Z；台北時間：2026-10-21 22:13
+  - 摘要：壽險業「百億神單」吸金力驚人。受惠於全球股市多頭行情延續，加上民眾資產配置及退休理財需求升溫，帶動投資型保單買氣持續火熱。據統計，2026年前九月壽險業共有16張保單銷售突破百億元，合計銷售金額一舉突破4,700億元，較前八月再增加逾500
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%99%BE%E5%84%84%E7%A5%9E%E5%96%AE-%E8%B3%A3%E7%98%8B%E4%BA%86-16%E5%BC%B5%E4%BF%9D%E5%96%AE%E5%89%8D%E4%B9%9D%E6%9C%88%E7%8B%82%E5%90%B84-700%E5%84%84%E5%85%83-%E5%86%8D%E5%89%B5%E6%96%B0%E9%AB%98-141339066.html
 - 事件7：Federal Reserve Board announces termination of enforcement actions with Gardner Bancshares, Inc. and Small Business Bank
   - 來源：Federal Reserve；發布時間：Fri, 16 Oct 2026 15:00:00 GMT；台北時間：2026-10-16 23:00
   - 摘要：Federal Reserve Board announces termination of enforcement actions with Gardner Bancshares, Inc. and Small Business Bank
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261016a.htm
-- 事件8：CoreWeave’s market confidence erodes as bond yields spike and stock sinks
-  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 22:50:35 GMT；台北時間：2026-10-22 06:50
-  - 摘要：CoreWeave shares are down 29% in October, and the spreads in its credit default swaps are widening.
-  - 原文連結：https://www.cnbc.com/2026/10/21/coreweaves-market-confidence-erodes-as-bond-yields-spike-stock-sinks.html
-- 事件9：Housing is flashing warning signs just as the Fed weighs more interest rate hikes
+- 事件8：Housing is flashing warning signs just as the Fed weighs more interest rate hikes
   - 來源：CNBC；發布時間：Wed, 21 Oct 2026 11:20:58 GMT；台北時間：2026-10-21 19:20
   - 摘要：Housing data deteriorated further in September, according to separate reports Tuesday.
   - 原文連結：https://www.cnbc.com/2026/10/20/housing-mortgage-rates-real-estate-federal-reserve.html
+- 事件9：CoreWeave’s market confidence erodes as bond yields spike and stock sinks
+  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 22:50:35 GMT；台北時間：2026-10-22 06:50
+  - 摘要：CoreWeave shares are down 29% in October, and the spreads in its credit default swaps are widening.
+  - 原文連結：https://www.cnbc.com/2026/10/21/coreweaves-market-confidence-erodes-as-bond-yields-spike-stock-sinks.html
 - 事件10：Apple's iPhone Duo in short supply — plus, the 2 stocks fueling an AI rebound
   - 來源：CNBC；發布時間：Wed, 21 Oct 2026 19:47:38 GMT；台北時間：2026-10-22 03:47
   - 摘要：Every weekday, the Investing Club releases the Homestretch; an actionable afternoon update just in time for the last hour of trading.
@@ -223,10 +223,10 @@
   - 來源：CNBC；發布時間：Wed, 21 Oct 2026 17:14:14 GMT；台北時間：2026-10-22 01:14
   - 摘要：The growing AI trade is infiltrating traditionally safe sectors like utilities, making hedging more difficult.
   - 原文連結：https://www.cnbc.com/2026/10/21/expanding-ai-trade-is-turning-safety-stocks-into-a-texas-hedge.html
-- 事件12：Goldman Sachs, JPMorgan and Morgan Stanley are dominating the AI stock boom. Here's their edge
-  - 來源：CNBC；發布時間：Wed, 21 Oct 2026 15:30:50 GMT；台北時間：2026-10-21 23:30
-  - 摘要：Wall Street’s Big Three have generated $52 billion in equity trading revenue this year, capturing about 80% of the market on rising margin lending to 
-  - 原文連結：https://www.cnbc.com/2026/10/21/goldman-sachs-jpmorgan-morgan-stanley-ai-trading.html
+- 事件12：Oil is now flowing out of the Persian Gulf like before the Iran war. Why prices may still not come down anytime soon.
+  - 來源：MarketWatch；發布時間：Wed, 21 Oct 2026 21:14:00 GMT；台北時間：2026-10-22 05:14
+  - 摘要：Oil flows out of the Persian Gulf in October nearly returned to levels seen before the start of the Iran war, but traders remain wary about a fragile 
+  - 原文連結：https://www.marketwatch.com/story/oil-is-now-flowing-out-of-the-persian-gulf-like-before-the-iran-war-why-prices-may-still-not-come-down-anytime-soon-56df2f48?mod=mw_rss_topstories
 
 
 ## 三、期貨
@@ -291,11 +291,11 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | 7,685 | TAIFEX Proxy |
-| 前十大交易人空方 OI | 11,817 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI | -4,132 | TAIFEX Proxy |
-| 多空淨 OI 變化 (2026-10-19→2026-10-20) | -6,740 | TAIFEX Proxy snapshots (2026-10-20) |
-- 資料日期：2026-10-20 (TypeOfTraders=0 全部交易人；契約月份 202610)
+| 前十大交易人多方 OI | 90,479 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 82,789 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | +7,690 | TAIFEX Proxy |
+| 多空淨 OI 變化 (2026-10-19→2026-10-21) | +5,082 | TAIFEX Proxy snapshots (2026-10-20) |
+- 資料日期：2026-10-21 (TypeOfTraders=0 全部交易人；契約月份 202611)
 
 ### 5．日盤、夜盤法人交易資料
 
@@ -338,7 +338,7 @@
 |---|---|---|---|---|
 | 收盤價 | 46,992 | 47,482 | -490 | TAIFEX Proxy |
 | 成交量 | 40,515 | 35,753 | +4,762 | TAIFEX Proxy |
-- 台指期總 OI 前日變化：+0（來源：TAIFEX Proxy）
+- 台指期總 OI 前日變化：+2,081（來源：TAIFEX Proxy）
 
 
 #### 7.2 法人籌碼日夜盤對照 (淨變化 = 日盤淨 - 夜盤淨；OI 為日盤收盤後總量，前日變化另列)
@@ -349,16 +349,16 @@
 | 外資 | 54,619 | 53,557 | +1,062 | 18,496 | 19,414 | -918 | +1,980 | 9,410 | 95,482 | -86,072 | +3,676 | TAIFEX Proxy |
 | 投信 | 1,737 | 271 | +1,466 | 0 | 0 | +0 | +1,466 | 86,485 | 2,707 | +83,778 | -611 | TAIFEX Proxy |
 | 自營商 | 8,699 | 11,005 | -2,306 | 1,231 | 695 | +536 | -2,842 | 5,149 | 3,433 | +1,716 | -984 | TAIFEX Proxy |
-| 三大法人合計 | 65,055 | 64,833 | +222 | 19,727 | 20,109 | -382 | +604 | 101,044 | 101,622 | -578 | +0 | TAIFEX Proxy |
+| 三大法人合計 | 65,055 | 64,833 | +222 | 19,727 | 20,109 | -382 | +604 | 101,044 | 101,622 | -578 | +2,081 | TAIFEX Proxy |
 
 #### 7.3 前十大交易人日夜盤對照 (OI 無日夜拆分，列收盤後總量)
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 前十大交易人多方 OI | 7,685 | TAIFEX Proxy |
-| 前十大交易人空方 OI | 11,817 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI | -4,132 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI 變化 (2026-10-19→2026-10-20) | -6,740 | TAIFEX Proxy snapshots (2026-10-20) |
+| 前十大交易人多方 OI | 90,479 | TAIFEX Proxy |
+| 前十大交易人空方 OI | 82,789 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI | +7,690 | TAIFEX Proxy |
+| 前十大交易人多空淨 OI 變化 (2026-10-19→2026-10-21) | +5,082 | TAIFEX Proxy snapshots (2026-10-20) |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
 
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-21 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-22 07:24:52 | 本機 |
+| 資料更新時間 | 2026-10-22 10:24:48 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -407,8 +407,8 @@
 | Call／Put 成交量比例 | 0.85 | TAIFEX Proxy |
 | Call／Put 未平倉量比例 | 1.48 | TAIFEX Proxy |
 | Put／Call Ratio | 0.68 | TAIFEX Proxy |
-| Call／Put 比例變化 (量比 2026-10-19→2026-10-20) | 34.52 | TAIFEX Proxy |
-| 與前一交易日比較 (OI 比 2026-10-19→2026-10-20) | 4.57 | TAIFEX Proxy |
+| Call／Put 比例變化 (量比 2026-10-20→2026-10-21) | -17.18 | TAIFEX Proxy |
+| 與前一交易日比較 (OI 比 2026-10-20→2026-10-21) | -3.31 | TAIFEX Proxy |
 **資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX Proxy PutCallRatio`
 
 ### 5．外資 Call／Put 部位
@@ -535,17 +535,17 @@
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| Gamma Wall 價位 | 47,000.00 | TAIFEX Proxy (options-gamma-levels) |
+| Gamma Wall 價位 | 47,000.00 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
 | 對應到期月份 | 202610 | TAIFEX Proxy |
-| 資料日期 | 2026-10-21 | TAIFEX Proxy (options-gamma-levels) |
+| 資料日期 | 2026-10-21 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
 
 ### 14．Gamma Flip
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| Gamma Flip 價位 | 46,174.50 | TAIFEX Proxy (options-gamma-levels) |
+| Gamma Flip 價位 | 46,174.50 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
 | 對應到期月份 | 202610 | TAIFEX Proxy |
-| 資料日期 | 2026-10-21 | TAIFEX Proxy (options-gamma-levels) |
+| 資料日期 | 2026-10-21 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
 
 ### 15．Max Pain
 
@@ -597,16 +597,17 @@
 
 | 項目 | 淨變化 | 區間 | 資料來源 |
 |---|---|---|---|
-| 期貨前十大 | -6,740 | 2026-10-19→2026-10-20 | TAIFEX Proxy snapshots (2026-10-20) |
+| 期貨前十大 | +5,082 | 2026-10-19→2026-10-21 | TAIFEX Proxy snapshots (2026-10-20) |
 | 買權前十大 | +13,314 | 2026-10-19→2026-10-21 | TAIFEX Proxy snapshots (2026-10-20) |
 | 賣權前十大 | -2,449 | 2026-10-19→2026-10-21 | TAIFEX Proxy snapshots (2026-10-20) |
 
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-21；資料時間：2026-10-22 07:24:52；時區：`Asia/Taipei`
+- 資料日期：2026-10-21；資料時間：2026-10-22 10:24:48；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 註記：同 T0 保護：8 格沿用前版有值（本次抓取缺失不覆寫）
+- 註記：同 T0 保護：2 格沿用前版有值（本次抓取缺失不覆寫）
+- 註記：同 T0 覆蓋：68 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
 - 未取得欄位 (0)：無
 - 註記：futures-price-after-hours 日期 2026-10-21 非今日 2026-10-22，視為無新節次，不採用
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
@@ -621,13 +622,11 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`前值遞補 (DATA 2026-10-20；當日三源皆失敗；民間估算；官方無每日序列)`
+- margin_ratio：`stockintelli 大盤融資維持率 (民間估算；官方無每日序列)`
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：融資維持率未取得 (三源皆失敗；官方無每日序列)
-- 註記：融資維持率採前值遞補 (DATA 2026-10-20)，非 T0 2026-10-21
 - 註記：上市 MI_MARGN / TWT96U 無日期欄，採用最新可得
 - 註記：借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)
 - 本報告僅整理資料，不提供交易判斷。
