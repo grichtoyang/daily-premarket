@@ -20,6 +20,10 @@ permission:
     "git commit --amend*": ask
     "rm *": ask
     "del *": ask
+  external_directory:
+    "*": ask
+    "C:/Users/acer/AppData/Local/Temp/*": allow
+    "C:/Users/acer/AppData/Local/Temp/*/*": allow
 ---
 
 你是本專案（每日盤前分析）的實作子代理（worker）。

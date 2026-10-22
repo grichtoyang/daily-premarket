@@ -26,6 +26,10 @@ permission:
     "git commit --amend*": ask
     "rm *": ask
     "del *": ask
+  external_directory:
+    "*": ask
+    "C:/Users/acer/AppData/Local/Temp/*": allow
+    "C:/Users/acer/AppData/Local/Temp/*/*": allow
   task:
     "*": deny
     "worker": allow
