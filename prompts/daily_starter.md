@@ -45,6 +45,9 @@
      - 驗證指令只跑一次，貼原始輸出（不重跑、不改寫產物硬過檢查）。
      - 執行超過 20 分鐘先回報現況，不要靜默。
      - supervisor 自身回報亦同此紀律。
+10. DATA 穩定性協定（2026-10-22 定案；實證：bot 於 10:28~10:40 連推 3 版 DATA，報告寫完後被迫重對，多花 14 分鐘）：
+   - 開跑前：`git fetch` 後查最後一筆 DATA commit 的時間（`git log -1 --format=%cd origin/master -- data_reports/DATA_REPORT_<T0>.md`）；距今 < 5 分鐘 → 先等 bot 推完再動工，不要開跑（成本約 3 秒，換掉整批重對）。
+   - 收尾前：重算 `sha256` 前 12 碼，與 `open.py` 印出的 `DATA_SHA=` 比對；不一致 → 立即以新 DATA 重對，不要等 push 被拒才發現。
 完成後回報：T0＋盤別＋一句話結論＋關鍵價位＋push 的 commit＋Dashboard 更新時間。
 
 固定指令（勿用臨時腳本）：
