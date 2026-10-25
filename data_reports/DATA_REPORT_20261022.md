@@ -74,7 +74,7 @@
 | 融資增減 | -138.3 | 億元 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券餘額 | 253,430 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
 | 融券增減 | 22,348 | 張 | HiStock 上市+上櫃融資融券 (金額口徑) |
-| 融資維持率 | 182.90 | % | stockintelli 大盤融資維持率 (民間估算；官方無每日序列) |
+| 融資維持率 | 176.99 | % | wantgoo 大盤融資維持率 (資料日期 2026-10-22；民間估算；官方無每日序列；gapfill 自動補登) |
 
 ### 5. 借券資料
 
@@ -608,6 +608,7 @@
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 註記：同 T0 保護：54 格沿用前版有值（本次抓取缺失不覆寫）
 - 未取得欄位 (2)：options.chain_oi_change, options.wall_change
+- 註記：gapfill 自動補登 L77 維持率＝176.99（wantgoo 2026-10-22）
 - 註記：futures-price-after-hours 日期 2026-10-22 非今日 2026-10-23，視為無新節次，不採用
 - 註記：futures-institutional-after-hours 日期 2026-10-27 非今日 2026-10-23，視為無新節次，不採用
 - 註記：options-institutional-after-hours 日期 2026-10-27 非今日 2026-10-23，視為無新節次，不採用
@@ -624,7 +625,7 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
-- margin_ratio：`stockintelli 大盤融資維持率 (民間估算；官方無每日序列)`
+- margin_ratio：gapfill 補登 T0 真值 176.99 (wantgoo 2026-10-22)
 - sbl：`TWSE TWT93U + TPEX margin_sbl`
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
