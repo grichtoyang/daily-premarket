@@ -6,8 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       date:
-        description: 'DATA_REPORT 日期 YYYYMMDD'
+        description: 'DATA_REPORT 日期 YYYYMMDD (留空用今天)'
         required: false
+        default: ''
 
 concurrency:
   group: daily-dashboard
@@ -16,6 +17,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,7 +34,11 @@ jobs:
 
       - name: Generate V7 Pro Dashboard
         run: |
-          python scripts/generate_daily.py --date ${{ inputs.date }}
+          if [ -z "${{ inputs.date }}" ]; then
+            python scripts/generate_daily.py
+          else
+            python scripts/generate_daily.py --date ${{ inputs.date }}
+          fi
 
       - name: Commit & Push Dashboard
         run: |
