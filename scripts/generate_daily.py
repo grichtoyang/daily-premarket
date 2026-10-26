@@ -23,7 +23,7 @@ def parse_data_report(md_text):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--date', default=datetime.now().strftime('%Y%m%d'))
+    parser.add_argument('--date', nargs='?', default=datetime.now().strftime('%Y%m%d'), const=datetime.now().strftime('%Y%m%d'))
     args = parser.parse_args()
     date_str = args.date
     date_dash = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
