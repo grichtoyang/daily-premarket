@@ -1,0 +1,60 @@
+name: Daily V8 Pro Dashboard
+
+on:
+  schedule:
+    - cron: '30 0 * * 1-5'  # 08:30 Taipei
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'DATA_REPORT 日期 YYYYMMDD (留空自動今天)'
+        required: false
+
+# 關鍵：給 Actions 寫入權限
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Ensure dashboards dir
+        run: |
+          mkdir -p dashboards
+          ls -la
+
+      - name: Generate V8 Pro Dashboard
+        run: |
+          if [ -z "${{ inputs.date }}" ]; then
+            echo "No date input, using today Taipei"
+            DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
+            python v8_pro_builder.py --date $DATE --golden templates/v8-pro-golden-master.html
+          else
+            echo "Using date ${{ inputs.date }}"
+            python v8_pro_builder.py --date ${{ inputs.date }} --golden templates/v8-pro-golden-master.html
+          fi
+
+      - name: List outputs
+        run: |
+          ls -lh dashboards/ || true
+          echo "--- spot check ---"
+          grep -o "TAIFEX PREMARKET V8 PRO" dashboards/taifex-*.html | head -n 1 || true
+          grep -o "c4 US%" dashboards/taifex-*.html | head -n 1 || true
+
+      - name: Commit & Push Dashboard
+        run: |
+          git config user.name "v8-pro-bot"
+          git config user.email "bot@grichtoyang.github.io"
+          git pull --rebase || true
+          git add dashboards/ templates/v8-pro-golden-master.html || true
+          git diff --staged --quiet || git commit -m "chore: auto dashboard $(date +%Y%m%d) - V8 Pro only dashboards/"
+          git push
