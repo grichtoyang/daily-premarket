@@ -1,13 +1,23 @@
-name: Daily V8 Pro Dashboard
+name: Daily V8 Pro Dashboard - 40 Cards Full Dynamic
 
 on:
   schedule:
-    - cron: '30 0 * * 1-5'  # 08:30 Taipei
+    # 避開 00:30 尖峰，用 07/17/27 分散，GitHub官方建議避開整點
+    - cron: '27 0 * * 1-5'  # 08:27 Taipei - 主
+    - cron: '37 0 * * 1-5'  # 08:37 Taipei - 備援1 (若27分塞車)
+    - cron: '47 0 * * 1-5'  # 08:47 Taipei - 備援2
   workflow_dispatch:
     inputs:
       date:
         description: 'DATA_REPORT 日期 YYYYMMDD (留空自動今天)'
         required: false
+  repository_dispatch:
+    types: [v8-pro-trigger]  # 外部 Cloudflare Worker 觸發用
+
+# 防止同時跑3個，用 concurrency + cancel-in-progress
+concurrency:
+  group: v8-pro-daily
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -15,24 +25,71 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 若已產過當日檔案，跳過 (避免 27/37/47 重複跑3次)
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
+      - name: Check if today already built (avoid duplicate)
+        id: check
+        run: |
+          DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
+          if [ -f "dashboards/taifex-${DATE}.html" ]; then
+            echo "Dashboard for $DATE already exists, checking age..."
+            # 若檔案已存在且是 2小時內產的，跳過 (避免 27/37/47 重複)
+            FILE_AGE=$(find dashboards/taifex-${DATE}.html -mmin -120 2>/dev/null | wc -l)
+            if [ "$FILE_AGE" -eq 1 ]; then
+              echo "skip=true" >> $GITHUB_OUTPUT
+              echo "Dashboard already built within 2h, skipping"
+            else
+              echo "skip=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Python
+        if: steps.check.outputs.skip == 'false'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Ensure dashboards dir
+      - name: Ensure dirs & Find Builder (3層備援)
+        if: steps.check.outputs.skip == 'false'
         run: |
-          mkdir -p dashboards templates
-          ls -la
-          ls -lh scripts/v8_pro_builder.py || echo "builder not found"
+          mkdir -p dashboards templates scripts
+          echo "=== Builder search ==="
+          # 3層備援找 Builder： v8_pro_builder.py -> scripts/v8_pro_builder.py -> dashboards/v8_pro_builder.py
+          if [ -f "v8_pro_builder.py" ]; then
+            echo "BUILDER_PATH=v8_pro_builder.py" >> $GITHUB_ENV
+          elif [ -f "scripts/v8_pro_builder.py" ]; then
+            echo "BUILDER_PATH=scripts/v8_pro_builder.py" >> $GITHUB_ENV
+          elif [ -f "dashboards/v8_pro_builder.py" ]; then
+            echo "BUILDER_PATH=dashboards/v8_pro_builder.py" >> $GITHUB_ENV
+          else
+            echo "ERROR: Builder not found!"
+            find . -name "*builder*.py" | head -20
+            exit 1
+          fi
+          echo "Using $BUILDER_PATH size $(wc -c < $BUILDER_PATH)"
+          
+          if [ ! -f "templates/v8-pro-golden-master.html" ]; then
+            echo "Golden master missing, trying backup..."
+            find . -name "v8-pro-golden-master.html" | head -5
+            # 用最新的一個
+            LATEST=$(find . -name "v8-pro-golden-master.html" -type f -exec ls -t {} + | head -1)
+            if [ -n "$LATEST" ]; then
+              cp "$LATEST" templates/v8-pro-golden-master.html
+              echo "Restored golden from $LATEST"
+            else
+              exit 1
+            fi
+          fi
 
-      - name: Generate V8 Pro Dashboard
+      - name: Generate V8 Pro Dashboard (40 cards full dynamic)
+        if: steps.check.outputs.skip == 'false'
         run: |
           if [ -z "${{ inputs.date }}" ]; then
             DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
@@ -42,35 +99,65 @@ jobs:
             echo "Using date: $DATE"
           fi
           
-          BUILDER="scripts/v8_pro_builder.py"
+          BUILDER="${{ env.BUILDER_PATH }}"
           GOLDEN="templates/v8-pro-golden-master.html"
           
-          if [ ! -f "$BUILDER" ]; then
-            echo "ERROR: $BUILDER not found!"
-            find . -name "v8_pro_builder.py" -o -name "*builder*.py" | head -20
-            exit 1
-          fi
-          
-          if [ ! -f "$GOLDEN" ]; then
-            echo "ERROR: $GOLDEN not found!"
-            ls -lh templates/
-            exit 1
-          fi
-          
           echo "Building with $BUILDER --date $DATE --golden $GOLDEN"
-          python $BUILDER --date $DATE --golden $GOLDEN
+          echo "Builder size: $(wc -c < $BUILDER) hash $(sha256sum $BUILDER | cut -c1-12)"
+          echo "Golden size: $(wc -c < $GOLDEN) hash $(sha256sum $GOLDEN | cut -c1-12)"
+          
+          # 3次重試，若 Yahoo/TWSE API 失敗
+          for i in 1 2 3; do
+            echo "=== Attempt $i ==="
+            if python $BUILDER --date $DATE --golden $GOLDEN; then
+              echo "Build success on attempt $i"
+              break
+            else
+              echo "Build failed on attempt $i, retry in 30s..."
+              sleep 30
+            fi
+            if [ $i -eq 3 ]; then
+              echo "All 3 attempts failed!"
+              exit 1
+            fi
+          done
 
-      - name: List outputs
+      - name: List outputs & Verify 40 cards
+        if: steps.check.outputs.skip == 'false'
         run: |
           ls -lh dashboards/ | tail -20
-          echo "--- spot check V8 PRO ---"
-          grep -o "TAIFEX PREMARKET V8 PRO" dashboards/taifex-*.html | tail -1 || echo "V8 PRO tag check failed"
+          echo "--- Verify V8 Pro 40 cards ---"
+          FILE=$(ls -t dashboards/taifex-*.html | head -1)
+          echo "Latest: $FILE size $(wc -c < $FILE)"
+          grep -o "Bias 盤前偏向" "$FILE" | wc -l
+          echo "Cards count: $(grep -o 'title:"' "$FILE" | wc -l) (should be 41)"
+          echo "Dynamic check: $(grep -c "15因子共振\|Regime" "$FILE") dynamic phrases"
 
-      - name: Commit & Push Dashboard
+      - name: Commit & Push Dashboard + DB
+        if: steps.check.outputs.skip == 'false'
         run: |
           git config user.name "v8-pro-bot"
           git config user.email "bot@grichtoyang.github.io"
           git pull --rebase || true
           git add dashboards/ templates/v8-pro-golden-master.html || true
-          git diff --staged --quiet || git commit -m "chore: auto dashboard $(date +%Y%m%d) - V8 Pro only dashboards/"
+          # 若有 SQLite DB 也提交 (真回測用)
+          git add dashboards/*.db || true
+          git diff --staged --quiet || git commit -m "chore: auto dashboard $(date +%Y%m%d) - V8 Pro 40 cards 15-factor + VIX dynamic + 20 templates"
           git push
+
+  # 備案通知：若塞車超過 09:00 還沒產，發 issue 提醒
+  notify-delay:
+    if: always()
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check if dashboard exists
+        run: |
+          DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
+          if [ ! -f "dashboards/taifex-${DATE}.html" ]; then
+            echo "Dashboard missing for $DATE after all retries! Creating issue..."
+            gh issue create --title "V8 Pro Dashboard missing $DATE - GitHub Actions congested" --body "Schedule 27/37/47 all failed, need manual trigger via Cloudflare Worker backup" || true
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
