@@ -129,11 +129,8 @@ def main():
         out_path.write_text(content_new, encoding='utf-8')
         print(f"[V8 Pro] Wrote {out_path} size {len(content_new)} hash {hashlib.sha256(content_new.encode()).hexdigest()[:12]}")
 
-    for out_dir in ["/mnt/data/dashboards"]:
-        p = pathlib.Path(out_dir)
-        p.mkdir(parents=True, exist_ok=True)
-        out_path = p / f"taifex-{date_str}.html"
-        out_path.write_text(content_new, encoding='utf-8')
+    # Only write to relative dashboards/ (GitHub Actions compatible, no /mnt/data)
+    # Second absolute path removed to avoid PermissionError in Actions
 
     print("[V8 Pro] CHECK OK: he + bias-gauge + V8 Canvas + 100% Real Mode")
     return 0
