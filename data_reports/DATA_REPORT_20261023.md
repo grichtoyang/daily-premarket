@@ -1,12 +1,12 @@
 # DATA_REPORT_20261023
 
-- 報告日期：`2026-10-26`
+- 報告日期：`2026-10-27`
 - T0 交易日期：`2026-10-23`
-- 資料產出時間：`2026-10-26 10:15:15`
+- 資料產出時間：`2026-10-27 09:48:26`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
-- 排定班別：`morning`
+- 排定班別：`manual`
 
 ---
 
@@ -104,12 +104,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,623.68 | -39.75 | -0.52 | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 25,955.34 | -53.52 | -0.21 | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 28,957.53 | -1.16 | -0.00 | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 52,215.16 | -652.82 | -1.23 | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 10,779.46 | 47.48 | +0.44 | Yahoo Finance Chart API |
-| VIX | ^VIX | 19.45 | 0.42 | +2.21 | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,676.77 | 53.09 | +0.70 | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 26,169.38 | 214.04 | +0.82 | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 29,273.40 | 315.88 | +1.09 | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 52,361.58 | 146.42 | +0.28 | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 11,083.47 | 304.01 | +2.82 | Yahoo Finance Chart API |
+| VIX | ^VIX | 18.39 | -1.06 | -5.45 | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -117,11 +117,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 62,517.42 | -175.74 | -0.28 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 5,503.58 | -46.72 | -0.84 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 23,116.26 | 22.89 | +0.10 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,671.41 | -19.06 | -0.52 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 11,510.77 | -163.06 | -1.40 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 63,325.06 | 1,135.41 | +1.83 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 5,711.73 | 242.26 | +4.43 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 23,260.34 | 48.53 | +0.21 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,697.13 | -0.39 | -0.01 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 11,593.79 | 59.41 | +0.52 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,672.75 | 13.00 | +0.17 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 29,160.00 | 42.25 | +0.15 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,528.00 | 134.00 | +0.26 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,795.20 | 10.70 | +0.38 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,728.25 | 68.50 | +0.89 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,525.75 | 408.00 | +1.40 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,613.00 | 219.00 | +0.42 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,801.50 | 17.00 | +0.61 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -140,9 +140,9 @@
 
 | 項目 | API 資料欄位／識別 | 殖利率 | 日變化 | 資料來源 |
 |---|---|---|---|---|
-| 美國 2 年期殖利率 | 2 Yr | 4.69 | 0.04 | U.S. Treasury yield.xml (網頁備援) |
-| 美國 10 年期殖利率 | 10 Yr | 4.99 | 0.03 | Yahoo Finance (備援) |
-| 美國 30 年期殖利率 | 30 Yr | 5.32 | 0.03 | Yahoo Finance (備援) |
+| 美國 2 年期殖利率 | 2 Yr | 4.68 | -0.01 | U.S. Treasury yield.xml (網頁備援) |
+| 美國 10 年期殖利率 | 10 Yr | 4.99 | -0.00 | Yahoo Finance (備援) |
+| 美國 30 年期殖利率 | 30 Yr | 5.30 | -0.01 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.56 | -0.03 | -0.10 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.60 | -0.21 | -0.20 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 156.71 | 0.22 | +0.14 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,322.98 | -3.01 | -0.23 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.54 | -0.03 | -0.09 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 102.03 | 0.07 | +0.07 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.71 | 0.88 | +0.56 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,323.18 | 1.42 | +0.11 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -161,9 +161,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 418.51 | 6.16 | +1.49 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 18.89 | 0.36 | +1.94 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 38.69 | 0.95 | +2.52 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 424.37 | 5.86 | +1.40 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 19.18 | 0.29 | +1.54 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 39.91 | 1.22 | +3.15 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -171,62 +171,62 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 101.27 | -2.00 | -1.94 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,006.80 | -1.10 | -0.03 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 79,708.41 | -1,082.43 | -1.34 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 100.78 | -2.49 | -2.41 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,030.90 | 23.00 | +0.57 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 80,074.29 | 50.28 | +0.06 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：創新板1476萬戶投資人將解禁！明年買股免簽風險預告書
-  - 來源：Yahoo 台股；發布時間：2026-10-25T10:50:00Z；台北時間：2026-10-25 18:50
-  - 摘要：台灣創新板迎來重大制度變革！證交所規劃自2027年元旦起，取消投資人首次買進創新板股票須簽署風險預告書的規定，潛在投資戶數可望擴大至1476萬戶。隨著交易制度逐步接軌一般上市市場，證交所也將目光轉向國際，力拚打造「亞洲那斯達克」，吸引更多國
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%89%B5%E6%96%B0%E6%9D%BF1476%E8%90%AC%E6%88%B6%E6%8A%95%E8%B3%87%E4%BA%BA%E5%B0%87%E8%A7%A3%E7%A6%81-%E6%98%8E%E5%B9%B4%E8%B2%B7%E8%82%A1%E5%85%8D%E7%B0%BD%E9%A2%A8%E9%9A%AA%E9%A0%90%E5%91%8A%E6%9B%B8-105000811.html
-- 事件2：台股重挫近3800點！「財經作家」罕見不敢逢低買　點出「這訊號」最令人不安
-  - 來源：Yahoo 台股；發布時間：2026-10-25T08:20:00Z；台北時間：2026-10-25 16:20
-  - 摘要：[FTNN新聞網]實習記者周宗怡／綜合報導台股10月初才創下歷史收盤新高49822.55點，如今卻快速拉回，上周四（22日）下跌至46041.43點，讓投資人情緒轉趨謹慎。...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E9%87%8D%E6%8C%AB%E8%BF%913800%E9%BB%9E-%E8%B2%A1%E7%B6%93%E4%BD%9C%E5%AE%B6-%E7%BD%95%E8%A6%8B%E4%B8%8D%E6%95%A2%E9%80%A2%E4%BD%8E%E8%B2%B7-%E9%BB%9E%E5%87%BA-%E9%80%99%E8%A8%8A%E8%99%9F-082000694.html
-- 事件3：【短評】蔣萬安吞敗恐「一屍五命」　藍營的警語或喪鐘？
-  - 來源：Yahoo 台股；發布時間：2026-10-25T01:05:36Z；台北時間：2026-10-25 09:05
-  - 摘要：颱風天前，我和藍營熟悉市政、黨務、選務大咖聊到蔣萬安（國民黨）選情，對方語重心長，認爲蔣當然有可能輸，且蔣萬安抗「洋流」結果一定外溢，並認為北市府團隊根本太廢、沒辦法打仗。若非陳國君辭悠遊卡總經理坐鎮蔣競辦，祭出毒品政策、廢松山機場2招，試
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%9F%AD%E8%A9%95-%E8%94%A3%E8%90%AC%E5%AE%89%E5%90%9E%E6%95%97%E6%81%90-%E5%B1%8D%E4%BA%94%E5%91%BD-%E8%97%8D%E7%87%9F%E7%9A%84%E8%AD%A6%E8%AA%9E%E6%88%96%E5%96%AA%E9%90%98-010536161.html
-- 事件4：少賺比賠錢更難受？26歲股民資產縮水60萬　親曝「帳面戰績」：是不是該先停利
-  - 來源：Yahoo 台股；發布時間：2026-10-24T13:15:00Z；台北時間：2026-10-24 21:15
-  - 摘要：[FTNN新聞網]實習記者林妤蓁／綜合報導台股近期震盪，一名26歲網友在Dcard股票板發文表示，今年初總資產約200萬元，隨著股市上漲及工作存款，一度累積至400萬...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%B0%91%E8%B3%BA%E6%AF%94%E8%B3%A0%E9%8C%A2%E6%9B%B4%E9%9B%A3%E5%8F%97-26%E6%AD%B2%E8%82%A1%E6%B0%91%E8%B3%87%E7%94%A2%E7%B8%AE%E6%B0%B460%E8%90%AC-%E8%A6%AA%E6%9B%9D-%E5%B8%B3%E9%9D%A2%E6%88%B0%E7%B8%BE-%E6%98%AF%E4%B8%8D%E6%98%AF%E8%A9%B2%E5%85%88%E5%81%9C%E5%88%A9-131500406.html
-- 事件5：500萬「放10年不賣」買0050還是00662？網友選邊站：這檔更有潛力
-  - 來源：Yahoo 台股；發布時間：2026-10-24T06:02:16Z；台北時間：2026-10-24 14:02
-  - 摘要：如果手上突然有500萬元，打算投入股市並長期持有10年，究竟該選台股還是美股？近日一名網友在Threads發文，提出將500萬元全數投入元大台灣50（0050），或富邦NASDAQ（00662）的選擇題，好奇哪一檔更適合長期投資，引發網友熱
-  - 原文連結：https://tw.stock.yahoo.com/news/500%E8%90%AC-%E6%94%BE10%E5%B9%B4%E4%B8%8D%E8%B3%A3-%E8%B2%B70050%E9%82%84%E6%98%AF00662-%E7%B6%B2%E5%8F%8B%E9%81%B8%E9%82%8A%E7%AB%99-%E9%80%99%E6%AA%94%E6%9B%B4%E6%9C%89%E6%BD%9B%E5%8A%9B-060216470.html
-- 事件6：影響選舉成敗？紐時：台灣縣市首長宣布放颱風假、選舉年增加31%
-  - 來源：Yahoo 台股；發布時間：2026-10-23T12:04:02Z；台北時間：2026-10-23 20:04
-  - 摘要：中度颱風薔琵來襲，台灣全島週五（10/23）皆停班停課，暴風圈傍晚已籠罩台灣大部分地區。美國《紐約時報》引述專家分析報導，在選舉年，台灣縣市首長因颱風而宣布放假的可能性會增加31%。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%BD%B1%E9%9F%BF%E9%81%B8%E8%88%89%E6%88%90%E6%95%97-%E7%B4%90%E6%99%82-%E5%8F%B0%E7%81%A3%E7%B8%A3%E5%B8%82%E9%A6%96%E9%95%B7%E5%AE%A3%E5%B8%83%E6%94%BE%E9%A2%B1%E9%A2%A8%E5%81%87-%E9%81%B8%E8%88%89%E5%B9%B4%E5%A2%9E%E5%8A%A031-120402710.html
-- 事件7：Audi defends plans for a $4 billion Georgia plant amid VW restructuring, tariffs
-  - 來源：CNBC；發布時間：Sun, 25 Oct 2026 16:42:42 GMT；台北時間：2026-10-26 00:42
-  - 摘要：Audi's CEO defended the company's plans for a $4 billion plant in Georgia, calling it a business decision to grow sales and reduce exposure to U.S. ta
-  - 原文連結：https://www.cnbc.com/2026/10/25/audi-georgia-us-plant-tariffs-volkswagen.html
-- 事件8：America by the numbers: How voters feel about the economy, inflation, AI and Trump
-  - 來源：CNBC；發布時間：Sat, 24 Oct 2026 10:58:30 GMT；台北時間：2026-10-24 18:58
-  - 摘要：With the U.S. midterm elections looming, Americans are nearly as gloomy about the economy as they were when the nation was emerging from the pandemic.
-  - 原文連結：https://www.cnbc.com/2026/10/23/america-by-the-numbers-how-voters-feel-about-the-economy-inflation-ai-and-trump.html
-- 事件9：Moody's holds steady on France's credit rating as country grapples with turmoil and higher yields
-  - 來源：CNBC；發布時間：Fri, 23 Oct 2026 22:49:42 GMT；台北時間：2026-10-24 06:49
-  - 摘要：Moody's left its credit rating on France at Aa3, giving the country some relief in a week of unrest.
-  - 原文連結：https://www.cnbc.com/2026/10/23/moodys-holds-steady-on-frances-credit-rating-as-country-grapples-with-turmoil-and-higher-yields.html
-- 事件10：SpaceX closes $40 billion debt deal for AI chips, Elon Musk says
-  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 00:37:51 GMT；台北時間：2026-10-26 08:37
-  - 摘要：Elon Musk said in an X post that SpaceX has closed $40 billion in debt financing to purchase GPUs.
-  - 原文連結：https://www.cnbc.com/2026/10/26/spacex-closes-40-billion-debt-deal-for-ai-chips-elon-musk-.html
-- 事件11：Turmoil hits AI buildout as neoclouds face pressure, credit risks mount and Solidigm pulls IPO
-  - 來源：CNBC；發布時間：Sat, 24 Oct 2026 06:41:14 GMT；台北時間：2026-10-24 14:41
-  - 摘要：Stock slumps, pulled IPOs and rising spreads on credit default swaps this week sets stage for hyperscaler earnings.
-  - 原文連結：https://www.cnbc.com/2026/10/23/ai-turmoil-neoclouds-struggle-credit-risks-jump-solidigm-pulls-ipo.html
-- 事件12：More than a third of S&P 500 companies are about to report earnings as market confidence cracks
-  - 來源：MarketWatch；發布時間：Sun, 25 Oct 2026 14:00:00 GMT；台北時間：2026-10-25 22:00
-  - 摘要：&#x201c;With cautious to negative market sentiment, it could be a tricky week,&#x201d; one strategist says.
-  - 原文連結：https://www.marketwatch.com/story/more-than-a-third-of-s-p-500-companies-are-about-to-report-earnings-as-market-confidence-cracks-03b7a8f1?mod=mw_rss_topstories
+- 事件1：川普再怨台灣偷走美晶片產業「荒謬的低價」搶占市場
+  - 來源：Yahoo 台股；發布時間：2026-10-26T20:10:00Z；台北時間：2026-10-27 04:10
+  - 摘要：美國總統川普14日才宣布，台灣承諾採購價值700至800億美元的阿拉斯加液化天然氣（LNG）。然而，他25日受訪時，再提台灣「偷走」了美國的晶片產業，還說「他們以極其荒謬的低價生產晶片，並強行擠占市場」。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%B7%9D%E6%99%AE%E5%86%8D%E8%BD%9F%E5%8F%B0%E7%81%A3-%E4%BD%8E%E5%83%B9%E6%90%B6%E5%8D%A0%E6%99%B6%E7%89%87%E5%B8%82%E5%A0%B4-201000561.html
+- 事件2：部分iPhone Duo爆內螢幕破裂災情 蘋果展開調查
+  - 來源：Yahoo 台股；發布時間：2026-10-26T17:30:04Z；台北時間：2026-10-27 01:30
+  - 摘要：蘋果首款摺疊手機iPhone Duo上市後，傳出部分用戶展開內螢幕數小時至數天內出現裂痕、白斑與誤觸等異常。 蘋果員工稱調查團隊已啟動，工程師正設法取得故障裝置分析，但公司尚未公開回應，確切原因與受影響比例仍不明。 維修平台iFixit懷疑
+  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%8A%E5%B8%82%E6%89%8D%E5%B9%BE%E5%A4%A9%E8%9E%A2%E5%B9%95%E5%B0%B1%E8%A3%82-%E9%83%A8%E5%88%86iphone-duo%E7%94%A8%E6%88%B6%E5%8F%8D%E6%98%A0%E7%81%BD%E6%83%85-%E8%98%8B%E6%9E%9C%E5%B1%95%E9%96%8B%E8%AA%BF%E6%9F%A5-173004095.html
+- 事件3：馬斯克示警：逾200家業者面臨「孔雀魚級死亡潮」
+  - 來源：Yahoo 台股；發布時間：2026-10-26T22:50:04Z；台北時間：2026-10-27 06:50
+  - 摘要：馬斯克警告，債市對AI資料中心業者融資急轉冷，逾200家新雲端業者恐陷整併潮。 CoreWeave、Nebius等大型業者仍有私募信貸、供應商融資等管道，且獲輝達投資支持。 CoreWeave、Nebius、Iren近1個月股價跌逾30%至
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%A6%AC%E6%96%AF%E5%85%8B%E8%AD%A6%E5%91%8A%E9%80%BE200%E5%AE%B6%E6%96%B0%E9%9B%B2%E7%AB%AF%E6%A5%AD%E8%80%85%E9%9D%A2%E8%87%A8-%E5%AD%94%E9%9B%80%E9%AD%9A%E7%B4%9A%E6%AD%BB%E4%BA%A1%E6%BD%AE-%E7%91%9E%E9%8A%80%E8%A7%A3%E6%9E%90%E9%BE%8D%E9%A0%AD%E5%AD%98%E6%B4%BB%E5%84%AA%E5%8B%A2-225004563.html
+- 事件4：銀行鬧錢荒 祭逾2%存款利率向台積電等科技廠求援
+  - 來源：Yahoo 台股；發布時間：2026-10-26T22:35:57Z；台北時間：2026-10-27 06:35
+  - 摘要：金融圈人士透露，為因應資金吃緊狀況，銀行體系已展開搶救「流動性覆蓋率」（ＬＣＲ）大作戰，求援對象從以往的中華郵政轉向滿手現金的台積電等科技大廠，其中為了爭搶台積電數百億元的存款，國銀加碼利率，從四個多月前百分之一點七五跳升到百分之二點一，增
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%8C%A2%E8%8D%92%E6%95%91%E6%80%A5-%E9%8A%80%E8%A1%8C%E5%90%91%E7%A7%91%E6%8A%80%E5%A4%A7%E5%BB%A0%E8%AA%BF%E9%A0%AD%E5%AF%B8-223557611.html
+- 事件5：玉晶光60天漲140%、聯茂本益比120⋯全被列注意股
+  - 來源：Yahoo 台股；發布時間：2026-10-27T00:00:00Z；台北時間：2026-10-27 08:00
+  - 摘要：[FTNN新聞網]記者何亞軒／綜合報導上週四（22日）台股加權指數收盤46,041.43點，跌846.34點，跌幅達.81%，上週四共有14檔個股被列注意股，其中玉晶光（3406）...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%88%87%E7%A7%91%E6%8A%80%E6%96%B0%E5%B7%A8%E9%A0%AD%E6%88%B0%E7%95%A5%E5%90%88%E4%BD%9C-%E9%80%99%E5%85%89%E5%AD%B8%E9%BB%91%E9%A6%AC-2%E7%87%9F%E6%A5%AD%E6%97%A5%E6%94%B6%E7%9B%A4%E6%BC%B2%E5%B9%85%E9%A3%86140-41-%E8%A2%AB%E5%88%97%E6%B3%A8%E6%84%8F%E8%82%A1-000000161.html
+- 事件6：史上最大！Meta擬籌資3.1兆衝AI 輝達、AMD等有興趣
+  - 來源：Yahoo 台股；發布時間：2026-10-26T14:46:19Z；台北時間：2026-10-26 22:46
+  - 摘要：臉書母公司Meta Platforms週一（26日）宣布，由於正大幅增加對 AI基礎設施擴充的支出，公司計畫進行有史以來規模最大的股權融資，籌集高達950億美元（近3.1兆台幣）的資金。
+  - 原文連結：https://tw.stock.yahoo.com/news/ai%E6%8A%95%E8%B3%87%E5%A4%AA%E7%87%92%E9%8C%A2-meta%E5%B0%87%E7%99%BC%E8%82%A1%E8%B3%A3%E8%82%A1%E7%B1%8C%E6%8E%AA3-1%E5%85%86%E5%8F%B0%E5%B9%A3%E8%B3%87%E9%87%91-144619077.html
+- 事件7：Federal Reserve is likely to hold interest rates steady in October. Here's what that means for consumers
+  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 18:51:23 GMT；台北時間：2026-10-27 02:51
+  - 摘要：The Federal Reserve is expected to keep its overnight rate unchanged at the conclusion of its October meeting this week.
+  - 原文連結：https://www.cnbc.com/2026/10/26/fed-decision-expectations-october-meeting.html
+- 事件8：From Wall Street to Silicon Valley, Anthropic IPO poised to have massive 'trickle-down effect'
+  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 22:50:07 GMT；台北時間：2026-10-27 06:50
+  - 摘要：With the AI trade sputtering of late and interest rates on the rise, Anthropic's IPO is taking on outsized importance.
+  - 原文連結：https://www.cnbc.com/2026/10/26/anthropic-ipo-might-trigger-tech-reset-if-ipo-underperforms.html
+- 事件9：Meta, SpaceX, Anthropic stoke the AI funding frenzy. What it means for our stocks
+  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 20:26:26 GMT；台北時間：2026-10-27 04:26
+  - 摘要：unavailable
+  - 原文連結：https://www.cnbc.com/investingclub/2026/10/26/meta-spacex-anthropic-stoke-the-ai-funding-frenzy-what-it-means-for-our-stocks.html
+- 事件10：FTC and 20 states sue Dollar General, alleging retailer overcharged shoppers
+  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 18:37:01 GMT；台北時間：2026-10-27 02:37
+  - 摘要：The Federal Trade Commission and 20 states have filed a lawsuit against Dollar General, claiming the retailer has charged customers more than advertis
+  - 原文連結：https://www.cnbc.com/2026/10/26/ftc-dollar-general-lawsuit.html
+- 事件11：Brazilian stocks rocked as Lula wins presidential election, Bolsonaro reportedly refuses to concede
+  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 14:09:38 GMT；台北時間：2026-10-26 22:09
+  - 摘要：It's the first time since Brazil returned to direct elections in 1989 that a candidate has won the final runoff after losing in the first round.
+  - 原文連結：https://www.cnbc.com/2026/10/26/brazil-lula-win-presidential-election-runoff-vote.html
+- 事件12：Cracking AI trade has Wall Street looking for a hedge. An ex-Citadel quant may have the answer
+  - 來源：CNBC；發布時間：Mon, 26 Oct 2026 12:08:13 GMT；台北時間：2026-10-26 20:08
+  - 摘要：Jasper Zhang runs Hyperbolic, a GPU exchange building a software for "physical" AI futures
+  - 原文連結：https://www.cnbc.com/2026/10/26/gpu-futures-ai-hedge-hyperbolic.html
 
 
 ## 三、期貨
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-23 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-26 10:15:15 | 本機 |
+| 資料更新時間 | 2026-10-27 09:48:26 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -407,9 +407,9 @@
 | Call／Put 成交量比例 | 1.15 | TAIFEX Proxy |
 | Call／Put 未平倉量比例 | 1.75 | TAIFEX Proxy |
 | Put／Call Ratio | 0.57 | TAIFEX Proxy |
-| Call／Put 比例變化 | -25.67 | TAIFEX Proxy |
-| 與前一交易日比較 | 3.32 | TAIFEX Proxy |
-**資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX OpenAPI PutCallRatio`
+| Call／Put 比例變化 (量比 2026-10-21→2026-10-22) | -25.67 | TAIFEX Proxy |
+| 與前一交易日比較 (OI 比 2026-10-21→2026-10-22) | 3.32 | TAIFEX Proxy |
+**資料來源：** 比例 `TAIFEX Proxy chain`；變化 `TAIFEX Proxy PutCallRatio`
 
 ### 5．外資 Call／Put 部位
 
@@ -604,11 +604,11 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-23；資料時間：2026-10-26 10:15:15；時區：`Asia/Taipei`
+- 資料日期：2026-10-23；資料時間：2026-10-27 09:48:26；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 註記：同 T0 保護：2 格沿用前版有值（本次抓取缺失不覆寫）
-- 註記：同 T0 覆蓋：53 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 註記：同 T0 覆蓋：80 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
 - 未取得欄位 (20)：taiex.open, taiex.high, taiex.low, listed_breadth.up, listed_breadth.down, listed_breadth.flat, listed_breadth.limit_up, listed_breadth.limit_down, otc_breadth.up, otc_breadth.down, otc_breadth.flat, otc_breadth.limit_up, otc_breadth.limit_down, margin.fin_yi, margin.fin_chg_yi, sbl.sale_bal, sbl.sale_chg, turnover.listed, turnover.otc, turnover.total
+- 註記：無日期端點為最新盤勢快照 (判定資料日期 2026-10-26，非 T0 2026-10-23)，適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註
 - 註記：futures-price-after-hours 日期 2026-10-22 非今日 2026-10-27，視為無新節次，不採用
 - 註記：Call/Put Wall 與 Max Pain 資料日期 2026-10-22 (T0 2026-10-23 端點不穩，採最新可得)
 - 註記：Gamma 資料日期 2026-10-22 (T0 2026-10-23 尚無，上游 FMTQIK 落後，採最新可得)
