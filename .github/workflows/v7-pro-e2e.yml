@@ -1,0 +1,23 @@
+name: V7 Pro Dashboard isolated regression checks
+
+on:
+  push:
+    branches:
+      - test/v7-pro-e2e
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated test branch
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run V7 Pro static regression checks
+        run: python tests/test_v7_dashboard_static.py
