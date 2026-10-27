@@ -9,7 +9,6 @@ on:
         description: 'DATA_REPORT 日期 YYYYMMDD (留空自動今天)'
         required: false
 
-# 關鍵：給 Actions 寫入權限
 permissions:
   contents: write
 
@@ -29,26 +28,43 @@ jobs:
 
       - name: Ensure dashboards dir
         run: |
-          mkdir -p dashboards
+          mkdir -p dashboards templates
           ls -la
+          ls -lh scripts/v8_pro_builder.py || echo "builder not found"
 
       - name: Generate V8 Pro Dashboard
         run: |
           if [ -z "${{ inputs.date }}" ]; then
-            echo "No date input, using today Taipei"
             DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
-            python v8_pro_builder.py --date $DATE --golden templates/v8-pro-golden-master.html
+            echo "No date input, using today: $DATE"
           else
-            echo "Using date ${{ inputs.date }}"
-            python v8_pro_builder.py --date ${{ inputs.date }} --golden templates/v8-pro-golden-master.html
+            DATE="${{ inputs.date }}"
+            echo "Using date: $DATE"
           fi
+          
+          BUILDER="scripts/v8_pro_builder.py"
+          GOLDEN="templates/v8-pro-golden-master.html"
+          
+          if [ ! -f "$BUILDER" ]; then
+            echo "ERROR: $BUILDER not found!"
+            find . -name "v8_pro_builder.py" -o -name "*builder*.py" | head -20
+            exit 1
+          fi
+          
+          if [ ! -f "$GOLDEN" ]; then
+            echo "ERROR: $GOLDEN not found!"
+            ls -lh templates/
+            exit 1
+          fi
+          
+          echo "Building with $BUILDER --date $DATE --golden $GOLDEN"
+          python $BUILDER --date $DATE --golden $GOLDEN
 
       - name: List outputs
         run: |
-          ls -lh dashboards/ || true
-          echo "--- spot check ---"
-          grep -o "TAIFEX PREMARKET V8 PRO" dashboards/taifex-*.html | head -n 1 || true
-          grep -o "c4 US%" dashboards/taifex-*.html | head -n 1 || true
+          ls -lh dashboards/ | tail -20
+          echo "--- spot check V8 PRO ---"
+          grep -o "TAIFEX PREMARKET V8 PRO" dashboards/taifex-*.html | tail -1 || echo "V8 PRO tag check failed"
 
       - name: Commit & Push Dashboard
         run: |
