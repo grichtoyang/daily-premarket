@@ -6,19 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       date:
-        description: 'DATA_REPORT 日期 YYYYMMDD (留空用今天)'
+        description: 'DATA_REPORT 日期 YYYYMMDD (留空自動今天)'
         required: false
-        default: ''
-
-concurrency:
-  group: daily-dashboard
-  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,20 +23,29 @@ jobs:
           python-version: '3.11'
 
       - name: Ensure dashboard dir
-        run: mkdir -p dashboard && touch dashboard/.gitkeep
+        run: |
+          mkdir -p dashboard dashboards data_reports
+          ls -la
 
       - name: Generate V7 Pro Dashboard
         run: |
           if [ -z "${{ inputs.date }}" ]; then
+            echo "No date input, using today"
             python scripts/generate_daily.py
           else
+            echo "Using date ${{ inputs.date }}"
             python scripts/generate_daily.py --date ${{ inputs.date }}
           fi
+
+      - name: List outputs
+        run: |
+          ls -lh dashboard/ || true
+          ls -lh dashboards/ || true
 
       - name: Commit & Push Dashboard
         run: |
           git config user.name "v7-pro-bot"
           git config user.email "bot@grichtoyang.github.io"
-          git add dashboard/
-          git diff --staged --quiet || git commit -m "chore: auto dashboard $(date +%Y%m%d) - V7 Pro e6cf29a748b0"
+          git add dashboard/ dashboards/ data_reports/ || true
+          git diff --staged --quiet || git commit -m "chore: auto dashboard $(date +%Y%m%d) - V7 Pro"
           git push
