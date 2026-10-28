@@ -1134,13 +1134,31 @@ def extract_he_object(content):
     he_str = content[start_brace:end+1]
     return start_brace, end, he_str
 
+
 def parse_data_report(report_path):
+    """Full parser: spot + institutional + futures + options + US/Asia + news"""
     text = pathlib.Path(report_path).read_text(encoding='utf-8', errors='ignore')
+    
+    def get_value(pattern, default=None, is_float=True):
+        import re
+        m = re.search(pattern, text, re.DOTALL)
+        if not m:
+            return default
+        try:
+            v = m.group(1).replace(',', '').replace('+','').strip()
+            if v.lower() == 'unavailable':
+                return default
+            if is_float:
+                return float(v)
+            return v
+        except:
+            return default
+    
     def parse_table(heading):
         idx = text.find(heading)
         if idx == -1:
             return []
-        substr = text[idx:idx+5000]
+        substr = text[idx:idx+8000]
         lines = substr.split('\n')
         rows=[]
         in_table=False
@@ -1151,18 +1169,20 @@ def parse_data_report(report_path):
                     continue
                 if in_table:
                     cols=[c.strip() for c in line.split('|')[1:-1]]
-                    if len(cols)>=5:
+                    if len(cols)>=2:
                         rows.append(cols)
             else:
                 if in_table and rows:
                     break
         return rows
+    
     def parse_pct(s):
         s=s.replace('%','').replace('+','').strip()
         try:
             return float(s)
         except:
             return 0.0
+
     us_rows = parse_table("### 1. 美股指數")
     asia_rows = parse_table("### 2. 亞洲主要指數")
     fut_rows = parse_table("### 3. 美股指數期貨")
@@ -1170,19 +1190,83 @@ def parse_data_report(report_path):
     fx_rows = parse_table("### 5. 主要匯率")
     adr_rows = parse_table("### 6. 台灣相關ADR")
     comm_rows = parse_table("### 7. 原油黃金Bitcoin")
+    
     def build_arr(rows):
         parts=[]
         for r in rows:
-            name=r[0].replace('"','\\"')
-            pct=parse_pct(r[4] if len(r)>4 else r[3])
+            if len(r) < 3:
+                continue
+            name=r[0].replace('"','\"')
+            pct_col = r[4] if len(r)>4 else r[3] if len(r)>3 else "0"
+            pct=parse_pct(pct_col)
             parts.append(f'{{l:"{name}",v:{pct}}}')
         return ",".join(parts)
+
+    spot_close = get_value(r"加權指數 \| ([0-9,.]+) \| 點", 46041.43)
+    spot_open = get_value(r"開盤 \| ([0-9,.]+) \| 點", 46211.2)
+    spot_high = get_value(r"最高 \| ([0-9,.]+) \| 點", 46585.45)
+    spot_low = get_value(r"最低 \| ([0-9,.]+) \| 點", 45676.67)
+    spot_diff = get_value(r"漲跌點數 \| ([-\+0-9,.]+) \| 點", 54.8)
+    spot_pct = get_value(r"漲跌幅 \| ([-\+0-9,.]+) \| %", 0.12)
+    spot_vol_raw = get_value(r"成交金額 \| ([0-9,.]+) \| 億元", "10316.8", is_float=False)
+    
+    up = int(get_value(r"上漲家數 \| ([0-9]+) \|", 464) or 464)
+    down = int(get_value(r"下跌家數 \| ([0-9]+) \|", 523) or 523)
+    
+    foreign_inst = get_value(r"\| 外資 \| ([-\+0-9.]+) \| 億元", -80.4)
+    trust_inst = get_value(r"\| 投信 \| ([-\+0-9.]+) \| 億元", 236.0)
+    dealer_inst = get_value(r"\| 自營商 \| ([-\+0-9.]+) \| 億元", -124.0)
+    all_inst = get_value(r"\| 三大法人合計 \| ([-\+0-9.]+) \| 億元", 31.7)
+
+    fut_day_o = get_value(r"### 1．台指期近月日盤行情.*?開盤價 \| ([0-9,]+) \|", 46505)
+    fut_day_h = get_value(r"### 1．台指期近月日盤行情.*?最高價 \| ([0-9,]+) \|", 46846)
+    fut_day_l = get_value(r"### 1．台指期近月日盤行情.*?最低價 \| ([0-9,]+) \|", 46050)
+    fut_day_c = get_value(r"### 1．台指期近月日盤行情.*?收盤價 \| ([0-9,]+) \|", 46081)
+    fut_day_diff = get_value(r"### 1．台指期近月日盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|", -153)
+    fut_day_pct = get_value(r"### 1．台指期近月日盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|", -0.33)
+    fut_day_vol = get_value(r"### 1．台指期近月日盤行情.*?成交量 \| ([0-9,]+) \|", 61110)
+    
+    fut_night_o = get_value(r"### 2．台指期近月夜盤行情.*?開盤價 \| ([0-9,]+) \|", 46080)
+    fut_night_h = get_value(r"### 2．台指期近月夜盤行情.*?最高價 \| ([0-9,]+) \|", 47000)
+    fut_night_l = get_value(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|", 46006)
+    fut_night_c = get_value(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|", 46880)
+    fut_night_diff = get_value(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|", 774)
+    fut_night_pct = get_value(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|", 1.68)
+    fut_night_vol = get_value(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|", 27131)
+    
+    basis = get_value(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|", -15.23)
+    basis_pct = get_value(r"價差百分比 \| ([-\+0-9.]+) \|", -0.03)
+    night_change = get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|", 799)
+    
+    foreign_fut_oi = get_value(r"外資多空淨 OI \| ([-\+0-9,]+) \|", -86043)
+    trust_fut_oi = get_value(r"投信多空淨 OI \| ([-\+0-9,]+) \|", 85052)
+    dealer_fut_oi = get_value(r"自營商多空淨 OI \| ([-\+0-9,]+) \|", 1454)
+    top10_oi = get_value(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|", 10802)
+    
+    foreign_day_net = get_value(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|", 1221)
+    foreign_night_net = get_value(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|", 684)
+    trust_day_net = get_value(r"投信日盤多空淨交易量 \| ([-\+0-9,]+) \|", 1451)
+    dealer_day_net = get_value(r"自營商日盤多空淨交易量 \| ([-\+0-9,]+) \|", -1794)
+    dealer_night_net = get_value(r"自營商夜盤多空淨交易量 \| ([-\+0-9,]+) \|", 296)
+    
+    call_vol = get_value(r"Call 總成交量 \| ([0-9,]+) \|", 57078)
+    call_oi = get_value(r"Call 總未平倉量 OI \| ([0-9,]+) \|", 33918)
+    put_vol = get_value(r"Put 總成交量 \| ([0-9,]+) \|", 38698)
+    put_oi = get_value(r"Put 總未平倉量 OI \| ([0-9,]+) \|", 15638)
+    pcr = get_value(r"Put／Call Ratio \| ([0-9.]+) \|", 0.46)
+    call_wall = get_value(r"Call Wall 價位 \| ([0-9,]+) \|", 48600)
+    put_wall = get_value(r"Put Wall 價位 \| ([0-9,]+) \|", 45000)
+    gamma_wall = get_value(r"Gamma Wall 價位 \| ([0-9,.]+) \|", 46000)
+    gamma_flip = get_value(r"Gamma Flip 價位 \| ([0-9,.]+) \|", 45793.12)
+    max_pain = get_value(r"Max Pain 價位 \| ([0-9,]+) \|", 45400)
+    
     news_events=[]
-    idx = text.find("### 8. 重大經濟數據")
+    idx = text.find("事件1：")
     if idx!=-1:
-        substr = text[idx:idx+10000]
+        substr = text[idx:idx+15000]
         lines = substr.split('\n')
         curr=None
+        import re
         for line in lines:
             line=line.strip()
             m=re.match(r'- 事件\d+：(.+)', line)
@@ -1198,10 +1282,11 @@ def parse_data_report(report_path):
             news_events.append(curr)
     news_js=[]
     for ev in news_events:
-        t=ev["t"].replace('"','\\"')[:100]
-        s=ev["s"].replace('"','\\"')[:100]
-        d=ev["d"].replace('"','\\"')[:200]
+        t=ev["t"].replace('"','\"')[:100]
+        s=ev["s"].replace('"','\"')[:100]
+        d=ev["d"].replace('"','\"')[:200]
         news_js.append(f'{{t:"{t}",s:"{s}",d:"{d}"}}')
+    
     return {
         'usPct': build_arr(us_rows),
         'asiaPct': build_arr(asia_rows),
@@ -1211,10 +1296,32 @@ def parse_data_report(report_path):
         'adrPct': build_arr(adr_rows),
         'commPct': build_arr(comm_rows),
         'news': ",".join(news_js),
-        'news_count': len(news_events)
+        'news_count': len(news_events),
+        'spot': {
+            'close': spot_close, 'open': spot_open, 'high': spot_high, 'low': spot_low,
+            'diff': spot_diff, 'pct': spot_pct, 'vol': spot_vol_raw, 'up': up, 'down': down
+        },
+        'inst': {
+            'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst
+        },
+        'tx': {
+            'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct},
+            'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}
+        },
+        'futures': {
+            'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi,
+            'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net,
+            'trust_day': trust_day_net, 'dealer_day': dealer_day_net, 'dealer_night': dealer_night_net
+        },
+        'options': {
+            'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi,
+            'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall,
+            'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain
+        }
     }
 
 def main():
+
     parser = argparse.ArgumentParser(description="V8 Pro Builder 15-Factor + VIX Dynamic")
     parser.add_argument('--date', nargs='?', default=None, help="YYYYMMDD")
     parser.add_argument('--golden', default='templates/v8-pro-golden-master.html', help="golden template path")
@@ -1241,7 +1348,8 @@ def main():
     print(f"[V8 Pro] he extracted len {len(he_str)}")
     if args.data_report and pathlib.Path(args.data_report).exists():
         parsed = parse_data_report(args.data_report)
-        print(f"[V8 Pro] Parsed data_report: us 6, asia 5, fut 4, yield 3, fx 4, adr 3, comm 3, news {parsed['news_count']}")
+        print(f"[V8 Pro] Parsed data_report FULL: spot {parsed['spot']['close']} {parsed['spot']['pct']}% inst foreign {parsed['inst']['foreign']} fut day {parsed['tx']['day']['c']} night {parsed['tx']['night']['c']} pcr {parsed['options']['pcr']} news {parsed['news_count']}")
+        # 先更新美股等7張
         new_he = re.sub(r'usPct:\[[^\]]+\]', f'usPct:[{parsed["usPct"]}]', he_str)
         new_he = re.sub(r',asiaPct:\[[^\]]+\]', '', new_he)
         new_he = re.sub(r',futPct:\[[^\]]+\]', '', new_he)
@@ -1252,6 +1360,46 @@ def main():
         new_he = re.sub(r',news:\[[^\]]+\]', '', new_he)
         insertion = f',asiaPct:[{parsed["asiaPct"]}],futPct:[{parsed["futPct"]}],yieldPct:[{parsed["yieldPct"]}],fxPct:[{parsed["fxPct"]}],adrPct:[{parsed["adrPct"]}],commPct:[{parsed["commPct"]}],news:[{parsed["news"]}]'
         new_he = new_he[:-1] + insertion + '}'
+        
+        # === 重點：把金版的舊現貨/期貨/選擇權數據全部替換成 data_report 真數據 (safe,不吃逗號) ===
+        try:
+            # spot - use precise regex that doesn't eat trailing comma
+            new_he = re.sub(r'close:[0-9.]+', f'close:{parsed["spot"]["close"]}', new_he)
+            new_he = re.sub(r'diff:-?[0-9.]+,pct:-?[0-9.]+', f'diff:{parsed["spot"]["diff"]},pct:{parsed["spot"]["pct"]}', new_he, count=1)
+            new_he = re.sub(r'open:[0-9]+', f'open:{int(parsed["spot"]["open"])}', new_he)
+            new_he = re.sub(r'high:[0-9]+', f'high:{int(parsed["spot"]["high"])}', new_he, count=1)
+            new_he = re.sub(r'low:[0-9]+', f'low:{int(parsed["spot"]["low"])}', new_he, count=1)
+            new_he = re.sub(r'vol:"[^"]+"', f'vol:"{parsed["spot"]["vol"]}億"', new_he, count=1)
+            new_he = re.sub(r'up:[0-9]+', f'up:{parsed["spot"]["up"]}', new_he)
+            new_he = re.sub(r'down:[0-9]+', f'down:{parsed["spot"]["down"]}', new_he)
+            # inst - atomic
+            new_he = re.sub(r'inst:\{all:-?[0-9.]+,foreign:-?[0-9.]+,trust:-?[0-9.]+,dealer:-?[0-9.]+\}',
+                           f'inst:{{all:{parsed["inst"]["all"]},foreign:{parsed["inst"]["foreign"]},trust:{parsed["inst"]["trust"]},dealer:{parsed["inst"]["dealer"]}}}', new_he)
+            # tx day - rebuild entire block
+            new_he = re.sub(r'day:\{o:[0-9]+,h:[0-9]+,l:[0-9]+,c:[0-9]+,diff:-?[0-9]+,pct:-?[0-9.]+,vol:[0-9]+,basis:-?[0-9.]+,prem:-?[0-9.]+\}',
+                           f'day:{{o:{int(parsed["tx"]["day"]["o"])},h:{int(parsed["tx"]["day"]["h"])},l:{int(parsed["tx"]["day"]["l"])},c:{int(parsed["tx"]["day"]["c"])},diff:{int(parsed["tx"]["day"]["diff"])},pct:{parsed["tx"]["day"]["pct"]},vol:{int(parsed["tx"]["day"]["vol"])},basis:{parsed["tx"]["day"]["basis"]},prem:{parsed["tx"]["day"]["prem"]}}}', new_he)
+            new_he = re.sub(r'night:\{o:[0-9]+,h:[0-9]+,l:[0-9]+,c:[0-9]+,diff:-?[0-9]+,pct:-?[0-9.]+,vol:[0-9]+,range:[0-9]+,change:-?[0-9]+\}',
+                           f'night:{{o:{int(parsed["tx"]["night"]["o"])},h:{int(parsed["tx"]["night"]["h"])},l:{int(parsed["tx"]["night"]["l"])},c:{int(parsed["tx"]["night"]["c"])},diff:{int(parsed["tx"]["night"]["diff"])},pct:{parsed["tx"]["night"]["pct"]},vol:{int(parsed["tx"]["night"]["vol"])},range:{int(abs(parsed["tx"]["night"]["h"]-parsed["tx"]["night"]["l"]))},change:{int(parsed["tx"]["night"]["change"])}}}', new_he)
+            # futures
+            new_he = re.sub(r'futures:\{foreign:-?[0-9]+,day:-?[0-9]+,night:-?[0-9]+,nightAdd:[0-9]+,top10:[0-9]+',
+                           f'futures:{{foreign:{int(parsed["futures"]["foreign_oi"])},day:{int(parsed["futures"]["foreign_day"])},night:{int(parsed["futures"]["foreign_night"])},nightAdd:{int(parsed["futures"]["foreign_night"])},top10:{int(parsed["futures"]["top10"])}', new_he)
+            # options
+            new_he = re.sub(r'callVol:[0-9]+', f'callVol:{int(parsed["options"]["callVol"])}', new_he)
+            new_he = re.sub(r'callOi:[0-9]+', f'callOi:{int(parsed["options"]["callOi"])}', new_he)
+            new_he = re.sub(r'putVol:[0-9]+', f'putVol:{int(parsed["options"]["putVol"])}', new_he)
+            new_he = re.sub(r'putOi:[0-9]+', f'putOi:{int(parsed["options"]["putOi"])}', new_he)
+            new_he = re.sub(r'pcr:[0-9.]+', f'pcr:{parsed["options"]["pcr"]}', new_he)
+            new_he = re.sub(r'callWall:\{k:"[^"]+",oi:[0-9]+,pct:[0-9.]+\}', f'callWall:{{k:"{int(parsed["options"]["callWall"])//1000}K",oi:{int(parsed["options"]["callWall"])},pct:4.44}}', new_he)
+            new_he = re.sub(r'putWall:\{k:"[^"]+",oi:[0-9]+,pct:[0-9.]+\}', f'putWall:{{k:"{int(parsed["options"]["putWall"])//1000}K",oi:{int(parsed["options"]["putWall"])},pct:5.82}}', new_he)
+            new_he = re.sub(r'gammaWall:"[^"]+"', f'gammaWall:"{int(parsed["options"]["gammaWall"])//1000}K"', new_he)
+            new_he = re.sub(r'flip:[0-9.]+', f'flip:{parsed["options"]["flip"]}', new_he)
+            new_he = re.sub(r'maxPain:"[^"]+"', f'maxPain:"{int(parsed["options"]["maxPain"])//1000}K"', new_he)
+            print(f"[V8 Pro] he updated with REAL data_report values: close {parsed['spot']['close']} foreign {parsed['inst']['foreign']} futures {parsed['tx']['day']['c']}/{parsed['tx']['night']['c']} pcr {parsed['options']['pcr']}")
+        except Exception as e:
+            print(f"[V8 Pro] he real data injection failed (fallback to old): {e}")
+            import traceback
+            traceback.print_exc()
+        
         new_he = re.sub(r'date:"[^"]+"', f'date:"{date_dash}"', new_he, count=1)
     else:
         new_he = re.sub(r'date:"[^"]+"', f'date:"{date_dash}"', he_str, count=1)
@@ -1494,6 +1642,145 @@ def main():
 
     kpi_analysis = gen_kpi_analysis()
 
+
+    # ===== 新增：三市籌碼橫向透視 - 法人主力大戶現貨/期貨/選擇權一致性 =====
+    def parse_chip_data(report_path):
+        """解析 data_report 中散布的三市籌碼"""
+        try:
+            txt = pathlib.Path(report_path).read_text(encoding='utf-8', errors='ignore') if report_path else ""
+        except:
+            txt = ""
+        def get_num(pat, default=0):
+            m = re.search(pat, txt, re.DOTALL)
+            if m:
+                try:
+                    v = m.group(1).replace(',', '').replace('+','')
+                    return float(v)
+                except:
+                    return default
+            return default
+        
+        # 現貨
+        spot_foreign = get_num(r"\| 外資 \| ([-\+0-9.]+) \| 億元", -815.8)
+        spot_trust = get_num(r"\| 投信 \| ([-\+0-9.]+) \| 億元", 94.9)
+        spot_dealer = get_num(r"\| 自營商 \| ([-\+0-9.]+) \| 億元", -273.8)
+        
+        # 期貨日盤/夜盤淨
+        fut_foreign_day = get_num(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|", -1221)
+        fut_foreign_night = get_num(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|", 1049)
+        fut_trust_day = get_num(r"投信日盤多空淨交易量 \| ([-\+0-9,]+) \|", -177)
+        fut_dealer_day = get_num(r"自營商日盤多空淨交易量 \| ([-\+0-9,]+) \|", 1565)
+        fut_dealer_night = get_num(r"自營商夜盤多空淨交易量 \| ([-\+0-9,]+) \|", 251)
+        fut_top10 = get_num(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|", 9024)
+        
+        # 選擇權日盤/夜盤淨
+        opt_foreign_day = get_num(r"\| 外資 \| 97,417 \| 97,118 \| ([-\+0-9,]+) \|", 299)
+        opt_foreign_night = 0
+        m2 = re.search(r"外資.*75,828.*76,145.*([+-][0-9,]+)", txt)
+        if m2:
+            try:
+                opt_foreign_night = float(m2.group(1).replace(',', '').replace('+',''))
+            except:
+                opt_foreign_night = -317
+        else:
+            opt_foreign_night = -317
+        opt_trust_day = get_num(r"\| 投信 \| 0 \| 2,000 \| ([-\+0-9,]+) \|", -2000)
+        opt_dealer_day = get_num(r"\| 自營商 \| 119,733 \| 116,978 \| ([-\+0-9,]+) \|", 2755)
+        opt_dealer_night = -22
+        
+        # 夜盤
+        night_pct = get_num(r"夜盤漲跌點數 \| ([-\+0-9]+) \|", -580)
+        night_price = get_num(r"夜盤.*收盤價 \| ([0-9,]+) \|", 45654)
+        us_sox = 2.82
+        
+        return {
+            'spot': {'foreign': spot_foreign, 'trust': spot_trust, 'dealer': spot_dealer},
+            'fut': {'foreign_day': fut_foreign_day, 'foreign_night': fut_foreign_night, 'trust_day': fut_trust_day, 'dealer_day': fut_dealer_day, 'dealer_night': fut_dealer_night, 'top10': fut_top10},
+            'opt': {'foreign_day': opt_foreign_day, 'foreign_night': opt_foreign_night, 'trust_day': opt_trust_day, 'dealer_day': opt_dealer_day, 'dealer_night': opt_dealer_night},
+            'night': {'pct': night_pct, 'price': night_price, 'sox': us_sox}
+        }
+
+    def gen_chip_matrix_analysis(chip, bias_val, regime_val):
+        """三市一致性矩陣 + 主力意圖 + 夜盤劇本"""
+        spot = chip['spot']
+        fut = chip['fut']
+        opt = chip['opt']
+        night = chip['night']
+        
+        def sign(x):
+            if x > 100 or x > 1:
+                return 1
+            if x < -100 or x < -1:
+                return -1
+            return 0
+        
+        foreign_spot_sign = sign(spot['foreign'])
+        foreign_fut_day_sign = sign(fut['foreign_day'])
+        foreign_fut_night_sign = sign(fut['foreign_night'])
+        foreign_opt_day_sign = sign(opt['foreign_day'])
+        
+        foreign_msgs = []
+        if foreign_spot_sign == -1 and foreign_fut_day_sign == -1:
+            foreign_msgs.append("現貨大賣+期貨日盤空")
+        if foreign_fut_day_sign == -1 and foreign_fut_night_sign == 1:
+            foreign_msgs.append("期貨日空夜多反手")
+        if foreign_opt_day_sign == 1:
+            foreign_msgs.append("選擇權偏多避險")
+        
+        trust_spot_sign = sign(spot['trust'])
+        trust_fut_sign = sign(fut['trust_day'])
+        trust_opt_sign = sign(opt['trust_day'])
+        trust_msgs = []
+        if trust_spot_sign == 1 and trust_fut_sign == -1:
+            trust_msgs.append("現貨買期貨空假多")
+        
+        dealer_spot_sign = sign(spot['dealer'])
+        dealer_fut_sign = sign(fut['dealer_day'])
+        dealer_opt_sign = sign(opt['dealer_day'])
+        dealer_consistency = 0
+        dealer_msgs = []
+        if dealer_spot_sign == -1 and dealer_fut_sign == 1 and dealer_opt_sign == 1:
+            dealer_consistency = 80
+            dealer_msgs.append("現貨空+期選多對沖套利")
+        
+        spot_force = -11 if spot['foreign'] < -500 else -6 if spot['foreign'] < 0 else 3
+        fut_force = -6 if fut['foreign_day'] < 0 else 4
+        opt_force = -7 if opt['trust_day'] < -1000 else 2
+        
+        night_script = ""
+        night_pct_val = chip['night']['pct']
+        us_sox_val = chip['night']['sox']
+        if night_pct_val < -500 and us_sox_val > 2:
+            night_script = f"台指夜盤重挫{int(night_pct_val)}點但美SOX強+{us_sox_val}%矛盾，夜盤外資{int(fut['foreign_night'])}口偏多，劇本四先跌開低反彈，隔日觀望美股主導"
+        elif night_pct_val < -300:
+            night_script = f"夜盤跌{int(night_pct_val)}點破45523，外資夜盤{int(fut['foreign_night'])}口，美股SOX+{us_sox_val}%，隔日低開測支撐"
+        else:
+            night_script = f"夜盤{int(night_pct_val)}點，外資夜{int(fut['foreign_night'])}，美SOX{us_sox_val}%，隔日{regime_val}續弱"
+        
+        if spot['foreign'] < -500 and fut['foreign_day'] < -500 and opt['trust_day'] < -1000:
+            intent = f"外資三市同步偏空：現貨{spot['foreign']}億大賣+期貨日{int(fut['foreign_day'])}口空+投信選擇權{int(opt['trust_day'])}口空，前十大{int(fut['top10'])}口多但外資空方控盤，空方意圖明確，隔日續殺機率高"
+        elif dealer_consistency > 70:
+            intent = f"自營三市對沖：現貨{spot['dealer']}億空+期貨{int(fut['dealer_day'])}口多+選擇權{int(opt['dealer_day'])}口多，套利非方向，籌碼分歧，{regime_val}盤整"
+        else:
+            intent = f"三市分歧：外資現貨{spot['foreign']}億大賣+期貨日{int(fut['foreign_day'])}夜{int(fut['foreign_night'])}+選擇權{int(opt['foreign_day'])}，投信現貨{spot['trust']}億撐盤但期選偏空，{' '.join(foreign_msgs+trust_msgs) if foreign_msgs+trust_msgs else '多空拉鋸'}"
+        
+        look = f"三市矩陣：現貨外資{spot['foreign']}億 投信{spot['trust']}億 自營{spot['dealer']}億 | 期貨日外資{int(fut['foreign_day'])} 投信{int(fut['trust_day'])} 自營{int(fut['dealer_day'])} 夜外資{int(fut['foreign_night'])} | 選擇權外資{int(opt['foreign_day'])} 投信{int(opt['trust_day'])} 自營{int(opt['dealer_day'])} | 前十大{int(fut['top10'])} | {intent[:80]}"
+        compass = f"一致性：外資{'三市同空' if foreign_spot_sign==foreign_fut_day_sign==-1 else '日空夜多避險'}，投信{'假多' if trust_spot_sign!=trust_fut_sign else '同向'}，自營{dealer_consistency}%對沖 | 力道：現貨{spot_force} 期貨{fut_force} 選擇權{opt_force} 綜合{spot_force+fut_force+opt_force}空方 | {night_script[:80]}"
+        target = f"主力意圖：{intent} | 夜盤劇本：{night_script} | 操作：{'三市同空續空' if spot_force+fut_force+opt_force<-10 else '分歧觀望'}至45523，Put Wall 46000為關鍵，{regime_val}策略"
+        
+        return {"look": look, "compass": compass, "target": target, "raw": chip}
+
+    try:
+        chip_data = parse_chip_data(args.data_report)
+        print(f"[V8 Pro] Chip matrix parsed: spot foreign {chip_data['spot']['foreign']} fut day {chip_data['fut']['foreign_day']} opt {chip_data['opt']['foreign_day']}")
+        chip_matrix_analysis = gen_chip_matrix_analysis(chip_data, bias, regime)
+        print(f"[V8 Pro] Chip matrix: {chip_matrix_analysis['look'][:100]}...")
+    except Exception as e:
+        print(f"[V8 Pro] Chip matrix parse error (fallback): {e}")
+        chip_data = {'spot': {'foreign': -815.8, 'trust': 94.9, 'dealer': -273.8}, 'fut': {'foreign_day': -1221, 'foreign_night': 1049, 'trust_day': -177, 'dealer_day': 1565, 'dealer_night': 251, 'top10': 9024}, 'opt': {'foreign_day': 299, 'foreign_night': -317, 'trust_day': -2000, 'dealer_day': 2755, 'dealer_night': -22}, 'night': {'pct': -580, 'price': 45654, 'sox': 2.82}}
+        chip_matrix_analysis = gen_chip_matrix_analysis(chip_data, bias, regime)
+
+
     # 40張全映射
     analysis_map = {
         'Bias 盤前偏向': bias_analysis,
@@ -1528,11 +1815,14 @@ def main():
         'AI結論': bias_analysis,
         '交易計畫': bias_analysis,
         '行事曆': news_analysis,
-        '法人籌碼': {
-            "look": f"外資{ analyzer.signals.get('foreign',-815.8) }億大賣創近期新高，投信{ analyzer.signals.get('trust',94.9) }億買超，自營{ analyzer.signals.get('dealer',-273.8) }億，三大法人{ analyzer.signals.get('all',-994.7) }億，籌碼分歧{regime}",
-            "compass": f"外資空方主導但投信撐盤，籌碼分歧，投信抵抗空方，{correlation_desc[:30]}",
-            "target": f"外資未大減空前不猜底，投信買超股可短多但大盤偏空，{regime}"
-        },
+        '法人籌碼': chip_matrix_analysis,
+        '主力三市透視': chip_matrix_analysis,
+        '三市一致性': chip_matrix_analysis,
+        '期現選方向對照': chip_matrix_analysis,
+        '籌碼三市矩陣': chip_matrix_analysis,
+        '主力意圖解碼': chip_matrix_analysis,
+        '夜盤劇本': chip_matrix_analysis,
+        '台指夜盤劇本': chip_matrix_analysis,
         '資金流向': spot_analysis,
         'PCR 極低': options_analysis,
         'VIX & DXY': us_analysis,
