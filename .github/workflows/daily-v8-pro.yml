@@ -97,8 +97,8 @@ jobs:
             DATE="${{ inputs.date }}"
           fi
           echo "DATE=$DATE" >> $GITHUB_ENV
-          # 規則：1. 當日精準 2. 按檔名 YYYYMMDD 排序最新 3. mtime 最新備援
-          REPORT_CANDIDATES="DATA_REPORT_${DATE}.md dashboards/DATA_REPORT_${DATE}.md data/DATA_REPORT_${DATE}.md reports/DATA_REPORT_${DATE}.md DATA_REPORT_20261027.md"
+          # 規則：1. 當日精準 2. 按檔名 YYYYMMDD 排序最新 3. mtime 最新備援 (含 data_reports/ - 實際路徑)
+          REPORT_CANDIDATES="DATA_REPORT_${DATE}.md dashboards/DATA_REPORT_${DATE}.md data/DATA_REPORT_${DATE}.md reports/DATA_REPORT_${DATE}.md data_reports/DATA_REPORT_${DATE}.md DATA_REPORT_20261027.md"
           FOUND=""
           for f in $REPORT_CANDIDATES; do
             if [ -f "$f" ]; then
@@ -109,8 +109,8 @@ jobs:
           done
           # 當日找不到 → 按檔名日期排序取最新 (最穩，不靠 mtime)
           if [ -z "$FOUND" ]; then
-            # 收集所有候選，按檔名降序 (20261027 > 20261026)
-            ALL_REPORTS=$(ls DATA_REPORT_*.md dashboards/DATA_REPORT_*.md data/DATA_REPORT_*.md reports/DATA_REPORT_*.md 2>/dev/null | sort -r)
+            # 收集所有候選，按檔名降序 (20261027 > 20261026) 含 data_reports/
+            ALL_REPORTS=$(ls DATA_REPORT_*.md dashboards/DATA_REPORT_*.md data/DATA_REPORT_*.md reports/DATA_REPORT_*.md data_reports/DATA_REPORT_*.md 2>/dev/null | sort -r)
             if [ -n "$ALL_REPORTS" ]; then
               FOUND=$(echo "$ALL_REPORTS" | head -1)
               echo "No exact date, using latest by filename: $FOUND"
@@ -120,7 +120,7 @@ jobs:
           fi
           # 還是沒有 → mtime 最新備援
           if [ -z "$FOUND" ]; then
-            FOUND=$(ls -t DATA_REPORT_*.md dashboards/DATA_REPORT_*.md 2>/dev/null | head -1)
+            FOUND=$(ls -t DATA_REPORT_*.md dashboards/DATA_REPORT_*.md data_reports/DATA_REPORT_*.md 2>/dev/null | head -1)
             if [ -n "$FOUND" ]; then
               echo "Fallback to latest by mtime: $FOUND"
             fi
@@ -133,8 +133,11 @@ jobs:
             # 印檔名日期供核對
             echo "Report filename date: $(basename $FOUND | grep -o '[0-9]\{8\}')"
           else
-            echo "No DATA_REPORT found, will fallback to golden-only (old behavior)"
-            echo "DATA_REPORT_PATH=" >> $GITHUB_ENV
+            echo "ERROR: No DATA_REPORT found! Builder now in NO-FALLBACK mode, must have DATA_REPORT"
+            echo "Searched: DATA_REPORT_*.md dashboards/DATA_REPORT_*.md data/DATA_REPORT_*.md reports/DATA_REPORT_*.md data_reports/DATA_REPORT_*.md"
+            ls -R | grep -i DATA_REPORT || echo "No DATA_REPORT files at all"
+            echo "Failing build - DATA_REPORT is required (no golden fallback)"
+            exit 1
           fi
 
       - name: Generate V8 Pro Dashboard (40 cards full dynamic - with DATA_REPORT)
@@ -152,33 +155,40 @@ jobs:
             echo "DATA_REPORT $REPORT size $(wc -c < $REPORT) hash $(sha256sum $REPORT | cut -c1-12)"
           fi
           
-          # 3次重試，若 Yahoo/TWSE API 失敗
+          # 3次重試，無fallback模式 - 必須有 DATA_REPORT
           for i in 1 2 3; do
-            echo "=== Attempt $i ==="
-            if [ -n "$REPORT" ]; then
-              if python $BUILDER --date $DATE --golden $GOLDEN --data_report $REPORT; then
-                echo "Build success on attempt $i with DATA_REPORT"
-                break
-              fi
-            else
-              if python $BUILDER --date $DATE --golden $GOLDEN; then
-                echo "Build success on attempt $i (golden-only fallback)"
-                break
-              fi
+            echo "=== Attempt $i (NO-FALLBACK mode - DATA_REPORT required) ==="
+            if [ -z "$REPORT" ]; then
+              echo "ERROR: DATA_REPORT_PATH is empty in no-fallback mode"
+              exit 1
+            fi
+            if python $BUILDER --date $DATE --golden $GOLDEN --data_report $REPORT; then
+              echo "Build success on attempt $i with DATA_REPORT (no fallback)"
+              break
             fi
             echo "Build failed on attempt $i, retry in 30s..."
             sleep 30
             if [ $i -eq 3 ]; then
-              echo "All 3 attempts failed!"
+              echo "All 3 attempts failed! Builder in no-fallback mode requires DATA_REPORT"
               exit 1
             fi
           done
           
-          # 驗證是否真的吃到 DATA_REPORT
+          # 驗證是否真的吃到 DATA_REPORT (無fallback - 嚴格檢查)
           FILE="dashboards/taifex-${DATE}.html"
-          echo "--- Verify he matches DATA_REPORT ---"
+          echo "--- Verify he matches DATA_REPORT (NO-FALLBACK) ---"
           grep -o "close:[0-9.]*" "$FILE" | head -1
           grep -o "foreign:-*[0-9.]*" "$FILE" | head -3
+          echo "--- Verify KPI 8宮格 no old data ---"
+          if grep -q "46,041\|46,942.*47,332\|46,272 -741\|-994.7億\|-87,297\|PCR 0.57\|49K2444\|上市247 上櫃146\|加權 -1.81%" "$FILE"; then
+            echo "ERROR: Old golden data still in dashboard! KPI not fully rebuilt"
+            grep -n "46,041\|46,942\|46,272\|-994.7億\|-87,297\|PCR 0.57" "$FILE" | head -20
+            exit 1
+          else
+            echo "PASS: No old golden data found - 100% DATA_REPORT driven"
+          fi
+          echo "--- Verify KPI new data ---"
+          grep -o "46,096\|46,211 / 46,585 / 45,676\|+31.7億\|PCR 0.46" "$FILE" | head -10
 
       - name: List outputs & Verify 40 cards
         if: steps.check.outputs.skip == 'false'
