@@ -36,13 +36,21 @@ jobs:
         id: check
         run: |
           DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
+          EVENT="${{ github.event_name }}"
+          echo "Event: $EVENT Date: $DATE"
+          # 手動觸發 workflow_dispatch / repository_dispatch 永遠強制重跑 (修復新builder測試)
+          if [ "$EVENT" = "workflow_dispatch" ] || [ "$EVENT" = "repository_dispatch" ]; then
+            echo "Manual trigger ($EVENT), force rebuild (no skip)"
+            echo "skip=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           if [ -f "dashboards/taifex-${DATE}.html" ]; then
             echo "Dashboard for $DATE already exists, checking age..."
-            # 若檔案已存在且是 2小時內產的，跳過 (避免 27/37/47 重複)
+            # 只有 schedule 才跳過 2h 內的重複，避免 27/37/47 三次都跑
             FILE_AGE=$(find dashboards/taifex-${DATE}.html -mmin -120 2>/dev/null | wc -l)
             if [ "$FILE_AGE" -eq 1 ]; then
               echo "skip=true" >> $GITHUB_OUTPUT
-              echo "Dashboard already built within 2h, skipping"
+              echo "Dashboard already built within 2h, skipping (schedule duplicate protection)"
             else
               echo "skip=false" >> $GITHUB_OUTPUT
             fi
