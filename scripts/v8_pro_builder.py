@@ -1346,9 +1346,34 @@ def main():
         print("ERROR: failed to extract he")
         return 1
     print(f"[V8 Pro] he extracted len {len(he_str)}")
+    # === DATA_REPORT 自動發現：支援明確指定 + 當日檔 + 最新檔 (按檔名日期) ===
+    report_path = None
     if args.data_report and pathlib.Path(args.data_report).exists():
-        parsed = parse_data_report(args.data_report)
-        print(f"[V8 Pro] Parsed data_report FULL: spot {parsed['spot']['close']} {parsed['spot']['pct']}% inst foreign {parsed['inst']['foreign']} fut day {parsed['tx']['day']['c']} night {parsed['tx']['night']['c']} pcr {parsed['options']['pcr']} news {parsed['news_count']}")
+        report_path = pathlib.Path(args.data_report)
+    else:
+        # 自動找：當日 DATE 精準 + sort -r 最新
+        candidates = []
+        date_str_for_search = date_str  # YYYYMMDD from args
+        for loc in ["", "dashboards/", "data/", "reports/"]:
+            candidates.append(pathlib.Path(f"{loc}DATA_REPORT_{date_str_for_search}.md"))
+        # 也找所有 DATA_REPORT_*.md 按檔名降序
+        import glob
+        all_reports = glob.glob("DATA_REPORT_*.md") + glob.glob("dashboards/DATA_REPORT_*.md") + glob.glob("data/DATA_REPORT_*.md")
+        all_reports_sorted = sorted(all_reports, reverse=True)  # 按檔名日期最新
+        for r in all_reports_sorted:
+            p = pathlib.Path(r)
+            if p not in candidates:
+                candidates.append(p)
+        
+        for c in candidates:
+            if c.exists():
+                report_path = c
+                print(f"[V8 Pro] Auto-found DATA_REPORT: {c} size {c.stat().st_size}")
+                break
+    
+    if report_path and report_path.exists():
+        parsed = parse_data_report(report_path)
+        print(f"[V8 Pro] Parsed data_report FULL from {report_path}: spot {parsed['spot']['close']} {parsed['spot']['pct']}% inst foreign {parsed['inst']['foreign']} fut day {parsed['tx']['day']['c']} night {parsed['tx']['night']['c']} pcr {parsed['options']['pcr']} news {parsed['news_count']}")
         # 先更新美股等7張
         new_he = re.sub(r'usPct:\[[^\]]+\]', f'usPct:[{parsed["usPct"]}]', he_str)
         new_he = re.sub(r',asiaPct:\[[^\]]+\]', '', new_he)
@@ -1771,12 +1796,23 @@ def main():
         return {"look": look, "compass": compass, "target": target, "raw": chip}
 
     try:
-        chip_data = parse_chip_data(args.data_report)
-        print(f"[V8 Pro] Chip matrix parsed: spot foreign {chip_data['spot']['foreign']} fut day {chip_data['fut']['foreign_day']} opt {chip_data['opt']['foreign_day']}")
+        # 使用同樣的 auto-found report_path，若無則用 args.data_report
+        chip_report_path = report_path if 'report_path' in locals() and report_path else (pathlib.Path(args.data_report) if args.data_report and pathlib.Path(args.data_report).exists() else None)
+        if chip_report_path is None:
+            # 再試一次自動發現
+            import glob
+            for p in sorted(glob.glob("DATA_REPORT_*.md") + glob.glob("dashboards/DATA_REPORT_*.md"), reverse=True):
+                if pathlib.Path(p).exists():
+                    chip_report_path = pathlib.Path(p)
+                    break
+        chip_data = parse_chip_data(chip_report_path) if chip_report_path else parse_chip_data(args.data_report)
+        print(f"[V8 Pro] Chip matrix parsed from {chip_report_path}: spot foreign {chip_data['spot']['foreign']} fut day {chip_data['fut']['foreign_day']} opt {chip_data['opt']['foreign_day']}")
         chip_matrix_analysis = gen_chip_matrix_analysis(chip_data, bias, regime)
         print(f"[V8 Pro] Chip matrix: {chip_matrix_analysis['look'][:100]}...")
     except Exception as e:
-        print(f"[V8 Pro] Chip matrix parse error (fallback): {e}")
+        print(f"[V8 Pro] Chip matrix parse error (fallback to old -815.8): {e}")
+        import traceback
+        traceback.print_exc()
         chip_data = {'spot': {'foreign': -815.8, 'trust': 94.9, 'dealer': -273.8}, 'fut': {'foreign_day': -1221, 'foreign_night': 1049, 'trust_day': -177, 'dealer_day': 1565, 'dealer_night': 251, 'top10': 9024}, 'opt': {'foreign_day': 299, 'foreign_night': -317, 'trust_day': -2000, 'dealer_day': 2755, 'dealer_night': -22}, 'night': {'pct': -580, 'price': 45654, 'sox': 2.82}}
         chip_matrix_analysis = gen_chip_matrix_analysis(chip_data, bias, regime)
 
