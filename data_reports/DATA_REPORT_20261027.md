@@ -2,11 +2,11 @@
 
 - 報告日期：`2026-10-28`
 - T0 交易日期：`2026-10-27`
-- 資料產出時間：`2026-10-28 08:58:47`
+- 資料產出時間：`2026-10-28 10:59:07`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
-- 排定班別：`manual`
+- 排定班別：`morning`
 
 ---
 
@@ -117,11 +117,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 63,926.58 | 1,736.93 | +2.79 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 5,835.43 | 365.96 | +6.69 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 23,211.81 | 118.44 | +0.51 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,697.52 | 7.04 | +0.19 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 11,534.38 | -139.45 | -1.19 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 64,067.10 | 798.73 | +1.26 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 5,971.35 | 333.01 | +5.91 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 23,045.51 | 4.19 | +0.02 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,653.51 | 5.21 | +0.14 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 11,345.29 | 99.55 | +0.89 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,761.75 | 47.25 | +0.61 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 29,844.75 | 407.50 | +1.38 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,585.00 | 35.00 | +0.07 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,825.80 | 28.30 | +1.01 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,761.50 | 3.25 | +0.04 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 29,900.25 | 88.25 | +0.30 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,479.00 | -100.00 | -0.19 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,824.00 | -4.50 | -0.16 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.42 | -0.11 | -0.35 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 102.37 | 0.41 | +0.40 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.83 | 0.30 | +0.19 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,331.98 | 7.21 | +0.54 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.41 | -0.12 | -0.38 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 102.37 | 0.05 | +0.04 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.90 | 0.38 | +0.24 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,336.48 | 11.71 | +0.88 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -161,9 +161,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 台積電ADR | TSM | 424.37 | 5.86 | +1.40 | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 19.18 | 0.29 | +1.54 | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 39.91 | 1.22 | +3.15 | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 436.87 | 12.50 | +2.95 | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 19.45 | 0.27 | +1.41 | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 42.06 | 2.15 | +5.39 | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -171,38 +171,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 100.40 | -1.36 | -1.34 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 4,073.80 | 35.40 | +0.88 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 80,625.57 | 618.91 | +0.77 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 101.11 | 1.21 | +1.21 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 4,064.20 | -10.40 | -0.26 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 80,850.01 | 843.35 | +1.05 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：日本月底起祭不銹鋼板反傾銷稅 台灣、中國都在列
-  - 來源：Yahoo 台股；發布時間：2026-10-27T14:41:07Z；台北時間：2026-10-27 22:41
-  - 摘要：日本政府週二（10/27）決定，將對以不正當低價出口的中國、台灣等產地的鎳系不銹鋼板徵收反傾銷稅，自本月31日起徵稅，為期5年。稅率方面，中國大陸產為27.7%或42.1%，台灣產為3.6%或20.1%。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%BF%AB%E8%A8%8A-%E8%AA%8D%E5%AE%9A%E6%A7%8B%E6%88%90%E5%82%BE%E9%8A%B7-%E6%97%A5%E6%9C%AC%E6%94%BF%E5%BA%9C%E6%9C%88%E5%BA%95%E8%B5%B7%E5%B0%8D%E5%8F%B0%E8%A3%BD%E4%B8%8D%E9%8A%B9%E9%8B%BC%E6%9D%BF%E9%96%8B%E5%BE%B5%E5%8F%8D%E5%82%BE%E9%8A%B7%E7%A8%85-144107880.html
-- 事件2：注意股出列 冠西電90天飆498%、川飛本益比2500倍
+- 事件1：千金股慶祝行情 信驊飆6%、川湖股價重返五位數
+  - 來源：Yahoo 台股；發布時間：2026-10-28T01:59:49Z；台北時間：2026-10-28 09:59
+  - 摘要：美股四大指數在AI買盤回流、國際油價下跌帶動下全面收紅，激勵台股今（28）日開高走高，千金俱樂部也上演慶祝行情，股王信驊（5274）衝上16,985元，大漲逾半根停板；股后川湖（2059）重返萬元寶座；第三、第四高價股創意（3443）、健策
+  - 原文連結：https://tw.stock.yahoo.com/news/47%E6%AA%94%E5%8D%83%E9%87%91%E8%82%A1%E7%8B%82%E6%AD%A1%EF%BC%81%E8%82%A1%E7%8E%8B%E4%BF%A1%E9%A9%8A%E9%A3%86%E9%80%BE5-%E8%82%A1%E5%90%8E%E5%B7%9D%E6%B9%96%E9%87%8D%E8%BF%94%E8%90%AC%E5%85%83%E5%AF%B6%E5%BA%A7-%E7%8E%89%E6%99%B6%E5%85%89%E6%BC%B2%E5%81%9C%E8%BF%914%E5%8D%83%E5%BC%B5%E6%8E%92%E9%9A%8A%E7%AD%89%E8%B2%B7-015949519.html
+- 事件2：竹科嘉晶創新廠大火 起火原因待查
+  - 來源：Yahoo 台股；發布時間：2026-10-28T01:58:00Z；台北時間：2026-10-28 09:58
+  - 摘要：新／竹科嘉晶電子創新廠大火 竄大量濃煙如「黑龍捲」
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%96%B0-%E7%AB%B9%E7%A7%91%E5%98%89%E6%99%B6%E9%9B%BB%E5%AD%90%E5%89%B5%E6%96%B0%E5%BB%A0%E5%A4%A7%E7%81%AB-%E7%AB%84%E5%A4%A7%E9%87%8F%E6%BF%83%E7%85%99%E5%A6%82-%E9%BB%91%E9%BE%8D%E6%8D%B2-015800375.html
+- 事件3：沈伯洋提颱風假股市照開 央行楊金龍回覆全力配合規劃
+  - 來源：Yahoo 台股；發布時間：2026-10-28T01:30:00Z；台北時間：2026-10-28 09:30
+  - 摘要：薔琵颱風襲台期間，民進黨台北市長參選人沈伯洋提出颱風假與股市休市脫鉤，中央銀行總裁楊金龍今（27）日在立法院財政委員會備詢，被問及對此建議的看法，他說，還有很多挑戰，若未來有相關規劃，央行將在外匯市場全力配合。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E9%A2%B1%E9%A2%A8%E5%81%87%E5%8F%B0%E8%82%A1%E7%85%A7%E6%A8%A3%E9%96%8B%E7%9B%A4%EF%BC%9F%E6%B2%88%E4%BC%AF%E6%B4%8B%E6%8F%90%E8%84%AB%E9%89%A4-%E5%A4%AE%E8%A1%8C%E6%A5%8A%E9%87%91%E9%BE%8D%EF%BC%9A%E5%BE%88%E5%A4%9A%E6%8C%91%E6%88%B0-013107147.html
+- 事件4：友達法說會前夕股價先上攻 分析師曝關鍵價位
+  - 來源：Yahoo 台股；發布時間：2026-10-28T01:59:26Z；台北時間：2026-10-28 09:59
+  - 摘要：面板大廠友達（2409）明（29）日將舉行法說會，今（28）日股價率先反彈，早盤一度攻上35.2元，漲幅超過5%。資深台股分析師呂漢威表示，友達轉型題材以及法說會即將登場，吸引資金提前卡位，他認為目前股價位階相對較低，投資人可考慮進場，但須
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%8B%E9%81%94%E6%98%8E%E6%B3%95%E8%AA%AA%E8%82%A1%E5%83%B9%E4%B8%80%E5%BA%A6%E6%BC%B2%E9%80%BE5%EF%BC%81%E7%8F%BE%E5%9C%A8%E8%83%BD%E8%B2%B7%E5%97%8E%EF%BC%9F%E5%88%86%E6%9E%90%E5%B8%AB%E6%9B%9D%E9%97%9C%E9%8D%B5%E5%83%B9%E4%BD%8D-015926363.html
+- 事件5：SK海力士獲利增六倍 股東分紅百兆韓元
+  - 來源：Yahoo 台股；發布時間：2026-10-28T01:07:25Z；台北時間：2026-10-28 09:07
+  - 摘要：南韓半導體大廠SK海力士今日（10/28）宣布第3季財報，營業利潤達83.3兆多韓元，比去年同期增長6倍。SK海力士同時宣布，本季度將額外發放60兆韓元，作為股東分紅和庫藏股回購，今年內的回饋金額共計達100兆韓元。
+  - 原文連結：https://tw.stock.yahoo.com/news/sk%E6%B5%B7%E5%8A%9B%E5%A3%AB%E8%82%A1%E6%9D%B1%E6%A8%82%E7%BF%BB-%E7%AC%AC3%E5%AD%A3%E7%8D%B2%E5%88%A9%E8%B6%85%E5%87%BA%E9%A0%90%E6%9C%9F-%E5%AE%A3%E5%B8%83%E5%88%86%E7%B4%85-%E5%9B%9E%E8%B3%BC%E8%82%A1%E7%A5%A860%E5%85%86-235057780.html
+- 事件6：注意股出列 冠西電90天飆498%、川飛本益比2500倍
   - 來源：Yahoo 台股；發布時間：2026-10-28T00:20:00Z；台北時間：2026-10-28 08:20
   - 摘要：[FTNN新聞網]記者莊蕙如／綜合報導證交所公布10月27日共22檔注意股，熱門股玉晶光（3406）、高力（8996）、禾伸堂（3026）、聯茂（6213）全數入列，其中冠西...
   - 原文連結：https://tw.stock.yahoo.com/news/%E6%9C%80%E7%8B%82%E4%B8%8D%E6%98%AF%E8%A2%AB%E5%8B%95%E5%85%83%E4%BB%B6-%E9%80%99%E6%AA%94-90%E5%A4%A9%E6%9A%B4%E6%BC%B2498-%E7%8E%89%E6%99%B6%E5%85%8960%E5%A4%A9%E9%A3%86159-22%E6%AA%94%E6%B3%A8%E6%84%8F%E8%82%A1-002000787.html
-- 事件3：半導體、記憶體族群走強 美股收高費半漲3.6%
-  - 來源：Yahoo 台股；發布時間：2026-10-27T21:26:49Z；台北時間：2026-10-28 05:26
-  - 摘要：美股週二收高，標普連2日上漲；那指漲1.18%，費半勁揚3.6%，道瓊僅小漲16點，油價下跌提振情緒。 Anthropic申請上市、Meta 250億美元發行認購超額5倍，AI熱度回溫；博通、AMD領漲晶片股。 財報與Fed成焦點，Alph
-  - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E8%82%A1%E7%9B%A4%E5%BE%8C-anthropic-ipo%E7%86%B1%E6%BD%AE%E5%BB%B6%E7%87%92-%E8%B2%BB%E5%8D%8A%E6%BC%B23-6-212649535.html
-- 事件4：欣興長交期設備採購 再增509億
-  - 來源：Yahoo 台股；發布時間：2026-10-27T13:07:36Z；台北時間：2026-10-27 21:07
-  - 摘要：IC載板龍頭欣興（3037）因國際大客戶需求強勁，今年7月大幅上修資本支出，由原規劃的340億元再向上追加197億元，總金額增加至537億元，欣興公告董事會今日決議通過長交期設備採購訂單金額再增加約新台幣509億元，資金來源為自有資金及銀行
-  - 原文連結：https://tw.stock.yahoo.com/news/abf%E8%BC%89%E6%9D%BF%E9%9C%80%E6%B1%82%E5%A4%AA%E5%BC%B7-%E6%AC%A3%E8%88%88-%E9%95%B7%E4%BA%A4%E6%9C%9F%E8%A8%AD%E5%82%99%E6%8E%A1%E8%B3%BC%E5%86%8D%E5%A2%9E509%E5%84%84%E5%85%83-130736597.html
-- 事件5：輝達Vera Rubin放量 鴻海訂單占比可望挑戰五成
-  - 來源：Yahoo 台股；發布時間：2026-10-27T22:46:49Z；台北時間：2026-10-28 06:46
-  - 摘要：業界傳出，輝達Vera Rubin新平台逐步放量，鴻海訂單占比可望挑戰五成，傲視群雄；ASIC伺服器訂單也有突破，取得更多Google與Meta訂單，帶動今、明年業績衝鋒。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%BC%9D%E9%81%94vr%E5%B9%B3%E5%8F%B0%E9%B4%BB%E6%B5%B7%E8%A8%82%E5%96%AE%E8%BA%8D%E5%A2%9E-%E6%A5%AD%E7%95%8C%E5%82%B3%E5%87%BA%E5%8D%A0%E6%AF%94%E6%8C%91%E6%88%B0%E4%BA%94%E6%88%90-224649157.html
-- 事件6：中鋼前3季轉盈賺43億 9月淨利月減近2成原因曝
-  - 來源：Yahoo 台股；發布時間：2026-10-27T12:15:00Z；台北時間：2026-10-27 20:15
-  - 摘要：[FTNN新聞網]實習記者藍彥欣／台北報導中鋼（2002）公布最新自結損益財報，受惠於鋼鐵業銷售量增加，以及礦業投資股利的大力挹注，累計前3季合併營收達2566.7...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%AD%E9%8B%BC%E5%89%8D3%E5%AD%A3%E7%8B%82%E8%B3%BA43%E5%84%84%E5%85%83-%E9%9B%99%E9%87%8D%E5%8E%9F%E5%9B%A0%E6%9B%9D%E5%85%89-%E8%BD%89%E8%99%A7%E7%82%BA%E7%9B%88%E4%BA%A4%E4%BA%AE%E7%9C%BC%E6%88%90%E7%B8%BE%E5%96%AE-%E6%8F%AD%E5%A4%9A%E5%9C%8B%E9%8B%BC%E5%BB%A0%E7%9B%A4%E5%83%B9%E6%8F%90%E6%BC%B2-121500285.html
 - 事件7：Honda warns 50% Canada auto tariffs would be catastrophic for industry
   - 來源：CNBC；發布時間：Tue, 27 Oct 2026 17:53:47 GMT；台北時間：2026-10-28 01:53
   - 摘要：President Donald Trump has threatened to double tariffs on Canadian vehicles and parts from 25% to 50% if a trade deal is not reached between the two 
@@ -377,7 +377,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-27 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610W4 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-28 08:58:47 | 本機 |
+| 資料更新時間 | 2026-10-28 10:59:07 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -600,11 +600,14 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-27；資料時間：2026-10-28 08:58:47；時區：`Asia/Taipei`
+- 資料日期：2026-10-27；資料時間：2026-10-28 10:59:07；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (1)：options.chain_oi_change
+- 註記：同 T0 保護：4 格沿用前版有值（本次抓取缺失不覆寫）
+- 註記：同 T0 覆蓋：61 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 未取得欄位 (3)：futures.gamma_wall, futures.gamma_flip, options.chain_oi_change
 - 註記：futures-price-after-hours 日期 2026-10-27 非今日 2026-10-28，視為無新節次，不採用
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
+- 註記：Gamma Wall/Flip 無資料 (proxy 端點上游無資料)，標 unavailable
 
 ## 五、資料來源、時間與完整性
 
