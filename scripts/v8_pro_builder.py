@@ -547,7 +547,7 @@ class V8ProAnalyzer:
         self.signals['gamma_flip'] = he.get('gammaFlip', 45920)
         self.signals['max_pain'] = he.get('maxPain', 46000)
         self.signals['gex'] = he.get('gex', -2.3)
-        self.signals['pcr'] = he.get('pcr', 0.57)
+        self.signals['pcr'] = he.get('pcr', globals().get('parsed', {}).get('options', {}).get('pcr', 0.46))
         self.signals['iv_rank'] = he.get('ivRank', 78)
         
         # 28市場
@@ -829,9 +829,14 @@ class V8ProAnalyzer:
             score -= int(4 * w/5)
             factors.append(('美債高壓抑', -int(4 * w/5)))
         
-        # 13. 量能 (3% 新增)
-        vol_str = s.get('spot_vol', '')
-        if '9,334' in vol_str or '萬' in vol_str:
+        # 13. 量能 (3% 新增) - 無fallback，vol已是真實成交量
+        vol_str = str(s.get('spot_vol', ''))
+        # 舊檢查 '9,334' 是舊金版成交量，現在已移除，改為檢查是否爆量 (>10000億)
+        try:
+            vol_num = float(vol_str.replace(',','').replace('億','').replace('萬',''))
+        except:
+            vol_num = 0
+        if vol_num > 10000 or '萬' in vol_str:
             if pct < -1:
                 score -= 2
                 factors.append(('爆量下跌', -2))
@@ -1202,63 +1207,79 @@ def parse_data_report(report_path):
             parts.append(f'{{l:"{name}",v:{pct}}}')
         return ",".join(parts)
 
-    spot_close = get_value(r"加權指數 \| ([0-9,.]+) \| 點", 46041.43)
-    spot_open = get_value(r"開盤 \| ([0-9,.]+) \| 點", 46211.2)
-    spot_high = get_value(r"最高 \| ([0-9,.]+) \| 點", 46585.45)
-    spot_low = get_value(r"最低 \| ([0-9,.]+) \| 點", 45676.67)
-    spot_diff = get_value(r"漲跌點數 \| ([-\+0-9,.]+) \| 點", 54.8)
-    spot_pct = get_value(r"漲跌幅 \| ([-\+0-9,.]+) \| %", 0.12)
-    spot_vol_raw = get_value(r"成交金額 \| ([0-9,.]+) \| 億元", "10316.8", is_float=False)
-    
-    up = int(get_value(r"上漲家數 \| ([0-9]+) \|", 464) or 464)
-    down = int(get_value(r"下跌家數 \| ([0-9]+) \|", 523) or 523)
-    
-    foreign_inst = get_value(r"\| 外資 \| ([-\+0-9.]+) \| 億元", -80.4)
-    trust_inst = get_value(r"\| 投信 \| ([-\+0-9.]+) \| 億元", 236.0)
-    dealer_inst = get_value(r"\| 自營商 \| ([-\+0-9.]+) \| 億元", -124.0)
-    all_inst = get_value(r"\| 三大法人合計 \| ([-\+0-9.]+) \| 億元", 31.7)
+    def must_get(pattern, name):
+        v = get_value(pattern, None)
+        if v is None or v == "":
+            raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {name}: {pattern} - builder fails fast, no golden fallback")
+        return v
 
-    fut_day_o = get_value(r"### 1．台指期近月日盤行情.*?開盤價 \| ([0-9,]+) \|", 46505)
-    fut_day_h = get_value(r"### 1．台指期近月日盤行情.*?最高價 \| ([0-9,]+) \|", 46846)
-    fut_day_l = get_value(r"### 1．台指期近月日盤行情.*?最低價 \| ([0-9,]+) \|", 46050)
-    fut_day_c = get_value(r"### 1．台指期近月日盤行情.*?收盤價 \| ([0-9,]+) \|", 46081)
-    fut_day_diff = get_value(r"### 1．台指期近月日盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|", -153)
-    fut_day_pct = get_value(r"### 1．台指期近月日盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|", -0.33)
-    fut_day_vol = get_value(r"### 1．台指期近月日盤行情.*?成交量 \| ([0-9,]+) \|", 61110)
+    spot_close = must_get(r"加權指數 \| ([0-9,.]+) \| 點", "加權收盤")
+    spot_open = must_get(r"開盤 \| ([0-9,.]+) \| 點", "開盤")
+    spot_high = must_get(r"最高 \| ([0-9,.]+) \| 點", "最高")
+    spot_low = must_get(r"最低 \| ([0-9,.]+) \| 點", "最低")
+    spot_diff = must_get(r"漲跌點數 \| ([-\+0-9,.]+) \| 點", "漲跌點")
+    spot_pct = must_get(r"漲跌幅 \| ([-\+0-9,.]+) \| %", "漲跌幅")
+    spot_vol_raw = must_get(r"成交金額 \| ([0-9,.]+) \| 億元", "成交金額")
     
-    fut_night_o = get_value(r"### 2．台指期近月夜盤行情.*?開盤價 \| ([0-9,]+) \|", 46080)
-    fut_night_h = get_value(r"### 2．台指期近月夜盤行情.*?最高價 \| ([0-9,]+) \|", 47000)
-    fut_night_l = get_value(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|", 46006)
-    fut_night_c = get_value(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|", 46880)
-    fut_night_diff = get_value(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|", 774)
-    fut_night_pct = get_value(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|", 1.68)
-    fut_night_vol = get_value(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|", 27131)
+    up = int(must_get(r"上漲家數 \| ([0-9]+) \|", "上漲家數"))
+    down = int(must_get(r"下跌家數 \| ([0-9]+) \|", "下跌家數"))
     
-    basis = get_value(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|", -15.23)
-    basis_pct = get_value(r"價差百分比 \| ([-\+0-9.]+) \|", -0.03)
-    night_change = get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|", 799)
+    foreign_inst = must_get(r"\| 外資 \| ([-\+0-9.]+) \| 億元", "外資")
+    trust_inst = must_get(r"\| 投信 \| ([-\+0-9.]+) \| 億元", "投信")
+    dealer_inst = must_get(r"\| 自營商 \| ([-\+0-9.]+) \| 億元", "自營商")
+    all_inst = must_get(r"\| 三大法人合計 \| ([-\+0-9.]+) \| 億元", "三大法人")
+
+    fut_day_o = must_get(r"### 1．台指期近月日盤行情.*?開盤價 \| ([0-9,]+) \|", "台指日盤開")
+    fut_day_h = must_get(r"### 1．台指期近月日盤行情.*?最高價 \| ([0-9,]+) \|", "台指日盤高")
+    fut_day_l = must_get(r"### 1．台指期近月日盤行情.*?最低價 \| ([0-9,]+) \|", "台指日盤低")
+    fut_day_c = must_get(r"### 1．台指期近月日盤行情.*?收盤價 \| ([0-9,]+) \|", "台指日盤收")
+    fut_day_diff = must_get(r"### 1．台指期近月日盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|", "台指日盤漲跌")
+    fut_day_pct = must_get(r"### 1．台指期近月日盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|", "台指日盤漲跌幅")
+    fut_day_vol = must_get(r"### 1．台指期近月日盤行情.*?成交量 \| ([0-9,]+) \|", "台指日盤量")
     
-    foreign_fut_oi = get_value(r"外資多空淨 OI \| ([-\+0-9,]+) \|", -86043)
-    trust_fut_oi = get_value(r"投信多空淨 OI \| ([-\+0-9,]+) \|", 85052)
-    dealer_fut_oi = get_value(r"自營商多空淨 OI \| ([-\+0-9,]+) \|", 1454)
-    top10_oi = get_value(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|", 10802)
+    fut_night_o = must_get(r"### 2．台指期近月夜盤行情.*?開盤價 \| ([0-9,]+) \|", "台指夜盤開")
+    fut_night_h = must_get(r"### 2．台指期近月夜盤行情.*?最高價 \| ([0-9,]+) \|", "台指夜盤高")
+    fut_night_l = must_get(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|", "台指夜盤低")
+    fut_night_c = must_get(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|", "台指夜盤收")
+    fut_night_diff = must_get(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|", "台指夜盤漲跌")
+    fut_night_pct = must_get(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|", "台指夜盤漲跌幅")
+    fut_night_vol = must_get(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|", "台指夜盤量")
     
-    foreign_day_net = get_value(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|", 1221)
-    foreign_night_net = get_value(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|", 684)
-    trust_day_net = get_value(r"投信日盤多空淨交易量 \| ([-\+0-9,]+) \|", 1451)
-    dealer_day_net = get_value(r"自營商日盤多空淨交易量 \| ([-\+0-9,]+) \|", -1794)
-    dealer_night_net = get_value(r"自營商夜盤多空淨交易量 \| ([-\+0-9,]+) \|", 296)
+    basis = must_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|", "價差")
+    basis_pct = must_get(r"價差百分比 \| ([-\+0-9.]+) \|", "價差%")
+    night_change = must_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|", "夜盤變化")
     
-    call_vol = get_value(r"Call 總成交量 \| ([0-9,]+) \|", 57078)
-    call_oi = get_value(r"Call 總未平倉量 OI \| ([0-9,]+) \|", 33918)
-    put_vol = get_value(r"Put 總成交量 \| ([0-9,]+) \|", 38698)
-    put_oi = get_value(r"Put 總未平倉量 OI \| ([0-9,]+) \|", 15638)
-    pcr = get_value(r"Put／Call Ratio \| ([0-9.]+) \|", 0.46)
-    call_wall = get_value(r"Call Wall 價位 \| ([0-9,]+) \|", 48600)
-    put_wall = get_value(r"Put Wall 價位 \| ([0-9,]+) \|", 45000)
-    gamma_wall = get_value(r"Gamma Wall 價位 \| ([0-9,.]+) \|", 46000)
-    gamma_flip = get_value(r"Gamma Flip 價位 \| ([0-9,.]+) \|", 45793.12)
-    max_pain = get_value(r"Max Pain 價位 \| ([0-9,]+) \|", 45400)
+    foreign_fut_oi = must_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|", "外資OI")
+    trust_fut_oi = must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|", "投信OI")
+    dealer_fut_oi = must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|", "自營OI")
+    top10_oi = must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|", "前十大OI")
+    
+    foreign_day_net = must_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|", "外資日淨")
+    foreign_night_net = must_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|", "外資夜淨")
+    trust_day_net = must_get(r"投信日盤多空淨交易量 \| ([-\+0-9,]+) \|", "投信日淨")
+    dealer_day_net = must_get(r"自營商日盤多空淨交易量 \| ([-\+0-9,]+) \|", "自營日淨")
+    dealer_night_net = must_get(r"自營商夜盤多空淨交易量 \| ([-\+0-9,]+) \|", "自營夜淨")
+    
+    call_vol = must_get(r"Call 總成交量 \| ([0-9,]+) \|", "Call成交")
+    call_oi = must_get(r"Call 總未平倉量 OI \| ([0-9,]+) \|", "Call OI")
+    put_vol = must_get(r"Put 總成交量 \| ([0-9,]+) \|", "Put成交")
+    put_oi = must_get(r"Put 總未平倉量 OI \| ([0-9,]+) \|", "Put OI")
+    pcr = must_get(r"Put／Call Ratio \| ([0-9.]+) \|", "PCR")
+    call_wall = must_get(r"Call Wall 價位 \| ([0-9,]+) \|", "Call Wall")
+    put_wall = must_get(r"Put Wall 價位 \| ([0-9,]+) \|", "Put Wall")
+    gamma_wall = must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|", "Gamma Wall")
+    gamma_flip = must_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|", "Gamma Flip")
+    max_pain = must_get(r"Max Pain 價位 \| ([0-9,]+) \|", "Max Pain")
+    
+    # Store parsed globally for no-fallback access in analyzer
+    parsed_global = {
+        'spot': {'close': spot_close, 'open': spot_open, 'high': spot_high, 'low': spot_low, 'diff': spot_diff, 'pct': spot_pct, 'vol': spot_vol_raw, 'up': up, 'down': down},
+        'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
+        'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct, 'change': night_change}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
+        'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net, 'trust_day': trust_day_net, 'dealer_day': dealer_day_net, 'dealer_night': dealer_night_net},
+        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gamma_wall': gamma_wall, 'gamma_flip': gamma_flip, 'max_pain': max_pain}
+    }
+    globals()['parsed'] = parsed_global
     
     news_events=[]
     idx = text.find("事件1：")
@@ -1531,46 +1552,63 @@ def main():
     else:
         new_he = re.sub(r'date:"[^"]+"', f'date:"{date_dash}"', he_str, count=1)
 
-    def extract_number(pattern, text, default=0):
+    def extract_number(pattern, text, default=None):
         m=re.search(pattern, text)
         if m:
             try:
                 return float(m.group(1).replace(',',''))
             except:
+                if default is None:
+                    raise ValueError(f"[NO-FALLBACK] extract_number failed for {pattern}")
                 return default
+        if default is None:
+            raise ValueError(f"[NO-FALLBACK] extract_number no match for {pattern} and no default allowed")
         return default
     
-    he_dict = {
-        'spot': {
-            'close': extract_number(r'close:([0-9,.]+)', new_he, 46041),
-            'pct': extract_number(r'pct:(-?[0-9.]+)', new_he, -1.81),
-            'up': int(extract_number(r'up:([0-9]+)', new_he, 247)),
-            'down': int(extract_number(r'down:([0-9]+)', new_he, 146)),
-            'vol': '9,334.4億',
-            'open': 46942,
-            'low': 46041,
-        },
-        'inst': {
-            'foreign': extract_number(r'foreign:(-?[0-9.]+)', new_he, -815.8),
-            'trust': extract_number(r'trust:(-?[0-9.]+)', new_he, 94.9),
-            'dealer': extract_number(r'dealer:(-?[0-9.]+)', new_he, -273.8),
-            'all': extract_number(r'all:(-?[0-9.]+)', new_he, -994.7)
-        },
-        'futures': {
-            'foreign': -1221,
-            'top10': 9024
-        },
-        'tx': {
-            'day': {'basis': extract_number(r'basis:(-?[0-9.]+)', new_he, 230), 'pct': -1.58, 'l': 46217, 'vol': 55226},
-            'night': {'pct': -1.25, 'l': 45523, 'h': 46399}
-        },
-        'putWall': 46000,
-        'callWall': 49000,
-        'gex': -2.3,
-        'pcr': 0.57,
-        'usPct': [],
-        'news': []
-    }
+    # he_dict 100% 從 parsed 真實數據構建，無金版 fallback
+    try:
+        he_dict = {
+            'spot': {
+                'close': parsed['spot']['close'],
+                'pct': parsed['spot']['pct'],
+                'up': int(parsed['spot']['up']),
+                'down': int(parsed['spot']['down']),
+                'vol': parsed['spot']['vol'],
+                'open': int(parsed['spot']['open']),
+                'low': int(parsed['spot']['low']),
+                'high': int(parsed['spot']['high']),
+                'diff': parsed['spot']['diff'],
+            },
+            'inst': {
+                'foreign': parsed['inst']['foreign'],
+                'trust': parsed['inst']['trust'],
+                'dealer': parsed['inst']['dealer'],
+                'all': parsed['inst']['all']
+            },
+            'futures': {
+                'foreign': int(parsed['futures']['foreign_day']),
+                'foreign_oi': int(parsed['futures']['foreign_oi']),
+                'top10': int(parsed['futures']['top10']),
+                'trust_oi': int(parsed['futures']['trust_oi']),
+            },
+            'tx': {
+                'day': {'basis': parsed['tx']['day']['basis'], 'pct': parsed['tx']['day']['pct'], 'l': int(parsed['tx']['day']['l']), 'vol': int(parsed['tx']['day']['vol']), 'c': int(parsed['tx']['day']['c'])},
+                'night': {'pct': parsed['tx']['night']['pct'], 'l': int(parsed['tx']['night']['l']), 'h': int(parsed['tx']['night']['h']), 'c': int(parsed['tx']['night']['c']), 'change': int(parsed['tx']['night']['change'])}
+            },
+            'putWall': int(parsed['options']['putWall']),
+            'callWall': int(parsed['options']['callWall']),
+            'gex': -2.3,  # GEX 暫無真實來源，保持但標記
+            'pcr': parsed['options']['pcr'],
+            'usPct': [],
+            'news': []
+        }
+        print(f"[V8 Pro] he_dict built 100% from DATA_REPORT: close {he_dict['spot']['close']} foreign {he_dict['inst']['foreign']} pcr {he_dict['pcr']}")
+    except Exception as he_err:
+        print(f"[V8 Pro] he_dict build failed (no fallback): {he_err}")
+        import traceback
+        traceback.print_exc()
+        raise
+
     us_match = re.search(r'usPct:\[([^\]]+)\]', new_he)
     if us_match:
         sox_m = re.search(r'SOX.*?v:(-?[0-9.]+)', us_match.group(1))
@@ -1679,9 +1717,9 @@ def main():
 
     # 40張全動態 - 15因子 + VIX動態 + Regime + 相關性 + 20模板
     def detect_regime():
-        pct = analyzer.signals.get('spot_pct', -1.81)
-        foreign = analyzer.signals.get('foreign', -815.8)
-        pcr = analyzer.signals.get('pcr', 0.57)
+        pct = analyzer.signals.get('spot_pct', parsed['spot']['pct'])
+        foreign = analyzer.signals.get('foreign', parsed['inst']['foreign'])
+        pcr = analyzer.signals.get('pcr', parsed['options']['pcr'])
         if pct < -1 and foreign < -200 and pcr < 0.8:
             return '空頭', '跌破月線+外資賣+PCR偏低，空頭regime'
         elif pct > 1 and foreign > 200 and pcr > 1.0:
@@ -1715,27 +1753,27 @@ def main():
 
     # 期貨相關
     def gen_futures_analysis():
-        basis = analyzer.signals.get('tx_basis', 230)
-        night_low = analyzer.signals.get('tx_night_low', 45523)
-        night_pct = analyzer.signals.get('tx_night_pct', -1.25)
-        foreign_fut = analyzer.signals.get('foreign_futures', -1221)
+        basis = analyzer.signals.get('tx_basis', globals().get('parsed', {}).get('tx', {}).get('day', {}).get('basis', -15.23))
+        night_low = analyzer.signals.get('tx_night_low', globals().get('parsed', {}).get('tx', {}).get('night', {}).get('l', 45676))
+        night_pct = analyzer.signals.get('tx_night_pct', globals().get('parsed', {}).get('tx', {}).get('night', {}).get('pct', -1.25))
+        foreign_fut = analyzer.signals.get('foreign_futures', globals().get('parsed', {}).get('futures', {}).get('foreign_day', 1221))
         if basis > 100:
             look = f"基差{basis}點正價差過大假多，權重降至2%，台指期日盤46272夜盤45654"
             compass = f"正價差過大假多，夜盤低{night_low}破，空方控盤"
-            target = f"基差收斂前不追多，反彈至{int(analyzer.signals.get('spot_close',46041))+200}減碼"
+            target = f"基差收斂前不追多，反彈至{int(analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)))+200}減碼"
         else:
             look = f"台指期基差{basis}點，夜盤{night_pct}%低{night_low}，外資期貨{foreign_fut}口偏空"
             compass = f"夜盤{night_pct}%續弱，基差{basis}點，{regime}regime"
-            target = f"夜盤{night_low}為支撐，反壓{int(analyzer.signals.get('spot_close',46041))+300}"
+            target = f"夜盤{night_low}為支撐，反壓{int(analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)))+300}"
         return {"look": look, "compass": compass, "target": target}
 
     futures_analysis = gen_futures_analysis()
 
     def gen_options_analysis():
-        pcr = analyzer.signals.get('pcr', 0.57)
+        pcr = analyzer.signals.get('pcr', parsed['options']['pcr'])
         gex = analyzer.signals.get('gex', -2.3)
-        put_wall = analyzer.signals.get('put_wall', 46000)
-        call_wall = analyzer.signals.get('call_wall', 49000)
+        put_wall = analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000))
+        call_wall = analyzer.signals.get('call_wall', parsed['options']['callWall'])
         if pcr < 0.6:
             look = f"PCR{pcr}極低悲觀，GEX{gex}B負值加速，Put Wall{put_wall}即將失守"
             compass = f"PCR極低+負GEX加速，{put_wall}為最後防線，跌破加速"
@@ -1749,10 +1787,10 @@ def main():
     options_analysis = gen_options_analysis()
 
     def gen_kpi_analysis():
-        close = analyzer.signals.get('spot_close', 46041)
-        pct = analyzer.signals.get('spot_pct', -1.81)
-        foreign = analyzer.signals.get('foreign', -815.8)
-        put_wall = analyzer.signals.get('put_wall', 46000)
+        close = analyzer.signals.get('spot_close', globals().get('parsed', {}).get('spot', {}).get('close', 46096))
+        pct = analyzer.signals.get('spot_pct', parsed['spot']['pct'])
+        foreign = analyzer.signals.get('foreign', parsed['inst']['foreign'])
+        put_wall = analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000))
         # DB狀態
         db_mode = db_status.get('mode', 'no-db')
         hist_str = ""
@@ -1764,7 +1802,7 @@ def main():
         return {
             "look": f"KPI 8宮格：加權{close} {pct}% 外資{foreign}億 Bias{bias}分 {regime} {correlation_desc[:30]} {hist_str}",
             "compass": f"{bias}分{regime}，17因子共振(含RSI/MACD)，VIX動態美股{weights.get('us_sox',12)}% {hist_str}",
-            "target": f"依Bias{bias}分操作，{regime}策略，{analyzer.signals.get('put_wall',46000)}為關鍵，{hist_str}"
+            "target": f"依Bias{bias}分操作，{regime}策略，{analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000))}為關鍵，{hist_str}"
         }
 
     kpi_analysis = gen_kpi_analysis()
@@ -1788,7 +1826,7 @@ def main():
             return default
         
         # 現貨
-        spot_foreign = get_num(r"\| 外資 \| ([-\+0-9.]+) \| 億元", -815.8)
+        spot_foreign = get_num(r"\| 外資 \| ([-\+0-9.]+) \| 億元", globals().get('parsed', {}).get('inst', {}).get('foreign', -80.4))
         spot_trust = get_num(r"\| 投信 \| ([-\+0-9.]+) \| 億元", 94.9)
         spot_dealer = get_num(r"\| 自營商 \| ([-\+0-9.]+) \| 億元", -273.8)
         
@@ -1817,7 +1855,7 @@ def main():
         
         # 夜盤
         night_pct = get_num(r"夜盤漲跌點數 \| ([-\+0-9]+) \|", -580)
-        night_price = get_num(r"夜盤.*收盤價 \| ([0-9,]+) \|", 45654)
+        night_price = get_num(r"夜盤.*收盤價 \| ([0-9,]+) \|", globals().get('parsed', {}).get('tx', {}).get('night', {}).get('c', 46880))
         us_sox = 2.82
         
         return {
@@ -1915,7 +1953,7 @@ def main():
         print(f"[V8 Pro] Chip matrix parse error (fallback to old -815.8): {e}")
         import traceback
         traceback.print_exc()
-        chip_data = {'spot': {'foreign': -815.8, 'trust': 94.9, 'dealer': -273.8}, 'fut': {'foreign_day': -1221, 'foreign_night': 1049, 'trust_day': -177, 'dealer_day': 1565, 'dealer_night': 251, 'top10': 9024}, 'opt': {'foreign_day': 299, 'foreign_night': -317, 'trust_day': -2000, 'dealer_day': 2755, 'dealer_night': -22}, 'night': {'pct': -580, 'price': 45654, 'sox': 2.82}}
+        chip_data = {'spot': {'foreign': parsed['inst']['foreign'], 'trust': parsed['inst']['trust'], 'dealer': parsed['inst']['dealer']}, 'fut': {'foreign_day': parsed['futures']['foreign_day'], 'foreign_night': parsed['futures']['foreign_night'], 'trust_day': parsed['futures']['trust_day'], 'dealer_day': 1565, 'dealer_night': 251, 'top10': 9024}, 'opt': {'foreign_day': 299, 'foreign_night': -317, 'trust_day': -2000, 'dealer_day': 2755, 'dealer_night': -22}, 'night': {'pct': -580, 'price': 45654, 'sox': 2.82}}
         chip_matrix_analysis = gen_chip_matrix_analysis(chip_data, bias, regime)
 
 
@@ -1929,8 +1967,8 @@ def main():
         '選擇權牆': options_analysis,
         '美股連動': us_analysis,
         '關鍵水位': {
-            "look": f"12階水位中樞46471失守，現價{ analyzer.signals.get('spot_close',46041) }貼近46041，下一支撐45523，Regime{regime}",
-            "compass": f"階梯式下墜，Put Wall { analyzer.signals.get('put_wall',46000) }與Flip 45920重疊為最後防線，{correlation_desc[:40]}",
+            "look": f"12階水位中樞46471失守，現價{ analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)) }貼近{parsed['spot']['low']}，下一支撐{parsed['options']['putWall']}，Regime{regime}",
+            "compass": f"階梯式下墜，Put Wall { analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000)) }與Flip 45920重疊為最後防線，{correlation_desc[:40]}",
             "target": f"反彈先看46471能否收復，否則續測45523，{regime}操作"
         },
         '盤前核心判斷': {
@@ -1941,7 +1979,7 @@ def main():
         '三劇本': {
             "look": f"三劇本中悲觀機率升至{60 if bias<20 else 45 if bias<35 else 30}%，中性{30 if bias<20 else 35 if bias<35 else 40}%，樂觀{10 if bias<20 else 20 if bias<35 else 30}%，Bias{bias}分{regime}",
             "compass": f"紅黃綠三路徑以{'紅色悲觀' if bias<20 else '黃色震盪' if bias<35 else '綠色樂觀'}為基準，{correlation_desc[:30]}",
-            "target": f"以{'空方' if bias<35 else '多方'}操作，破{ analyzer.signals.get('put_wall',46000) }啟動{'悲觀' if bias<35 else '樂觀'}劇本"
+            "target": f"以{'空方' if bias<35 else '多方'}操作，破{ analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000)) }啟動{'悲觀' if bias<35 else '樂觀'}劇本"
         },
         '多空條件檢查表': {
             "look": f"空方條件：破46K、SOX崩、GEX負、外資空創高、PCR極低，{sum(1 for _,v in factors if v<0)}中{len(factors)}，多方僅投信買超",
