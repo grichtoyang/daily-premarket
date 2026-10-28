@@ -1758,13 +1758,13 @@ def main():
         night_pct = analyzer.signals.get('tx_night_pct', globals().get('parsed', {}).get('tx', {}).get('night', {}).get('pct', -1.25))
         foreign_fut = analyzer.signals.get('foreign_futures', globals().get('parsed', {}).get('futures', {}).get('foreign_day', 1221))
         if basis > 100:
-            look = f"基差{basis}點正價差過大假多，權重降至2%，台指期日盤46272夜盤45654"
-            compass = f"正價差過大假多，夜盤低{night_low}破，空方控盤"
-            target = f"基差收斂前不追多，反彈至{int(analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)))+200}減碼"
+            look = f"基差{basis}點正價差過大假多，權重降至2%，台指期日盤{globals().get('parsed', {}).get('tx', {}).get('day', {}).get('c', 46081):,}點 夜盤{globals().get('parsed', {}).get('tx', {}).get('night', {}).get('c', 46880):,}點"
+            compass = f"正價差過大假多，夜盤低{night_low}點跌破，空方控盤"
+            target = f"基差收斂前不追多，反彈至{int(analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)))+200}點減碼"
         else:
-            look = f"台指期基差{basis}點，夜盤{night_pct}%低{night_low}，外資期貨{foreign_fut}口偏空"
+            look = f"台指期基差{basis}點，夜盤{night_pct}%低{night_low}點，外資期貨{foreign_fut}口偏空"
             compass = f"夜盤{night_pct}%續弱，基差{basis}點，{regime}regime"
-            target = f"夜盤{night_low}為支撐，反壓{int(analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)))+300}"
+            target = f"夜盤{night_low}點為支撐，反壓{int(analyzer.signals.get('spot_close',globals().get('parsed', {}).get('spot', {}).get('close', 46096)))+300}點"
         return {"look": look, "compass": compass, "target": target}
 
     futures_analysis = gen_futures_analysis()
@@ -1775,13 +1775,13 @@ def main():
         put_wall = analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000))
         call_wall = analyzer.signals.get('call_wall', parsed['options']['callWall'])
         if pcr < 0.6:
-            look = f"PCR{pcr}極低悲觀，GEX{gex}B負值加速，Put Wall{put_wall}即將失守"
-            compass = f"PCR極低+負GEX加速，{put_wall}為最後防線，跌破加速"
-            target = f"{put_wall}守住震盪，破則追空至{put_wall-500}"
+            look = f"PCR{pcr}倍極低悲觀，GEX{gex}B(十億美元)負值加速，Put Wall{put_wall}點即將失守"
+            compass = f"PCR極低({pcr}倍)+負GEX加速，{put_wall}點為最後防線，跌破加速"
+            target = f"{put_wall}點守住震盪，破則追空至{put_wall-500}點"
         else:
-            look = f"PCR{pcr}中性，Call Wall{call_wall} Put Wall{put_wall}，GEX{gex}B"
-            compass = f"選擇權中性，{put_wall}-{call_wall}區間"
-            target = f"區間{put_wall}-{call_wall}操作"
+            look = f"PCR{pcr}倍中性，Call Wall{call_wall}點 Put Wall{put_wall}點，GEX{gex}B(十億美元)"
+            compass = f"選擇權中性，{put_wall}點-{call_wall}點區間"
+            target = f"區間{put_wall}點-{call_wall}點操作"
         return {"look": look, "compass": compass, "target": target}
 
     options_analysis = gen_options_analysis()
@@ -1800,7 +1800,7 @@ def main():
             hist_str = f"無DB模式({db_mode})" if 'no-db' in db_mode else "歷史相似度不足"
         
         return {
-            "look": f"KPI 8宮格：加權{close} {pct}% 外資{foreign}億 Bias{bias}分 {regime} {correlation_desc[:30]} {hist_str}",
+            "look": f"KPI 8宮格：加權{close}點 {pct}% 外資{foreign}億元 Bias{bias}分 {regime} {correlation_desc[:30]} {hist_str}",
             "compass": f"{bias}分{regime}，17因子共振(含RSI/MACD)，VIX動態美股{weights.get('us_sox',12)}% {hist_str}",
             "target": f"依Bias{bias}分操作，{regime}策略，{analyzer.signals.get('put_wall', globals().get('parsed', {}).get('options', {}).get('putWall', 45000))}為關鍵，{hist_str}"
         }
@@ -1918,20 +1918,20 @@ def main():
         if night_pct_val < -500 and us_sox_val > 2:
             night_script = f"台指夜盤重挫{int(night_pct_val)}點但美SOX強+{us_sox_val}%矛盾，夜盤外資{int(fut['foreign_night'])}口偏多，劇本四先跌開低反彈，隔日觀望美股主導"
         elif night_pct_val < -300:
-            night_script = f"夜盤跌{int(night_pct_val)}點破45523，外資夜盤{int(fut['foreign_night'])}口，美股SOX+{us_sox_val}%，隔日低開測支撐"
+            night_script = f"夜盤跌{int(night_pct_val)}點破45523點，外資夜盤{int(fut['foreign_night'])}口，美股SOX+{us_sox_val}%，隔日低開測支撐"
         else:
-            night_script = f"夜盤{int(night_pct_val)}點，外資夜{int(fut['foreign_night'])}，美SOX{us_sox_val}%，隔日{regime_val}續弱"
+            night_script = f"夜盤{int(night_pct_val)}點，外資夜{int(fut['foreign_night'])}口，美SOX{us_sox_val}%，隔日{regime_val}續弱"
         
         if spot['foreign'] < -500 and fut['foreign_day'] < -500 and opt['trust_day'] < -1000:
-            intent = f"外資三市同步偏空：現貨{spot['foreign']}億大賣+期貨日{int(fut['foreign_day'])}口空+投信選擇權{int(opt['trust_day'])}口空，前十大{int(fut['top10'])}口多但外資空方控盤，空方意圖明確，隔日續殺機率高"
+            intent = f"外資三市同步偏空：現貨{spot['foreign']}億元大賣+期貨日{int(fut['foreign_day'])}口空+投信選擇權{int(opt['trust_day'])}口空，前十大{int(fut['top10'])}口多但外資空方控盤，空方意圖明確，隔日續殺機率高"
         elif dealer_consistency > 70:
-            intent = f"自營三市對沖：現貨{spot['dealer']}億空+期貨{int(fut['dealer_day'])}口多+選擇權{int(opt['dealer_day'])}口多，套利非方向，籌碼分歧，{regime_val}盤整"
+            intent = f"自營三市對沖：現貨{spot['dealer']}億元空+期貨{int(fut['dealer_day'])}口多+選擇權{int(opt['dealer_day'])}口多，套利非方向，籌碼分歧，{regime_val}盤整"
         else:
-            intent = f"三市分歧：外資現貨{spot['foreign']}億大賣+期貨日{int(fut['foreign_day'])}夜{int(fut['foreign_night'])}+選擇權{int(opt['foreign_day'])}，投信現貨{spot['trust']}億撐盤但期選偏空，{' '.join(foreign_msgs+trust_msgs) if foreign_msgs+trust_msgs else '多空拉鋸'}"
+            intent = f"三市分歧：外資現貨{spot['foreign']}億元大賣+期貨日{int(fut['foreign_day'])}口夜{int(fut['foreign_night'])}口+選擇權{int(opt['foreign_day'])}口，投信現貨{spot['trust']}億元撐盤但期選偏空，{' '.join(foreign_msgs+trust_msgs) if foreign_msgs+trust_msgs else '多空拉鋸'}"
         
-        look = f"三市矩陣：現貨外資{spot['foreign']}億 投信{spot['trust']}億 自營{spot['dealer']}億 | 期貨日外資{int(fut['foreign_day'])} 投信{int(fut['trust_day'])} 自營{int(fut['dealer_day'])} 夜外資{int(fut['foreign_night'])} | 選擇權外資{int(opt['foreign_day'])} 投信{int(opt['trust_day'])} 自營{int(opt['dealer_day'])} | 前十大{int(fut['top10'])} | {intent[:80]}"
+        look = f"三市矩陣：現貨外資{spot['foreign']}億元 投信{spot['trust']}億元 自營{spot['dealer']}億元 | 期貨日外資{int(fut['foreign_day'])}口 投信{int(fut['trust_day'])}口 自營{int(fut['dealer_day'])}口 夜外資{int(fut['foreign_night'])}口 | 選擇權外資{int(opt['foreign_day'])}口 投信{int(opt['trust_day'])}口 自營{int(opt['dealer_day'])}口 | 前十大{int(fut['top10'])}口 | {intent[:80]}"
         compass = f"一致性：外資{'三市同空' if foreign_spot_sign==foreign_fut_day_sign==-1 else '日空夜多避險'}，投信{'假多' if trust_spot_sign!=trust_fut_sign else '同向'}，自營{dealer_consistency}%對沖 | 力道：現貨{spot_force} 期貨{fut_force} 選擇權{opt_force} 綜合{spot_force+fut_force+opt_force}空方 | {night_script[:80]}"
-        target = f"主力意圖：{intent} | 夜盤劇本：{night_script} | 操作：{'三市同空續空' if spot_force+fut_force+opt_force<-10 else '分歧觀望'}至45523，Put Wall 46000為關鍵，{regime_val}策略"
+        target = f"主力意圖：{intent} | 夜盤劇本：{night_script} | 操作：{'三市同空續空' if spot_force+fut_force+opt_force<-10 else '分歧觀望'}至45523點，Put Wall 46000點為關鍵，{regime_val}策略"
         
         return {"look": look, "compass": compass, "target": target, "raw": chip}
 
@@ -1955,6 +1955,51 @@ def main():
         traceback.print_exc()
         chip_data = {'spot': {'foreign': parsed['inst']['foreign'], 'trust': parsed['inst']['trust'], 'dealer': parsed['inst']['dealer']}, 'fut': {'foreign_day': parsed['futures']['foreign_day'], 'foreign_night': parsed['futures']['foreign_night'], 'trust_day': parsed['futures']['trust_day'], 'dealer_day': 1565, 'dealer_night': 251, 'top10': 9024}, 'opt': {'foreign_day': 299, 'foreign_night': -317, 'trust_day': -2000, 'dealer_day': 2755, 'dealer_night': -22}, 'night': {'pct': -580, 'price': 45654, 'sox': 2.82}}
         chip_matrix_analysis = gen_chip_matrix_analysis(chip_data, bias, regime)
+
+    def gen_top10_analysis():
+        try:
+            top10 = int(chip_data['fut']['top10']) if 'chip_data' in locals() else int(parsed['futures']['top10'])
+            foreign_oi = int(chip_data['fut']['foreign_day']) if 'chip_data' in locals() else int(parsed['futures']['foreign_day'])
+            foreign_night = int(chip_data['fut']['foreign_night']) if 'chip_data' in locals() else int(parsed['futures']['foreign_night'])
+            trust = int(chip_data['fut']['trust_day']) if 'chip_data' in locals() else int(parsed['futures']['trust_day'])
+            dealer = int(chip_data['fut']['dealer_day']) if 'chip_data' in locals() else 1565
+            # 判斷分歧
+            if top10 > 8000 and foreign_oi < 0:
+                look = f"前十大+{top10}口偏多但外資{foreign_oi}口大空，對作{abs(top10-foreign_oi)}口，籌碼分歧加劇"
+                compass = f"投信{trust}口與外資對作，投信創高+{trust}口撐盤但外資空方控盤，行情易大震盪"
+                target = f"觀察投信與外資誰先認輸，前十大{top10}口為多方最後防線，波動放大至{int(parsed['spot']['high'])-int(parsed['spot']['low'])}點"
+            else:
+                look = f"前十大{top10}口多單未大減，外資{foreign_oi}口空單續抱，投信{trust}口多，籌碼分歧"
+                compass = f"外資空{abs(foreign_oi)}口 vs 投信多{trust}口 vs 前十大多{top10}口，三方拉鋸，{regime}盤整"
+                target = f"前十大{top10}口守住則震盪，跌破則加速，觀察{parsed['options']['putWall']}點支撐"
+            return {"look": look, "compass": compass, "target": target}
+        except Exception as e:
+            return {"look": f"前十大{parsed['futures']['top10']}口偏多與外資對作，分歧明顯", "compass": f"外資空 vs 前十大多，對作{parsed['futures']['top10']}口", "target": f"前十大{parsed['futures']['top10']}口為觀察重點"}
+
+    top10_analysis = gen_top10_analysis()
+
+
+
+
+    def gen_top10_analysis():
+        try:
+            top10 = int(chip_data['fut']['top10']) if 'chip_data' in locals() else int(parsed['futures']['top10'])
+            foreign_oi = int(chip_data['fut']['foreign_day']) if 'chip_data' in locals() else int(parsed['futures']['foreign_day'])
+            foreign_night = int(chip_data['fut']['foreign_night']) if 'chip_data' in locals() else int(parsed['futures']['foreign_night'])
+            trust = int(chip_data['fut']['trust_day']) if 'chip_data' in locals() else int(parsed['futures']['trust_day'])
+            if top10 > 8000 and foreign_oi < 0:
+                look = f"前十大+{top10}口偏多但外資{foreign_oi}口大空，對作{abs(top10-foreign_oi)}口，籌碼分歧加劇"
+                compass = f"投信{trust}口與外資對作，投信創高+{trust}口撐盤但外資空方控盤，行情易大震盪"
+                target = f"觀察投信與外資誰先認輸，前十大{top10}口為多方最後防線，波動放大至{int(parsed['spot']['high'])-int(parsed['spot']['low'])}點"
+            else:
+                look = f"前十大{top10}口多單未大減，外資{foreign_oi}口空單續抱，投信{trust}口多，籌碼分歧"
+                compass = f"外資空{abs(foreign_oi)}口 vs 投信多{trust}口 vs 前十大多{top10}口，三方拉鋸，{regime}盤整"
+                target = f"前十大{top10}口守住則震盪，跌破則加速，觀察{parsed['options']['putWall']}點支撐"
+            return {"look": look, "compass": compass, "target": target}
+        except Exception as e:
+            return {"look": f"前十大{parsed['futures']['top10']}口偏多與外資對作，分歧明顯", "compass": f"外資空 vs 前十大多，對作{parsed['futures']['top10']}口", "target": f"前十大{parsed['futures']['top10']}口為觀察重點"}
+
+    top10_analysis = gen_top10_analysis()
 
 
     # 40張全映射
@@ -2011,7 +2056,8 @@ def main():
         '台指期 夜盤': futures_analysis,
         '期貨籌碼深度圖': futures_analysis,
         '外資期貨': futures_analysis,
-        '前十大與分歧': futures_analysis,
+        '前十大與分歧': top10_analysis,
+        '前十大與分歧bar': top10_analysis,
         'OI結構': options_analysis,
         'GEX': options_analysis,
         'IV Skew': options_analysis,
@@ -2116,6 +2162,71 @@ def main():
             content_new = re.sub(r'R3\s*47332', f'R3 {r3}', content_new)
             content_new = re.sub(r'R2\s*47000', f'R2 {r2}', content_new)
             content_new = re.sub(r'P\s*46471', f'P {p}', content_new)
+
+            # 期貨/選擇權籌碼圖 - 加上口單位 (可閱讀性)
+            try:
+                content_new = re.sub(r'foreignFut:\[\{l:"日-外資",v:-1221\},\{l:"夜\+外資",v:1049\},\{l:"前十大",v:9024\},\{l:"變化",v:1334\}\]',
+                                    f'foreignFut:[{{l:"日-外資(口)",v:{real_foreign_day}}},{{l:"夜+外資(口)",v:{real_foreign_night}}},{{l:"前十大(口)",v:{int(parsed["futures"]["top10"])}}},{{l:"變化(口)",v:{real_foreign_day+real_foreign_night}}}]', content_new)
+                # 更寬鬆匹配
+                content_new = re.sub(r'\{l:"日-外資",v:(-?\d+)\},\{l:"夜\+外資",v:(-?\d+)\},\{l:"前十大",v:(\d+)\},\{l:"變化",v:(-?\d+)\}',
+                                    r'{l:"日-外資(口)",v:\1},{l:"夜+外資(口)",v:\2},{l:"前十大(口)",v:\3},{l:"變化(口)",v:\4}',
+                                    content_new)
+                content_new = re.sub(r'\{l:"外資Call",v:(-?\d+)\},\{l:"外資Put",v:(-?\d+)\},\{l:"投信Call",v:(-?\d+)\},\{l:"投信Put",v:(-?\d+)\},\{l:"自營Call",v:(-?\d+)\},\{l:"自營Put",v:(-?\d+)\}',
+                                    r'{l:"外資Call(口)",v:\1},{l:"外資Put(口)",v:\2},{l:"投信Call(口)",v:\3},{l:"投信Put(口)",v:\4},{l:"自營Call(口)",v:\5},{l:"自營Put(口)",v:\6}',
+                                    content_new)
+                print(f"[V8 Pro] Chip charts units added: foreignFut/foreginOpt with 口")
+
+                # 修復1: 移除現貨page的PCR區塊 (spot-pcr不應該在現貨頁)
+                try:
+                    content_new = re.sub(r'P\["spot-pcr"\]=P\["c12-pcr"\];', '', content_new)
+                    print(f"[V8 Pro] Fixed: Removed spot-pcr from 現貨 page")
+                except Exception as e:
+                    print(f"[V8 Pro] Remove spot-pcr failed: {e}")
+
+                # 修復2: 修復前十大與分歧bar的圖表錯置 (原本錯誤映射到c4-uspct美股圖)
+                try:
+                    content_new = re.sub(r'P\["fut-top10"\]=P\["c4-uspct"\];', 'P["fut-top10"]=P["c5-foreignFut"];', content_new)
+                    content_new = re.sub(r'P\["fut-top10"\]=P\["[^"]+"\];', 'P["fut-top10"]=P["c5-foreignFut"];', content_new)
+                    print(f"[V8 Pro] Fixed: fut-top10 now correctly maps to foreignFut (前十大與分歧), not US market")
+                except Exception as e:
+                    print(f"[V8 Pro] Fix fut-top10 failed: {e}")
+
+            except Exception as ce:
+                print(f"[V8 Pro] Chip units fix failed: {ce}")
+
+            # 期貨籌碼圖 - 加上口單位 (日-外資、夜+外資、前十大)
+            try:
+                content_new = re.sub(r'\{l:"日-外資",v:-1221\}', f'{{l:"日-外資",v:{real_foreign_day}}}', content_new)
+                content_new = re.sub(r'\{l:"夜\+外資",v:1049\}', f'{{l:"夜+外資",v:{real_foreign_night}}}', content_new)
+                content_new = re.sub(r'\{l:"前十大",v:9024\}', f'{{l:"前十大",v:{int(parsed["futures"]["top10"])}}}', content_new)
+                # 圖表 tooltip 加上單位 - 在 canvas 繪製時顯示口
+                content_new = re.sub(r'foreignFut:\[\{l:"日-外資",v:-1221\},\{l:"夜\+外資",v:1049\},\{l:"前十大",v:9024\},\{l:"變化",v:1334\}\]', 
+                                    f'foreignFut:[{{l:"日-外資",v:{real_foreign_day}}},{{l:"夜+外資",v:{real_foreign_night}}},{{l:"前十大",v:{int(parsed["futures"]["top10"]):,}}},{{l:"變化",v:{real_foreign_day+real_foreign_night}}}]', content_new)
+            except Exception as e:
+                print(f"[V8 Pro] foreignFut units fix: {e}")
+
+            # 選擇權籌碼 - 加上口單位
+            try:
+                # 外資Call/Put等
+                content_new = re.sub(r'\{l:"外資Call",v:118\}', f'{{l:"外資Call",v:{int(parsed["options"].get("foreignCallNet", 118))}}}', content_new)
+            except:
+                pass
+
+            # Call/Put Top - 加上口和點單位
+            try:
+                # Call Wall / Put Wall 已在 KPI 中加單位，這裡補圖表
+                content_new = re.sub(r'Call Wall (\d+)K(\d+)', f'Call Wall {real_call_wall:,}點({real_call_oi:,}口)', content_new)
+                content_new = re.sub(r'Put Wall (\d+)K(\d+)', f'Put Wall {real_put_wall:,}點({real_put_oi:,}口)', content_new)
+            except:
+                pass
+
+            # 大盤全景 sub 加上點單位 (成交、上市家數)
+            try:
+                new_spot_sub_units = f"{int(real_close):,}點 {real_diff:+.0f}點 {real_pct:+.2f}% 開{real_open:,}點 高{real_high:,}點 低{real_low:,}點 成交{real_vol}億元"
+                content_new = re.sub(r'46096\.23 -846\.34 -1\.81% 開46,942 高47,332 低46,041', new_spot_sub_units, content_new)
+            except:
+                pass
+
             content_new = re.sub(r'v:47895', f'v:{r4}', content_new)
             content_new = re.sub(r'v:47332', f'v:{r3}', content_new)
             content_new = re.sub(r'v:47000', f'v:{r2}', content_new)
@@ -2154,32 +2265,44 @@ def main():
             real_down = int(parsed['spot']['down']) if 'parsed' in locals() else 523
             real_vol = parsed['spot']['vol'] if 'parsed' in locals() else "10316.8"
 
-            new_kpi_title_sub = f"加權 {real_pct:+.2f}% · 成交 {real_vol}億 · 上市+上櫃 12,081億 · 上市{real_up} 上櫃{real_down}"
+            new_kpi_title_sub = f"加權 {real_pct:+.2f}% · 成交 {real_vol}億元 · 上市+上櫃 12,081.6億元 · 上市{real_up}家 上櫃{real_down}家"
             content_new = re.sub(r'加權\s*-1\.81%\s*·\s*成交\s*9,334億\s*·\s*上市\+上櫃\s*10,568億\s*·\s*上市247\s*上櫃146', new_kpi_title_sub, content_new)
 
             old_kpi_grid_pattern = r'\{l:"加權收盤",v:"46,041",d:"-846 -1\.81%",c:"#ff6b7a"\},\{l:"開/高/低",v:"46,942 / 47,332 / 46,041",d:"長黑摜破",c:"#7e90aa"\},\{l:"TX 日盤",v:"46,272 -741",d:"基差\+230 正價差0\.5%",c:"#8ec8ff"\},\{l:"TX 夜盤",v:"45,654 -580",d:"振幅876 變化-618",c:"#ff9aa3"\},\{l:"三大法人",v:"-994\.7億",d:"外資-815\.8 投信\+94\.9 自營-273\.8",c:"#ff6b7a"\},\{l:"融資券",v:"8,465億 -138億",d:"融券216,539 維持率182\.9%/176\.9%",c:"#f5c86a"\},\{l:"外資期",v:"-87,297 創高",d:"日-1,221 夜-918 夜\+1,049",c:"#ff6b7a"\},\{l:"選擇權",v:"PCR 0\.57 極低",d:"CallWall 49K2444 PutWall 46K1829",c:"#f5c86a"\}'
 
-            new_kpi_grid = f'{{l:"加權收盤",v:"{int(real_close):,}",d:"{real_diff:+.0f} {real_pct:+.2f}%",c:"#ff6b7a"}},{{l:"開/高/低",v:"{real_open:,} / {real_high:,} / {real_low:,}",d:"多方量",c:"#7e90aa"}},{{l:"TX 日盤",v:"{real_day_c:,} {real_day_diff:+}",d:"基差{real_day_basis:+.0f} 正價差{real_day_prem:+.2f}%",c:"#8ec8ff"}},{{l:"TX 夜盤",v:"{real_night_c:,} {real_night_diff:+}",d:"振幅{real_night_range} 變化{real_night_change:+}",c:"#ff9aa3"}},{{l:"三大法人",v:"{real_all:+.1f}億",d:"外資{real_foreign:+.1f} 投信{real_trust:+.1f} 自營{real_dealer:+.1f}",c:"#ff6b7a"}},{{l:"融資券",v:"8,326億 -138億",d:"融券255,075 維持率176.99%",c:"#f5c86a"}},{{l:"外資期",v:"{real_foreign_oi:,} 創高",d:"日{real_foreign_day:+} 夜{real_foreign_night:+} 夜{real_foreign_night:+}",c:"#ff6b7a"}},{{l:"選擇權",v:"PCR {real_pcr} 極低",d:"CallWall {real_call_wall//1000}K{real_call_oi} PutWall {real_put_wall//1000}K{real_put_oi}",c:"#f5c86a"}}'
+            # KPI 8宮格 - 完整單位版 (依 DATA_REPORT 單位：點、%、億元、口、張、家、倍)
+            new_kpi_grid = f'{{l:"加權收盤",v:"{int(real_close):,}點",d:"{real_diff:+.0f}點 {real_pct:+.2f}%",c:"#ff6b7a"}},{{l:"開/高/低",v:"{real_open:,}點 / {real_high:,}點 / {real_low:,}點",d:"成交{real_vol}億元 上市{real_up}家",c:"#7e90aa"}},{{l:"TX 日盤",v:"{real_day_c:,}點 {real_day_diff:+}點",d:"基差{real_day_basis:+.0f}點 正價差{real_day_prem:+.2f}%",c:"#8ec8ff"}},{{l:"TX 夜盤",v:"{real_night_c:,}點 {real_night_diff:+}點",d:"振幅{real_night_range}點 變化{real_night_change:+}點",c:"#ff9aa3"}},{{l:"三大法人",v:"{real_all:+.1f}億元",d:"外資{real_foreign:+.1f}億 投信{real_trust:+.1f}億 自營{real_dealer:+.1f}億",c:"#ff6b7a"}},{{l:"融資券",v:"8,326億元 -138億元",d:"融券255,075張 維持率176.99%",c:"#f5c86a"}},{{l:"外資期",v:"{real_foreign_oi:,}口 創高",d:"日{real_foreign_day:+}口 夜{real_foreign_night:+}口",c:"#ff6b7a"}},{{l:"選擇權",v:"PCR {real_pcr}倍 極低",d:"CallWall {real_call_wall:,}點({real_call_oi:,}口) PutWall {real_put_wall:,}點({real_put_oi:,}口)",c:"#f5c86a"}}'
+
+
+
 
             content_new, kpi_count = re.subn(old_kpi_grid_pattern, new_kpi_grid, content_new)
             print(f"[V8 Pro] KPI grid rebuilt: {kpi_count} replacements")
+            # Fallback: 如果主 pattern 沒匹配 (因 golden master 已被部分替換)，強制用更寬鬆的 pattern 替換
+            if kpi_count == 0:
+                import re as re2
+                # 匹配任何 KPI 8宮格的 children 陣列
+                kpi_fallback_pattern = r'\{l:"加權收盤",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"開/高/低",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"TX 日盤",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"TX 夜盤",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"三大法人",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"融資券",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"外資期",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"選擇權",v:"[^"]+",d:"[^"]+",c:"[^"]+"\}'
+                content_new, kpi_count2 = re2.subn(kpi_fallback_pattern, new_kpi_grid, content_new)
+                print(f"[V8 Pro] KPI grid fallback rebuilt: {kpi_count2} replacements with units")
+                kpi_count = kpi_count2 if kpi_count2 > 0 else kpi_count
 
-            content_new = re.sub(r'基差\+230 正價差0\.5%', f'基差{real_day_basis:+.0f} 正價差{real_day_prem:+.2f}%', content_new)
-            content_new = re.sub(r'振幅876 變化-618', f'振幅{real_night_range} 變化{real_night_change:+}', content_new)
-            content_new = re.sub(r'v:"-994\.7億"', f'v:"{real_all:+.1f}億"', content_new)
-            content_new = re.sub(r'-994\.7億', f'{real_all:+.1f}億', content_new)
-            content_new = re.sub(r'上市247 上櫃146', f'上市{real_up} 上櫃{real_down}', content_new)
+            content_new = re.sub(r'基差\+230 正價差0\.5%', f'基差{real_day_basis:+.0f}點 正價差{real_day_prem:+.2f}%', content_new)
+            content_new = re.sub(r'振幅876 變化-618', f'振幅{real_night_range}點 變化{real_night_change:+}點', content_new)
+            content_new = re.sub(r'v:"-994\.7億"', f'v:"{real_all:+.1f}億元"', content_new)
+            content_new = re.sub(r'-994\.7億', f'{real_all:+.1f}億元', content_new)
+            content_new = re.sub(r'上市247 上櫃146', f'上市{real_up}家 上櫃{real_down}家', content_new)
             content_new = re.sub(r'46,041\.43', f'{real_close}', content_new)
-            content_new = re.sub(r'-846 -1\.81%', f'{real_diff:+.0f} {real_pct:+.2f}%', content_new)
-            content_new = re.sub(r'46,942 / 47,332 / 46,041', f'{real_open:,} / {real_high:,} / {real_low:,}', content_new)
-            content_new = re.sub(r'46,272 -741', f'{real_day_c:,} {real_day_diff:+}', content_new)
-            content_new = re.sub(r'45,654 -580', f'{real_night_c:,} {real_night_diff:+}', content_new)
-            content_new = re.sub(r'8,465億 -138億', f'8,326億 -138億', content_new)
-            content_new = re.sub(r'融券216,539', f'融券255,075', content_new)
+            content_new = re.sub(r'-846 -1\.81%', f'{real_diff:+.0f}點 {real_pct:+.2f}%', content_new)
+            content_new = re.sub(r'46,942 / 47,332 / 46,041', f'{real_open:,}點 / {real_high:,}點 / {real_low:,}點', content_new)
+            content_new = re.sub(r'46,272 -741', f'{real_day_c:,}點 {real_day_diff:+}點', content_new)
+            content_new = re.sub(r'45,654 -580', f'{real_night_c:,}點 {real_night_diff:+}點', content_new)
+            content_new = re.sub(r'8,465億 -138億', f'8,326億元 -138億元', content_new)
+            content_new = re.sub(r'融券216,539', f'融券255,075張', content_new)
             content_new = re.sub(r'182\.9%/176\.9%', f'176.99%', content_new)
             content_new = re.sub(r'-87,297', f'{real_foreign_oi:,}', content_new)
-            content_new = re.sub(r'日-1,221 夜-918 夜\+1,049', f'日{real_foreign_day:+} 夜{real_foreign_night:+} 夜{real_foreign_night:+}', content_new)
-            content_new = re.sub(r'PCR 0\.57', f'PCR {real_pcr}', content_new)
+            content_new = re.sub(r'日-1,221 夜-918 夜\+1,049', f'日{real_foreign_day:+}口 夜{real_foreign_night:+}口 夜{real_foreign_night:+}口', content_new)
+            content_new = re.sub(r'PCR 0\.57', f'PCR {real_pcr}倍', content_new)
             content_new = re.sub(r'49K2444', f'{real_call_wall//1000}K{real_call_oi}', content_new)
             content_new = re.sub(r'46K1829', f'{real_put_wall//1000}K{real_put_oi}', content_new)
             # 最後保底：所有46,041都換成46,096 (金版fallback已移除，這裡如果還有46,041就是漏網之魚)
@@ -2198,7 +2321,7 @@ def main():
 
             # 頁首和頁尾數據來源文字全面替換 (無fallback)
             try:
-                new_header_sub = f"2026-{str(real_close)[:2]} 機構暗色版 · V8 Pro Canvas引擎 · 加權{int(real_close):,} {real_pct:+.2f}% 基差{real_day_basis:+.2f} · 更新"
+                new_header_sub = f"2026-{str(real_close)[:2]} 機構暗色版 · V8 Pro Canvas引擎 · 加權{int(real_close):,}點 {real_pct:+.2f}% 基差{real_day_basis:+.2f}點 · 更新"
                 # 更精確：用真實日期
                 from datetime import datetime
                 today_str = "2026-10-27"  # 從date_str來
@@ -2206,10 +2329,10 @@ def main():
                     today_str = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]}"
                 except:
                     pass
-                content_new = re.sub(r'2026-10-24 機構暗色版 · V8 Pro Canvas引擎 · 加權46,041 -1\.81% 基差\+230\.57 · 更新', f'{today_str} 機構暗色版 · V8 Pro Canvas引擎 · 加權{int(real_close):,} {real_pct:+.2f}% 基差{real_day_basis:+.2f} · 更新', content_new)
+                content_new = re.sub(r'2026-10-24 機構暗色版 · V8 Pro Canvas引擎 · 加權46,041 -1\.81% 基差\+230\.57 · 更新', f'{today_str} 機構暗色版 · V8 Pro Canvas引擎 · 加權{int(real_close):,}點 {real_pct:+.2f}% 基差{real_day_basis:+.2f}點 · 更新', content_new)
 
                 # 頁尾數據來源：整段重建
-                new_footer_data = f"加權{real_close} {real_diff:+.1f} {real_pct:+.2f}% 開{real_open} 高{real_high} 低{real_low} 成交{real_vol}億 上市+上櫃12,081.6億 上市{real_up} 上櫃{real_down} · 三大法人{real_all:+.1f} 外資{real_foreign:+.1f} 投信{real_trust:+.1f} 自營{real_dealer:+.1f} 融券255,075 維持率176.99% 借券4,598,566張 融資8,326.5億{real_trust:+.1f}億 · TX 日{int(parsed['tx']['day']['o'])}/{int(parsed['tx']['day']['h'])}/{int(parsed['tx']['day']['l'])}/{int(parsed['tx']['day']['c'])} {int(parsed['tx']['day']['diff']):+} {parsed['tx']['day']['pct']:+.2f}% 量{int(parsed['tx']['day']['vol']):,} 基差{real_day_basis:+.2f} 正價差{real_day_prem:+.2f}% 夜{int(parsed['tx']['night']['o'])}/{int(parsed['tx']['night']['h'])}/{int(parsed['tx']['night']['l'])}/{int(parsed['tx']['night']['c'])} {int(parsed['tx']['night']['diff']):+} {parsed['tx']['night']['pct']:+.2f}% 量{int(parsed['tx']['night']['vol']):,} 振幅{real_night_range} 變化{real_night_change:+} · 外資期{real_foreign_oi:,} 日{real_foreign_day:+} 夜{real_foreign_night:+} 前十大{int(parsed['futures']['top10']):,} 投信{int(parsed['futures']['trust_oi']):,} 自營{int(parsed['futures']['dealer_oi']):,} · 選擇權 Call量{real_call_vol:,} OI{real_call_oi:,} Put量{real_put_vol:,} OI{real_put_oi:,} PCR{real_pcr}"
+                new_footer_data = f"加權{real_close}點 {real_diff:+.1f}點 {real_pct:+.2f}% 開{real_open}點 高{real_high}點 低{real_low}點 成交{real_vol}億元 上市+上櫃12,081.6億元 上市{real_up}家 上櫃{real_down}家 · 三大法人{real_all:+.1f} 外資{real_foreign:+.1f} 投信{real_trust:+.1f} 自營{real_dealer:+.1f} 融券255,075 維持率176.99% 借券4,598,566張 融資8,326.5億{real_trust:+.1f}億 · TX 日{int(parsed['tx']['day']['o'])}/{int(parsed['tx']['day']['h'])}/{int(parsed['tx']['day']['l'])}/{int(parsed['tx']['day']['c'])} {int(parsed['tx']['day']['diff']):+} {parsed['tx']['day']['pct']:+.2f}% 量{int(parsed['tx']['day']['vol']):,} 基差{real_day_basis:+.2f} 正價差{real_day_prem:+.2f}% 夜{int(parsed['tx']['night']['o'])}/{int(parsed['tx']['night']['h'])}/{int(parsed['tx']['night']['l'])}/{int(parsed['tx']['night']['c'])} {int(parsed['tx']['night']['diff']):+} {parsed['tx']['night']['pct']:+.2f}% 量{int(parsed['tx']['night']['vol']):,} 振幅{real_night_range} 變化{real_night_change:+} · 外資期{real_foreign_oi:,} 日{real_foreign_day:+} 夜{real_foreign_night:+} 前十大{int(parsed['futures']['top10']):,} 投信{int(parsed['futures']['trust_oi']):,} 自營{int(parsed['futures']['dealer_oi']):,} · 選擇權 Call量{real_call_vol:,} OI{real_call_oi:,} Put量{real_put_vol:,} OI{real_put_oi:,} PCR{real_pcr}"
 
                 # 替換頁尾舊的長段
                 content_new = re.sub(r'加權46096\.23 -846\.34 -1\.81% 開46,942 高47,332 低46,041 成交9,334\.4億 上市\+上櫃10,568\.9億 上市464 上櫃523 · 三大法人-994\.7 外資-80\.4 投信\+236\.0 自營-124\.0 融券255,075 維持率182\.90%/176\.99% 借券458萬張 融資8,465\.1億-138\.3億 空方量1,234\.5億 · TX 202611 日47164/47337/46217/46272 -741 -1\.58% 量55,226 基差\+230\.57 正價差0\.50% 夜46270/46399/45523/45654 -580 -1\.25% 量39,368 振幅994 變化\+799 · 外資期-86,043創高 日-1221 夜-918 夜\+1049 前十大\+9024變化\+1334 投信\+83,601 自營\+3,260 · 選擇權 Call量178535 OI55024 Put量155316 OI31411 C/P1\.15 OI1', new_footer_data, content_new)
