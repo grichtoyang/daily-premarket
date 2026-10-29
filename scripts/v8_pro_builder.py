@@ -1302,10 +1302,20 @@ def parse_data_report(report_path):
         if curr:
             news_events.append(curr)
     news_js=[]
+    import json as _json
     for ev in news_events:
-        t=ev["t"].replace('"','\"')[:100]
-        s=ev["s"].replace('"','\"')[:100]
-        d=ev["d"].replace('"','\"')[:200]
+        # 用 json.dumps 做最強跳脫，Builder 全扛，不靠上游 fetch 洗數據
+        def esc(s):
+            # json.dumps 會處理 " \n \r \t \uXXXX 等所有髒字元，再去頭尾引號
+            j = _json.dumps(s, ensure_ascii=False)
+            # j 是 "...." 含引號，去掉頭尾引號後就是安全內文
+            inner = j[1:-1]
+            # 再防 </script> 跳脫
+            inner = inner.replace('</', '<\\/').replace('<!--', '<\\!--')
+            return inner
+        t=esc(ev["t"])[:100]
+        s=esc(ev["s"])[:100]
+        d=esc(ev["d"])[:200]
         news_js.append(f'{{t:"{t}",s:"{s}",d:"{d}"}}')
     
     return {
@@ -1415,7 +1425,7 @@ def main():
             new_he = re.sub(r'open:[0-9]+', f'open:{int(parsed["spot"]["open"])}', new_he)
             new_he = re.sub(r'high:[0-9]+', f'high:{int(parsed["spot"]["high"])}', new_he, count=1)
             new_he = re.sub(r'low:[0-9]+', f'low:{int(parsed["spot"]["low"])}', new_he, count=1)
-            new_he = re.sub(r'vol:"[^"]+"', f'vol:"{parsed["spot"]["vol"]}億"', new_he, count=1)
+            new_he = re.sub(r'vol:"[^"]*"', f'vol:"{parsed["spot"]["vol"]}億"', new_he, count=1)
             new_he = re.sub(r'up:[0-9]+', f'up:{parsed["spot"]["up"]}', new_he)
             new_he = re.sub(r'down:[0-9]+', f'down:{parsed["spot"]["down"]}', new_he)
             # inst - atomic
@@ -1435,11 +1445,11 @@ def main():
             new_he = re.sub(r'putVol:[0-9]+', f'putVol:{int(parsed["options"]["putVol"])}', new_he)
             new_he = re.sub(r'putOi:[0-9]+', f'putOi:{int(parsed["options"]["putOi"])}', new_he)
             new_he = re.sub(r'pcr:[0-9.]+', f'pcr:{parsed["options"]["pcr"]}', new_he)
-            new_he = re.sub(r'callWall:\{k:"[^"]+",oi:[0-9]+,pct:[0-9.]+\}', f'callWall:{{k:"{int(parsed["options"]["callWall"])//1000}K",oi:{int(parsed["options"]["callWall"])},pct:4.44}}', new_he)
-            new_he = re.sub(r'putWall:\{k:"[^"]+",oi:[0-9]+,pct:[0-9.]+\}', f'putWall:{{k:"{int(parsed["options"]["putWall"])//1000}K",oi:{int(parsed["options"]["putWall"])},pct:5.82}}', new_he)
-            new_he = re.sub(r'gammaWall:"[^"]+"', f'gammaWall:"{int(parsed["options"]["gammaWall"])//1000}K"', new_he)
+            new_he = re.sub(r'callWall:\{k:"[^"]*",oi:[0-9]+,pct:[0-9.]+\}', f'callWall:{{k:"{int(parsed["options"]["callWall"])//1000}K",oi:{int(parsed["options"]["callWall"])},pct:4.44}}', new_he)
+            new_he = re.sub(r'putWall:\{k:"[^"]*",oi:[0-9]+,pct:[0-9.]+\}', f'putWall:{{k:"{int(parsed["options"]["putWall"])//1000}K",oi:{int(parsed["options"]["putWall"])},pct:5.82}}', new_he)
+            new_he = re.sub(r'gammaWall:"[^"]*"', f'gammaWall:"{int(parsed["options"]["gammaWall"])//1000}K"', new_he)
             new_he = re.sub(r'flip:[0-9.]+', f'flip:{parsed["options"]["flip"]}', new_he)
-            new_he = re.sub(r'maxPain:"[^"]+"', f'maxPain:"{int(parsed["options"]["maxPain"])//1000}K"', new_he)
+            new_he = re.sub(r'maxPain:"[^"]*"', f'maxPain:"{int(parsed["options"]["maxPain"])//1000}K"', new_he)
             print(f"[V8 Pro] he updated with REAL data_report values: close {parsed['spot']['close']} foreign {parsed['inst']['foreign']} futures {parsed['tx']['day']['c']}/{parsed['tx']['night']['c']} pcr {parsed['options']['pcr']}")
 
             # ===== 全面修復：Spot 5日 proLine 圖表數據必須與 DATA_REPORT 一致 (圖文一致修復) =====
@@ -1548,9 +1558,9 @@ def main():
             import traceback
             traceback.print_exc()
         
-        new_he = re.sub(r'date:"[^"]+"', f'date:"{date_dash}"', new_he, count=1)
+        new_he = re.sub(r'date:"[^"]*"', f'date:"{date_dash}"', new_he, count=1)
     else:
-        new_he = re.sub(r'date:"[^"]+"', f'date:"{date_dash}"', he_str, count=1)
+        new_he = re.sub(r'date:"[^"]*"', f'date:"{date_dash}"', he_str, count=1)
 
     def extract_number(pattern, text, default=None):
         m=re.search(pattern, text)
@@ -2186,7 +2196,7 @@ def main():
                 # 修復2: 修復前十大與分歧bar的圖表錯置 (原本錯誤映射到c4-uspct美股圖)
                 try:
                     content_new = re.sub(r'P\["fut-top10"\]=P\["c4-uspct"\];', 'P["fut-top10"]=P["c5-foreignFut"];', content_new)
-                    content_new = re.sub(r'P\["fut-top10"\]=P\["[^"]+"\];', 'P["fut-top10"]=P["c5-foreignFut"];', content_new)
+                    content_new = re.sub(r'P\["fut-top10"\]=P\["[^"]*"\];', 'P["fut-top10"]=P["c5-foreignFut"];', content_new)
                     print(f"[V8 Pro] Fixed: fut-top10 now correctly maps to foreignFut (前十大與分歧), not US market")
                 except Exception as e:
                     print(f"[V8 Pro] Fix fut-top10 failed: {e}")
@@ -2268,7 +2278,7 @@ def main():
             new_kpi_title_sub = f"加權 {real_pct:+.2f}% · 成交 {real_vol}億元 · 上市+上櫃 12,081.6億元 · 上市{real_up}家 上櫃{real_down}家"
             content_new = re.sub(r'加權\s*-1\.81%\s*·\s*成交\s*9,334億\s*·\s*上市\+上櫃\s*10,568億\s*·\s*上市247\s*上櫃146', new_kpi_title_sub, content_new)
 
-            old_kpi_grid_pattern = r'\{l:"加權收盤",v:"46,041",d:"-846 -1\.81%",c:"#ff6b7a"\},\{l:"開/高/低",v:"46,942 / 47,332 / 46,041",d:"長黑摜破",c:"#7e90aa"\},\{l:"TX 日盤",v:"46,272 -741",d:"基差\+230 正價差0\.5%",c:"#8ec8ff"\},\{l:"TX 夜盤",v:"45,654 -580",d:"振幅876 變化-618",c:"#ff9aa3"\},\{l:"三大法人",v:"-994\.7億",d:"外資-815\.8 投信\+94\.9 自營-273\.8",c:"#ff6b7a"\},\{l:"融資券",v:"8,465億 -138億",d:"融券216,539 維持率182\.9%/176\.9%",c:"#f5c86a"\},\{l:"外資期",v:"-87,297 創高",d:"日-1,221 夜-918 夜\+1,049",c:"#ff6b7a"\},\{l:"選擇權",v:"PCR 0\.57 極低",d:"CallWall 49K2444 PutWall 46K1829",c:"#f5c86a"\}'
+            old_kpi_grid_pattern = r'\{l:\"加權收盤\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"開/高/低\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"TX 日盤\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"TX 夜盤\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"三大法人\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"融資券\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"外資期\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\},\{l:\"選擇權\",v:\"[^"]*\",d:\"[^"]*\",c:\"[^"]*\"\}'  # Builder covers all dirty old data - no need to update fetch
 
             # KPI 8宮格 - 完整單位版 (依 DATA_REPORT 單位：點、%、億元、口、張、家、倍)
             new_kpi_grid = f'{{l:"加權收盤",v:"{int(real_close):,}點",d:"{real_diff:+.0f}點 {real_pct:+.2f}%",c:"#ff6b7a"}},{{l:"開/高/低",v:"{real_open:,}點 / {real_high:,}點 / {real_low:,}點",d:"成交{real_vol}億元 上市{real_up}家",c:"#7e90aa"}},{{l:"TX 日盤",v:"{real_day_c:,}點 {real_day_diff:+}點",d:"基差{real_day_basis:+.0f}點 正價差{real_day_prem:+.2f}%",c:"#8ec8ff"}},{{l:"TX 夜盤",v:"{real_night_c:,}點 {real_night_diff:+}點",d:"振幅{real_night_range}點 變化{real_night_change:+}點",c:"#ff9aa3"}},{{l:"三大法人",v:"{real_all:+.1f}億元",d:"外資{real_foreign:+.1f}億 投信{real_trust:+.1f}億 自營{real_dealer:+.1f}億",c:"#ff6b7a"}},{{l:"融資券",v:"8,326億元 -138億元",d:"融券255,075張 維持率176.99%",c:"#f5c86a"}},{{l:"外資期",v:"{real_foreign_oi:,}口 創高",d:"日{real_foreign_day:+}口 夜{real_foreign_night:+}口",c:"#ff6b7a"}},{{l:"選擇權",v:"PCR {real_pcr}倍 極低",d:"CallWall {real_call_wall:,}點({real_call_oi:,}口) PutWall {real_put_wall:,}點({real_put_oi:,}口)",c:"#f5c86a"}}'
@@ -2282,7 +2292,7 @@ def main():
             if kpi_count == 0:
                 import re as re2
                 # 匹配任何 KPI 8宮格的 children 陣列
-                kpi_fallback_pattern = r'\{l:"加權收盤",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"開/高/低",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"TX 日盤",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"TX 夜盤",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"三大法人",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"融資券",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"外資期",v:"[^"]+",d:"[^"]+",c:"[^"]+"\},\{l:"選擇權",v:"[^"]+",d:"[^"]+",c:"[^"]+"\}'
+                kpi_fallback_pattern = r'\{l:"加權收盤",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"開/高/低",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"TX 日盤",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"TX 夜盤",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"三大法人",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"融資券",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"外資期",v:"[^"]*",d:"[^"]*",c:"[^"]*"\},\{l:"選擇權",v:"[^"]*",d:"[^"]*",c:"[^"]*"\}'
                 content_new, kpi_count2 = re2.subn(kpi_fallback_pattern, new_kpi_grid, content_new)
                 print(f"[V8 Pro] KPI grid fallback rebuilt: {kpi_count2} replacements with units")
                 kpi_count = kpi_count2 if kpi_count2 > 0 else kpi_count
@@ -2337,8 +2347,10 @@ def main():
                 # 替換頁尾舊的長段
                 content_new = re.sub(r'加權46096\.23 -846\.34 -1\.81% 開46,942 高47,332 低46,041 成交9,334\.4億 上市\+上櫃10,568\.9億 上市464 上櫃523 · 三大法人-994\.7 外資-80\.4 投信\+236\.0 自營-124\.0 融券255,075 維持率182\.90%/176\.99% 借券458萬張 融資8,465\.1億-138\.3億 空方量1,234\.5億 · TX 202611 日47164/47337/46217/46272 -741 -1\.58% 量55,226 基差\+230\.57 正價差0\.50% 夜46270/46399/45523/45654 -580 -1\.25% 量39,368 振幅994 變化\+799 · 外資期-86,043創高 日-1221 夜-918 夜\+1049 前十大\+9024變化\+1334 投信\+83,601 自營\+3,260 · 選擇權 Call量178535 OI55024 Put量155316 OI31411 C/P1\.15 OI1', new_footer_data, content_new)
 
-                # 更寬鬆：替換所有 2026-10-24 盤前機構版的舊數據來源
-                content_new = re.sub(r'數據來源 · 2026-10-24 盤前機構版[^"]*', f'數據來源 · {today_str} 盤前機構版 {new_footer_data}', content_new)
+                # 更寬鬆：替換所有舊數據來源 - Builder 全扛，不靠 fetch 洗數據，匹配任何日期的舊 footer
+                content_new = re.sub(r'數據來源 · [^"]*', f'數據來源 · {today_str} 盤前機構版 {new_footer_data}', content_new)
+                # 再補一個：直接替換 footer div 的 children 中所有加權舊數據
+                content_new = re.sub(r'加權46,096\.43[^"]*', f'加權{real_close} {real_diff:+.0f} {real_pct:+.2f}% 開{real_open} 高{real_high} 低{real_low}', content_new)
 
                 # 最後清理：he.total 和 analysis中的舊成交量殘留 (無fallback，所以必須清掉)
                 try:
