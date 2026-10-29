@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -1203,6 +1204,7 @@ def main() -> None:
                 session = "全日"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
+    _t_start = time.perf_counter()
     new_text = build(report_date, t0, session=session, slot=slot)
     if args.force_rewrite:
         new_text = new_text.replace(
@@ -1228,6 +1230,7 @@ def main() -> None:
         except Exception as e:  # noqa: BLE001
             print(f"[WARN] 同 T0 合併失敗，採本次全新寫入：{e}")
     out.write_text(new_text, encoding="utf-8")
+    print(f"[TIMING] total={time.perf_counter() - _t_start:.1f}s", flush=True)
     print(f"[OK] wrote {out} (report_date={report_date}, t0={t0}, session={session})")
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ from src.utils import HEADERS
 
 BASE = "https://taifex.grichtoyang.workers.dev"
 DATE_EPS = {"futures-institutional-oi", "futures-institutional-oi-history", "futures-options-chain",
-            "options-delta", "options-key-levels", "options-market-structure-compact"}
+            "options-key-levels", "options-market-structure-compact"}
 FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional",
             "futures-institutional-after-hours", "options-institutional",
             "options-institutional-after-hours", "options-after-hours",
@@ -299,20 +299,25 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         elif _d is not None and _d != _today:
             notes.append(f"{_ep} 日期 {_d} 非今日 {_today}，視為無新節次，不採用")
             P[_ep] = None
-    # Gamma 端點需 TAIEX 收盤 (FMTQIK 落後約一日)：有值才算命中，否則向 T-1…遞補並標示實際日期
-    g_pay, g_date, c_pay, c_date = None, None, None, None
+    # Gamma 端點需 TAIEX 收盤 (FMTQIK 落後約一日)：僅查詢 T0 一次，上游 502 則標 unavailable，不再跑 T-1/T-2
+    g_pay, g_date = None, None
+    _p = _get("options-gamma-levels", t0)
+    if _p is not None:
+        _w = (((_p or {}).get("data") or {}).get("gamma_wall") or {}).get("strike")
+        if _w is not None:
+            g_pay, g_date = _p, t0
+    if g_pay is None:
+        unav += ["gamma_wall", "gamma_flip"]
+        notes.append("Gamma Wall/Flip 端點不可用（上游 502），標 unavailable")
+    # Market-structure-compact 仍保留 T-1/T-2 遞補（Gamma Wall proxy 來源）
+    c_pay, c_date = None, None
     for _d in _prev_dates(t0, 2):
-        if g_pay is None:
-            _p = _get("options-gamma-levels", _d)
-            _w = (((_p or {}).get("data") or {}).get("gamma_wall") or {}).get("strike")
-            if _w is not None:
-                g_pay, g_date = _p, _d
         if c_pay is None:
             _p = _get("options-market-structure-compact", _d)
             _w = (((_p or {}).get("data") or {}).get("gamma") or {}).get("gamma_wall_proxy")
             if _w is not None:
                 c_pay, c_date = _p, _d
-        if g_pay is not None and c_pay is not None:
+        if c_pay is not None:
             break
     P["options-gamma-levels"] = g_pay
     P["options-market-structure-compact"] = c_pay
@@ -320,17 +325,22 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # Walls 端點 (key-levels/compact) 工人偶發 503：有 Call Wall 才算命中，否則遞補並標示日期
     kl_pay, kl_date = None, None
     cp_pay, cp_date = None, None
-    for _d in _prev_dates(t0, 2):
-        if kl_pay is None:
-            _p = _get("options-key-levels", _d, timeout=90)
-            if (((_p or {}).get("data") or {}).get("call_wall") or {}).get("strike") is not None:
-                kl_pay, kl_date = _p, _d
-        if cp_pay is None:
-            _p = P["options-market-structure-compact"] if _d == t0 else _get("options-market-structure-compact", _d, timeout=90)
-            if (((_p or {}).get("data") or {}).get("call_wall") or {}).get("strike") is not None:
-                cp_pay, cp_date = _p, _d
-        if kl_pay is not None and cp_pay is not None:
-            break
+    # 初始批次已抓過 options-key-levels，若有效直接複用，避免重複請求 T0
+    _existing_kl = P.get("options-key-levels")
+    if _existing_kl is not None and (((_existing_kl.get("data") or {}).get("call_wall") or {}).get("strike") is not None):
+        kl_pay, kl_date = _existing_kl, t0
+    else:
+        for _d in _prev_dates(t0, 2):
+            if kl_pay is None:
+                _p = _get("options-key-levels", _d, timeout=90)
+                if (((_p or {}).get("data") or {}).get("call_wall") or {}).get("strike") is not None:
+                    kl_pay, kl_date = _p, _d
+            if cp_pay is None:
+                _p = P["options-market-structure-compact"] if _d == t0 else _get("options-market-structure-compact", _d, timeout=90)
+                if (((_p or {}).get("data") or {}).get("call_wall") or {}).get("strike") is not None:
+                    cp_pay, cp_date = _p, _d
+            if kl_pay is not None and cp_pay is not None:
+                break
     if kl_pay is not None:
         P["options-key-levels"] = kl_pay
     if cp_pay is not None and (P["options-market-structure-compact"] is None):

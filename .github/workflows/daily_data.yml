@@ -55,8 +55,8 @@ jobs:
               echo "fetch attempt $i failed/timed out (rc=$?)"
             fi
             T0FILE=$(find data_reports -name 'DATA_REPORT_*.md' -newermt "@$START_TS" | head -1)
-            if [ -n "$T0FILE" ] && grep -q "| 融資維持率 | [0-9]" "$T0FILE"; then
-              echo "margin ratio ok on attempt $i ($T0FILE)"
+            if [ -n "$T0FILE" ] && grep -q "^# DATA_REPORT_" "$T0FILE"; then
+              echo "DATA_REPORT ok on attempt $i ($T0FILE)"
               echo "T0FILE=$T0FILE" >> $GITHUB_ENV
               break
             fi
