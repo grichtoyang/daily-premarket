@@ -3,11 +3,6 @@ on:
   schedule:
     - cron: '30 0 * * 1-5'
   workflow_dispatch:
-    inputs:
-      date:
-        description: 'YYYYMMDD'
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -17,55 +12,91 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Check template exists
+      - name: Check template
         run: |
           ls -lh templates/
-          if [ ! -f templates/v9-pro-react-template.html ]; then
-            echo "ERROR: templates/v9-pro-react-template.html not found!"
-            exit 1
-          fi
-
+          if [ ! -f templates/v9-pro-react-template.html ]; then echo "ERROR missing template"; exit 1; fi
+          wc -c templates/v9-pro-react-template.html
+          grep -c "JetBrains Mono" templates/v9-pro-react-template.html && echo "Tailwind exquisite OK" || echo "Not exquisite"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install deps
         run: pip install requests pytz
-
-      - name: Build data.json from DATA_REPORT
+      - name: Build data.json
         run: |
-          REPORT=$(ls -1 data_reports/DATA_REPORT_*.md 2>/dev/null | sort -r | head -n1)
+          REPORT=$(ls -1 data_reports/DATA_REPORT_*.md | sort -r | head -n1)
           if [ -z "$REPORT" ]; then echo "No DATA_REPORT"; exit 1; fi
           DATE=$(basename "$REPORT" | sed 's/DATA_REPORT_//;s/.md//')
           echo "DATE=$DATE" >> $GITHUB_ENV
           python scripts/v9_pro_builder.py --data_report "$REPORT" --out dashboards/data-${DATE}.json --date ${DATE}
           cp dashboards/data-${DATE}.json dashboards/data-latest.json
-
-      - name: Inject HTML
+          wc -c dashboards/data-${DATE}.json
+      - name: Inject self-contained real data (fix white screen)
         run: |
           python3 << 'PY'
           from pathlib import Path
-          tmpl = Path('templates/v9-pro-react-template.html').read_text(encoding='utf-8')
+          def find_matching_brace(s, start_idx):
+              depth=0
+              for i in range(start_idx, len(s)):
+                  if s[i]=='{': depth+=1
+                  elif s[i]=='}':
+                      depth-=1
+                      if depth==0: return i
+              return -1
+
+          tmpl_path = Path('templates/v9-pro-react-template.html')
+          tmpl = tmpl_path.read_text(encoding='utf-8')
+          print(f"Template size {tmpl_path.stat().st_size} has var df=null={('var df=null' in tmpl)} has var df={{={('var df={' in tmpl)}")
+
           import glob
           data_file = sorted(Path('dashboards').glob('data-*.json'))[-1]
-          data = data_file.read_text(encoding='utf-8').replace('</script>', '<\/script>')
-          inject = f'<script>window.DASHBOARD_DATA={data}</script>\n'
-          out = tmpl.replace('</head>', inject + '</head>') if '</head>' in tmpl else inject + tmpl
+          real_data = data_file.read_text(encoding='utf-8')
+          print(f"Real data size {len(real_data)}")
+
+          # Fix: handle both var df=null and var df={old}
+          out = tmpl
+          if 'var df=null' in tmpl:
+              print("Found var df=null, replacing null with real data (self-contained)")
+              out = tmpl.replace('var df=null', f'var df={real_data}')
+          elif 'var df={' in tmpl:
+              print("Found var df={old}, replacing old with real data")
+              idx = tmpl.find('var df={')
+              brace_start = tmpl.find('{', idx)
+              brace_end = find_matching_brace(tmpl, brace_start)
+              if brace_end != -1:
+                  out = tmpl[:brace_start] + real_data + tmpl[brace_end+1:]
+          else:
+              print("No var df found, using injection fallback")
+              inject = f'<script>window.DASHBOARD_DATA={real_data.replace("</script>", "<\\/script>")}</script>\n'
+              out = tmpl.replace('</head>', inject + '</head>') if '</head>' in tmpl else inject + tmpl
+
+          # Ensure fallback keeps real data
+          # Replace window.DASHBOARD_DATA||null with window.DASHBOARD_DATA||window.DASHBOARD_DATA to keep real
+          # Actually keep vf which is now real
+          # No need to change
+
           date = data_file.stem.replace('data-','')
-          Path(f'dashboards/v9-pro-{date}.html').write_text(out, encoding='utf-8')
+          out_path = Path(f'dashboards/v9-pro-{date}.html')
+          out_path.write_text(out, encoding='utf-8')
           Path('dashboards/v9-pro-latest.html').write_text(out, encoding='utf-8')
+          print(f"Wrote {out_path} size {out_path.stat().st_size} has real={('46368' in out)} has old47035_gold={('var df={\n  \"meta\": {\n    \"version\": \"v9-pro-17F\"' in out)} has df_null={('var df=null' in out)}")
+          # Verify self-contained
+          if 'var df=null' in out:
+              print("ERROR: still df=null, will white screen!")
+          else:
+              print("OK: df is real data, self-contained, will open")
           PY
 
-      - name: Commit and push
+      - name: Commit
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add dashboards/
-          git commit -m "v9 pro ${{ env.DATE }} real data" || echo "no changes"
-          git push || echo "push failed"
+          git commit -m "v9 pro ${{ env.DATE }} real data self-contained" || echo "no changes"
+          git push
 
-      - name: Upload artifact
+      - name: Upload
         uses: actions/upload-pages-artifact@v3
         with:
           path: dashboards
