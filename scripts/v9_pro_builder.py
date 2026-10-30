@@ -87,7 +87,7 @@ def fetch_db_history_14d():
                     rows = conn.execute("SELECT spot_close FROM v9_pro_history ORDER BY date DESC LIMIT 30").fetchall()
                 conn.close()
                 if len(rows) >=14:
-                    valid = [{'close': float(r[0]), 'high': float(r[0])*1.01, 'low': float(r[0])*0.99, 'ts':0} for r in reversed(rows)]
+                    valid = [{'close': float(r[0]), 'high': None, 'low': None, 'ts': None} for r in reversed(rows)]
                     print(f"[V9-17F] DB fallback {len(valid)} days from {p}")
                     return valid
         print("[V9-17F] DB not found for fallback")
@@ -157,10 +157,12 @@ def fetch_technical_indicators_with_fallback():
     if not data:
         print("[V9-17F] All 3 layers failed, RSI/MACD weight 0% -> 15 factors")
         return {'rsi':None,'macd':None,'macd_signal':None,'macd_hist':None,'k':None,'d':None,'source':'none','closes':[],'valid':False}
-    closes=[d['close'] for d in data]; highs=[d['high'] for d in data]; lows=[d['low'] for d in data]
-    rsi=calc_rsi(closes,14); macd,macd_signal,macd_hist=calc_macd(closes); k,d=calc_kd(highs,lows,closes,9)
+    closes=[d['close'] for d in data]; highs=[d.get('high') for d in data]; lows=[d.get('low') for d in data]
+    rsi=calc_rsi(closes,14); macd,macd_signal,macd_hist=calc_macd(closes)
+    ohlc_valid=all(h is not None and l is not None for h,l in zip(highs,lows))
+    k,d=calc_kd(highs,lows,closes,9) if ohlc_valid else (None,None)
     print(f"[V9-17F] Tech RSI={rsi} MACD={macd}/{macd_signal} hist={macd_hist} K={k} D={d} source={source}")
-    return {'rsi':rsi,'macd':macd,'macd_signal':macd_signal,'macd_hist':macd_hist,'k':k,'d':d,'source':source,'closes':closes,'highs':highs,'lows':lows,'valid':True,'raw':data}
+    return {'rsi':rsi,'macd':macd,'macd_signal':macd_signal,'macd_hist':macd_hist,'k':k,'d':d,'source':source,'closes':closes,'highs':highs,'lows':lows,'valid':any(v is not None for v in (rsi,macd,macd_hist,k,d)),'validity':{'rsi':rsi is not None,'macd':macd is not None and macd_signal is not None and macd_hist is not None,'kd':k is not None and d is not None},'raw':data}
 
 # ===== SQLite真DB + 歷史相似度 + 無DB回退 =====
 def init_db(db_path="dashboards/v9_pro_history.db"):
@@ -385,6 +387,8 @@ def parse_data_report(report_path):
         v=get_value(pattern,None)
         if v is None or v=="": raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {name}: {pattern}")
         return v
+    def optional_get(pattern):
+        return get_value(pattern,None)
 
     report_date_match=re.search(r"報告日期：`([^`]+)`", text)
     t0_date_match=re.search(r"T0 交易日期：`([^`]+)`", text)
@@ -452,10 +456,10 @@ def parse_data_report(report_path):
     fut_day_l=must_get(r"### 1．台指期近月日盤行情.*?最低價 \| ([0-9,]+) \|","台指日盤低"); fut_day_c=must_get(r"### 1．台指期近月日盤行情.*?收盤價 \| ([0-9,]+) \|","台指日盤收")
     fut_day_diff=must_get(r"### 1．台指期近月日盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|","台指日盤漲跌"); fut_day_pct=must_get(r"### 1．台指期近月日盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|","台指日盤漲跌幅")
     fut_day_vol=must_get(r"### 1．台指期近月日盤行情.*?成交量 \| ([0-9,]+) \|","台指日盤量")
-    fut_night_o=must_get(r"### 2．台指期近月夜盤行情.*?開盤價 \| ([0-9,]+) \|","台指夜盤開"); fut_night_h=must_get(r"### 2．台指期近月夜盤行情.*?最高價 \| ([0-9,]+) \|","台指夜盤高")
-    fut_night_l=must_get(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|","台指夜盤低"); fut_night_c=must_get(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|","台指夜盤收")
-    fut_night_diff=must_get(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|","台指夜盤漲跌"); fut_night_pct=must_get(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|","台指夜盤漲跌幅")
-    fut_night_vol=must_get(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|","台指夜盤量")
+    fut_night_o=optional_get(r"### 2．台指期近月夜盤行情.*?開盤價 \| ([0-9,]+) \|"); fut_night_h=optional_get(r"### 2．台指期近月夜盤行情.*?最高價 \| ([0-9,]+) \|")
+    fut_night_l=optional_get(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|"); fut_night_c=optional_get(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|")
+    fut_night_diff=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|"); fut_night_pct=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|")
+    fut_night_vol=optional_get(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|")
     basis=get_value(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|","0"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \|","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|","0")
     foreign_fut_oi=must_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|","外資OI"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|","前十大OI")
@@ -513,11 +517,13 @@ class V9Analyzer:
         self.signals['spot_close']=spot['close']; self.signals['spot_pct']=spot['pct']; self.signals['spot_up']=spot['up']; self.signals['spot_down']=spot['down']; self.signals['spot_vol']=spot['vol']
         inst=p['inst']; self.signals['foreign']=inst['foreign']; self.signals['trust']=inst['trust']; self.signals['dealer']=inst['dealer']; self.signals['all']=inst['all']
         tx=p['tx']; self.signals['tx_basis']=tx['day']['basis']; self.signals['tx_prem']=tx['day']['prem']; self.signals['tx_day_pct']=tx['day']['pct']; self.signals['tx_night_pct']=tx['night']['pct']; self.signals['tx_night_low']=tx['night']['l']; self.signals['tx_night_high']=tx['night']['h']; self.signals['tx_day_low']=tx['day']['l']
-        self.signals['put_wall']=p['options']['putWall']; self.signals['call_wall']=p['options']['callWall']; self.signals['gamma_wall']=p['options']['gammaWall']; self.signals['flip']=p['options']['flip']; self.signals['max_pain']=p['options']['maxPain']; self.signals['pcr']=p['options']['pcr']; self.signals['gex']=-2.3
+        self.signals['put_wall']=p['options']['putWall']; self.signals['call_wall']=p['options']['callWall']; self.signals['gamma_wall']=p['options']['gammaWall']; self.signals['flip']=p['options']['flip']; self.signals['max_pain']=p['options']['maxPain']; self.signals['pcr']=p['options']['pcr']; self.signals['gex']=None
         us_dict={x['l']:x['v'] for x in p['usPct_full']}; self.signals['us_dict']=us_dict
-        vix_val=18.39
+        vix_val=None
         for item in p['usPct_full']:
-            if 'VIX' in item['l']: vix_val=18.39+item['v']*0.2
+            if 'VIX' in item['l']:
+                vix_val=item.get('close')
+                break
         self.signals['vix']=vix_val
         adr_dict={x['l']:x['v'] for x in p['adrPct_full']}; tsm=0
         for k,v in adr_dict.items():
@@ -527,7 +533,7 @@ class V9Analyzer:
         self.signals['foreign_futures']=p['futures']['foreign_oi']
 
     def calculate_weights(self):
-        vix=self.signals.get('vix',18.39); basis=self.signals.get('tx_basis',0); rsi=self.signals.get('rsi'); tech_valid=self.signals.get('tech_valid',False)
+        vix=self.signals.get('vix'); basis=self.signals.get('tx_basis',0); rsi=self.signals.get('rsi'); tech_valid=self.signals.get('tech_valid',False)
         # 17因子基礎權重 (依Skill)
         base_weights={
             'spot_trend':13,      # 現貨趨勢13%
@@ -548,18 +554,23 @@ class V9Analyzer:
             'rsi':3,              # RSI 3% (新增)
             'macd':3,             # MACD 3% (新增)
         }
+        if self.signals.get('gex') is None:
+            base_weights['gex']=0
         if not tech_valid or rsi is None:
             print(f"[V9-17F] RSI/MACD unavailable, weight 0% -> 15 factors fallback")
             base_weights['rsi']=0; base_weights['macd']=0; base_weights['spot_trend']+=3; base_weights['foreign_spot']+=3
         else:
             print(f"[V9-17F] 17 factors valid RSI={rsi} MACD hist={self.signals.get('macd_hist')}")
-        # VIX動態
-        if vix>25:
-            base_weights['us_sox']+=8; base_weights['spot_trend']-=5; base_weights['foreign_spot']+=3; base_weights['vix_factor']+=3
-        elif vix>20:
-            base_weights['us_sox']+=4; base_weights['spot_trend']-=2
-        elif vix<15:
-            base_weights['us_sox']-=5; base_weights['spot_trend']+=5
+        # VIX動態：只有取得真實收盤值才調整權重
+        if vix is not None:
+            if vix>25:
+                base_weights['us_sox']+=8; base_weights['spot_trend']-=5; base_weights['foreign_spot']+=3; base_weights['vix_factor']+=3
+            elif vix>20:
+                base_weights['us_sox']+=4; base_weights['spot_trend']-=2
+            elif vix<15:
+                base_weights['us_sox']-=5; base_weights['spot_trend']+=5
+        else:
+            base_weights['vix_factor']=0
         if basis>100: base_weights['basis']=2
         elif basis<-50: base_weights['basis']+=3
         self.weights=base_weights
@@ -619,9 +630,10 @@ class V9Analyzer:
             elif macd_hist<0: score-=int(2*w/3); factors.append(('MACD死叉',-int(2*w/3)))
             elif macd_hist>0: score+=int(2*w/3); factors.append(('MACD金叉',+int(2*w/3)))
 
-        vix=s.get('vix',18.39); w=weights['vix_factor']
-        if vix>25: score-=int(5*w/2); factors.append(('VIX恐慌',-int(5*w/2)))
-        elif vix<15: score+=int(2*w/2); factors.append(('VIX平靜',+int(2*w/2)))
+        vix=s.get('vix'); w=weights['vix_factor']
+        if vix is not None:
+            if vix>25: score-=int(5*w/2); factors.append(('VIX恐慌',-int(5*w/2)))
+            elif vix<15: score+=int(2*w/2); factors.append(('VIX平靜',+int(2*w/2)))
 
         if pct<-2 and foreign<-500: score-=8; factors.append(('恐慌加成',-8))
 
@@ -637,9 +649,9 @@ class V9Analyzer:
         elif bias<65: regime="震盪"
         elif bias<80: regime="偏多"
         else: regime="極多"
-        close=s.get('spot_close',0); vix=s.get('vix',18.39); put_wall=s.get('put_wall',45000)
+        close=s.get('spot_close',0); vix=s.get('vix'); vix_text=f"VIX{vix:.1f}" if vix is not None else "VIX unavailable"; put_wall=s.get('put_wall',45000)
         if bias<35:
-            look=f"加權{int(close):,}跌{'+%.2f%%'%s.get('spot_pct',0) if s.get('spot_pct',0)>0 else '%.2f%%'%s.get('spot_pct',0)} 外資{s.get('foreign',0)}億 {factor_str} VIX{vix:.1f}恐慌"
+            look=f"加權{int(close):,}跌{'+%.2f%%'%s.get('spot_pct',0) if s.get('spot_pct',0)>0 else '%.2f%%'%s.get('spot_pct',0)} 外資{s.get('foreign',0)}億 {factor_str} {vix_text}"
             compass=f"{bias}分{regime}，{put_wall}為Put Wall最後防線，跌破加速"
             target=f"{put_wall}不收復前空方控盤，反彈至{int(close+200)}減碼"
         else:
@@ -656,7 +668,11 @@ class V9Analyzer:
         us_dict=self.signals.get('us_dict',{}); sox=0
         for k,v in us_dict.items():
             if 'SOX' in k: sox=v
-        return {"look": f"SOX {sox:+.2f}% 美股{'全漲' if all(v>0 for v in us_dict.values()) else '漲跌互見'} VIX{self.signals.get('vix',18):.1f}", "compass": f"費半{sox:+.1f}%連動台股，VIX{self.signals.get('vix',18):.1f}恐慌", "target": "關注費半與台積電ADR連動"}
+        valid_changes=[v for v in us_dict.values() if v is not None]
+        vix=self.signals.get('vix'); vix_text=f"VIX{vix:.1f}" if vix is not None else "VIX unavailable"
+        sox_text=f"{sox:+.2f}%" if sox is not None else "unavailable"
+        breadth='全漲' if valid_changes and all(v>0 for v in valid_changes) else ('全跌' if valid_changes and all(v<0 for v in valid_changes) else '漲跌互見/資料不足')
+        return {"look": f"SOX {sox_text} 美股{breadth} {vix_text}", "compass": f"費半{sox_text}連動台股，{vix_text}", "target": "關注費半與台積電ADR連動"}
 
     def analyze_news(self):
         news=self.parsed['news']
@@ -751,13 +767,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
 
 def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_str):
     spot=parsed['spot']; closes=tech.get('closes',[]); spot5=[]; spot5Dates=[]
-    if len(closes)>=5:
-        last5=closes[-4:]; last5.append(spot['close']); spot5=[int(round(c)) for c in last5]
-        try:
-            base_date=datetime.strptime(args_date_str, "%Y%m%d"); spot5Dates=[(base_date - timedelta(days=4-i)).strftime("%m/%d") for i in range(5)]
-        except: spot5Dates=[f"10/{20+i}" for i in range(5)]
-    else:
-        spot5=[int(spot['close'])]*5; spot5Dates=["10/20","10/21","10/22","10/23","10/24"]
+    raw_history=tech.get('raw',[]) or []
+    dated_history=[(d.get('ts'),d.get('close')) for d in raw_history if d.get('ts') and d.get('close') is not None]
+    last5=dated_history[-5:]
+    spot5=[int(round(c)) for _,c in last5]
+    spot5Dates=[datetime.fromtimestamp(ts).strftime("%m/%d") for ts,_ in last5]
 
     bias, factors, weights=analyzer.calculate_bias(); cards_41=build_41_cards(analyzer, parsed, historical, db_status)
 
@@ -767,7 +781,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
     final={
         'meta': {
             'version': 'v9-pro-17F',
-            'skill': 'daily-premarket-analysis-v8',
+            'skill': 'daily-premarket-analysis-v9-pro',
             'date': parsed['meta']['t0_date'] or args_date_str,
             'report_date': parsed['meta']['report_date'],
             'generated_at': parsed['meta']['generated_at'] or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -820,11 +834,11 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
     return final
 
 def main():
-    parser=argparse.ArgumentParser(description="V9 Pro Builder 17F + SQLite + 41 cards + data.json only - Skill daily-premarket-analysis-v8")
+    parser=argparse.ArgumentParser(description="V9 Pro Builder 17F + SQLite + 41 cards + data.json only - Skill daily-premarket-analysis-v9-pro")
     parser.add_argument('--data_report', default=None, help="path to DATA_REPORT md")
     parser.add_argument('--out', default="dashboards/data-20261027.json", help="output data.json path - must be dashboards/")
     parser.add_argument('--date', default=None, help="YYYYMMDD")
-    parser.add_argument('--golden', default='templates/v8-pro-golden-master.html', help="golden template path (for reference, v9 no longer injects)")
+    parser.add_argument('--golden', default='templates/v9-pro-react-template.html', help="golden template path (for reference, v9 no longer injects)")
     args=parser.parse_args()
     date_str=args.date if args.date else datetime.now().strftime('%Y%m%d')
     if len(date_str)!=8 or not date_str.isdigit(): date_str=datetime.now().strftime('%Y%m%d')
