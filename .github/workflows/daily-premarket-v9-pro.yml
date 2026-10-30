@@ -98,7 +98,7 @@ jobs:
           if data_obj.get("meta", {}).get("version") != "v9-pro-17F":
               raise SystemExit("Unexpected dashboard data version")
           data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-          injection = f"<script>window.DASHBOARD_DATA={data};</script>\n"
+          injection = f"<script>window.DASHBOARD_DATA={data};</script>" + chr(10)
           if "</head>" not in template:
               raise SystemExit("Golden Master has no closing </head>")
           html = template.replace("</head>", injection + "</head>", 1)
