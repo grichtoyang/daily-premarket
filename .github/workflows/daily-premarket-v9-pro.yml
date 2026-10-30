@@ -87,6 +87,9 @@ jobs:
           template_path = pathlib.Path("templates/v9-pro-react-template.html")
           data_path = pathlib.Path(f"dashboards/data-{date}.json")
           template = template_path.read_text(encoding="utf-8")
+          template = template.replace("var vf=df;", "var vf=window.DASHBOARD_DATA||df;")
+          if "var vf=window.DASHBOARD_DATA||df;" not in template:
+              raise SystemExit("React data binding patch failed: var vf=df not found")
           data_obj = json.loads(data_path.read_text(encoding="utf-8"))
           required_tabs = ["總覽", "現貨", "重要市場", "期貨", "選擇權", "綜合分析"]
           missing = [tab for tab in required_tabs if tab not in template]
@@ -95,7 +98,7 @@ jobs:
           if data_obj.get("meta", {}).get("version") != "v9-pro-17F":
               raise SystemExit("Unexpected dashboard data version")
           data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-          injection = f"<script>window.DASHBOARD_DATA={data};</script>\\n"
+          injection = f"<script>window.DASHBOARD_DATA={data};</script>\n"
           if "</head>" not in template:
               raise SystemExit("Golden Master has no closing </head>")
           html = template.replace("</head>", injection + "</head>", 1)
