@@ -5,64 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>盤前分析 v9 Pro - React Pure</title>
 <style>
-:root{
-  --bg:#070e1c;
-  --card:#0f1c2e;
-  --card2:#111f35;
-  --border:#1e2e47;
-  --border2:#223247;
-  --text:#d6e2f0;
-  --muted:#8ea7c3;
-  --dim:#5a718a;
-  --accent:#6bb6ff;
-  --accent2:#4a8fe0;
-  --green:#3dd68c;
-  --red:#ff6b6b;
-  --yellow:#ffd93d;
-  --orange:#ff9f43;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";font-size:14px;line-height:1.5}
-a{color:var(--accent)}
-.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
-.card:hover{border-color:var(--border2)}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+:root{--bg:#070e1c;--card:#0f1c2e;--card2:#111f35;--border:#1e2e47;--border2:#223247;--text:#d6e2f0;--muted:#8ea7c3;--dim:#5a718a;--accent:#6bb6ff;--accent2:#4a8fe0;--green:#3dd68c;--red:#ff6b6b;--yellow:#ffd93d;--orange:#ff9f43}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;font-size:14px;line-height:1.5}a{color:var(--accent)}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}.card:hover{border-color:var(--border2)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pill{padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);background:#0c1524;color:var(--muted)}
-.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;color:var(--muted)}
-.tab.active{background:linear-gradient(180deg,#6bb6ff,#4a8fe0);color:#06101e;box-shadow:0 3px 12px rgba(107,182,255,.4)}
-.canvas-wrap{position:relative;width:100%;height:180px}
-canvas{width:100%;height:100%;display:block;border-radius:10px}
+.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;color:var(--muted)}.tab.active{background:linear-gradient(180deg,#6bb6ff,#4a8fe0);color:#06101e;box-shadow:0 3px 12px rgba(107,182,255,.4)}
+.canvas-wrap{position:relative;width:100%;height:180px}canvas{width:100%;height:100%;display:block;border-radius:10px}
 .empty{border:1px dashed var(--border2);border-radius:12px;padding:40px;text-align:center;color:var(--muted);background:rgba(17,31,53,.4)}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0c1524;border:1px solid var(--border2);font-size:11px;color:var(--muted)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%{opacity:1} 50%{opacity:.5} 100%{opacity:1}}
-.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
-.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}@keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-.scroll::-webkit-scrollbar{height:6px;width:6px}
-.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px}
+.scroll::-webkit-scrollbar{height:6px;width:6px}.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px}
 </style>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 </head>
 <body>
 <div id="root"></div>
-
-<!-- DASHBOARD_DATA 注入點：Python 只產 data.json，此處留空，執行期由外部 <script> 賦值 window.DASHBOARD_DATA -->
 <script>
-// v9 pro 純淨母版：無範例數據
-// 使用方式：
-// <script src="data-20261027.json" type="application/json" id="data">
-// 或 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前
-// 若無數據，UI 顯示空狀態引導
 window.DASHBOARD_DATA = window.DASHBOARD_DATA || null;
 </script>
-
 <script>
-// 純 React (無 JSX) - 可直接作為 Artifact 母版
 const {useState,useEffect,useRef,useMemo} = React;
 const e = React.createElement;
 
@@ -256,7 +222,7 @@ function App(){
               '<script>window.DASHBOARD_DATA = '+ 'fetch(\"data-20261027.json\").then(r=>r.json()).then(d=>window.DASHBOARD_DATA=d)'+'</scr'+'ipt>'
             ),
             e('br'),
-            e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}},'或直接 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前')
+            e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}},'或直接 <scr'+'ipt>window.DASHBOARD_DATA = {...}<'+'/script> 放在此之前')
           )
         )
       )
