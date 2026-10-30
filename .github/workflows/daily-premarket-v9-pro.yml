@@ -38,21 +38,13 @@ jobs:
 
       - name: Build data.json
         run: |
-          ls -lh data_reports/ || true
-          # 照檔名日期排序取最新，ls -t 在 git clone 後 mtime 全一樣會隨機抓到舊的
-          REPORT=$(ls -1 data_reports/DATA_REPORT_*.md 2>/dev/null | sort -r | head -n1)
+          ls -lh DATA_REPORT*.md data_reports/ || true
+          REPORT=$(ls -t DATA_REPORT*.md data_reports/DATA_REPORT*.md 2>/dev/null | head -n1)
           if [ -z "$REPORT" ]; then
-            REPORT=$(ls -1 DATA_REPORT_*.md 2>/dev/null | sort -r | head -n1)
+            echo "No DATA_REPORT found, using latest md"
+            REPORT=$(ls -t *.md | head -n1)
           fi
-          # 若手動指定 date 參數，優先用該日期
-          if [ -n "${{ inputs.date }}" ] && [ -f "data_reports/DATA_REPORT_${{ inputs.date }}.md" ]; then
-            REPORT="data_reports/DATA_REPORT_${{ inputs.date }}.md"
-          fi
-          if [ -z "$REPORT" ]; then
-            echo "No DATA_REPORT found"
-            exit 1
-          fi
-          echo "Using report $REPORT (latest by filename)"
+          echo "Using report $REPORT"
           python scripts/v9_pro_builder.py --data_report "$REPORT" --out dashboards/data-${{ env.DATE }}.json --date ${{ env.DATE }}
           ls -lh dashboards/
           head -n 50 dashboards/data-${{ env.DATE }}.json
@@ -96,7 +88,7 @@ jobs:
           git push
 
   deploy:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
