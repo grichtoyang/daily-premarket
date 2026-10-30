@@ -1,12 +1,12 @@
-name: Daily Premarket V9 Pro - 17F + 機構級圖表 + data.json
+name: Daily Premarket V9 Pro
 
 on:
   schedule:
-    - cron: '30 0 * * 1-5'  # 08:30 Taipei Mon-Fri = 00:30 UTC
+    - cron: '30 0 * * 1-5'
   workflow_dispatch:
     inputs:
       date:
-        description: 'YYYYMMDD override'
+        description: 'YYYYMMDD'
         required: false
         type: string
 
@@ -17,78 +17,76 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install deps
-        run: |
-          pip install requests beautifulsoup4 lxml pandas
+        run: pip install requests
 
-      - name: Fetch latest DATA_REPORT
+      - name: Set date
         run: |
-          # 從 grich 網站或 actions artifact 抓最新 DATA_REPORT
-          # 範例：抓今天的 DATA_REPORT_YYYYMMDD.md
-          DATE=${{ inputs.date || '' }}
-          if [ -z "$DATE" ]; then
-            DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
+          if [ -n "${{ inputs.date }}" ]; then
+            echo "DATE=${{ inputs.date }}" >> $GITHUB_ENV
+          else
+            echo "DATE=$(TZ='Asia/Taipei' date +%Y%m%d)" >> $GITHUB_ENV
           fi
-          echo "DATE=$DATE" >> $GITHUB_ENV
-          # 假設 DATA_REPORT 已由上游 workflow 產生在 data_reports/ 或下載
-          # curl -o DATA_REPORT_${DATE}.md https://grichtoyang.github.io/daily-premarket/data_reports/DATA_REPORT_${DATE}.md
-          # 若無則用本地最新
-          ls -lh DATA_REPORT*.md data_reports/ || true
+          echo "Using DATE=$DATE"
           mkdir -p dashboards
 
-      - name: Build V9 Pro data.json (17F + VIX動態 + RSI/MACD 3層備援 + SQLite真DB)
+      - name: Build data.json
         run: |
-          python scripts/v9_pro_builder.py \
-            --data_report DATA_REPORT_${{ env.DATE }}.md \
-            --out dashboards/data-${{ env.DATE }}.json \
-            --date ${{ env.DATE }} \
-            --golden templates/v9-pro-react-template.html
+          ls -lh DATA_REPORT*.md data_reports/ || true
+          REPORT=$(ls -t DATA_REPORT*.md data_reports/DATA_REPORT*.md 2>/dev/null | head -n1)
+          if [ -z "$REPORT" ]; then
+            echo "No DATA_REPORT found, using latest md"
+            REPORT=$(ls -t *.md | head -n1)
+          fi
+          echo "Using report $REPORT"
+          python scripts/v9_pro_builder.py --data_report "$REPORT" --out dashboards/data-${{ env.DATE }}.json --date ${{ env.DATE }}
           ls -lh dashboards/
-          cat dashboards/data-${{ env.DATE }}.json | head -n 30
+          head -n 50 dashboards/data-${{ env.DATE }}.json
 
-      - name: Inject preview HTML (母版 + data.json)
+      - name: Inject HTML
         run: |
-          # 產生預覽用 HTML：母版 + <script>window.DASHBOARD_DATA=...</script>
-          python -c "
-          import pathlib, json
-          date='${{ env.DATE }}'
-          tmpl=pathlib.Path('templates/v9-pro-react-template.html').read_text(encoding='utf-8')
-          data=pathlib.Path(f'dashboards/data-{date}.json').read_text(encoding='utf-8')
-          # 注入
-          inject=f'<script>window.DASHBOARD_DATA={data}</script>\n'
-          # 在 </head> 前注入
-          if '</head>' in tmpl:
-              out=tmpl.replace('</head>', inject + '</head>')
-          else:
-              out=inject + tmpl
+          python3 << 'PY'
+          import pathlib, os
+          date = os.environ.get('DATE')
+          tmpl_path = pathlib.Path('templates/v9-pro-react-template.html')
+          data_path = pathlib.Path(f'dashboards/data-{date}.json')
+          if not tmpl_path.exists():
+            print(f"Template not found {tmpl_path}")
+            exit(1)
+          if not data_path.exists():
+            print(f"Data not found {data_path}")
+            exit(1)
+          tmpl = tmpl_path.read_text(encoding='utf-8')
+          data = data_path.read_text(encoding='utf-8')
+          inject = f'<script>window.DASHBOARD_DATA={data}</script>\n'
+          out = tmpl.replace('</head>', inject + '</head>') if '</head>' in tmpl else inject + tmpl
           pathlib.Path(f'dashboards/v9-pro-{date}.html').write_text(out, encoding='utf-8')
           print(f'Wrote dashboards/v9-pro-{date}.html')
-          "
+          PY
 
-      - name: Update latest symlinks
+      - name: Update latest
         run: |
-          DATE=${{ env.DATE }}
-          cp dashboards/data-${DATE}.json dashboards/data-latest.json
-          cp dashboards/v9-pro-${DATE}.html dashboards/v9-pro-latest.html
-          echo "{\"date\":\"${DATE}\",\"data\":\"data-${DATE}.json\",\"html\":\"v9-pro-${DATE}.html\"}" > dashboards/manifest.json
+          cp dashboards/data-${{ env.DATE }}.json dashboards/data-latest.json
+          cp dashboards/v9-pro-${{ env.DATE }}.html dashboards/v9-pro-latest.html
+          echo "{\"date\":\"${{ env.DATE }}\",\"data\":\"data-${{ env.DATE }}.json\",\"html\":\"v9-pro-${{ env.DATE }}.html\"}" > dashboards/manifest.json
+          ls -lh dashboards/
 
-      - name: Commit & Push (Output Path Rule: dashboards/ 唯一)
+      - name: Commit Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add dashboards/
-          git diff --cached --quiet || git commit -m "V9 Pro ${{ env.DATE }} Bias $(cat dashboards/data-${{ env.DATE }}.json | python -c 'import json,sys;print(json.load(sys.stdin)[\"analysis\"][\"bias\"])')分"
+          git diff --cached --quiet && echo "No changes" && exit 0
+          BIAS=$(python3 -c "import json; print(json.load(open('dashboards/data-${{ env.DATE }}.json'))['analysis']['bias'])")
+          git commit -m "V9 Pro ${{ env.DATE }} Bias ${BIAS}分"
           git push
 
-  # 可選：部署到 GitHub Pages
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: build
@@ -96,10 +94,14 @@ jobs:
     permissions:
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dashboards
-      - uses: actions/deploy-pages@v4
+      - id: deployment
+        uses: actions/deploy-pages@v4
