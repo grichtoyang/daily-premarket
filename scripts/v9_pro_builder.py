@@ -449,6 +449,11 @@ def parse_data_report(report_path):
     dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9.]+) \| 億元","三大法人")
     margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元","0"); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元","0")
     margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0"); margin_ratio=get_value(r"\| 融資維持率 \| ([0-9.]+) \| %",None)
+    margin_ratio_line=next((line for line in text.splitlines() if "融資維持率" in line and "|" in line), "")
+    margin_ratio_source=margin_ratio_line.strip()
+    margin_ratio_date_match=re.search(r"DATA\s*(\d{4}-\d{2}-\d{2}|\d{8})", margin_ratio_line, re.I)
+    margin_ratio_source_date=margin_ratio_date_match.group(1) if margin_ratio_date_match else None
+    margin_ratio_status=("estimated_previous_day" if any(k in margin_ratio_line for k in ("前值遞補","民間估算","估算")) else ("reported" if margin_ratio is not None else "unavailable"))
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
     listed_turnover=get_value(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元","0"); otc_turnover=get_value(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元","0"); total_turnover=get_value(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元","0")
 
@@ -498,7 +503,7 @@ def parse_data_report(report_path):
         'usPct_full': usPct_full, 'asiaPct_full': asiaPct_full, 'futPct_full': futPct_full,
         'yieldPct_full': yieldPct_full, 'fxPct_full': fxPct_full, 'adrPct_full': adrPct_full, 'commPct_full': commPct_full,
         'spot': {'close': spot_close, 'open': spot_open, 'high': spot_high, 'low': spot_low, 'diff': spot_diff, 'pct': spot_pct, 'vol': spot_vol_raw, 'up': up, 'down': down, 'flat': flat, 'limit_up': limit_up, 'limit_down': limit_down, 'otc_up': otc_up, 'otc_down': otc_down, 'otc_flat': otc_flat, 'otc_limit_up': otc_limit_up, 'otc_limit_down': otc_limit_down},
-        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'sbl': sbl_balance},
+        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_date': margin_ratio_source_date, 'sbl': sbl_balance},
         'turnover': {'listed': listed_turnover, 'otc': otc_turnover, 'total': total_turnover},
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
@@ -822,14 +827,8 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'look': analyzer.gen_bias_card()['look'], 'compass': analyzer.gen_bias_card()['compass'], 'target': analyzer.gen_bias_card()['target'],
             'cards': cards_41,
             'cards_41_count': len(cards_41),
-            'correlation': {'labels': ["加權","SOX","NQ","TSM","DXY"], 'matrix': [[1,0.82,0.76,0.71,-0.42],[0.82,1,0.88,0.79,-0.31],[0.76,0.88,1,0.74,-0.28],[0.71,0.79,0.74,1,-0.35],[-0.42,-0.31,-0.28,-0.35,1]], 'desc': "SOX與台股高相關"},
-            'levels': [
-                {'t':"R4 強壓", 'v': int(spot['high']*1.02), 'type':"R"}, {'t':"R3 高點", 'v': int(spot['high']), 'type':"R"},
-                {'t':"R2", 'v': int(spot['close']+500), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"},
-                {'t':"S1 低點", 'v': int(spot['low']), 'type':"S"}, {'t':"S3", 'v': int(spot['low']*0.98), 'type':"S"},
-                {'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"},
-                {'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}
-            ],
+            'correlation': {'labels': [], 'matrix': [], 'desc': "歷史日期對齊樣本不足，相關性未計算"},
+            'levels': ([{'t':"R3 高點", 'v': int(spot['high']), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"}, {'t':"S1 低點", 'v': int(spot['low']), 'type':"S"}] + ([{'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"}] if parsed['options']['putWall'] is not None else []) + ([{'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}] if parsed['options']['flip'] is not None else [])),
             'historical': historical,
             'db_status': db_status
         },
