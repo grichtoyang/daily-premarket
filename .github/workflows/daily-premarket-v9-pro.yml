@@ -14,102 +14,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check template exists
-        run: |
-          ls -lh templates/
-          test -f templates/v9-pro-react-template.html || (echo "Missing template"; exit 1)
-          wc -c templates/v9-pro-react-template.html
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install deps
-        run: |
-          pip install requests pytz
-
+        run: pip install requests pytz
       - name: Build data.json
         run: |
-          REPORT=$(ls -1 data_reports/DATA_REPORT_*.md 2>/dev/null | sort -r | head -n1)
-          if [ -z "$REPORT" ]; then echo "No DATA_REPORT found"; exit 1; fi
+          REPORT=$(ls -1 data_reports/DATA_REPORT_*.md | sort -r | head -n1)
           DATE=$(basename "$REPORT" | sed 's/DATA_REPORT_//;s/.md//')
           echo "DATE=$DATE" >> $GITHUB_ENV
-          echo "Using $REPORT date $DATE"
           python scripts/v9_pro_builder.py --data_report "$REPORT" --out dashboards/data-${DATE}.json --date ${DATE}
           cp dashboards/data-${DATE}.json dashboards/data-latest.json
-          ls -lh dashboards/data-*.json
-
-      - name: Generate self-contained dashboard (fix white screen + no old data)
-        run: |
-          python3 << 'PY'
-          from pathlib import Path
-          import json
-
-          def find_matching_brace(s, start):
-              d=0
-              for i in range(start, len(s)):
-                  if s[i]=='{': d+=1
-                  elif s[i]=='}':
-                      d-=1
-                      if d==0: return i
-              return -1
-
-          tmpl_path = Path('templates/v9-pro-react-template.html')
-          tmpl = tmpl_path.read_text(encoding='utf-8')
-          data_files = sorted(Path('dashboards').glob('data-*.json'))
-          if not data_files:
-              print("No data json")
-              exit(1)
-          data_file = data_files[-1]
-          real_data = data_file.read_text(encoding='utf-8')
-          print(f"Template {tmpl_path.stat().st_size} bytes, df=null={('var df=null' in tmpl)}")
-          print(f"Real data {len(real_data)} bytes from {data_file}")
-
-          # Self-contained: replace var df=null or var df={old} with real data
-          out = tmpl
-          if 'var df=null' in tmpl:
-              print("Replacing var df=null with real data")
-              out = tmpl.replace('var df=null', 'var df=' + real_data, 1)
-          elif 'var df={' in tmpl:
-              print("Replacing var df={old} with real data")
-              idx = tmpl.find('var df={')
-              b1 = tmpl.find('{', idx)
-              b2 = find_matching_brace(tmpl, b1)
-              if b2 != -1:
-                  out = tmpl[:b1] + real_data + tmpl[b2+1:]
-          else:
-              print("Fallback injection")
-              sd = real_data.replace('</script>', '<\/script>')
-              inj = '<script>window.DASHBOARD_DATA=' + sd + '</script>
-'
-              out = tmpl.replace('</head>', inj + '</head>') if '</head>' in tmpl else inj + tmpl
-
-          date = data_file.stem.replace('data-','')
-          Path(f'dashboards/v9-pro-{date}.html').write_text(out, encoding='utf-8')
-          Path('dashboards/v9-pro-latest.html').write_text(out, encoding='utf-8')
-          out_size = Path(f'dashboards/v9-pro-{date}.html').stat().st_size
-          has_null = 'var df=null' in out
-          has_real = '46368' in out or '"close": 46368' in out
-          print(f"Wrote dashboards/v9-pro-{date}.html size {out_size} has_null={has_null} has_real={has_real}")
-          if has_null:
-              print("ERROR still null")
-              exit(1)
-          print("OK self-contained")
-          PY
-
-      - name: Commit dashboards
+      - name: Generate self-contained dashboard
+        run: python scripts/inject_dashboard.py
+      - name: Commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add dashboards/
-          git commit -m "v9 pro ${{ env.DATE }} self-contained real data" || echo "no changes"
+          git commit -m "v9 pro ${{ env.DATE }} real data" || echo "no changes"
           git push
-
-      - name: Upload artifact
+      - name: Upload
         uses: actions/upload-pages-artifact@v3
         with:
           path: dashboards
