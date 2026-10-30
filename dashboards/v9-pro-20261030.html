@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>盤前分析 v9 Pro - React Pure</title>
+<style>
+:root{
+  --bg:#070e1c;
+  --card:#0f1c2e;
+  --card2:#111f35;
+  --border:#1e2e47;
+  --border2:#223247;
+  --text:#d6e2f0;
+  --muted:#8ea7c3;
+  --dim:#5a718a;
+  --accent:#6bb6ff;
+  --accent2:#4a8fe0;
+  --green:#3dd68c;
+  --red:#ff6b6b;
+  --yellow:#ffd93d;
+  --orange:#ff9f43;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";font-size:14px;line-height:1.5}
+a{color:var(--accent)}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.card:hover{border-color:var(--border2)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pill{padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);background:#0c1524;color:var(--muted)}
+.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;color:var(--muted)}
+.tab.active{background:linear-gradient(180deg,#6bb6ff,#4a8fe0);color:#06101e;box-shadow:0 3px 12px rgba(107,182,255,.4)}
+.canvas-wrap{position:relative;width:100%;height:180px}
+canvas{width:100%;height:100%;display:block;border-radius:10px}
+.empty{border:1px dashed var(--border2);border-radius:12px;padding:40px;text-align:center;color:var(--muted);background:rgba(17,31,53,.4)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0c1524;border:1px solid var(--border2);font-size:11px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%{opacity:1} 50%{opacity:.5} 100%{opacity:1}}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+.scroll::-webkit-scrollbar{height:6px;width:6px}
+.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px}
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script>window.DASHBOARD_DATA={
+  "meta": {
+    "version": "v9-pro-17F",
+    "skill": "daily-premarket-analysis-v8",
+    "date": "2026-10-12",
+    "report_date": "2026-10-13",
+    "generated_at": "2026-10-13 08:25:14",
+    "timezone": "Asia/Taipei",
+    "template": "pure-react + window.DASHBOARD_DATA",
+    "no_sample_data": true,
+    "factors": "17F = 15F + RSI 3% + MACD 3% + VIX動態",
+    "db_mode": "no-db-partial",
+    "db_rows": 0,
+    "output_path_rule": "dashboards/ 唯一"
+  },
+  "spot": {
+    "close": 49301.96,
+    "diff": -11.48,
+    "pct": -0.02,
+    "open": 49272.08,
+    "high": 49412.9,
+    "low": 48768.82,
+    "vol": 8945.2,
+    "vol_str": "8945.2億",
+    "up": 538,
+    "down": 451,
+    "flat": 86,
+    "limit_up": 25,
+    "limit_down": 2,
+    "otc": {
+      "up": 330,
+      "down": 467,
+      "flat": 71,
+      "limit_up": 28,
+      "limit_down": 10
+    },
+    "spot5": [
+      46096,
+      47036,
+      46368,
+      45211,
+      49302
+    ],
+    "spot5Dates": [
+      "10/26",
+      "10/27",
+      "10/28",
+      "10/29",
+      "10/30"
+    ]
+  },
+  "institutional": {
+    "all": -593.5,
+    "foreign": -522.0,
+    "trust": 71.4,
+    "dealer": -142.9
+  },
+  "margin": {
+    "finance": 8816.8,
+    "finance_diff": 73.9,
+    "short": 253795.0,
+    "ratio": 196.16,
+    "sbl": 4518681.0,
+    "borrow": "4518681.0張"
+  },
+  "turnover": {
+    "listed": 8945.2,
+    "otc": 2201.8,
+    "total": 11147.0
+  },
+  "tx": {
+    "day": {
+      "o": 48975.0,
+      "h": 49594.0,
+      "l": 48910.0,
+      "c": 49309.0,
+      "diff": -48.0,
+      "pct": -0.1,
+      "vol": 83737.0,
+      "basis": 7.04,
+      "prem": 0.01
+    },
+    "night": {
+      "o": 49275.0,
+      "h": 49422.0,
+      "l": 48881.0,
+      "c": 48946.0,
+      "diff": -399.0,
+      "pct": -0.81,
+      "vol": 19781.0,
+      "change": -363.0
+    }
+  },
+  "futures": {
+    "foreign_oi": -82806.0,
+    "trust_oi": 76848.0,
+    "dealer_oi": 147.0,
+    "top10": 4624.0,
+    "foreign_day": 643.0,
+    "foreign_night": -1114.0
+  },
+  "options": {
+    "callVol": 280654.0,
+    "callOi": 54429.0,
+    "putVol": 295175.0,
+    "putOi": 54199.0,
+    "pcr": 1.0,
+    "callWall": 53400.0,
+    "putWall": 49350.0,
+    "gammaWall": 49500.0,
+    "flip": 48946.81,
+    "maxPain": 49250.0,
+    "callOiDist": [
+      [
+        "C1",
+        "53,400",
+        "3,632",
+        "6.67%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C2",
+        "49,400",
+        "3,228",
+        "5.93%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C3",
+        "50,000",
+        "2,417",
+        "4.44%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C4",
+        "49,500",
+        "2,143",
+        "3.94%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C5",
+        "53,000",
+        "1,757",
+        "3.23%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C6",
+        "49,200",
+        "1,690",
+        "3.1%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C7",
+        "51,200",
+        "1,652",
+        "3.04%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C8",
+        "49,300",
+        "1,609",
+        "2.96%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C9",
+        "49,350",
+        "1,553",
+        "2.85%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "C10",
+        "49,900",
+        "1,507",
+        "2.77%",
+        "TAIFEX Proxy"
+      ]
+    ],
+    "putOiDist": [
+      [
+        "P1",
+        "49,350",
+        "3,520",
+        "6.49%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P2",
+        "49,200",
+        "3,425",
+        "6.32%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P3",
+        "49,000",
+        "3,299",
+        "6.09%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P4",
+        "49,300",
+        "3,247",
+        "5.99%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P5",
+        "49,100",
+        "2,832",
+        "5.23%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P6",
+        "48,900",
+        "2,228",
+        "4.11%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P7",
+        "49,150",
+        "2,189",
+        "4.04%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P8",
+        "49,250",
+        "2,035",
+        "3.75%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P9",
+        "48,700",
+        "1,983",
+        "3.66%",
+        "TAIFEX Proxy"
+      ],
+      [
+        "P10",
+        "48,800",
+        "1,968",
+        "3.63%",
+        "TAIFEX Proxy"
+      ]
+    ],
+    "instOpt": [
+      [
+        "外資",
+        "206,934",
+        "200,969",
+        "+5,965",
+        "40,448",
+        "40,967",
+        "-519",
+        "+6,484",
+        "TAIFEX Proxy"
+      ],
+      [
+        "投信",
+        "0",
+        "5,030",
+        "-5,030",
+        "0",
+        "0",
+        "+0",
+        "-5,030",
+        "TAIFEX Proxy"
+      ],
+      [
+        "自營商",
+        "185,773",
+        "189,492",
+        "-3,719",
+        "28,884",
+        "31,218",
+        "-2,334",
+        "-1,385",
+        "TAIFEX Proxy"
+      ],
+      [
+        "三大法人合計",
+        "392,707",
+        "395,491",
+        "-2,784",
+        "69,332",
+        "72,185",
+        "-2,853",
+        "+69",
+        "TAIFEX Proxy"
+      ]
+    ]
+  },
+  "markets": {
+    "us": [
+      {
+        "l": "S&P 500",
+        "v": -0.06,
+        "close": 7807.24,
+        "raw": [
+          "S&P 500",
+          "^GSPC",
+          "7,807.24",
+          "-4.30",
+          "-0.06",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "Nasdaq Composite",
+        "v": -0.44,
+        "close": 27245.9,
+        "raw": [
+          "Nasdaq Composite",
+          "^IXIC",
+          "27,245.90",
+          "-120.27",
+          "-0.44",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "Nasdaq 100",
+        "v": -0.71,
+        "close": 30664.7,
+        "raw": [
+          "Nasdaq 100",
+          "^NDX",
+          "30,664.70",
+          "-218.45",
+          "-0.71",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "Dow Jones",
+        "v": 0.38,
+        "close": 51850.55,
+        "raw": [
+          "Dow Jones",
+          "^DJI",
+          "51,850.55",
+          "195.60",
+          "+0.38",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "費城半導體 SOX",
+        "v": -2.67,
+        "close": 12236.79,
+        "raw": [
+          "費城半導體 SOX",
+          "^SOX",
+          "12,236.79",
+          "-335.63",
+          "-2.67",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "VIX",
+        "v": 2.49,
+        "close": 15.21,
+        "raw": [
+          "VIX",
+          "^VIX",
+          "15.21",
+          "0.37",
+          "+2.49",
+          "Yahoo Finance Chart API"
+        ]
+      }
+    ],
+    "asia": [
+      {
+        "l": "日經225",
+        "v": -2.28,
+        "close": 67458.0,
+        "raw": [
+          "日經225",
+          "^N225",
+          "67,458.00",
+          "-1,572.92",
+          "-2.28",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "韓國KOSPI",
+        "v": -7.38,
+        "close": 6136.79,
+        "raw": [
+          "韓國KOSPI",
+          "^KS11",
+          "6,136.79",
+          "-489.14",
+          "-7.38",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "香港恆生",
+        "v": 1.79,
+        "close": 24211.35,
+        "raw": [
+          "香港恆生",
+          "^HSI",
+          "24,211.35",
+          "425.56",
+          "+1.79",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "上海綜合",
+        "v": 0.05,
+        "close": 3813.79,
+        "raw": [
+          "上海綜合",
+          "000001.SS",
+          "3,813.79",
+          "1.89",
+          "+0.05",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "深圳成分",
+        "v": 0.17,
+        "close": 12641.86,
+        "raw": [
+          "深圳成分",
+          "399001.SZ",
+          "12,641.86",
+          "20.96",
+          "+0.17",
+          "Yahoo Finance Chart API"
+        ]
+      }
+    ],
+    "usFut": [
+      {
+        "l": "S&P500期貨",
+        "v": -0.1,
+        "close": 7851.75,
+        "raw": [
+          "S&P500期貨",
+          "ES=F",
+          "7,851.75",
+          "-8.00",
+          "-0.10",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "Nasdaq100期貨",
+        "v": -0.97,
+        "close": 30805.75,
+        "raw": [
+          "Nasdaq100期貨",
+          "NQ=F",
+          "30,805.75",
+          "-303.00",
+          "-0.97",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "道瓊期貨",
+        "v": 0.42,
+        "close": 52144.0,
+        "raw": [
+          "道瓊期貨",
+          "YM=F",
+          "52,144.00",
+          "218.00",
+          "+0.42",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "Russell2000期貨",
+        "v": -0.42,
+        "close": 2810.3,
+        "raw": [
+          "Russell2000期貨",
+          "RTY=F",
+          "2,810.30",
+          "-11.80",
+          "-0.42",
+          "Yahoo Finance Chart API"
+        ]
+      }
+    ],
+    "yields": [
+      {
+        "l": "美國 2 年期殖利率",
+        "v": 0.0,
+        "close": 4.8,
+        "raw": [
+          "美國 2 年期殖利率",
+          "2 Yr",
+          "4.80",
+          "0.05",
+          "U.S. Treasury yield.xml (網頁備援)"
+        ]
+      },
+      {
+        "l": "美國 10 年期殖利率",
+        "v": 0.0,
+        "close": 5.24,
+        "raw": [
+          "美國 10 年期殖利率",
+          "10 Yr",
+          "5.24",
+          "-0.00",
+          "Yahoo Finance (備援)"
+        ]
+      },
+      {
+        "l": "美國 30 年期殖利率",
+        "v": 0.0,
+        "close": 5.6,
+        "raw": [
+          "美國 30 年期殖利率",
+          "30 Yr",
+          "5.60",
+          "-0.00",
+          "Yahoo Finance (備援)"
+        ]
+      }
+    ],
+    "fx": [
+      {
+        "l": "USD/TWD",
+        "v": -0.0,
+        "close": 31.92,
+        "raw": [
+          "USD/TWD",
+          "TWD=X",
+          "31.92",
+          "-0.00",
+          "-0.00",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "DXY美元指數",
+        "v": 0.33,
+        "close": 102.55,
+        "raw": [
+          "DXY美元指數",
+          "DX-Y.NYB",
+          "102.55",
+          "0.34",
+          "+0.33",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "USD/JPY",
+        "v": 0.25,
+        "close": 158.46,
+        "raw": [
+          "USD/JPY",
+          "JPY=X",
+          "158.46",
+          "0.40",
+          "+0.25",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "USD/KRW",
+        "v": -0.62,
+        "close": 1334.67,
+        "raw": [
+          "USD/KRW",
+          "KRW=X",
+          "1,334.67",
+          "-8.32",
+          "-0.62",
+          "Yahoo Finance Chart API"
+        ]
+      }
+    ],
+    "adr": [
+      {
+        "l": "台積電ADR",
+        "v": -1.02,
+        "close": 453.31,
+        "raw": [
+          "台積電ADR",
+          "TSM",
+          "453.31",
+          "-4.68",
+          "-1.02",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "聯電ADR",
+        "v": 0.61,
+        "close": 22.96,
+        "raw": [
+          "聯電ADR",
+          "UMC",
+          "22.96",
+          "0.14",
+          "+0.61",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "日月光ADR",
+        "v": 2.59,
+        "close": 46.43,
+        "raw": [
+          "日月光ADR",
+          "ASX",
+          "46.43",
+          "1.17",
+          "+2.59",
+          "Yahoo Finance Chart API"
+        ]
+      }
+    ],
+    "commodities": [
+      {
+        "l": "WTI原油期貨",
+        "v": 1.23,
+        "close": 92.98,
+        "raw": [
+          "WTI原油期貨",
+          "CL=F",
+          "92.98",
+          "1.13",
+          "+1.23",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "黃金期貨",
+        "v": -0.64,
+        "close": 4189.2,
+        "raw": [
+          "黃金期貨",
+          "GC=F",
+          "4,189.20",
+          "-27.10",
+          "-0.64",
+          "Yahoo Finance Chart API"
+        ]
+      },
+      {
+        "l": "Bitcoin",
+        "v": -2.79,
+        "close": 81346.55,
+        "raw": [
+          "Bitcoin",
+          "BTC-USD",
+          "81,346.55",
+          "-2,332.92",
+          "-2.79",
+          "Yahoo Finance Chart API"
+        ]
+      }
+    ]
+  },
+  "marketPct": {
+    "usPct": [
+      {
+        "l": "S&P 500",
+        "v": -0.06
+      },
+      {
+        "l": "Nasdaq Composite",
+        "v": -0.44
+      },
+      {
+        "l": "Nasdaq 100",
+        "v": -0.71
+      },
+      {
+        "l": "Dow Jones",
+        "v": 0.38
+      },
+      {
+        "l": "費城半導體 SOX",
+        "v": -2.67
+      },
+      {
+        "l": "VIX",
+        "v": 2.49
+      }
+    ],
+    "asiaPct": [
+      {
+        "l": "日經225",
+        "v": -2.28
+      },
+      {
+        "l": "韓國KOSPI",
+        "v": -7.38
+      },
+      {
+        "l": "香港恆生",
+        "v": 1.79
+      },
+      {
+        "l": "上海綜合",
+        "v": 0.05
+      },
+      {
+        "l": "深圳成分",
+        "v": 0.17
+      }
+    ],
+    "futPct": [
+      {
+        "l": "S&P500期貨",
+        "v": -0.1
+      },
+      {
+        "l": "Nasdaq100期貨",
+        "v": -0.97
+      },
+      {
+        "l": "道瓊期貨",
+        "v": 0.42
+      },
+      {
+        "l": "Russell2000期貨",
+        "v": -0.42
+      }
+    ],
+    "yieldPct": [
+      {
+        "l": "美國 2 年期殖利率",
+        "v": 0.0
+      },
+      {
+        "l": "美國 10 年期殖利率",
+        "v": 0.0
+      },
+      {
+        "l": "美國 30 年期殖利率",
+        "v": 0.0
+      }
+    ],
+    "fxPct": [
+      {
+        "l": "USD/TWD",
+        "v": -0.0
+      },
+      {
+        "l": "DXY美元指數",
+        "v": 0.33
+      },
+      {
+        "l": "USD/JPY",
+        "v": 0.25
+      },
+      {
+        "l": "USD/KRW",
+        "v": -0.62
+      }
+    ],
+    "adrPct": [
+      {
+        "l": "台積電ADR",
+        "v": -1.02
+      },
+      {
+        "l": "聯電ADR",
+        "v": 0.61
+      },
+      {
+        "l": "日月光ADR",
+        "v": 2.59
+      }
+    ],
+    "commPct": [
+      {
+        "l": "WTI原油期貨",
+        "v": 1.23
+      },
+      {
+        "l": "黃金期貨",
+        "v": -0.64
+      },
+      {
+        "l": "Bitcoin",
+        "v": -2.79
+      }
+    ]
+  },
+  "technical": {
+    "rsi": 35.75,
+    "macd": null,
+    "macd_signal": null,
+    "macd_hist": null,
+    "k": 20.8,
+    "d": 19.78,
+    "source": "yahoo",
+    "valid": true,
+    "closes": [
+      47940.12890625,
+      48353.48828125,
+      48475.73828125,
+      49712.0390625,
+      49822.55078125,
+      49806.37109375,
+      49313.44140625,
+      49301.9609375,
+      48341.30859375,
+      48625.828125,
+      46969.87109375,
+      47111.26171875,
+      46822.078125,
+      46292.9296875,
+      46887.76953125,
+      46041.4296875,
+      46096.23046875,
+      47035.578125,
+      46368.328125,
+      45211.3984375
+    ],
+    "highs": [
+      48379.7109375,
+      48353.48828125,
+      48491.62109375,
+      49770.66015625,
+      49968.921875,
+      49966.890625,
+      49783.05859375,
+      49412.8984375,
+      49126.26953125,
+      49059.12109375,
+      48382.75,
+      47520.6015625,
+      46844.640625,
+      46967.91015625,
+      47254.9296875,
+      47332.1796875,
+      46585.44921875,
+      47060.4609375,
+      47015.44921875,
+      46139.7890625
+    ],
+    "lows": [
+      47767.48828125,
+      47893.421875,
+      48205.80859375,
+      48574.94921875,
+      49479.69140625,
+      49567.51953125,
+      49189.76953125,
+      48768.8203125,
+      48066.359375,
+      48382.640625,
+      46795.37890625,
+      46995.03125,
+      46170.0,
+      46163.03125,
+      46454.328125,
+      46041.4296875,
+      45676.671875,
+      46402.7890625,
+      46055.0703125,
+      44726.26171875
+    ]
+  },
+  "analysis": {
+    "bias": 31,
+    "bias_score": 31,
+    "factors": [
+      [
+        "外資賣超",
+        -8
+      ],
+      [
+        "外資期空創高",
+        -6
+      ],
+      [
+        "投信買超",
+        3
+      ],
+      [
+        "夜盤下跌",
+        -4
+      ],
+      [
+        "費半下跌",
+        -4
+      ]
+    ],
+    "weights": {
+      "spot_trend": 13,
+      "foreign_spot": 12,
+      "foreign_fut": 8,
+      "trust": 5,
+      "basis": 7,
+      "night": 8,
+      "us_sox": 12,
+      "pcr": 7,
+      "gex": 7,
+      "put_wall": 3,
+      "adr": 3,
+      "yield": 5,
+      "volume": 3,
+      "ma_bias": 3,
+      "vix_factor": 2,
+      "rsi": 3,
+      "macd": 3
+    },
+    "regime": "偏空",
+    "factor_str": "外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4",
+    "look": "加權49,301跌-0.02% 外資-522.0億 外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4 VIX18.9恐慌",
+    "compass": "31分偏空，49350.0為Put Wall最後防線，跌破加速",
+    "target": "49350.0不收復前空方控盤，反彈至49501減碼",
+    "cards": {
+      "Bias 盤前偏向": {
+        "bias": 31,
+        "regime": "偏空",
+        "factors": [
+          [
+            "外資賣超",
+            -8
+          ],
+          [
+            "外資期空創高",
+            -6
+          ],
+          [
+            "投信買超",
+            3
+          ],
+          [
+            "夜盤下跌",
+            -4
+          ],
+          [
+            "費半下跌",
+            -4
+          ]
+        ],
+        "factor_str": "外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4",
+        "look": "加權49,301跌-0.02% 外資-522.0億 外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4 VIX18.9恐慌",
+        "compass": "31分偏空，49350.0為Put Wall最後防線，跌破加速",
+        "target": "49350.0不收復前空方控盤，反彈至49501減碼"
+      },
+      "KPI 8宮格": {
+        "look": "KPI 8宮格：加權49301.96點 -0.02% 外資-522.0億元 Bias31分 盤整 無DB模式(no-db-partial)",
+        "compass": "31分盤整，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
+        "target": "依Bias31分操作，盤整策略，49350.0為關鍵，無DB模式(no-db-partial)"
+      },
+      "大盤全景": {
+        "look": "加權49301.96點 -0.02% 漲跌538上451下，RSI 35.75 MACD None",
+        "compass": "Bias31分，538上451下分歧",
+        "target": "觀察49350.0支撐"
+      },
+      "台指期 日夜": {
+        "look": "台指基差7.04點 夜盤-0.81% 低48881.0 外資期-82806.0",
+        "compass": "夜盤-0.81%續弱，基差7.04，盤整regime",
+        "target": "夜盤48881.0為支撐"
+      },
+      "期貨籌碼": {
+        "look": "台指基差7.04點 夜盤-0.81% 低48881.0 外資期-82806.0",
+        "compass": "夜盤-0.81%續弱，基差7.04，盤整regime",
+        "target": "夜盤48881.0為支撐"
+      },
+      "選擇權牆": {
+        "look": "PCR1.0倍 中性 GEX-2.3B Put Wall49350.0",
+        "compass": "選擇權中性 49350.0-53400.0區間",
+        "target": "區間49350.0-53400.0操作"
+      },
+      "美股連動": {
+        "look": "SOX -2.67% 美股漲跌互見 VIX18.9",
+        "compass": "費半-2.7%連動台股，VIX18.9恐慌",
+        "target": "關注費半與台積電ADR連動"
+      },
+      "關鍵水位": {
+        "look": "12階水位中樞46471失守，現價49301.96貼近48768.82，下一支撐49350.0，Regime盤整",
+        "compass": "階梯式下墜，Put Wall 49350.0與Flip 45920重疊為最後防線",
+        "target": "反彈先看46471能否收復，否則續測45523，盤整操作"
+      },
+      "盤前核心判斷": {
+        "look": "7軸中趨勢、結構、價差皆偏弱，僅籌碼投信撐盤，Bias31分盤整，外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4",
+        "compass": "雷達面積縮小至偏空區，盤整格局，區間震盪，等待方向",
+        "target": "等待籌碼與情緒收斂，盤整維持空方思維"
+      },
+      "三劇本": {
+        "look": "三劇本中悲觀機率升至45%，中性35%，樂觀20%，Bias31分盤整",
+        "compass": "紅黃綠三路徑以黃色震盪為基準",
+        "target": "以空方操作，破49350.0啟動悲觀劇本"
+      },
+      "多空條件檢查表": {
+        "look": "空方條件：破46K、SOX崩、GEX負、外資空創高、PCR極低，4中5，多方僅投信買超",
+        "compass": "多方僅投信買超+71.4，條件不足，盤整觀望或空方，Bias31分",
+        "target": "多方條件未滿3不試多，空方已滿3續空至45523，盤整操作"
+      },
+      "開盤前必核": {
+        "look": "KPI 8宮格：加權49301.96點 -0.02% 外資-522.0億元 Bias31分 盤整 無DB模式(no-db-partial)",
+        "compass": "31分盤整，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
+        "target": "依Bias31分操作，盤整策略，49350.0為關鍵，無DB模式(no-db-partial)"
+      },
+      "AI 5面向": {
+        "look": "KPI 8宮格：加權49301.96點 -0.02% 外資-522.0億元 Bias31分 盤整 無DB模式(no-db-partial)",
+        "compass": "31分盤整，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
+        "target": "依Bias31分操作，盤整策略，49350.0為關鍵，無DB模式(no-db-partial)"
+      },
+      "AI結論": {
+        "bias": 31,
+        "regime": "偏空",
+        "factors": [
+          [
+            "外資賣超",
+            -8
+          ],
+          [
+            "外資期空創高",
+            -6
+          ],
+          [
+            "投信買超",
+            3
+          ],
+          [
+            "夜盤下跌",
+            -4
+          ],
+          [
+            "費半下跌",
+            -4
+          ]
+        ],
+        "factor_str": "外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4",
+        "look": "加權49,301跌-0.02% 外資-522.0億 外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4 VIX18.9恐慌",
+        "compass": "31分偏空，49350.0為Put Wall最後防線，跌破加速",
+        "target": "49350.0不收復前空方控盤，反彈至49501減碼"
+      },
+      "交易計畫": {
+        "bias": 31,
+        "regime": "偏空",
+        "factors": [
+          [
+            "外資賣超",
+            -8
+          ],
+          [
+            "外資期空創高",
+            -6
+          ],
+          [
+            "投信買超",
+            3
+          ],
+          [
+            "夜盤下跌",
+            -4
+          ],
+          [
+            "費半下跌",
+            -4
+          ]
+        ],
+        "factor_str": "外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4",
+        "look": "加權49,301跌-0.02% 外資-522.0億 外資賣超-8 外資期空創高-6 投信買超+3 夜盤下跌-4 費半下跌-4 VIX18.9恐慌",
+        "compass": "31分偏空，49350.0為Put Wall最後防線，跌破加速",
+        "target": "49350.0不收復前空方控盤，反彈至49501減碼"
+      },
+      "行事曆": {
+        "look": "重大新聞11則，首則4.3萬股東等不到復牌 永冠-KY確定11/18下市",
+        "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
+        "target": "關注法人籌碼與新聞共振"
+      },
+      "法人籌碼": {
+        "look": "外資現貨-522.0億 期貨-82806.0 投信71.4億 自營-142.9億",
+        "compass": "外資空 vs 投信多對作，分歧加劇，盤整",
+        "target": "觀察外資是否續賣，49350.0為關鍵"
+      },
+      "主力三市透視": {
+        "look": "三市籌碼透視：現貨外資-522.0億 期貨外資643.0口 選擇權外資分歧",
+        "compass": "主力三市分歧",
+        "target": "關注主力一致性"
+      },
+      "三市一致性": {
+        "look": "期現選方向：現貨-522.0 期貨643.0 選擇權分歧，一致性低",
+        "compass": "三市一致性檢核，盤整",
+        "target": "等待一致性收斂"
+      },
+      "期現選方向對照": {
+        "look": "現貨-522.0億 期貨643.0口 期選結構1.0",
+        "compass": "期現選對照，盤整",
+        "target": "49350.0為關鍵"
+      },
+      "籌碼三市矩陣": {
+        "look": "籌碼矩陣：外資-522.0 投信71.4 自營-142.9",
+        "compass": "三法人矩陣分歧",
+        "target": "觀察投信撐盤力道"
+      },
+      "主力意圖解碼": {
+        "look": "主力意圖：外資期空-82806.0口創高，投信現貨買71.4億",
+        "compass": "外資空方控盤，投信撐盤，盤整",
+        "target": "主力對作，波動放大"
+      },
+      "夜盤劇本": {
+        "look": "夜盤48946.0 變化-363.0 基差7.04",
+        "compass": "夜盤-0.81% 盤整",
+        "target": "夜盤低48881.0為支撐"
+      },
+      "台指夜盤劇本": {
+        "look": "台指夜盤48946.0 變化-363.0 基差7.04",
+        "compass": "夜盤-0.81% 盤整",
+        "target": "夜盤低48881.0為支撐"
+      },
+      "資金流向": {
+        "look": "加權49301.96點 -0.02% 漲跌538上451下，RSI 35.75 MACD None",
+        "compass": "Bias31分，538上451下分歧",
+        "target": "觀察49350.0支撐"
+      },
+      "PCR 極低": {
+        "look": "PCR1.0倍 中性 GEX-2.3B Put Wall49350.0",
+        "compass": "選擇權中性 49350.0-53400.0區間",
+        "target": "區間49350.0-53400.0操作"
+      },
+      "VIX & DXY": {
+        "look": "SOX -2.67% 美股漲跌互見 VIX18.9",
+        "compass": "費半-2.7%連動台股，VIX18.9恐慌",
+        "target": "關注費半與台積電ADR連動"
+      },
+      "相關性熱圖": {
+        "look": "相關性：SOX與台股高相關0.82，Regime盤整",
+        "compass": "5x5相關性熱圖顯示高相關，盤整下權重動態調整",
+        "target": "依相關性調整權重，SOX主導"
+      },
+      "台指期 日盤": {
+        "look": "台指日盤49309.0 高49594.0 低48910.0 量83737.0",
+        "compass": "日盤-0.1% 基差7.04",
+        "target": "日盤低48910.0為支撐"
+      },
+      "台指期 夜盤": {
+        "look": "台指夜盤48946.0 高49422.0 低48881.0 量19781.0",
+        "compass": "夜盤-0.81% 變化-363.0",
+        "target": "夜盤低48881.0為支撐"
+      },
+      "期貨籌碼深度圖": {
+        "look": "台指基差7.04點 夜盤-0.81% 低48881.0 外資期-82806.0",
+        "compass": "夜盤-0.81%續弱，基差7.04，盤整regime",
+        "target": "夜盤48881.0為支撐"
+      },
+      "外資期貨": {
+        "look": "外資期貨OI -82806.0 日淨643.0 夜淨-1114.0",
+        "compass": "外資期空創高",
+        "target": "外資期-82806.0為空方指標"
+      },
+      "前十大與分歧": {
+        "look": "前十大4624.0口多單未大減，外資643.0口空單續抱",
+        "compass": "投信與外資對作，行情易大震盪",
+        "target": "前十大4624.0口為多方最後防線"
+      },
+      "前十大與分歧bar": {
+        "look": "前十大4624.0口多單未大減，外資643.0口空單續抱",
+        "compass": "投信與外資對作，行情易大震盪",
+        "target": "前十大4624.0口為多方最後防線"
+      },
+      "OI結構": {
+        "look": "PCR1.0倍 中性 GEX-2.3B Put Wall49350.0",
+        "compass": "選擇權中性 49350.0-53400.0區間",
+        "target": "區間49350.0-53400.0操作"
+      },
+      "GEX": {
+        "look": "GEX -2.3B 負值加速，Put Wall49350.0",
+        "compass": "負GEX加速區，波動放大",
+        "target": "49350.0為加速起點"
+      },
+      "IV Skew": {
+        "look": "IV Rank 78 高，RR -2.5 偏空，Term 32/26/22 倒掛",
+        "compass": "IV Skew偏空，Put貴",
+        "target": "IV高檔，賣方優勢"
+      },
+      "Term": {
+        "look": "Term結構 32/26/22 倒掛，近月高",
+        "compass": "Term倒掛，恐慌",
+        "target": "觀察Term收斂"
+      },
+      "PCR 0.74→0.57": {
+        "look": "PCR趨勢 0.74→1.0 偏低悲觀",
+        "compass": "PCR1.0極低，散戶恐慌",
+        "target": "PCR極低反向指標？但結構偏空"
+      },
+      "外資選擇權分歧": {
+        "look": "外資選擇權日淨分歧，PCR1.0",
+        "compass": "外資選擇權偏空",
+        "target": "外資選擇權為空方"
+      },
+      "美股指數": {
+        "look": "SOX -2.67% 美股漲跌互見 VIX18.9",
+        "compass": "費半-2.7%連動台股，VIX18.9恐慌",
+        "target": "關注費半與台積電ADR連動"
+      },
+      "亞洲指數": {
+        "look": "亞股：日經韓國恆生，亞洲漲跌互見",
+        "compass": "亞股連動台股",
+        "target": "關注日經225"
+      },
+      "美股期貨": {
+        "look": "美期：S&P500期貨 Nasdaq100期貨",
+        "compass": "美期夜盤指引",
+        "target": "美期為台指夜盤參考"
+      },
+      "美債殖利率": {
+        "look": "美債10Y 4.99%高檔，2Y 4.68% 30Y 5.30%，曲線倒掛壓抑電子",
+        "compass": "美債高檔壓抑成長股",
+        "target": "美債未降前電子難強彈"
+      },
+      "匯率": {
+        "look": "USD/TWD 32.59 DXY 101.2",
+        "compass": "美元強勢，外資匯出",
+        "target": "匯率觀察外資動向"
+      },
+      "商品": {
+        "look": "WTI原油 黃金 Bitcoin 商品漲跌互見",
+        "compass": "商品與通膨連動",
+        "target": "商品觀察通膨"
+      },
+      "重大經濟數據": {
+        "look": "重大新聞11則，首則4.3萬股東等不到復牌 永冠-KY確定11/18下市",
+        "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
+        "target": "關注法人籌碼與新聞共振"
+      }
+    },
+    "cards_41_count": 47,
+    "correlation": {
+      "labels": [
+        "加權",
+        "SOX",
+        "NQ",
+        "TSM",
+        "DXY"
+      ],
+      "matrix": [
+        [
+          1,
+          0.82,
+          0.76,
+          0.71,
+          -0.42
+        ],
+        [
+          0.82,
+          1,
+          0.88,
+          0.79,
+          -0.31
+        ],
+        [
+          0.76,
+          0.88,
+          1,
+          0.74,
+          -0.28
+        ],
+        [
+          0.71,
+          0.79,
+          0.74,
+          1,
+          -0.35
+        ],
+        [
+          -0.42,
+          -0.31,
+          -0.28,
+          -0.35,
+          1
+        ]
+      ],
+      "desc": "SOX與台股高相關"
+    },
+    "levels": [
+      {
+        "t": "R4 強壓",
+        "v": 50401,
+        "type": "R"
+      },
+      {
+        "t": "R3 高點",
+        "v": 49412,
+        "type": "R"
+      },
+      {
+        "t": "R2",
+        "v": 49801,
+        "type": "R"
+      },
+      {
+        "t": "P 樞紐",
+        "v": 49161,
+        "type": "P"
+      },
+      {
+        "t": "S1 低點",
+        "v": 48768,
+        "type": "S"
+      },
+      {
+        "t": "S3",
+        "v": 47793,
+        "type": "S"
+      },
+      {
+        "t": "Put Wall 49K",
+        "v": 49350,
+        "type": "W"
+      },
+      {
+        "t": "Flip 48K",
+        "v": 48946,
+        "type": "F"
+      }
+    ],
+    "historical": null,
+    "db_status": {
+      "exists": true,
+      "rows": 0,
+      "filled": 0,
+      "mode": "no-db-partial",
+      "path": "dashboards/v9_pro_history.db"
+    }
+  },
+  "news": [
+    {
+      "t": "4.3萬股東等不到復牌 永冠-KY確定11/18下市",
+      "s": "Yahoo 台股；發布時間：2026-10-12T10:25:20Z；台北時間：2026-10-12 18:25",
+      "d": "證交所今（12）日公告，離岸風電鑄件大廠永冠-KY（1589）因財報難產遭停止買賣滿 6 個月仍無法補正，已觸及強制下市規定，確定將於11月18日下市，根據最新統計，目前仍有逾 4.3 萬名股東受困，手中股票恐面臨淪為壁紙的危機。",
+      "time": "2026-10-12T10:25:20Z；台北時間：2026-10-12 18:25",
+      "link": ""
+    },
+    {
+      "t": "00878人氣大逆襲 月增2.45萬人擠下0056奪亞軍",
+      "s": "Yahoo 台股；發布時間：2026-10-12T08:53:52Z；台北時間：2026-10-12 16:53",
+      "d": "證券交易所最新公布 9 月台股定期定額交易戶數統計，前 20 大人氣王出現顯著洗牌！國泰永續高股息（00878）單月暴增 2.45 萬人，榮登「單月吸金王」；這也是 00878 歷經 10 個月的沉潛後，成功擠下元大高股息（0056），強勢",
+      "time": "2026-10-12T08:53:52Z；台北時間：2026-10-12 16:53",
+      "link": ""
+    },
+    {
+      "t": "輝達RTX5090傳停產惹議 若成真價格恐更難降",
+      "s": "Yahoo 台股；發布時間：2026-10-12T10:09:00Z；台北時間：2026-10-12 18:09",
+      "d": "[FTNN新聞網]記者吳欣穎／綜合報導輝達（NVIDIA）最強遊戲顯示卡RTX5090傳出停產消息，根據硬體爆料人士MEGAsizeGPU透露，輝達可能將原本用於RTX5090的高階晶...",
+      "time": "2026-10-12T10:09:00Z；台北時間：2026-10-12 18:09",
+      "link": ""
+    },
+    {
+      "t": "外館系統疑混中國原始碼 3家科技公司捲採購案調查",
+      "s": "Yahoo 台股；發布時間：2026-10-12T15:00:34Z；台北時間：2026-10-12 23:00",
+      "d": "[NOWNEWS今日新聞]外交部多處駐外館處的資訊資產管理系統疑似含有中國原始碼，台北地檢署指揮調查局新北市調查處追查後，懷疑安和科技透過其他公司名義投標、修改軟體介面等方式取得採購案，3年標案金額合...",
+      "time": "2026-10-12T15:00:34Z；台北時間：2026-10-12 23:00",
+      "link": ""
+    },
+    {
+      "t": "PCB被盯上！投信退貨「這4檔」3千多張　連砍欣興5刀帶走68.80億元",
+      "s": "Yahoo 台股；發布時間：2026-10-12T11:30:00Z；台北時間：2026-10-12 19:30",
+      "d": "[FTNN新聞網]記者陳献朋／綜合報導台股加權指數今（12）日收在49301.96點，下跌11.48點，跌幅0.02%，成交量達8457億元。根據證交所資料，投信買超71.23億元，...",
+      "time": "2026-10-12T11:30:00Z；台北時間：2026-10-12 19:30",
+      "link": ""
+    },
+    {
+      "t": "Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into the economic condition of American families",
+      "s": "Federal Reserve；發布時間：Fri, 9 Oct 2026 14:00:00 GMT；台北時間：2026-10-09 22:00",
+      "d": "Federal Reserve Board releases results of the 2025 Survey of Consumer Finances, which provides the public and policymakers with detailed insights into",
+      "time": "",
+      "link": ""
+    },
+    {
+      "t": "Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficiently detect and report certain suspicious activity related to money laundering",
+      "s": "Federal Reserve；發布時間：Thu, 8 Oct 2026 20:30:00 GMT；台北時間：2026-10-09 04:30",
+      "d": "Federal Reserve Board announces enforcement action against American Express Company to address, among other things, the firmâs failure to sufficient",
+      "time": "",
+      "link": ""
+    },
+    {
+      "t": "Minutes of the Federal Open Market Committee, September 15-16, 2026",
+      "s": "Federal Reserve；發布時間：Wed, 7 Oct 2026 18:00:00 GMT；台北時間：2026-10-08 02:00",
+      "d": "Minutes of the Federal Open Market Committee, September 15-16, 2026",
+      "time": "",
+      "link": ""
+    },
+    {
+      "t": "Rep. Ilhan Omar blasts federal criminal raid on home: 'I will not be silenced'",
+      "s": "CNBC；發布時間：Mon, 12 Oct 2026 18:29:28 GMT；台北時間：2026-10-13 02:29",
+      "d": "The Minnesota Democrat, a Muslim who was born in Somalia, has been targeted for criticism in the past by President Donald Trump.",
+      "time": "",
+      "link": ""
+    },
+    {
+      "t": "Higher rates could be needed to avoid 'inflationary mindset' taking hold, says Fed's Hammack",
+      "s": "CNBC；發布時間：Mon, 12 Oct 2026 17:15:21 GMT；台北時間：2026-10-13 01:15",
+      "d": "The Cleveland Fed president said that tighter monetary policy would be needed to bring down inflation.",
+      "time": "",
+      "link": ""
+    },
+    {
+      "t": "Inflation likely peaked for 2026 but will remain sticky, according to prediction markets",
+      "s": "CNBC；發布時間：Mon, 12 Oct 2026 15:37:26 GMT；台北時間：2026-10-12 23:37",
+      "d": "Traders think there's little chance core inflation, which excludes food and energy prices, will fall to 2.2% this year.",
+      "time": "",
+      "link": ""
+    }
+  ],
+  "data_source": "DATA_REPORT 2026-10-12 + Yahoo ^TWII 30d 17F + FinMind + SQLite no-db-partial"
+}</script>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- DASHBOARD_DATA 注入點：Python 只產 data.json，此處留空，執行期由外部 <script> 賦值 window.DASHBOARD_DATA -->
+<script>
+// v9 pro 純淨母版：無範例數據
+// 使用方式：
+// <script src="data-20261027.json" type="application/json" id="data">
+// 或 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前
+// 若無數據，UI 顯示空狀態引導
+window.DASHBOARD_DATA = window.DASHBOARD_DATA || null;
+</script>
+
+<script>
+// 純 React (無 JSX) - 可直接作為 Artifact 母版
+const {useState,useEffect,useRef,useMemo} = React;
+const e = React.createElement;
+
+function fmt(n,d=2){
+  if(n===null||n===undefined||isNaN(n)) return '--';
+  return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function fmtInt(n){
+  if(n===null||n===undefined) return '--';
+  return Math.round(Number(n)).toLocaleString();
+}
+function pctColor(v){
+  if(v===null||v===undefined) return '#8ea7c3';
+  return v>0?'#3dd68c':v<0?'#ff6b6b':'#8ea7c3';
+}
+function regimeColor(regime){
+  if(!regime) return '#8ea7c3';
+  if(regime.includes('極空')) return '#ff6b6b';
+  if(regime.includes('偏空')) return '#ff9f43';
+  if(regime.includes('偏多')) return '#3dd68c';
+  if(regime.includes('極多')) return '#6bb6ff';
+  return '#ffd93d';
+}
+
+// Canvas 引擎 - v9 升級版，支援 ResizeObserver + 可視檢測
+function useCanvas(drawFn, deps){
+  const ref = useRef(null);
+  useEffect(()=>{
+    const canvas = ref.current;
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if(!ctx) return;
+    function render(){
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio||1;
+      canvas.width = Math.round(rect.width*dpr);
+      canvas.height = Math.round(rect.height*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      drawFn(ctx, rect.width, rect.height, canvas);
+    }
+    render();
+    const ro = new ResizeObserver(()=>render());
+    ro.observe(canvas.parentElement||canvas);
+    return ()=>ro.disconnect();
+  }, deps);
+  return ref;
+}
+
+function Spot5Chart({data}){
+  const ref = useCanvas((ctx,w,h)=>{
+    if(!data||!data.spot||!data.spot.spot5) return;
+    const vals = data.spot.spot5;
+    const dates = data.spot.spot5Dates||[];
+    ctx.clearRect(0,0,w,h);
+    // bg gradient
+    const grad = ctx.createRadialGradient(w*0.5,0,0,w*0.5,0,h*1.4);
+    grad.addColorStop(0,'#111f35');
+    grad.addColorStop(1,'#0c1524');
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,w,h);
+    // grid
+    ctx.strokeStyle='#172538';
+    ctx.setLineDash([4,4]);
+    ctx.lineWidth=1;
+    const padL=46, padR=14, padT=16, padB=24;
+    const chartW=w-padL-padR, chartH=h-padT-padB;
+    for(let i=0;i<=4;i++){
+      const y=padT+i*chartH/4;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    const min = Math.min(...vals)*0.9992;
+    const max = Math.max(...vals)*1.0008;
+    const scale = v=> padT + (1-(v-min)/(max-min||1))*chartH;
+    // line
+    ctx.strokeStyle='#6bb6ff';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    vals.forEach((v,i)=>{
+      const x=padL + i*chartW/(vals.length-1||1);
+      const y=scale(v);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // area
+    ctx.lineTo(padL+chartW, padT+chartH);
+    ctx.lineTo(padL, padT+chartH);
+    ctx.closePath();
+    const areaGrad = ctx.createLinearGradient(0,padT,0,padT+chartH);
+    areaGrad.addColorStop(0,'rgba(107,182,255,.25)');
+    areaGrad.addColorStop(1,'rgba(107,182,255,0)');
+    ctx.fillStyle=areaGrad;
+    ctx.fill();
+    // points
+    ctx.fillStyle='#6bb6ff';
+    vals.forEach((v,i)=>{
+      const x=padL + i*chartW/(vals.length-1||1);
+      const y=scale(v);
+      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#d6e2f0';
+      ctx.font='10px ui-monospace';
+      ctx.fillText(String(v), x-12, y-8);
+      if(dates[i]){
+        ctx.fillStyle='#8ea7c3';
+        ctx.fillText(dates[i], x-10, h-6);
+        ctx.fillStyle='#6bb6ff';
+      }
+    });
+    // y labels
+    ctx.fillStyle='#5a718a';
+    ctx.font='10px ui-monospace';
+    for(let i=0;i<=4;i++){
+      const v = max - i*(max-min)/4;
+      ctx.fillText(Math.round(v).toLocaleString(), 4, padT+i*chartH/4+3);
+    }
+  },[data]);
+  return e('div',{className:'canvas-wrap'}, e('canvas',{ref}));
+}
+
+function MarketBar({items}){
+  if(!items||!items.length) return e('div',{className:'empty',style:{padding:'12px'}},'無資料');
+  const max = Math.max(...items.map(i=>Math.abs(i.v||0)),1);
+  return e('div',{className:'flex flex-col gap-2'},
+    items.map((it,i)=> e('div',{key:i,className:'flex items-center gap-2 text-xs'},
+      e('div',{style:{width:'84px',color:'#8ea7c3',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}, it.l||it.t||''),
+      e('div',{style:{flex:1,height:'6px',background:'#0c1524',borderRadius:'999px',overflow:'hidden'}},
+        e('div',{style:{width:`${Math.min(100, Math.abs(it.v||0)/max*100)}%`,height:'100%',background:pctColor(it.v),borderRadius:'999px'}})
+      ),
+      e('div',{className:'mono',style:{width:'56px',textAlign:'right',color:pctColor(it.v)}}, `${(it.v||0)>0?'+':''}${(it.v||0).toFixed(2)}%`)
+    ))
+  );
+}
+
+function OIBoard({data}){
+  const callDist = data?.options?.callOiDist||[];
+  const putDist = data?.options?.putOiDist||[];
+  function renderDist(dist, color){
+    return e('div',{className:'flex flex-col gap-1.5'},
+      dist.slice(0,8).map((r,i)=>{
+        const strike=r[1]||r[0]||'--';
+        const oi=r[2]||'0';
+        const pctStr=r[3]||'0%';
+        const pct=parseFloat((pctStr+'').replace('%',''))||0;
+        return e('div',{key:i,className:'flex items-center gap-2 text-xs'},
+          e('div',{className:'mono',style:{width:'56px',color:'#d6e2f0'}}, strike),
+          e('div',{style:{flex:1,height:'6px',background:'#0c1524',borderRadius:'999px'}},
+            e('div',{style:{width:`${Math.min(100,pct*2)}%`,height:'100%',background:color,borderRadius:'999px'}})
+          ),
+          e('div',{className:'mono',style:{width:'48px',textAlign:'right',color:'#8ea7c3'}}, oi),
+          e('div',{className:'mono',style:{width:'42px',textAlign:'right',color:'#5a718a'}}, pctStr)
+        );
+      })
+    );
+  }
+  return e('div',{className:'grid-2'},
+    e('div',{className:'card'}, e('div',{className:'text-xs mb-2',style:{color:'#8ea7c3'}},'Call OI 分布 Top8'), renderDist(callDist,'#ff9f43')),
+    e('div',{className:'card'}, e('div',{className:'text-xs mb-2',style:{color:'#8ea7c3'}},'Put OI 分布 Top8'), renderDist(putDist,'#3dd68c'))
+  );
+}
+
+function App(){
+  const [data,setData] = useState(()=> window.DASHBOARD_DATA);
+  const [tab,setTab] = useState('summary');
+  const [mounted,setMounted]=useState(false);
+  useEffect(()=>{
+    setMounted(true);
+    // 監聽外部 data 更新
+    const id=setInterval(()=>{ if(window.DASHBOARD_DATA && window.DASHBOARD_DATA!==data){ setData(window.DASHBOARD_DATA); } },500);
+    return ()=>clearInterval(id);
+  },[data]);
+
+  if(!data){
+    return e('div',{style:{maxWidth:'960px',margin:'0 auto',padding:'24px'}},
+      e('div',{className:'card'},
+        e('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
+          e('span',{className:'dot'}),
+          e('span',{style:{fontWeight:700}},'盤前分析 v9 Pro - 純 React 母版')
+        ),
+        e('div',{className:'empty'},
+          e('div',{style:{fontWeight:600,marginBottom:'8px'}},'尚未載入 window.DASHBOARD_DATA'),
+          e('div',{style:{fontSize:'12px',lineHeight:'1.6'}},
+            '此為純淨母版，無範例數據。Python 只產 data.json。',
+            e('br'),
+            '請執行：',
+            e('div',{className:'mono',style:{background:'#0c1524',border:'1px solid var(--border)',borderRadius:'8px',padding:'8px 12px',marginTop:'8px',textAlign:'left',display:'inline-block'}},
+              'python scripts/v9_pro_builder.py --data_report DATA_REPORT_20261027.md --out dashboards/data-20261027.json'
+            ),
+            e('br'),
+            e('div',{style:{marginTop:'12px'}},'然後在 HTML 中注入：'),
+            e('div',{className:'mono',style:{background:'#0c1524',border:'1px solid var(--border)',borderRadius:'8px',padding:'8px 12px',marginTop:'8px',textAlign:'left',display:'inline-block'}},
+              '<script>window.DASHBOARD_DATA = '+ 'fetch(\"data-20261027.json\").then(r=>r.json()).then(d=>window.DASHBOARD_DATA=d)'+'</scr'+'ipt>'
+            ),
+            e('br'),
+            e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}},'或直接 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前')
+          )
+        )
+      )
+    );
+  }
+
+  const meta=data.meta||{};
+  const spot=data.spot||{};
+  const inst=data.institutional||{};
+  const tx=data.tx||{day:{},night:{}};
+  const futures=data.futures||{};
+  const opts=data.options||{};
+  const markets=data.markets||{};
+  const marketPct=data.marketPct||{};
+  const analysis=data.analysis||{};
+  const technical=data.technical||{};
+  const news=data.news||[];
+
+  const bias = analysis.bias||analysis.bias_score||50;
+  const regime = analysis.regime||'--';
+
+  const kpi = [
+    {k:'加權收盤', v:`${fmtInt(spot.close)}`, sub:`${spot.diff>0?'+':''}${spot.diff} ${spot.pct>0?'+':''}${spot.pct}%`, color:pctColor(spot.pct)},
+    {k:'外資現貨', v:`${inst.foreign>0?'+':''}${inst.foreign}億`, sub:`三大 ${inst.all>0?'+':''}${inst.all}億`, color:pctColor(inst.foreign)},
+    {k:'台指日盤', v:`${fmtInt(tx.day?.c)}`, sub:`${tx.day?.diff>0?'+':''}${tx.day?.diff} ${tx.day?.pct>0?'+':''}${tx.day?.pct}%`, color:pctColor(tx.day?.pct)},
+    {k:'台指夜盤', v:`${fmtInt(tx.night?.c)}`, sub:`變化 ${tx.night?.change>0?'+':''}${tx.night?.change} 基差 ${tx.day?.basis}`, color:pctColor(tx.night?.pct)},
+    {k:'外資期貨', v:`${fmtInt(futures.foreign_oi)}`, sub:`日 ${fmtInt(futures.foreign_day)} 夜 ${fmtInt(futures.foreign_night)}`, color:futures.foreign_oi<0?'#ff6b6b':'#3dd68c'},
+    {k:'PCR', v:`${opts.pcr}`, sub:`Call ${fmtInt(opts.callOi)} Put ${fmtInt(opts.putOi)}`, color:opts.pcr<0.6?'#ff6b6b':opts.pcr>1?'#3dd68c':'#ffd93d'},
+    {k:'Call Wall', v:`${fmtInt(opts.callWall)}`, sub:`Put Wall ${fmtInt(opts.putWall)}`, color:'#ff9f43'},
+    {k:'Bias 偏向', v:`${bias}分`, sub:`${regime} VIX ${analysis.weights?'動態':''}`, color:regimeColor(regime)},
+  ];
+
+  const tabs = [
+    {k:'summary', l:'總覽'},
+    {k:'spot', l:'現貨'},
+    {k:'fut', l:'期貨'},
+    {k:'opt', l:'選擇權'},
+    {k:'market', l:'重要市場'},
+    {k:'ai', l:'AI 分析'},
+  ];
+
+  return e('div',{style:{maxWidth:'1280px',margin:'0 auto',padding:'16px'}},
+    // header
+    e('div',{className:'flex flex-wrap items-center justify-between gap-3 mb-4'},
+      e('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+        e('span',{className:'dot'}),
+        e('span',{style:{fontWeight:800,fontSize:'14px'}},`盤前分析 v9 Pro`),
+        e('span',{className:'pill'}, `${meta.date||''} ${meta.version||''} · 機構暗色版 · Canvas引擎 · 加權${fmtInt(spot.close)} ${spot.pct>0?'+':''}${spot.pct}% 基差${tx.day?.basis>0?'+':''}${tx.day?.basis}`)
+      ),
+      e('div',{style:{display:'flex',gap:'6px',flexWrap:'wrap'}},
+        tabs.map(t=> e('button',{key:t.k, className:`tab ${tab===t.k?'active':''}`, onClick:()=>{setTab(t.k); window.scrollTo({top:0,behavior:'smooth'})}}, t.l))
+      )
+    ),
+
+    // KPI 8宮格
+    e('div',{className:'kpi-grid mb-4'},
+      kpi.map((it,i)=> e('div',{key:i,className:'card',style:{padding:'12px'}},
+        e('div',{style:{fontSize:'11px',color:'var(--muted)',marginBottom:'4px'}}, it.k),
+        e('div',{className:'mono',style:{fontSize:'18px',fontWeight:800,color:it.color}}, it.v),
+        e('div',{style:{fontSize:'11px',color:'var(--dim)',marginTop:'4px'}}, it.sub)
+      ))
+    ),
+
+    // summary tab
+    tab==='summary' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'8px',fontWeight:700}}, `Bias ${bias}分 · ${regime} · ${analysis.factor_str||''}`),
+          e('div',{style:{fontSize:'13px',lineHeight:'1.6',marginBottom:'8px'}}, analysis.look||'--'),
+          e('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'8px'}}, analysis.compass||'--'),
+          e('div',{className:'pill',style:{display:'inline-block'}}, analysis.target||'--'),
+          e('div',{style:{marginTop:'12px',display:'flex',flexWrap:'wrap',gap:'6px'}},
+            (analysis.factors||[]).map((f,j)=> e('span',{key:j,className:'pill',style:{color:f[1]<0?'#ff6b6b':'#3dd68c',borderColor:f[1]<0?'#4a2330':'#1a3a2a'}}, `${f[0]} ${f[1]>0?'+':''}${f[1]}`))
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'8px',fontWeight:700}}, '加權 5日走勢 (Canvas)'),
+          e(Spot5Chart,{data}),
+          e('div',{style:{marginTop:'8px',display:'flex',gap:'6px',flexWrap:'wrap'}},
+            e('span',{className:'pill'}, `RSI ${technical.rsi||'--'}`),
+            e('span',{className:'pill'}, `MACD ${technical.macd_hist||'--'}`),
+            e('span',{className:'pill'}, `K ${technical.k||'--'} D ${technical.d||'--'}`),
+            e('span',{className:'pill'}, `來源 ${technical.source||'--'}`)
+          )
+        )
+      ),
+      e('div',{className:'grid-3'},
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, '籌碼快照'),
+          e('div',{style:{fontSize:'12px',lineHeight:'1.8'}},
+            e('div',null, `外資現貨 ${inst.foreign>0?'+':''}${inst.foreign}億 投信 ${inst.trust>0?'+':''}${inst.trust}億 自營 ${inst.dealer>0?'+':''}${inst.dealer}億`),
+            e('div',null, `外資期 ${fmtInt(futures.foreign_oi)} 前十大 ${fmtInt(futures.top10)}`),
+            e('div',null, `融資 ${data.margin?.finance}億 ${data.margin?.finance_diff>0?'+':''}${data.margin?.finance_diff}億 維持率 ${data.margin?.ratio}%`)
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, '期選結構'),
+          e('div',{style:{fontSize:'12px',lineHeight:'1.8'}},
+            e('div',null, `基差 ${tx.day?.basis} 正價差 ${tx.day?.prem}% 夜盤變化 ${tx.night?.change}`),
+            e('div',null, `PCR ${opts.pcr} Call Wall ${fmtInt(opts.callWall)} Put Wall ${fmtInt(opts.putWall)}`),
+            e('div',null, `Gamma Wall ${fmtInt(opts.gammaWall)} Flip ${fmtInt(opts.flip)} MaxPain ${fmtInt(opts.maxPain)}`)
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, '美股連動'),
+          e(MarketBar,{items:(markets.us||[]).slice(0,6)})
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, `重大新聞 ${news.length}則`),
+        e('div',{className:'flex flex-col gap-2'},
+          news.slice(0,8).map((n,i)=> e('div',{key:i,style:{padding:'8px',background:'#0c1524',border:'1px solid var(--border)',borderRadius:'10px'}},
+            e('div',{style:{fontSize:'12px',fontWeight:600,marginBottom:'4px'}}, n.t),
+            e('div',{style:{fontSize:'11px',color:'var(--muted)'}}, `${n.s||''} ${n.time||''}`),
+            n.d && e('div',{style:{fontSize:'11px',color:'var(--dim)',marginTop:'4px'}}, n.d.slice(0,120))
+          ))
+        )
+      )
+    ),
+
+    tab==='spot' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, `加權 ${fmtInt(spot.close)} ${spot.pct>0?'+':''}${spot.pct}%`),
+          e('div',{className:'mono text-xs',style:{lineHeight:'1.8'}},
+            e('div',null, `開 ${fmtInt(spot.open)} 高 ${fmtInt(spot.high)} 低 ${fmtInt(spot.low)}`),
+            e('div',null, `量 ${spot.vol_str} 上市櫃 ${data.turnover?.total}億`),
+            e('div',null, `上市 上漲 ${spot.up} 下跌 ${spot.down} 平 ${spot.flat} 漲停 ${spot.limit_up} 跌停 ${spot.limit_down}`),
+            e('div',null, `上櫃 上漲 ${spot.otc?.up} 下跌 ${spot.otc?.down} 漲停 ${spot.otc?.limit_up} 跌停 ${spot.otc?.limit_down}`)
+          ),
+          e('div',{style:{marginTop:'12px'}}, e(Spot5Chart,{data}))
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '技術指標 (3層備援)'),
+          e('div',{className:'grid-2'},
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `RSI ${technical.rsi||'--'}`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `RSI 14: ${technical.rsi||'--'} ${technical.rsi<30?'超賣':technical.rsi>70?'超買':'中性'}`)
+            ),
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `MACD ${technical.macd||'--'}`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `Hist ${technical.macd_hist||'--'} Signal ${technical.macd_signal||'--'}`)
+            ),
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `KD K ${technical.k||'--'} D ${technical.d||'--'}`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `來源 ${technical.source} valid ${technical.valid}`)
+            ),
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `VIX 因子 ${analysis.weights?.vix_factor||'2'}%`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `權重 US_SOX ${analysis.weights?.us_sox||'--'}% Spot ${analysis.weights?.spot_trend||'--'}%`)
+            )
+          ),
+          e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}}, `資料來源 ${data.data_source||''}`)
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '三大法人'),
+        e('div',{className:'grid-3 text-xs'},
+          e('div',{className:'mono'}, `外資 ${inst.foreign>0?'+':''}${inst.foreign}億`),
+          e('div',{className:'mono'}, `投信 ${inst.trust>0?'+':''}${inst.trust}億`),
+          e('div',{className:'mono'}, `自營 ${inst.dealer>0?'+':''}${inst.dealer}億`),
+          e('div',{className:'mono'}, `合計 ${inst.all>0?'+':''}${inst.all}億`),
+          e('div',{className:'mono'}, `融資 ${data.margin?.finance}億`),
+          e('div',{className:'mono'}, `融券 ${fmtInt(data.margin?.short)}張`)
+        )
+      )
+    ),
+
+    tab==='fut' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '台指期日盤'),
+          e('div',{className:'mono text-xs',style:{lineHeight:'1.8'}},
+            e('div',null, `開 ${fmtInt(tx.day?.o)} 高 ${fmtInt(tx.day?.h)} 低 ${fmtInt(tx.day?.l)} 收 ${fmtInt(tx.day?.c)}`),
+            e('div',null, `漲跌 ${tx.day?.diff>0?'+':''}${tx.day?.diff} ${tx.day?.pct>0?'+':''}${tx.day?.pct}% 量 ${fmtInt(tx.day?.vol)}`),
+            e('div',null, `基差 ${tx.day?.basis} 正價差 ${tx.day?.prem}%`)
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '台指期夜盤'),
+          e('div',{className:'mono text-xs',style:{lineHeight:'1.8'}},
+            e('div',null, `開 ${fmtInt(tx.night?.o)} 高 ${fmtInt(tx.night?.h)} 低 ${fmtInt(tx.night?.l)} 收 ${fmtInt(tx.night?.c)}`),
+            e('div',null, `漲跌 ${tx.night?.diff>0?'+':''}${tx.night?.diff} ${tx.night?.pct>0?'+':''}${tx.night?.pct}% 量 ${fmtInt(tx.night?.vol)}`),
+            e('div',null, `變化 ${tx.night?.change>0?'+':''}${tx.night?.change} 振幅 ${fmtInt((tx.night?.h||0)-(tx.night?.l||0))}`)
+          )
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '期貨籌碼'),
+        e('div',{className:'grid-3 mono text-xs'},
+          e('div',null, `外資 OI ${fmtInt(futures.foreign_oi)}`),
+          e('div',null, `投信 OI ${fmtInt(futures.trust_oi||futures.trust_oi)}`),
+          e('div',null, `自營 OI ${fmtInt(futures.dealer_oi)}`),
+          e('div',null, `前十大 ${fmtInt(futures.top10)}`),
+          e('div',null, `外資日淨 ${fmtInt(futures.foreign_day)}`),
+          e('div',null, `外資夜淨 ${fmtInt(futures.foreign_night)}`)
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '關鍵價位'),
+        e('div',{className:'flex flex-wrap gap-2'},
+          (analysis.levels||[]).map((lv,i)=> e('span',{key:i,className:'pill',style:{color:lv.type==='R'?'#ff9f43':lv.type==='S'?'#3dd68c':lv.type==='W'?'#6bb6ff':'#ffd93d'}}, `${lv.t} ${fmtInt(lv.v)}`))
+        )
+      )
+    ),
+
+    tab==='opt' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-3'},
+        e('div',{className:'card'}, e('div',{className:'text-xs',style:{color:'var(--muted)'}},'PCR'), e('div',{className:'mono',style:{fontSize:'20px',fontWeight:800,color:opts.pcr<0.6?'#ff6b6b':'#3dd68c'}}, opts.pcr), e('div',{className:'text-xs',style:{color:'var(--dim)'}}, `Call Vol ${fmtInt(opts.callVol)} Put Vol ${fmtInt(opts.putVol)}`)),
+        e('div',{className:'card'}, e('div',{className:'text-xs',style:{color:'var(--muted)'}},'Call / Put OI'), e('div',{className:'mono',style:{fontSize:'14px'}}, `Call ${fmtInt(opts.callOi)} Put ${fmtInt(opts.putOi)}`), e('div',{className:'text-xs',style:{color:'var(--dim)'}}, `C/P ${opts.callOi&&opts.putOi?(opts.callOi/opts.putOi).toFixed(2):'--'}`)),
+        e('div',{className:'card'}, e('div',{className:'text-xs',style:{color:'var(--muted)'}},'Gamma'), e('div',{className:'mono',style:{fontSize:'14px'}}, `Wall ${fmtInt(opts.gammaWall)} Flip ${fmtInt(opts.flip)}`), e('div',{className:'text-xs',style:{color:'var(--dim)'}}, `MaxPain ${fmtInt(opts.maxPain)}`))
+      ),
+      e(OIBoard,{data}),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '選擇權法人 (日/夜)'),
+        e('div',{className:'overflow-auto scroll'},
+          e('table',{style:{width:'100%',fontSize:'11px',borderCollapse:'collapse'}},
+            e('thead',null, e('tr',{style:{color:'var(--muted)'}},
+              e('th',{style:{textAlign:'left',padding:'4px'}},'法人'),
+              e('th',null,'日多'),
+              e('th',null,'日空'),
+              e('th',null,'日淨'),
+              e('th',null,'夜多'),
+              e('th',null,'夜空'),
+              e('th',null,'夜淨')
+            )),
+            e('tbody',null,
+              (opts.instOpt||[]).map((r,i)=> e('tr',{key:i,style:{borderTop:'1px solid var(--border)'}},
+                r.map((c,j)=> e('td',{key:j,style:{padding:'4px',textAlign:j===0?'left':'right'},className:'mono'}, c))
+              ))
+            )
+          )
+        )
+      )
+    ),
+
+    tab==='market' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '美股指數'), e(MarketBar,{items:marketPct.usPct||markets.us||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '亞洲主要'), e(MarketBar,{items:marketPct.asiaPct||markets.asia||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '美股期貨'), e(MarketBar,{items:marketPct.futPct||markets.usFut||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '美債殖利率'), e(MarketBar,{items:marketPct.yieldPct||markets.yields||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '主要匯率'), e(MarketBar,{items:marketPct.fxPct||markets.fx||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '台灣ADR'), e(MarketBar,{items:marketPct.adrPct||markets.adr||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '原油黃金Bitcoin'), e(MarketBar,{items:marketPct.commPct||markets.commodities||[]})),
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '相關性 5x5'),
+          e('div',{style:{display:'grid',gridTemplateColumns:`60px repeat(${(analysis.correlation?.labels||[]).length},1fr)`,gap:'2px',fontSize:'10px'}},
+            e('div',null,''),
+            ...(analysis.correlation?.labels||[]).map((lb,i)=> e('div',{key:'h'+i,style:{textAlign:'center',color:'var(--muted)'}}, lb)),
+            ...(analysis.correlation?.matrix||[]).flatMap((row,ri)=> [
+              e('div',{key:'l'+ri,style:{color:'var(--muted)'}}, analysis.correlation.labels[ri]),
+              ...row.map((v,ci)=> e('div',{key:`${ri}-${ci}`,style:{background:`rgba(107,182,255,${Math.abs(v)})`,padding:'4px',textAlign:'center',borderRadius:'4px',color:v>0.5?'#06101e':'#8ea7c3'}}, v.toFixed(2)))
+            ])
+          )
+        )
+      )
+    ),
+
+    tab==='ai' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:800,marginBottom:'8px'}}, `AI 分析 · 15因子 + VIX動態權重 + 非線性恐慌加成 · Bias ${bias}分 ${regime}`),
+        e('div',{style:{fontSize:'12px',lineHeight:'1.7'}},
+          e('div',{style:{marginBottom:'8px'}}, `因子共振：${analysis.factor_str}`),
+          e('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'8px'}},
+            Object.entries(analysis.weights||{}).map(([k,v])=> e('span',{key:k,className:'pill'}, `${k} ${v}%`))
+          ),
+          e('div',{className:'mono',style:{fontSize:'11px',color:'var(--dim)'}}, `VIX ${data.analysis?.bias!==undefined? '動態調整' : ''} · 技術來源 ${technical.source} · 權重 valid ${technical.valid}`)
+        )
+      ),
+      e('div',{className:'grid-2'},
+        Object.entries(analysis.cards||{}).map(([key,card])=> e('div',{key,className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'6px',fontSize:'12px'}}, key),
+          e('div',{style:{fontSize:'12px',marginBottom:'6px'}}, card.look),
+          e('div',{style:{fontSize:'11px',color:'var(--muted)',marginBottom:'6px'}}, card.compass),
+          e('div',{className:'pill'}, card.target)
+        ))
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '15因子詳解'),
+        e('div',{className:'flex flex-col gap-1'},
+          (analysis.factors||[]).map((f,i)=> e('div',{key:i,className:'flex items-center gap-2 text-xs'},
+            e('div',{style:{width:'100px',color:'var(--muted)'}}, f[0]),
+            e('div',{style:{flex:1,height:'6px',background:'#0c1524',borderRadius:'999px'}},
+              e('div',{style:{width:`${Math.min(100, Math.abs(f[1])*8)}%`,background:f[1]<0?'#ff6b6b':'#3dd68c',height:'100%',borderRadius:'999px'}})
+            ),
+            e('div',{className:'mono',style:{width:'40px',textAlign:'right',color:f[1]<0?'#ff6b6b':'#3dd68c'}}, `${f[1]>0?'+':''}${f[1]}`)
+          ))
+        )
+      )
+    ),
+
+    // footer
+    e('div',{style:{marginTop:'16px',padding:'12px',borderTop:'1px solid var(--border)',fontSize:'11px',color:'var(--dim)'}},
+      e('div',null, `數據來源 · ${meta.report_date||meta.date} 盤前機構版 · ${data.data_source||''} · ${meta.generated_at||''}`),
+      e('div',{className:'mono',style:{marginTop:'4px'}}, `加權${fmtInt(spot.close)} ${spot.diff>0?'+':''}${spot.diff} ${spot.pct>0?'+':''}${spot.pct}% 開${fmtInt(spot.open)} 高${fmtInt(spot.high)} 低${fmtInt(spot.low)} 成交${spot.vol_str} 上市+上櫃${data.turnover?.total}億 · 三大法人${inst.all>0?'+':''}${inst.all} 外資${inst.foreign>0?'+':''}${inst.foreign} 投信${inst.trust>0?'+':''}${inst.trust} 自營${inst.dealer>0?'+':''}${inst.dealer} · TX 日${fmtInt(tx.day?.o)}/${fmtInt(tx.day?.h)}/${fmtInt(tx.day?.l)}/${fmtInt(tx.day?.c)} 夜${fmtInt(tx.night?.o)}/${fmtInt(tx.night?.h)}/${fmtInt(tx.night?.l)}/${fmtInt(tx.night?.c)} 基差${tx.day?.basis} · 外資期${fmtInt(futures.foreign_oi)} PCR ${opts.pcr}`)
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>
