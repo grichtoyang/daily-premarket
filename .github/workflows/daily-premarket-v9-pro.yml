@@ -1,0 +1,105 @@
+name: Daily Premarket V9 Pro - 17F + 機構級圖表 + data.json
+
+on:
+  schedule:
+    - cron: '30 0 * * 1-5'  # 08:30 Taipei Mon-Fri = 00:30 UTC
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'YYYYMMDD override'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: |
+          pip install requests beautifulsoup4 lxml pandas
+
+      - name: Fetch latest DATA_REPORT
+        run: |
+          # 從 grich 網站或 actions artifact 抓最新 DATA_REPORT
+          # 範例：抓今天的 DATA_REPORT_YYYYMMDD.md
+          DATE=${{ inputs.date || '' }}
+          if [ -z "$DATE" ]; then
+            DATE=$(TZ='Asia/Taipei' date +%Y%m%d)
+          fi
+          echo "DATE=$DATE" >> $GITHUB_ENV
+          # 假設 DATA_REPORT 已由上游 workflow 產生在 data_reports/ 或下載
+          # curl -o DATA_REPORT_${DATE}.md https://grichtoyang.github.io/daily-premarket/data_reports/DATA_REPORT_${DATE}.md
+          # 若無則用本地最新
+          ls -lh DATA_REPORT*.md data_reports/ || true
+          mkdir -p dashboards
+
+      - name: Build V9 Pro data.json (17F + VIX動態 + RSI/MACD 3層備援 + SQLite真DB)
+        run: |
+          python scripts/v9_pro_builder.py \
+            --data_report DATA_REPORT_${{ env.DATE }}.md \
+            --out dashboards/data-${{ env.DATE }}.json \
+            --date ${{ env.DATE }} \
+            --golden templates/v9-pro-react-template.html
+          ls -lh dashboards/
+          cat dashboards/data-${{ env.DATE }}.json | head -n 30
+
+      - name: Inject preview HTML (母版 + data.json)
+        run: |
+          # 產生預覽用 HTML：母版 + <script>window.DASHBOARD_DATA=...</script>
+          python -c "
+          import pathlib, json
+          date='${{ env.DATE }}'
+          tmpl=pathlib.Path('templates/v9-pro-react-template.html').read_text(encoding='utf-8')
+          data=pathlib.Path(f'dashboards/data-{date}.json').read_text(encoding='utf-8')
+          # 注入
+          inject=f'<script>window.DASHBOARD_DATA={data}</script>\n'
+          # 在 </head> 前注入
+          if '</head>' in tmpl:
+              out=tmpl.replace('</head>', inject + '</head>')
+          else:
+              out=inject + tmpl
+          pathlib.Path(f'dashboards/v9-pro-{date}.html').write_text(out, encoding='utf-8')
+          print(f'Wrote dashboards/v9-pro-{date}.html')
+          "
+
+      - name: Update latest symlinks
+        run: |
+          DATE=${{ env.DATE }}
+          cp dashboards/data-${DATE}.json dashboards/data-latest.json
+          cp dashboards/v9-pro-${DATE}.html dashboards/v9-pro-latest.html
+          echo "{\"date\":\"${DATE}\",\"data\":\"data-${DATE}.json\",\"html\":\"v9-pro-${DATE}.html\"}" > dashboards/manifest.json
+
+      - name: Commit & Push (Output Path Rule: dashboards/ 唯一)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dashboards/
+          git diff --cached --quiet || git commit -m "V9 Pro ${{ env.DATE }} Bias $(cat dashboards/data-${{ env.DATE }}.json | python -c 'import json,sys;print(json.load(sys.stdin)[\"analysis\"][\"bias\"])')分"
+          git push
+
+  # 可選：部署到 GitHub Pages
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboards
+      - uses: actions/deploy-pages@v4
