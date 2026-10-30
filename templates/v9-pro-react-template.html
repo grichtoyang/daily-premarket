@@ -51,10 +51,12 @@ canvas{width:100%;height:100%;display:block;border-radius:10px}
 <body>
 <div id="root"></div>
 
-<!-- DASHBOARD_DATA 注入點：Python 只產 data.json，此處留空，執行期由外部賦值 window.DASHBOARD_DATA -->
+<!-- DASHBOARD_DATA 注入點：Python 只產 data.json，此處留空，執行期由外部 <script> 賦值 window.DASHBOARD_DATA -->
 <script>
 // v9 pro 純淨母版：無範例數據
-// 使用方式：外部注入 window.DASHBOARD_DATA = {...} 在此之前
+// 使用方式：
+// <script src="data-20261027.json" type="application/json" id="data">
+// 或 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前
 // 若無數據，UI 顯示空狀態引導
 window.DASHBOARD_DATA = window.DASHBOARD_DATA || null;
 </script>
