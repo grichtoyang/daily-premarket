@@ -376,9 +376,11 @@ def parse_data_report(report_path):
                 if in_table and rows: break
         return rows
     def parse_pct(s):
-        s=s.replace('%','').replace('+','').strip()
+        if s is None: return None
+        s=str(s).replace('%','').replace('+','').strip()
+        if not s or s.lower() in ('unavailable','n/a','--','null'): return None
         try: return float(s)
-        except: return 0.0
+        except (TypeError, ValueError): return None
     def must_get(pattern,name):
         v=get_value(pattern,None)
         if v is None or v=="": raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {name}: {pattern}")
@@ -394,15 +396,15 @@ def parse_data_report(report_path):
     us_rows=parse_table("### 1. 美股指數"); asia_rows=parse_table("### 2. 亞洲主要指數"); fut_rows=parse_table("### 3. 美股指數期貨")
     yield_rows=parse_table("### 4. 美國國債殖利率"); fx_rows=parse_table("### 5. 主要匯率"); adr_rows=parse_table("### 6. 台灣相關ADR"); comm_rows=parse_table("### 7. 原油黃金Bitcoin")
 
-    def build_arr(rows):
+    def build_arr(rows, pct_index=4):
         parts=[]
         for r in rows:
             if len(r)<3: continue
-            pct_col=r[4] if len(r)>4 else r[3] if len(r)>3 else "0"
+            pct_col=r[pct_index] if len(r)>pct_index else None
             pct=parse_pct(pct_col)
-            close_raw=r[2] if len(r)>2 else "0"
-            try: close_val=float(close_raw.replace(',',''))
-            except: close_val=0
+            close_raw=r[2] if len(r)>2 else None
+            try: close_val=float(close_raw.replace(',','')) if close_raw else None
+            except (TypeError, ValueError): close_val=None
             parts.append({'l':r[0],'v':pct,'close':close_val,'raw':r})
         return parts
     def build_arr_simple(rows):
@@ -410,7 +412,9 @@ def parse_data_report(report_path):
         return [{'l':x['l'],'v':x['v']} for x in arr], arr
 
     usPct_simple, usPct_full=build_arr_simple(us_rows); asiaPct_simple, asiaPct_full=build_arr_simple(asia_rows)
-    futPct_simple, futPct_full=build_arr_simple(fut_rows); yieldPct_simple, yieldPct_full=build_arr_simple(yield_rows)
+    futPct_simple, futPct_full=build_arr_simple(fut_rows)
+    yield_arr=build_arr(yield_rows, pct_index=3)
+    yieldPct_simple=[{'l':x['l'],'v':x['v']} for x in yield_arr]; yieldPct_full=yield_arr
     fxPct_simple, fxPct_full=build_arr_simple(fx_rows); adrPct_simple, adrPct_full=build_arr_simple(adr_rows); commPct_simple, commPct_full=build_arr_simple(comm_rows)
 
     spot_close=must_get(r"加權指數 \| ([0-9,.]+) \| 點","加權收盤"); spot_open=must_get(r"開盤 \| ([0-9,.]+) \| 點","開盤")
@@ -440,7 +444,7 @@ def parse_data_report(report_path):
     foreign_inst=must_get(r"\| 外資 \| ([-\+0-9.]+) \| 億元","外資"); trust_inst=must_get(r"\| 投信 \| ([-\+0-9.]+) \| 億元","投信")
     dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9.]+) \| 億元","三大法人")
     margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元","0"); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元","0")
-    margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0"); margin_ratio=get_value(r"\| 融資維持率 \| ([0-9.]+) \| %","176.99")
+    margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0"); margin_ratio=get_value(r"\| 融資維持率 \| ([0-9.]+) \| %",None)
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
     listed_turnover=get_value(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元","0"); otc_turnover=get_value(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元","0"); total_turnover=get_value(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元","0")
 
