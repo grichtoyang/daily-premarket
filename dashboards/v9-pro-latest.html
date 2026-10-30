@@ -5,57 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>盤前分析 v9 Pro - React Pure</title>
 <style>
-:root{
-  --bg:#070e1c;
-  --card:#0f1c2e;
-  --card2:#111f35;
-  --border:#1e2e47;
-  --border2:#223247;
-  --text:#d6e2f0;
-  --muted:#8ea7c3;
-  --dim:#5a718a;
-  --accent:#6bb6ff;
-  --accent2:#4a8fe0;
-  --green:#3dd68c;
-  --red:#ff6b6b;
-  --yellow:#ffd93d;
-  --orange:#ff9f43;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";font-size:14px;line-height:1.5}
-a{color:var(--accent)}
-.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
-.card:hover{border-color:var(--border2)}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+:root{--bg:#070e1c;--card:#0f1c2e;--card2:#111f35;--border:#1e2e47;--border2:#223247;--text:#d6e2f0;--muted:#8ea7c3;--dim:#5a718a;--accent:#6bb6ff;--accent2:#4a8fe0;--green:#3dd68c;--red:#ff6b6b;--yellow:#ffd93d;--orange:#ff9f43}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;font-size:14px;line-height:1.5}a{color:var(--accent)}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}.card:hover{border-color:var(--border2)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pill{padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);background:#0c1524;color:var(--muted)}
-.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;color:var(--muted)}
-.tab.active{background:linear-gradient(180deg,#6bb6ff,#4a8fe0);color:#06101e;box-shadow:0 3px 12px rgba(107,182,255,.4)}
-.canvas-wrap{position:relative;width:100%;height:180px}
-canvas{width:100%;height:100%;display:block;border-radius:10px}
+.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;color:var(--muted)}.tab.active{background:linear-gradient(180deg,#6bb6ff,#4a8fe0);color:#06101e;box-shadow:0 3px 12px rgba(107,182,255,.4)}
+.canvas-wrap{position:relative;width:100%;height:180px}canvas{width:100%;height:100%;display:block;border-radius:10px}
 .empty{border:1px dashed var(--border2);border-radius:12px;padding:40px;text-align:center;color:var(--muted);background:rgba(17,31,53,.4)}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0c1524;border:1px solid var(--border2);font-size:11px;color:var(--muted)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%{opacity:1} 50%{opacity:.5} 100%{opacity:1}}
-.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
-.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}@keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-.scroll::-webkit-scrollbar{height:6px;width:6px}
-.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px}
+.scroll::-webkit-scrollbar{height:6px;width:6px}.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px}
 </style>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script>window.DASHBOARD_DATA={
   "meta": {
-    "version": "v9-pro",
+    "version": "v9-pro-17F",
+    "skill": "daily-premarket-analysis-v8",
     "date": "2026-10-29",
     "report_date": "2026-10-30",
     "generated_at": "2026-10-30 08:45:09",
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
-    "no_sample_data": true
+    "no_sample_data": true,
+    "factors": "17F = 15F + RSI 3% + MACD 3% + VIX動態",
+    "db_mode": "no-db-partial",
+    "db_rows": 1,
+    "output_path_rule": "dashboards/ 唯一"
   },
   "spot": {
     "close": 46368.33,
@@ -976,41 +956,334 @@ canvas{width:100%;height:100%;display:block;border-radius:10px}
     },
     "regime": "極空",
     "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
-    "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.732恐慌",
+    "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
     "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
     "target": "46000.0不收復前空方控盤，反彈至46568減碼",
     "cards": {
-      "summary": {
-        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.732恐慌",
+      "Bias 盤前偏向": {
+        "bias": 19,
+        "regime": "極空",
+        "factors": [
+          [
+            "現貨下跌",
+            -6
+          ],
+          [
+            "外資賣超",
+            -8
+          ],
+          [
+            "外資期空創高",
+            -6
+          ],
+          [
+            "投信買超",
+            3
+          ],
+          [
+            "夜盤重挫",
+            -7
+          ],
+          [
+            "PCR極低悲觀",
+            -7
+          ]
+        ],
+        "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
+        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
         "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
         "target": "46000.0不收復前空方控盤，反彈至46568減碼"
       },
-      "spot": {
-        "look": "加權46368.33點 -1.42% 漲跌232上737下",
-        "compass": "RSI 35.75 MACD None",
+      "KPI 8宮格": {
+        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias19分 空頭 無DB模式(no-db-partial)",
+        "compass": "19分空頭，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
+        "target": "依Bias19分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+      },
+      "大盤全景": {
+        "look": "加權46368.33點 -1.42% 漲跌232上737下，RSI 35.75 MACD None",
+        "compass": "Bias19分，232上737下全面普跌",
         "target": "觀察46000.0支撐"
       },
-      "futures": {
-        "look": "台指日盤46577.0 夜盤45926.0 基差208.67",
-        "compass": "外資期-89,522.0 前十大11,690.0",
-        "target": "夜盤變化-651.0點"
+      "台指期 日夜": {
+        "look": "台指基差208.67點 夜盤-1.38% 低45850.0 外資期-89522.0",
+        "compass": "夜盤-1.38%續弱，基差208.67，空頭regime",
+        "target": "夜盤45850.0為支撐"
       },
-      "options": {
-        "look": "PCR 0.56 Call OI 62,516.0 Put OI 35,052.0",
-        "compass": "Call Wall 48500.0 Put Wall 46000.0 Gamma 46300.0",
-        "target": "MaxPain 46000.0 Flip 46131.4"
+      "期貨籌碼": {
+        "look": "台指基差208.67點 夜盤-1.38% 低45850.0 外資期-89522.0",
+        "compass": "夜盤-1.38%續弱，基差208.67，空頭regime",
+        "target": "夜盤45850.0為支撐"
       },
-      "markets": {
-        "look": "美股 6 市場 亞股 5 市場",
-        "compass": "VIX 18.73 恐慌指標",
-        "target": "關注美股費半與台積電ADR連動"
+      "選擇權牆": {
+        "look": "PCR0.56倍 極低悲觀 GEX-2.3B Put Wall46000.0",
+        "compass": "PCR0.56+負GEX加速，46000.0為最後防線",
+        "target": "46000.0守住震盪，破則追空至45500.0"
       },
-      "chip": {
-        "look": "外資現貨 -688.2億 期貨 -89,522.0",
-        "compass": "投信 70.4億 自營 -215.0億",
-        "target": "籌碼 極空"
+      "美股連動": {
+        "look": "SOX -1.42% 美股漲跌互見 VIX18.7",
+        "compass": "費半-1.4%連動台股，VIX18.7恐慌",
+        "target": "關注費半與台積電ADR連動"
+      },
+      "關鍵水位": {
+        "look": "12階水位中樞46471失守，現價46368.33貼近46055.07，下一支撐46000.0，Regime空頭",
+        "compass": "階梯式下墜，Put Wall 46000.0與Flip 45920重疊為最後防線",
+        "target": "反彈先看46471能否收復，否則續測45523，空頭操作"
+      },
+      "盤前核心判斷": {
+        "look": "7軸中趨勢、結構、價差皆偏弱，僅籌碼投信撐盤，Bias19分空頭，現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
+        "compass": "雷達面積縮小至偏空區，空頭格局，跌破月線+外資賣+PCR偏低，空頭regime",
+        "target": "等待籌碼與情緒收斂，空頭維持空方思維"
+      },
+      "三劇本": {
+        "look": "三劇本中悲觀機率升至60%，中性30%，樂觀10%，Bias19分空頭",
+        "compass": "紅黃綠三路徑以紅色悲觀為基準",
+        "target": "以空方操作，破46000.0啟動悲觀劇本"
+      },
+      "多空條件檢查表": {
+        "look": "空方條件：破46K、SOX崩、GEX負、外資空創高、PCR極低，5中6，多方僅投信買超",
+        "compass": "多方僅投信買超+70.4，條件不足，空頭觀望或空方，Bias19分",
+        "target": "多方條件未滿3不試多，空方已滿3續空至45523，空頭操作"
+      },
+      "開盤前必核": {
+        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias19分 空頭 無DB模式(no-db-partial)",
+        "compass": "19分空頭，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
+        "target": "依Bias19分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+      },
+      "AI 5面向": {
+        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias19分 空頭 無DB模式(no-db-partial)",
+        "compass": "19分空頭，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
+        "target": "依Bias19分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+      },
+      "AI結論": {
+        "bias": 19,
+        "regime": "極空",
+        "factors": [
+          [
+            "現貨下跌",
+            -6
+          ],
+          [
+            "外資賣超",
+            -8
+          ],
+          [
+            "外資期空創高",
+            -6
+          ],
+          [
+            "投信買超",
+            3
+          ],
+          [
+            "夜盤重挫",
+            -7
+          ],
+          [
+            "PCR極低悲觀",
+            -7
+          ]
+        ],
+        "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
+        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
+        "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
+        "target": "46000.0不收復前空方控盤，反彈至46568減碼"
+      },
+      "交易計畫": {
+        "bias": 19,
+        "regime": "極空",
+        "factors": [
+          [
+            "現貨下跌",
+            -6
+          ],
+          [
+            "外資賣超",
+            -8
+          ],
+          [
+            "外資期空創高",
+            -6
+          ],
+          [
+            "投信買超",
+            3
+          ],
+          [
+            "夜盤重挫",
+            -7
+          ],
+          [
+            "PCR極低悲觀",
+            -7
+          ]
+        ],
+        "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
+        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
+        "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
+        "target": "46000.0不收復前空方控盤，反彈至46568減碼"
+      },
+      "行事曆": {
+        "look": "重大新聞11則，首則國巨第三季淨利成長近9成 決議不分派上半年盈餘",
+        "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
+        "target": "關注法人籌碼與新聞共振"
+      },
+      "法人籌碼": {
+        "look": "外資現貨-688.2億 期貨-89522.0 投信70.4億 自營-215.0億",
+        "compass": "外資空 vs 投信多對作，分歧加劇，空頭",
+        "target": "觀察外資是否續賣，46000.0為關鍵"
+      },
+      "主力三市透視": {
+        "look": "三市籌碼透視：現貨外資-688.2億 期貨外資-4605.0口 選擇權外資分歧",
+        "compass": "主力三市一致偏空",
+        "target": "關注主力一致性"
+      },
+      "三市一致性": {
+        "look": "期現選方向：現貨-688.2 期貨-4605.0 選擇權分歧，一致性低",
+        "compass": "三市一致性檢核，空頭",
+        "target": "等待一致性收斂"
+      },
+      "期現選方向對照": {
+        "look": "現貨-688.2億 期貨-4605.0口 期選結構0.56",
+        "compass": "期現選對照，空頭",
+        "target": "46000.0為關鍵"
+      },
+      "籌碼三市矩陣": {
+        "look": "籌碼矩陣：外資-688.2 投信70.4 自營-215.0",
+        "compass": "三法人矩陣分歧",
+        "target": "觀察投信撐盤力道"
+      },
+      "主力意圖解碼": {
+        "look": "主力意圖：外資期空-89522.0口創高，投信現貨買70.4億",
+        "compass": "外資空方控盤，投信撐盤，空頭",
+        "target": "主力對作，波動放大"
+      },
+      "夜盤劇本": {
+        "look": "夜盤45926.0 變化-651.0 基差208.67",
+        "compass": "夜盤-1.38% 空頭",
+        "target": "夜盤低45850.0為支撐"
+      },
+      "台指夜盤劇本": {
+        "look": "台指夜盤45926.0 變化-651.0 基差208.67",
+        "compass": "夜盤-1.38% 空頭",
+        "target": "夜盤低45850.0為支撐"
+      },
+      "資金流向": {
+        "look": "加權46368.33點 -1.42% 漲跌232上737下，RSI 35.75 MACD None",
+        "compass": "Bias19分，232上737下全面普跌",
+        "target": "觀察46000.0支撐"
+      },
+      "PCR 極低": {
+        "look": "PCR0.56倍 極低悲觀 GEX-2.3B Put Wall46000.0",
+        "compass": "PCR0.56+負GEX加速，46000.0為最後防線",
+        "target": "46000.0守住震盪，破則追空至45500.0"
+      },
+      "VIX & DXY": {
+        "look": "SOX -1.42% 美股漲跌互見 VIX18.7",
+        "compass": "費半-1.4%連動台股，VIX18.7恐慌",
+        "target": "關注費半與台積電ADR連動"
+      },
+      "相關性熱圖": {
+        "look": "相關性：SOX與台股高相關0.82，Regime空頭",
+        "compass": "5x5相關性熱圖顯示高相關，空頭下權重動態調整",
+        "target": "依相關性調整權重，SOX主導"
+      },
+      "台指期 日盤": {
+        "look": "台指日盤46577.0 高47218.0 低46310.0 量56666.0",
+        "compass": "日盤-1.42% 基差208.67",
+        "target": "日盤低46310.0為支撐"
+      },
+      "台指期 夜盤": {
+        "look": "台指夜盤45926.0 高46637.0 低45850.0 量34357.0",
+        "compass": "夜盤-1.38% 變化-651.0",
+        "target": "夜盤低45850.0為支撐"
+      },
+      "期貨籌碼深度圖": {
+        "look": "台指基差208.67點 夜盤-1.38% 低45850.0 外資期-89522.0",
+        "compass": "夜盤-1.38%續弱，基差208.67，空頭regime",
+        "target": "夜盤45850.0為支撐"
+      },
+      "外資期貨": {
+        "look": "外資期貨OI -89522.0 日淨-4605.0 夜淨459.0",
+        "compass": "外資期空創高",
+        "target": "外資期-89522.0為空方指標"
+      },
+      "前十大與分歧": {
+        "look": "前十大+11690.0口偏多但外資-4605.0口大空，對作16295口，分歧加劇",
+        "compass": "投信與外資對作，行情易大震盪",
+        "target": "前十大11690.0口為多方最後防線"
+      },
+      "前十大與分歧bar": {
+        "look": "前十大+11690.0口偏多但外資-4605.0口大空，對作16295口，分歧加劇",
+        "compass": "投信與外資對作，行情易大震盪",
+        "target": "前十大11690.0口為多方最後防線"
+      },
+      "OI結構": {
+        "look": "PCR0.56倍 極低悲觀 GEX-2.3B Put Wall46000.0",
+        "compass": "PCR0.56+負GEX加速，46000.0為最後防線",
+        "target": "46000.0守住震盪，破則追空至45500.0"
+      },
+      "GEX": {
+        "look": "GEX -2.3B 負值加速，Put Wall46000.0",
+        "compass": "負GEX加速區，波動放大",
+        "target": "46000.0為加速起點"
+      },
+      "IV Skew": {
+        "look": "IV Rank 78 高，RR -2.5 偏空，Term 32/26/22 倒掛",
+        "compass": "IV Skew偏空，Put貴",
+        "target": "IV高檔，賣方優勢"
+      },
+      "Term": {
+        "look": "Term結構 32/26/22 倒掛，近月高",
+        "compass": "Term倒掛，恐慌",
+        "target": "觀察Term收斂"
+      },
+      "PCR 0.74→0.57": {
+        "look": "PCR趨勢 0.74→0.56 偏低悲觀",
+        "compass": "PCR0.56極低，散戶恐慌",
+        "target": "PCR極低反向指標？但結構偏空"
+      },
+      "外資選擇權分歧": {
+        "look": "外資選擇權日淨分歧，PCR0.56",
+        "compass": "外資選擇權偏空",
+        "target": "外資選擇權為空方"
+      },
+      "美股指數": {
+        "look": "SOX -1.42% 美股漲跌互見 VIX18.7",
+        "compass": "費半-1.4%連動台股，VIX18.7恐慌",
+        "target": "關注費半與台積電ADR連動"
+      },
+      "亞洲指數": {
+        "look": "亞股：日經韓國恆生，亞洲漲跌互見",
+        "compass": "亞股連動台股",
+        "target": "關注日經225"
+      },
+      "美股期貨": {
+        "look": "美期：S&P500期貨 Nasdaq100期貨",
+        "compass": "美期夜盤指引",
+        "target": "美期為台指夜盤參考"
+      },
+      "美債殖利率": {
+        "look": "美債10Y 4.99%高檔，2Y 4.68% 30Y 5.30%，曲線倒掛壓抑電子",
+        "compass": "美債高檔壓抑成長股",
+        "target": "美債未降前電子難強彈"
+      },
+      "匯率": {
+        "look": "USD/TWD 32.59 DXY 101.2",
+        "compass": "美元強勢，外資匯出",
+        "target": "匯率觀察外資動向"
+      },
+      "商品": {
+        "look": "WTI原油 黃金 Bitcoin 商品漲跌互見",
+        "compass": "商品與通膨連動",
+        "target": "商品觀察通膨"
+      },
+      "重大經濟數據": {
+        "look": "重大新聞11則，首則國巨第三季淨利成長近9成 決議不分派上半年盈餘",
+        "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
+        "target": "關注法人籌碼與新聞共振"
       }
     },
+    "cards_41_count": 47,
     "correlation": {
       "labels": [
         "加權",
@@ -1099,7 +1372,15 @@ canvas{width:100%;height:100%;display:block;border-radius:10px}
         "v": 46131,
         "type": "F"
       }
-    ]
+    ],
+    "historical": null,
+    "db_status": {
+      "exists": true,
+      "rows": 1,
+      "filled": 0,
+      "mode": "no-db-partial",
+      "path": "dashboards/v9_pro_history.db"
+    }
   },
   "news": [
     {
@@ -1180,24 +1461,15 @@ canvas{width:100%;height:100%;display:block;border-radius:10px}
       "link": ""
     }
   ],
-  "data_source": "DATA_REPORT 2026-10-29 + Yahoo ^TWII 30d + FinMind fallback"
+  "data_source": "DATA_REPORT 2026-10-29 + Yahoo ^TWII 30d 17F + FinMind + SQLite no-db-partial"
 }</script>
 </head>
 <body>
 <div id="root"></div>
-
-<!-- DASHBOARD_DATA 注入點：Python 只產 data.json，此處留空，執行期由外部 <script> 賦值 window.DASHBOARD_DATA -->
 <script>
-// v9 pro 純淨母版：無範例數據
-// 使用方式：
-// <script src="data-20261027.json" type="application/json" id="data">
-// 或 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前
-// 若無數據，UI 顯示空狀態引導
 window.DASHBOARD_DATA = window.DASHBOARD_DATA || null;
 </script>
-
 <script>
-// 純 React (無 JSX) - 可直接作為 Artifact 母版
 const {useState,useEffect,useRef,useMemo} = React;
 const e = React.createElement;
 
@@ -1391,7 +1663,7 @@ function App(){
               '<script>window.DASHBOARD_DATA = '+ 'fetch(\"data-20261027.json\").then(r=>r.json()).then(d=>window.DASHBOARD_DATA=d)'+'</scr'+'ipt>'
             ),
             e('br'),
-            e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}},'或直接 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前')
+            e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}},'或直接 <scr'+'ipt>window.DASHBOARD_DATA = {...}<'+'/script> 放在此之前')
           )
         )
       )
