@@ -445,8 +445,8 @@ def parse_data_report(report_path):
         m=re.search(r"\| 跌停家數 \| ([0-9]+) \|", otc_sub); 
         if m: otc_limit_down=int(m.group(1))
 
-    foreign_inst=must_get(r"\| 外資 \| ([-\+0-9.]+) \| 億元","外資"); trust_inst=must_get(r"\| 投信 \| ([-\+0-9.]+) \| 億元","投信")
-    dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9.]+) \| 億元","三大法人")
+    foreign_inst=must_get(r"\| 外資 \| ([-\+0-9,.]+) \| 億元","外資"); trust_inst=must_get(r"\| 投信 \| ([-\+0-9,.]+) \| 億元","投信")
+    dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9,.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9,.]+) \| 億元","三大法人")
     margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元","0"); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元","0")
     margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0"); margin_ratio=get_value(r"\| 融資維持率 \| ([0-9.]+) \| %",None)
     margin_ratio_line=next((line for line in text.splitlines() if "融資維持率" in line and "|" in line), "")
