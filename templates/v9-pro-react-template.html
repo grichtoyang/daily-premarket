@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>盤前分析 v9 Pro - React Pure</title>
+<style>
+:root{
+  --bg:#070e1c;
+  --card:#0f1c2e;
+  --card2:#111f35;
+  --border:#1e2e47;
+  --border2:#223247;
+  --text:#d6e2f0;
+  --muted:#8ea7c3;
+  --dim:#5a718a;
+  --accent:#6bb6ff;
+  --accent2:#4a8fe0;
+  --green:#3dd68c;
+  --red:#ff6b6b;
+  --yellow:#ffd93d;
+  --orange:#ff9f43;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";font-size:14px;line-height:1.5}
+a{color:var(--accent)}
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.card:hover{border-color:var(--border2)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pill{padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--border);background:#0c1524;color:var(--muted)}
+.tab{padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .2s;color:var(--muted)}
+.tab.active{background:linear-gradient(180deg,#6bb6ff,#4a8fe0);color:#06101e;box-shadow:0 3px 12px rgba(107,182,255,.4)}
+.canvas-wrap{position:relative;width:100%;height:180px}
+canvas{width:100%;height:100%;display:block;border-radius:10px}
+.empty{border:1px dashed var(--border2);border-radius:12px;padding:40px;text-align:center;color:var(--muted);background:rgba(17,31,53,.4)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#0c1524;border:1px solid var(--border2);font-size:11px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%{opacity:1} 50%{opacity:.5} 100%{opacity:1}}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:1100px){.grid-3{grid-template-columns:1fr}}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+.scroll::-webkit-scrollbar{height:6px;width:6px}
+.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:999px}
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- DASHBOARD_DATA 注入點：Python 只產 data.json，此處留空，執行期由外部 <script> 賦值 window.DASHBOARD_DATA -->
+<script>
+// v9 pro 純淨母版：無範例數據
+// 使用方式：
+// <script src="data-20261027.json" type="application/json" id="data">
+// 或 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前
+// 若無數據，UI 顯示空狀態引導
+window.DASHBOARD_DATA = window.DASHBOARD_DATA || null;
+</script>
+
+<script>
+// 純 React (無 JSX) - 可直接作為 Artifact 母版
+const {useState,useEffect,useRef,useMemo} = React;
+const e = React.createElement;
+
+function fmt(n,d=2){
+  if(n===null||n===undefined||isNaN(n)) return '--';
+  return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function fmtInt(n){
+  if(n===null||n===undefined) return '--';
+  return Math.round(Number(n)).toLocaleString();
+}
+function pctColor(v){
+  if(v===null||v===undefined) return '#8ea7c3';
+  return v>0?'#3dd68c':v<0?'#ff6b6b':'#8ea7c3';
+}
+function regimeColor(regime){
+  if(!regime) return '#8ea7c3';
+  if(regime.includes('極空')) return '#ff6b6b';
+  if(regime.includes('偏空')) return '#ff9f43';
+  if(regime.includes('偏多')) return '#3dd68c';
+  if(regime.includes('極多')) return '#6bb6ff';
+  return '#ffd93d';
+}
+
+// Canvas 引擎 - v9 升級版，支援 ResizeObserver + 可視檢測
+function useCanvas(drawFn, deps){
+  const ref = useRef(null);
+  useEffect(()=>{
+    const canvas = ref.current;
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if(!ctx) return;
+    function render(){
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio||1;
+      canvas.width = Math.round(rect.width*dpr);
+      canvas.height = Math.round(rect.height*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      drawFn(ctx, rect.width, rect.height, canvas);
+    }
+    render();
+    const ro = new ResizeObserver(()=>render());
+    ro.observe(canvas.parentElement||canvas);
+    return ()=>ro.disconnect();
+  }, deps);
+  return ref;
+}
+
+function Spot5Chart({data}){
+  const ref = useCanvas((ctx,w,h)=>{
+    if(!data||!data.spot||!data.spot.spot5) return;
+    const vals = data.spot.spot5;
+    const dates = data.spot.spot5Dates||[];
+    ctx.clearRect(0,0,w,h);
+    // bg gradient
+    const grad = ctx.createRadialGradient(w*0.5,0,0,w*0.5,0,h*1.4);
+    grad.addColorStop(0,'#111f35');
+    grad.addColorStop(1,'#0c1524');
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,w,h);
+    // grid
+    ctx.strokeStyle='#172538';
+    ctx.setLineDash([4,4]);
+    ctx.lineWidth=1;
+    const padL=46, padR=14, padT=16, padB=24;
+    const chartW=w-padL-padR, chartH=h-padT-padB;
+    for(let i=0;i<=4;i++){
+      const y=padT+i*chartH/4;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    const min = Math.min(...vals)*0.9992;
+    const max = Math.max(...vals)*1.0008;
+    const scale = v=> padT + (1-(v-min)/(max-min||1))*chartH;
+    // line
+    ctx.strokeStyle='#6bb6ff';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    vals.forEach((v,i)=>{
+      const x=padL + i*chartW/(vals.length-1||1);
+      const y=scale(v);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    // area
+    ctx.lineTo(padL+chartW, padT+chartH);
+    ctx.lineTo(padL, padT+chartH);
+    ctx.closePath();
+    const areaGrad = ctx.createLinearGradient(0,padT,0,padT+chartH);
+    areaGrad.addColorStop(0,'rgba(107,182,255,.25)');
+    areaGrad.addColorStop(1,'rgba(107,182,255,0)');
+    ctx.fillStyle=areaGrad;
+    ctx.fill();
+    // points
+    ctx.fillStyle='#6bb6ff';
+    vals.forEach((v,i)=>{
+      const x=padL + i*chartW/(vals.length-1||1);
+      const y=scale(v);
+      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#d6e2f0';
+      ctx.font='10px ui-monospace';
+      ctx.fillText(String(v), x-12, y-8);
+      if(dates[i]){
+        ctx.fillStyle='#8ea7c3';
+        ctx.fillText(dates[i], x-10, h-6);
+        ctx.fillStyle='#6bb6ff';
+      }
+    });
+    // y labels
+    ctx.fillStyle='#5a718a';
+    ctx.font='10px ui-monospace';
+    for(let i=0;i<=4;i++){
+      const v = max - i*(max-min)/4;
+      ctx.fillText(Math.round(v).toLocaleString(), 4, padT+i*chartH/4+3);
+    }
+  },[data]);
+  return e('div',{className:'canvas-wrap'}, e('canvas',{ref}));
+}
+
+function MarketBar({items}){
+  if(!items||!items.length) return e('div',{className:'empty',style:{padding:'12px'}},'無資料');
+  const max = Math.max(...items.map(i=>Math.abs(i.v||0)),1);
+  return e('div',{className:'flex flex-col gap-2'},
+    items.map((it,i)=> e('div',{key:i,className:'flex items-center gap-2 text-xs'},
+      e('div',{style:{width:'84px',color:'#8ea7c3',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}, it.l||it.t||''),
+      e('div',{style:{flex:1,height:'6px',background:'#0c1524',borderRadius:'999px',overflow:'hidden'}},
+        e('div',{style:{width:`${Math.min(100, Math.abs(it.v||0)/max*100)}%`,height:'100%',background:pctColor(it.v),borderRadius:'999px'}})
+      ),
+      e('div',{className:'mono',style:{width:'56px',textAlign:'right',color:pctColor(it.v)}}, `${(it.v||0)>0?'+':''}${(it.v||0).toFixed(2)}%`)
+    ))
+  );
+}
+
+function OIBoard({data}){
+  const callDist = data?.options?.callOiDist||[];
+  const putDist = data?.options?.putOiDist||[];
+  function renderDist(dist, color){
+    return e('div',{className:'flex flex-col gap-1.5'},
+      dist.slice(0,8).map((r,i)=>{
+        const strike=r[1]||r[0]||'--';
+        const oi=r[2]||'0';
+        const pctStr=r[3]||'0%';
+        const pct=parseFloat((pctStr+'').replace('%',''))||0;
+        return e('div',{key:i,className:'flex items-center gap-2 text-xs'},
+          e('div',{className:'mono',style:{width:'56px',color:'#d6e2f0'}}, strike),
+          e('div',{style:{flex:1,height:'6px',background:'#0c1524',borderRadius:'999px'}},
+            e('div',{style:{width:`${Math.min(100,pct*2)}%`,height:'100%',background:color,borderRadius:'999px'}})
+          ),
+          e('div',{className:'mono',style:{width:'48px',textAlign:'right',color:'#8ea7c3'}}, oi),
+          e('div',{className:'mono',style:{width:'42px',textAlign:'right',color:'#5a718a'}}, pctStr)
+        );
+      })
+    );
+  }
+  return e('div',{className:'grid-2'},
+    e('div',{className:'card'}, e('div',{className:'text-xs mb-2',style:{color:'#8ea7c3'}},'Call OI 分布 Top8'), renderDist(callDist,'#ff9f43')),
+    e('div',{className:'card'}, e('div',{className:'text-xs mb-2',style:{color:'#8ea7c3'}},'Put OI 分布 Top8'), renderDist(putDist,'#3dd68c'))
+  );
+}
+
+function App(){
+  const [data,setData] = useState(()=> window.DASHBOARD_DATA);
+  const [tab,setTab] = useState('summary');
+  const [mounted,setMounted]=useState(false);
+  useEffect(()=>{
+    setMounted(true);
+    // 監聽外部 data 更新
+    const id=setInterval(()=>{ if(window.DASHBOARD_DATA && window.DASHBOARD_DATA!==data){ setData(window.DASHBOARD_DATA); } },500);
+    return ()=>clearInterval(id);
+  },[data]);
+
+  if(!data){
+    return e('div',{style:{maxWidth:'960px',margin:'0 auto',padding:'24px'}},
+      e('div',{className:'card'},
+        e('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
+          e('span',{className:'dot'}),
+          e('span',{style:{fontWeight:700}},'盤前分析 v9 Pro - 純 React 母版')
+        ),
+        e('div',{className:'empty'},
+          e('div',{style:{fontWeight:600,marginBottom:'8px'}},'尚未載入 window.DASHBOARD_DATA'),
+          e('div',{style:{fontSize:'12px',lineHeight:'1.6'}},
+            '此為純淨母版，無範例數據。Python 只產 data.json。',
+            e('br'),
+            '請執行：',
+            e('div',{className:'mono',style:{background:'#0c1524',border:'1px solid var(--border)',borderRadius:'8px',padding:'8px 12px',marginTop:'8px',textAlign:'left',display:'inline-block'}},
+              'python scripts/v9_pro_builder.py --data_report DATA_REPORT_20261027.md --out dashboards/data-20261027.json'
+            ),
+            e('br'),
+            e('div',{style:{marginTop:'12px'}},'然後在 HTML 中注入：'),
+            e('div',{className:'mono',style:{background:'#0c1524',border:'1px solid var(--border)',borderRadius:'8px',padding:'8px 12px',marginTop:'8px',textAlign:'left',display:'inline-block'}},
+              '<script>window.DASHBOARD_DATA = '+ 'fetch(\"data-20261027.json\").then(r=>r.json()).then(d=>window.DASHBOARD_DATA=d)'+'</scr'+'ipt>'
+            ),
+            e('br'),
+            e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}},'或直接 <script>window.DASHBOARD_DATA = {...}</script> 放在此 script 之前')
+          )
+        )
+      )
+    );
+  }
+
+  const meta=data.meta||{};
+  const spot=data.spot||{};
+  const inst=data.institutional||{};
+  const tx=data.tx||{day:{},night:{}};
+  const futures=data.futures||{};
+  const opts=data.options||{};
+  const markets=data.markets||{};
+  const marketPct=data.marketPct||{};
+  const analysis=data.analysis||{};
+  const technical=data.technical||{};
+  const news=data.news||[];
+
+  const bias = analysis.bias||analysis.bias_score||50;
+  const regime = analysis.regime||'--';
+
+  const kpi = [
+    {k:'加權收盤', v:`${fmtInt(spot.close)}`, sub:`${spot.diff>0?'+':''}${spot.diff} ${spot.pct>0?'+':''}${spot.pct}%`, color:pctColor(spot.pct)},
+    {k:'外資現貨', v:`${inst.foreign>0?'+':''}${inst.foreign}億`, sub:`三大 ${inst.all>0?'+':''}${inst.all}億`, color:pctColor(inst.foreign)},
+    {k:'台指日盤', v:`${fmtInt(tx.day?.c)}`, sub:`${tx.day?.diff>0?'+':''}${tx.day?.diff} ${tx.day?.pct>0?'+':''}${tx.day?.pct}%`, color:pctColor(tx.day?.pct)},
+    {k:'台指夜盤', v:`${fmtInt(tx.night?.c)}`, sub:`變化 ${tx.night?.change>0?'+':''}${tx.night?.change} 基差 ${tx.day?.basis}`, color:pctColor(tx.night?.pct)},
+    {k:'外資期貨', v:`${fmtInt(futures.foreign_oi)}`, sub:`日 ${fmtInt(futures.foreign_day)} 夜 ${fmtInt(futures.foreign_night)}`, color:futures.foreign_oi<0?'#ff6b6b':'#3dd68c'},
+    {k:'PCR', v:`${opts.pcr}`, sub:`Call ${fmtInt(opts.callOi)} Put ${fmtInt(opts.putOi)}`, color:opts.pcr<0.6?'#ff6b6b':opts.pcr>1?'#3dd68c':'#ffd93d'},
+    {k:'Call Wall', v:`${fmtInt(opts.callWall)}`, sub:`Put Wall ${fmtInt(opts.putWall)}`, color:'#ff9f43'},
+    {k:'Bias 偏向', v:`${bias}分`, sub:`${regime} VIX ${analysis.weights?'動態':''}`, color:regimeColor(regime)},
+  ];
+
+  const tabs = [
+    {k:'summary', l:'總覽'},
+    {k:'spot', l:'現貨'},
+    {k:'fut', l:'期貨'},
+    {k:'opt', l:'選擇權'},
+    {k:'market', l:'重要市場'},
+    {k:'ai', l:'AI 分析'},
+  ];
+
+  return e('div',{style:{maxWidth:'1280px',margin:'0 auto',padding:'16px'}},
+    // header
+    e('div',{className:'flex flex-wrap items-center justify-between gap-3 mb-4'},
+      e('div',{style:{display:'flex',alignItems:'center',gap:'10px'}},
+        e('span',{className:'dot'}),
+        e('span',{style:{fontWeight:800,fontSize:'14px'}},`盤前分析 v9 Pro`),
+        e('span',{className:'pill'}, `${meta.date||''} ${meta.version||''} · 機構暗色版 · Canvas引擎 · 加權${fmtInt(spot.close)} ${spot.pct>0?'+':''}${spot.pct}% 基差${tx.day?.basis>0?'+':''}${tx.day?.basis}`)
+      ),
+      e('div',{style:{display:'flex',gap:'6px',flexWrap:'wrap'}},
+        tabs.map(t=> e('button',{key:t.k, className:`tab ${tab===t.k?'active':''}`, onClick:()=>{setTab(t.k); window.scrollTo({top:0,behavior:'smooth'})}}, t.l))
+      )
+    ),
+
+    // KPI 8宮格
+    e('div',{className:'kpi-grid mb-4'},
+      kpi.map((it,i)=> e('div',{key:i,className:'card',style:{padding:'12px'}},
+        e('div',{style:{fontSize:'11px',color:'var(--muted)',marginBottom:'4px'}}, it.k),
+        e('div',{className:'mono',style:{fontSize:'18px',fontWeight:800,color:it.color}}, it.v),
+        e('div',{style:{fontSize:'11px',color:'var(--dim)',marginTop:'4px'}}, it.sub)
+      ))
+    ),
+
+    // summary tab
+    tab==='summary' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'8px',fontWeight:700}}, `Bias ${bias}分 · ${regime} · ${analysis.factor_str||''}`),
+          e('div',{style:{fontSize:'13px',lineHeight:'1.6',marginBottom:'8px'}}, analysis.look||'--'),
+          e('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'8px'}}, analysis.compass||'--'),
+          e('div',{className:'pill',style:{display:'inline-block'}}, analysis.target||'--'),
+          e('div',{style:{marginTop:'12px',display:'flex',flexWrap:'wrap',gap:'6px'}},
+            (analysis.factors||[]).map((f,j)=> e('span',{key:j,className:'pill',style:{color:f[1]<0?'#ff6b6b':'#3dd68c',borderColor:f[1]<0?'#4a2330':'#1a3a2a'}}, `${f[0]} ${f[1]>0?'+':''}${f[1]}`))
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',color:'var(--muted)',marginBottom:'8px',fontWeight:700}}, '加權 5日走勢 (Canvas)'),
+          e(Spot5Chart,{data}),
+          e('div',{style:{marginTop:'8px',display:'flex',gap:'6px',flexWrap:'wrap'}},
+            e('span',{className:'pill'}, `RSI ${technical.rsi||'--'}`),
+            e('span',{className:'pill'}, `MACD ${technical.macd_hist||'--'}`),
+            e('span',{className:'pill'}, `K ${technical.k||'--'} D ${technical.d||'--'}`),
+            e('span',{className:'pill'}, `來源 ${technical.source||'--'}`)
+          )
+        )
+      ),
+      e('div',{className:'grid-3'},
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, '籌碼快照'),
+          e('div',{style:{fontSize:'12px',lineHeight:'1.8'}},
+            e('div',null, `外資現貨 ${inst.foreign>0?'+':''}${inst.foreign}億 投信 ${inst.trust>0?'+':''}${inst.trust}億 自營 ${inst.dealer>0?'+':''}${inst.dealer}億`),
+            e('div',null, `外資期 ${fmtInt(futures.foreign_oi)} 前十大 ${fmtInt(futures.top10)}`),
+            e('div',null, `融資 ${data.margin?.finance}億 ${data.margin?.finance_diff>0?'+':''}${data.margin?.finance_diff}億 維持率 ${data.margin?.ratio}%`)
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, '期選結構'),
+          e('div',{style:{fontSize:'12px',lineHeight:'1.8'}},
+            e('div',null, `基差 ${tx.day?.basis} 正價差 ${tx.day?.prem}% 夜盤變化 ${tx.night?.change}`),
+            e('div',null, `PCR ${opts.pcr} Call Wall ${fmtInt(opts.callWall)} Put Wall ${fmtInt(opts.putWall)}`),
+            e('div',null, `Gamma Wall ${fmtInt(opts.gammaWall)} Flip ${fmtInt(opts.flip)} MaxPain ${fmtInt(opts.maxPain)}`)
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, '美股連動'),
+          e(MarketBar,{items:(markets.us||[]).slice(0,6)})
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontSize:'12px',fontWeight:700,marginBottom:'8px'}}, `重大新聞 ${news.length}則`),
+        e('div',{className:'flex flex-col gap-2'},
+          news.slice(0,8).map((n,i)=> e('div',{key:i,style:{padding:'8px',background:'#0c1524',border:'1px solid var(--border)',borderRadius:'10px'}},
+            e('div',{style:{fontSize:'12px',fontWeight:600,marginBottom:'4px'}}, n.t),
+            e('div',{style:{fontSize:'11px',color:'var(--muted)'}}, `${n.s||''} ${n.time||''}`),
+            n.d && e('div',{style:{fontSize:'11px',color:'var(--dim)',marginTop:'4px'}}, n.d.slice(0,120))
+          ))
+        )
+      )
+    ),
+
+    tab==='spot' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, `加權 ${fmtInt(spot.close)} ${spot.pct>0?'+':''}${spot.pct}%`),
+          e('div',{className:'mono text-xs',style:{lineHeight:'1.8'}},
+            e('div',null, `開 ${fmtInt(spot.open)} 高 ${fmtInt(spot.high)} 低 ${fmtInt(spot.low)}`),
+            e('div',null, `量 ${spot.vol_str} 上市櫃 ${data.turnover?.total}億`),
+            e('div',null, `上市 上漲 ${spot.up} 下跌 ${spot.down} 平 ${spot.flat} 漲停 ${spot.limit_up} 跌停 ${spot.limit_down}`),
+            e('div',null, `上櫃 上漲 ${spot.otc?.up} 下跌 ${spot.otc?.down} 漲停 ${spot.otc?.limit_up} 跌停 ${spot.otc?.limit_down}`)
+          ),
+          e('div',{style:{marginTop:'12px'}}, e(Spot5Chart,{data}))
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '技術指標 (3層備援)'),
+          e('div',{className:'grid-2'},
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `RSI ${technical.rsi||'--'}`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `RSI 14: ${technical.rsi||'--'} ${technical.rsi<30?'超賣':technical.rsi>70?'超買':'中性'}`)
+            ),
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `MACD ${technical.macd||'--'}`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `Hist ${technical.macd_hist||'--'} Signal ${technical.macd_signal||'--'}`)
+            ),
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `KD K ${technical.k||'--'} D ${technical.d||'--'}`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `來源 ${technical.source} valid ${technical.valid}`)
+            ),
+            e('div',null,
+              e('div',{className:'pill mb-2'}, `VIX 因子 ${analysis.weights?.vix_factor||'2'}%`),
+              e('div',{className:'text-xs',style:{color:'var(--muted)'}}, `權重 US_SOX ${analysis.weights?.us_sox||'--'}% Spot ${analysis.weights?.spot_trend||'--'}%`)
+            )
+          ),
+          e('div',{style:{marginTop:'12px',fontSize:'11px',color:'var(--dim)'}}, `資料來源 ${data.data_source||''}`)
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '三大法人'),
+        e('div',{className:'grid-3 text-xs'},
+          e('div',{className:'mono'}, `外資 ${inst.foreign>0?'+':''}${inst.foreign}億`),
+          e('div',{className:'mono'}, `投信 ${inst.trust>0?'+':''}${inst.trust}億`),
+          e('div',{className:'mono'}, `自營 ${inst.dealer>0?'+':''}${inst.dealer}億`),
+          e('div',{className:'mono'}, `合計 ${inst.all>0?'+':''}${inst.all}億`),
+          e('div',{className:'mono'}, `融資 ${data.margin?.finance}億`),
+          e('div',{className:'mono'}, `融券 ${fmtInt(data.margin?.short)}張`)
+        )
+      )
+    ),
+
+    tab==='fut' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '台指期日盤'),
+          e('div',{className:'mono text-xs',style:{lineHeight:'1.8'}},
+            e('div',null, `開 ${fmtInt(tx.day?.o)} 高 ${fmtInt(tx.day?.h)} 低 ${fmtInt(tx.day?.l)} 收 ${fmtInt(tx.day?.c)}`),
+            e('div',null, `漲跌 ${tx.day?.diff>0?'+':''}${tx.day?.diff} ${tx.day?.pct>0?'+':''}${tx.day?.pct}% 量 ${fmtInt(tx.day?.vol)}`),
+            e('div',null, `基差 ${tx.day?.basis} 正價差 ${tx.day?.prem}%`)
+          )
+        ),
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '台指期夜盤'),
+          e('div',{className:'mono text-xs',style:{lineHeight:'1.8'}},
+            e('div',null, `開 ${fmtInt(tx.night?.o)} 高 ${fmtInt(tx.night?.h)} 低 ${fmtInt(tx.night?.l)} 收 ${fmtInt(tx.night?.c)}`),
+            e('div',null, `漲跌 ${tx.night?.diff>0?'+':''}${tx.night?.diff} ${tx.night?.pct>0?'+':''}${tx.night?.pct}% 量 ${fmtInt(tx.night?.vol)}`),
+            e('div',null, `變化 ${tx.night?.change>0?'+':''}${tx.night?.change} 振幅 ${fmtInt((tx.night?.h||0)-(tx.night?.l||0))}`)
+          )
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '期貨籌碼'),
+        e('div',{className:'grid-3 mono text-xs'},
+          e('div',null, `外資 OI ${fmtInt(futures.foreign_oi)}`),
+          e('div',null, `投信 OI ${fmtInt(futures.trust_oi||futures.trust_oi)}`),
+          e('div',null, `自營 OI ${fmtInt(futures.dealer_oi)}`),
+          e('div',null, `前十大 ${fmtInt(futures.top10)}`),
+          e('div',null, `外資日淨 ${fmtInt(futures.foreign_day)}`),
+          e('div',null, `外資夜淨 ${fmtInt(futures.foreign_night)}`)
+        )
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '關鍵價位'),
+        e('div',{className:'flex flex-wrap gap-2'},
+          (analysis.levels||[]).map((lv,i)=> e('span',{key:i,className:'pill',style:{color:lv.type==='R'?'#ff9f43':lv.type==='S'?'#3dd68c':lv.type==='W'?'#6bb6ff':'#ffd93d'}}, `${lv.t} ${fmtInt(lv.v)}`))
+        )
+      )
+    ),
+
+    tab==='opt' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-3'},
+        e('div',{className:'card'}, e('div',{className:'text-xs',style:{color:'var(--muted)'}},'PCR'), e('div',{className:'mono',style:{fontSize:'20px',fontWeight:800,color:opts.pcr<0.6?'#ff6b6b':'#3dd68c'}}, opts.pcr), e('div',{className:'text-xs',style:{color:'var(--dim)'}}, `Call Vol ${fmtInt(opts.callVol)} Put Vol ${fmtInt(opts.putVol)}`)),
+        e('div',{className:'card'}, e('div',{className:'text-xs',style:{color:'var(--muted)'}},'Call / Put OI'), e('div',{className:'mono',style:{fontSize:'14px'}}, `Call ${fmtInt(opts.callOi)} Put ${fmtInt(opts.putOi)}`), e('div',{className:'text-xs',style:{color:'var(--dim)'}}, `C/P ${opts.callOi&&opts.putOi?(opts.callOi/opts.putOi).toFixed(2):'--'}`)),
+        e('div',{className:'card'}, e('div',{className:'text-xs',style:{color:'var(--muted)'}},'Gamma'), e('div',{className:'mono',style:{fontSize:'14px'}}, `Wall ${fmtInt(opts.gammaWall)} Flip ${fmtInt(opts.flip)}`), e('div',{className:'text-xs',style:{color:'var(--dim)'}}, `MaxPain ${fmtInt(opts.maxPain)}`))
+      ),
+      e(OIBoard,{data}),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '選擇權法人 (日/夜)'),
+        e('div',{className:'overflow-auto scroll'},
+          e('table',{style:{width:'100%',fontSize:'11px',borderCollapse:'collapse'}},
+            e('thead',null, e('tr',{style:{color:'var(--muted)'}},
+              e('th',{style:{textAlign:'left',padding:'4px'}},'法人'),
+              e('th',null,'日多'),
+              e('th',null,'日空'),
+              e('th',null,'日淨'),
+              e('th',null,'夜多'),
+              e('th',null,'夜空'),
+              e('th',null,'夜淨')
+            )),
+            e('tbody',null,
+              (opts.instOpt||[]).map((r,i)=> e('tr',{key:i,style:{borderTop:'1px solid var(--border)'}},
+                r.map((c,j)=> e('td',{key:j,style:{padding:'4px',textAlign:j===0?'left':'right'},className:'mono'}, c))
+              ))
+            )
+          )
+        )
+      )
+    ),
+
+    tab==='market' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'grid-2'},
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '美股指數'), e(MarketBar,{items:marketPct.usPct||markets.us||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '亞洲主要'), e(MarketBar,{items:marketPct.asiaPct||markets.asia||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '美股期貨'), e(MarketBar,{items:marketPct.futPct||markets.usFut||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '美債殖利率'), e(MarketBar,{items:marketPct.yieldPct||markets.yields||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '主要匯率'), e(MarketBar,{items:marketPct.fxPct||markets.fx||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '台灣ADR'), e(MarketBar,{items:marketPct.adrPct||markets.adr||[]})),
+        e('div',{className:'card'}, e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '原油黃金Bitcoin'), e(MarketBar,{items:marketPct.commPct||markets.commodities||[]})),
+        e('div',{className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '相關性 5x5'),
+          e('div',{style:{display:'grid',gridTemplateColumns:`60px repeat(${(analysis.correlation?.labels||[]).length},1fr)`,gap:'2px',fontSize:'10px'}},
+            e('div',null,''),
+            ...(analysis.correlation?.labels||[]).map((lb,i)=> e('div',{key:'h'+i,style:{textAlign:'center',color:'var(--muted)'}}, lb)),
+            ...(analysis.correlation?.matrix||[]).flatMap((row,ri)=> [
+              e('div',{key:'l'+ri,style:{color:'var(--muted)'}}, analysis.correlation.labels[ri]),
+              ...row.map((v,ci)=> e('div',{key:`${ri}-${ci}`,style:{background:`rgba(107,182,255,${Math.abs(v)})`,padding:'4px',textAlign:'center',borderRadius:'4px',color:v>0.5?'#06101e':'#8ea7c3'}}, v.toFixed(2)))
+            ])
+          )
+        )
+      )
+    ),
+
+    tab==='ai' && e('div',{className:'flex flex-col gap-3'},
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:800,marginBottom:'8px'}}, `AI 分析 · 15因子 + VIX動態權重 + 非線性恐慌加成 · Bias ${bias}分 ${regime}`),
+        e('div',{style:{fontSize:'12px',lineHeight:'1.7'}},
+          e('div',{style:{marginBottom:'8px'}}, `因子共振：${analysis.factor_str}`),
+          e('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px',marginBottom:'8px'}},
+            Object.entries(analysis.weights||{}).map(([k,v])=> e('span',{key:k,className:'pill'}, `${k} ${v}%`))
+          ),
+          e('div',{className:'mono',style:{fontSize:'11px',color:'var(--dim)'}}, `VIX ${data.analysis?.bias!==undefined? '動態調整' : ''} · 技術來源 ${technical.source} · 權重 valid ${technical.valid}`)
+        )
+      ),
+      e('div',{className:'grid-2'},
+        Object.entries(analysis.cards||{}).map(([key,card])=> e('div',{key,className:'card'},
+          e('div',{style:{fontWeight:700,marginBottom:'6px',fontSize:'12px'}}, key),
+          e('div',{style:{fontSize:'12px',marginBottom:'6px'}}, card.look),
+          e('div',{style:{fontSize:'11px',color:'var(--muted)',marginBottom:'6px'}}, card.compass),
+          e('div',{className:'pill'}, card.target)
+        ))
+      ),
+      e('div',{className:'card'},
+        e('div',{style:{fontWeight:700,marginBottom:'8px'}}, '15因子詳解'),
+        e('div',{className:'flex flex-col gap-1'},
+          (analysis.factors||[]).map((f,i)=> e('div',{key:i,className:'flex items-center gap-2 text-xs'},
+            e('div',{style:{width:'100px',color:'var(--muted)'}}, f[0]),
+            e('div',{style:{flex:1,height:'6px',background:'#0c1524',borderRadius:'999px'}},
+              e('div',{style:{width:`${Math.min(100, Math.abs(f[1])*8)}%`,background:f[1]<0?'#ff6b6b':'#3dd68c',height:'100%',borderRadius:'999px'}})
+            ),
+            e('div',{className:'mono',style:{width:'40px',textAlign:'right',color:f[1]<0?'#ff6b6b':'#3dd68c'}}, `${f[1]>0?'+':''}${f[1]}`)
+          ))
+        )
+      )
+    ),
+
+    // footer
+    e('div',{style:{marginTop:'16px',padding:'12px',borderTop:'1px solid var(--border)',fontSize:'11px',color:'var(--dim)'}},
+      e('div',null, `數據來源 · ${meta.report_date||meta.date} 盤前機構版 · ${data.data_source||''} · ${meta.generated_at||''}`),
+      e('div',{className:'mono',style:{marginTop:'4px'}}, `加權${fmtInt(spot.close)} ${spot.diff>0?'+':''}${spot.diff} ${spot.pct>0?'+':''}${spot.pct}% 開${fmtInt(spot.open)} 高${fmtInt(spot.high)} 低${fmtInt(spot.low)} 成交${spot.vol_str} 上市+上櫃${data.turnover?.total}億 · 三大法人${inst.all>0?'+':''}${inst.all} 外資${inst.foreign>0?'+':''}${inst.foreign} 投信${inst.trust>0?'+':''}${inst.trust} 自營${inst.dealer>0?'+':''}${inst.dealer} · TX 日${fmtInt(tx.day?.o)}/${fmtInt(tx.day?.h)}/${fmtInt(tx.day?.l)}/${fmtInt(tx.day?.c)} 夜${fmtInt(tx.night?.o)}/${fmtInt(tx.night?.h)}/${fmtInt(tx.night?.l)}/${fmtInt(tx.night?.c)} 基差${tx.day?.basis} · 外資期${fmtInt(futures.foreign_oi)} PCR ${opts.pcr}`)
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>
