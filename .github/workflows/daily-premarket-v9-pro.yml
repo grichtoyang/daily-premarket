@@ -1,42 +1,151 @@
-name: Daily V9 Pro Premarket
+name: Daily Premarket V9 Pro
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/daily-premarket-v9-pro.yml'
+      - 'scripts/v9_pro_builder.py'
+      - 'templates/v9-pro-react-template.html'
+      - 'data_reports/DATA_REPORT_*.md'
   schedule:
     - cron: '30 0 * * 1-5'
   workflow_dispatch:
+    inputs:
+      date:
+        description: 'T0 date in YYYYMMDD; blank uses the newest DATA_REPORT'
+        required: false
+        type: string
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
-        run: pip install requests pytz
-      - name: Build data.json
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip requests
+
+      - name: Resolve DATA_REPORT
+        env:
+          REQUESTED_DATE: ${{ inputs.date }}
         run: |
-          REPORT=$(ls -1 data_reports/DATA_REPORT_*.md | sort -r | head -n1)
-          DATE=$(basename "$REPORT" | sed 's/DATA_REPORT_//;s/.md//')
-          echo "DATE=$DATE" >> $GITHUB_ENV
-          python scripts/v9_pro_builder.py --data_report "$REPORT" --out dashboards/data-${DATE}.json --date ${DATE}
-          cp dashboards/data-${DATE}.json dashboards/data-latest.json
-      - name: Generate self-contained dashboard
-        run: python scripts/inject_dashboard.py
-      - name: Commit
+          set -euo pipefail
+          if [ -n "${REQUESTED_DATE}" ]; then
+            DATE="${REQUESTED_DATE}"
+            if ! [[ "${DATE}" =~ ^[0-9]{8}$ ]]; then
+              echo "Invalid date; expected YYYYMMDD"
+              exit 1
+            fi
+            REPORT="data_reports/DATA_REPORT_${DATE}.md"
+            if [ ! -f "${REPORT}" ]; then
+              REPORT="DATA_REPORT_${DATE}.md"
+            fi
+            if [ ! -f "${REPORT}" ]; then
+              echo "Requested DATA_REPORT not found; refusing silent fallback"
+              exit 1
+            fi
+          else
+            REPORT="$(find data_reports -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print 2>/dev/null | sort -r | head -n1 || true)"
+            if [ -z "${REPORT}" ]; then
+              REPORT="$(find . -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print | sort -r | head -n1 || true)"
+            fi
+            if [ -z "${REPORT}" ]; then
+              echo "No DATA_REPORT found"
+              exit 1
+            fi
+            DATE="$(basename "${REPORT}" | sed -E 's/^DATA_REPORT_([0-9]{8})\.md$/\1/')"
+          fi
+          echo "DATE=${DATE}" >> "${GITHUB_ENV}"
+          echo "REPORT=${REPORT}" >> "${GITHUB_ENV}"
+          echo "Using ${REPORT} for T0 ${DATE}"
+          mkdir -p dashboards
+
+      - name: Build dashboard data
         run: |
+          set -euo pipefail
+          python scripts/v9_pro_builder.py --data_report "${REPORT}" --out "dashboards/data-${DATE}.json" --date "${DATE}"
+          python -m json.tool "dashboards/data-${DATE}.json" > /dev/null
+
+      - name: Inject data into React Golden Master
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json, os, pathlib
+          date = os.environ["DATE"]
+          template_path = pathlib.Path("templates/v9-pro-react-template.html")
+          data_path = pathlib.Path(f"dashboards/data-{date}.json")
+          template = template_path.read_text(encoding="utf-8")
+          data_obj = json.loads(data_path.read_text(encoding="utf-8"))
+          required_tabs = ["總覽", "現貨", "重要市場", "期貨", "選擇權", "綜合分析"]
+          missing = [tab for tab in required_tabs if tab not in template]
+          if missing:
+              raise SystemExit(f"Golden Master missing tabs: {missing}")
+          if data_obj.get("meta", {}).get("version") != "v9-pro-17F":
+              raise SystemExit("Unexpected dashboard data version")
+          data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          injection = f"<script>window.DASHBOARD_DATA={data};</script>\\n"
+          if "</head>" not in template:
+              raise SystemExit("Golden Master has no closing </head>")
+          html = template.replace("</head>", injection + "</head>", 1)
+          out = pathlib.Path(f"dashboards/v9-pro-{date}.html")
+          out.write_text(html, encoding="utf-8")
+          if "window.DASHBOARD_DATA=" not in html:
+              raise SystemExit("Dashboard data injection verification failed")
+          print(f"Generated {out} ({out.stat().st_size} bytes)")
+          PY
+
+      - name: Publish latest aliases and Pages entrypoint
+        run: |
+          set -euo pipefail
+          cp "dashboards/data-${DATE}.json" dashboards/data-latest.json
+          cp "dashboards/v9-pro-${DATE}.html" dashboards/v9-pro-latest.html
+          cp "dashboards/v9-pro-${DATE}.html" dashboards/index.html
+          printf '{"date":"%s","data":"data-%s.json","html":"v9-pro-%s.html"}\n' "${DATE}" "${DATE}" "${DATE}" > dashboards/manifest.json
+          test -s dashboards/index.html
+          ls -lh dashboards/
+
+      - name: Commit generated dashboard history
+        run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add dashboards/
-          git commit -m "v9 pro ${{ env.DATE }} real data" || echo "no changes"
-          git push
-      - name: Upload
+          if git diff --cached --quiet; then
+            echo "No dashboard changes to commit"
+          else
+            BIAS="$(python -c "import json; print(json.load(open('dashboards/data-${DATE}.json'))['analysis']['bias'])")"
+            git commit -m "V9 Pro ${DATE} Bias ${BIAS}分"
+            git push
+          fi
+
+      - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dashboards
+
+  deploy:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
