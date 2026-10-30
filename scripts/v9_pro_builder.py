@@ -40,8 +40,8 @@ def fetch_yahoo_twii_30d():
         lows = indicators.get('low', [])
         valid = []
         for i in range(len(closes)):
-            if closes[i] is not None and highs[i] is not None and lows[i] is not None:
-                valid.append({'close': float(closes[i]), 'high': float(highs[i]), 'low': float(lows[i]), 'ts': timestamps[i] if i < len(timestamps) else 0})
+            if closes[i] is not None:
+                valid.append({'close': float(closes[i]), 'high': float(highs[i]) if highs[i] is not None else None, 'low': float(lows[i]) if lows[i] is not None else None, 'ts': timestamps[i] if i < len(timestamps) else None})
         if len(valid) < 14:
             print(f"[V9-17F] Yahoo insufficient {len(valid)}/14")
             return None
@@ -68,7 +68,7 @@ def fetch_finmind_twii_14d():
         valid = []
         for d in data[-30:]:
             try:
-                valid.append({'close': float(d.get('close',0)), 'high': float(d.get('max', d.get('close',0))), 'low': float(d.get('min', d.get('close',0))), 'ts': 0})
+                valid.append({'close': float(d['close']), 'high': float(d['max']) if d.get('max') not in (None,'') else None, 'low': float(d['min']) if d.get('min') not in (None,'') else None, 'ts': None})
             except:
                 continue
         print(f"[V9-17F] FinMind fetched {len(valid)} days")
@@ -556,11 +556,14 @@ class V9Analyzer:
         }
         if self.signals.get('gex') is None:
             base_weights['gex']=0
-        if not tech_valid or rsi is None:
-            print(f"[V9-17F] RSI/MACD unavailable, weight 0% -> 15 factors fallback")
-            base_weights['rsi']=0; base_weights['macd']=0; base_weights['spot_trend']+=3; base_weights['foreign_spot']+=3
+        if rsi is None:
+            base_weights['rsi']=0; base_weights['spot_trend']+=1.5; base_weights['foreign_spot']+=1.5
+        if self.signals.get('macd_hist') is None:
+            base_weights['macd']=0; base_weights['spot_trend']+=1.5; base_weights['foreign_spot']+=1.5
+        if rsi is None or self.signals.get('macd_hist') is None:
+            print(f"[V9-17F] Technical factor missing; RSI={rsi} MACD_hist={self.signals.get('macd_hist')}")
         else:
-            print(f"[V9-17F] 17 factors valid RSI={rsi} MACD hist={self.signals.get('macd_hist')}")
+            print(f"[V9-17F] RSI/MACD valid RSI={rsi} MACD hist={self.signals.get('macd_hist')}")
         # VIX動態：只有取得真實收盤值才調整權重
         if vix is not None:
             if vix>25:
@@ -602,17 +605,19 @@ class V9Analyzer:
             if basis<-50: score-=int(5*w/7); factors.append(('逆價差',-int(5*w/7)))
             elif basis>200: score-=int(3*w/7); factors.append(('正價差過大假多',-int(3*w/7)))
 
-        night_pct=s.get('tx_night_pct',0)
-        if night_pct<-1: score-=7; factors.append(('夜盤重挫',-7))
-        elif night_pct<-0.5: score-=4; factors.append(('夜盤下跌',-4))
+        night_pct=s.get('tx_night_pct')
+        if night_pct is not None:
+            if night_pct<-1: score-=7; factors.append(('夜盤重挫',-7))
+            elif night_pct<-0.5: score-=4; factors.append(('夜盤下跌',-4))
 
         us_dict=s.get('us_dict',{}); sox_val=0
         for k,v in us_dict.items():
             if 'SOX' in k: sox_val=v
         w=weights['us_sox']
-        if sox_val<-5: score-=int(8*w/12); factors.append(('費半崩跌',-int(8*w/12)))
-        elif sox_val<-2: score-=int(4*w/12); factors.append(('費半下跌',-int(4*w/12)))
-        elif sox_val>2: score+=int(4*w/12); factors.append(('費半上漲',+int(4*w/12)))
+        if sox_val is not None:
+            if sox_val<-5: score-=int(8*w/12); factors.append(('費半崩跌',-int(8*w/12)))
+            elif sox_val<-2: score-=int(4*w/12); factors.append(('費半下跌',-int(4*w/12)))
+            elif sox_val>2: score+=int(4*w/12); factors.append(('費半上漲',+int(4*w/12)))
 
         pcr=s.get('pcr',0.8)
         if pcr<0.6: score-=7; factors.append(('PCR極低悲觀',-7))
