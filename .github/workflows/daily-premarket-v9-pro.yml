@@ -39,12 +39,10 @@ jobs:
       - name: Build data.json
         run: |
           ls -lh data_reports/ || true
-          # 照檔名日期排序取最新，ls -t 在 git clone 後 mtime 全一樣會隨機抓到舊的
           REPORT=$(ls -1 data_reports/DATA_REPORT_*.md 2>/dev/null | sort -r | head -n1)
           if [ -z "$REPORT" ]; then
             REPORT=$(ls -1 DATA_REPORT_*.md 2>/dev/null | sort -r | head -n1)
           fi
-          # 若手動指定 date 參數，優先用該日期
           if [ -n "${{ inputs.date }}" ] && [ -f "data_reports/DATA_REPORT_${{ inputs.date }}.md" ]; then
             REPORT="data_reports/DATA_REPORT_${{ inputs.date }}.md"
           fi
@@ -55,7 +53,6 @@ jobs:
           echo "Using report $REPORT (latest by filename)"
           python scripts/v9_pro_builder.py --data_report "$REPORT" --out dashboards/data-${{ env.DATE }}.json --date ${{ env.DATE }}
           ls -lh dashboards/
-          head -n 50 dashboards/data-${{ env.DATE }}.json
 
       - name: Inject HTML
         run: |
@@ -64,18 +61,12 @@ jobs:
           date = os.environ.get('DATE')
           tmpl_path = pathlib.Path('templates/v9-pro-react-template.html')
           data_path = pathlib.Path(f'dashboards/data-{date}.json')
-          if not tmpl_path.exists():
-            print(f"Template not found {tmpl_path}")
-            exit(1)
-          if not data_path.exists():
-            print(f"Data not found {data_path}")
-            exit(1)
           tmpl = tmpl_path.read_text(encoding='utf-8')
           data = data_path.read_text(encoding='utf-8')
           inject = f'<script>window.DASHBOARD_DATA={data}</script>\n'
           out = tmpl.replace('</head>', inject + '</head>') if '</head>' in tmpl else inject + tmpl
           pathlib.Path(f'dashboards/v9-pro-{date}.html').write_text(out, encoding='utf-8')
-          print(f'Wrote dashboards/v9-pro-{date}.html')
+          print(f'Wrote dashboards/v9-pro-{date}.html {len(out)}')
           PY
 
       - name: Update latest
@@ -85,15 +76,20 @@ jobs:
           echo "{\"date\":\"${{ env.DATE }}\",\"data\":\"data-${{ env.DATE }}.json\",\"html\":\"v9-pro-${{ env.DATE }}.html\"}" > dashboards/manifest.json
           ls -lh dashboards/
 
-      - name: Commit Push
+      - name: Commit Push dashboards to repo (for history)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add dashboards/
-          git diff --cached --quiet && echo "No changes" && exit 0
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
           BIAS=$(python3 -c "import json; print(json.load(open('dashboards/data-${{ env.DATE }}.json'))['analysis']['bias'])")
           git commit -m "V9 Pro ${{ env.DATE }} Bias ${BIAS}分"
           git push
+
+      - name: Upload dashboards artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboards
 
   deploy:
     if: github.ref == 'refs/heads/master'
@@ -106,10 +102,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v4
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dashboards
       - id: deployment
         uses: actions/deploy-pages@v4
