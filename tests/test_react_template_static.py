@@ -50,7 +50,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
             for index, (attrs, source) in enumerate(scripts):
                 if "application/json" in attrs.lower() or not source.strip():
                     continue
-                suffix = ".mjs" if "type=\\"module\\"" in attrs.lower() else ".js"
+                suffix = ".mjs" if 'type="module"' in attrs.lower() else ".js"
                 path = Path(tmp) / f"inline_{index}{suffix}"
                 path.write_text(source, encoding="utf-8")
                 result = subprocess.run(
