@@ -562,8 +562,6 @@ def parse_data_report(report_path):
     margin_ratio_source=margin_provenance["source_detail"] or ""
     margin_ratio_source_date=margin_provenance["source_date"]
     margin_ratio_status=margin_provenance["status"]
-    margin_ratio_source_date=margin_ratio_date_match.group(1) if margin_ratio_date_match else None
-    margin_ratio_status=("estimated_previous_day" if any(k in margin_ratio_line for k in ("前值遞補","民間估算","估算")) else ("reported" if margin_ratio is not None else "unavailable"))
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
     listed_turnover=get_value(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元","0"); otc_turnover=get_value(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元","0"); total_turnover=get_value(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元","0")
 
