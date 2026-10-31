@@ -165,32 +165,28 @@ def _istock(t0: str, timeout: int = 30) -> dict:
 # ---------- 對外介面 ----------
 
 def get(t0: str, timeout: int = 30) -> dict:
-    """回傳 {ratio(%), date, ok, source}。只接受精確 T0，優先序 wantgoo → stockintelli → istock。
+    """回傳上市櫃合計維持率；只接受 iStock 明確標示的「上市櫃整體維持率」與精確 T0 日期。
 
-    T0 嚴格日期閘門：WantGoo 常落後數日，舊資料不得回報 ok，也不得阻擋其他來源的 T0 值。
-    F7（2026-10-19）：三源改並行（max_workers=3）各自抓完再照原優先序挑選，
-    選用結果、source 標記（istock 失敗時回傳不含 source 鍵）、失敗訊息與
-    例外處理語意全部照舊；只是把「前一個失敗才打下一個」的順序等待改成同時等待。
+    WantGoo / StockIntelli 僅作上市單邊交叉參考，不得替代上市櫃合計值。
     """
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=3) as ex:
         f_wg = ex.submit(_wantgoo, t0, timeout=min(timeout, 20))
         f_si = ex.submit(_stockintelli, t0, timeout=min(timeout, 15))
         f_is = ex.submit(_istock, t0, timeout=timeout)
-        # 1) 玩股網 API
         wg = f_wg.result()
-        # 2) 股市智投 (SSR，通常有當天資料)
         si = f_si.result()
-        # 3) 愛玩股 istock.tw
         ist = f_is.result()
-    if wg["ok"] and wg.get("date") == t0:
-        wg["source"] = "wantgoo"
-        return wg
-    print("[INFO] wantgoo 維持率不可用，嘗試 stockintelli")
-    if si["ok"] and si.get("date") == t0:
-        si["source"] = "stockintelli"
-        return si
-    print("[INFO] stockintelli 維持率不可用，嘗試 istock 備援")
-    if ist["ok"] and ist.get("date") == t0:
-        ist["source"] = "istock"
-    return ist
+
+    # 這兩個來源目前只當上市單邊參考，不能混入上市櫃合計欄位。
+    if wg.get("ok") and wg.get("date") == t0:
+        print(f"[INFO] wantgoo T0 參考值 {wg.get('ratio')}% (不作上市櫃合計)")
+    if si.get("ok") and si.get("date") == t0:
+        print(f"[INFO] stockintelli T0 參考值 {si.get('ratio')}% (不作上市櫃合計)")
+
+    if ist.get("ok") and ist.get("date") == t0:
+        ist["source"] = "istock_combined"
+        return ist
+
+    print("[WARN] iStock 上市櫃整體維持率無精確 T0 值；不以上市單邊來源代替")
+    return {"ratio": None, "date": None, "ok": False, "source": "unavailable"}
