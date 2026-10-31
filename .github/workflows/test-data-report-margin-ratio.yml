@@ -12,6 +12,8 @@ on:
       - "templates/v9-pro-react-template.html"
       - "tests/test_react_template_static.py"
       - "tests/test_builder_option_tables.py"
+      - "tests/test_p0_workflow_isolation.py"
+      - ".github/workflows/daily-premarket-v9-pro.yml"
       - "tests/test_fetch_data_margin_ratio.py"
       - ".github/workflows/test-data-report-margin-ratio.yml"
   workflow_dispatch:
@@ -44,6 +46,8 @@ jobs:
         run: python -m unittest discover -s tests -p "test_react_template_static.py" -v
       - name: Verify DATA_REPORT option tables reach Builder parser
         run: python -m unittest discover -s tests -p "test_builder_option_tables.py" -v
+      - name: Verify P0 GitHub Actions branch isolation
+        run: python -m unittest discover -s tests -p "test_p0_workflow_isolation.py" -v
       - name: Run Blave-first margin ratio policy unit tests
         run: |
           python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v
