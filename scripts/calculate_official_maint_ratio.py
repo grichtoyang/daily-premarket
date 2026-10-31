@@ -41,8 +41,9 @@ def _missing_codes(margin_payload: dict, price_payload: dict, market: str) -> se
     price_tables = price_payload.get("tables") or []
     if not tables or not price_tables:
         raise RuntimeError(f"{market}: required tables missing during fallback discovery")
-    margin_table = next((t for t in tables if "今日餘額" in (t.get("fields") or [])
-                         or "資餘額" in (t.get("fields") or [])), None)
+    margin_table = next((t for t in tables
+                         if ("代號" in (t.get("fields") or []) or "證券代號" in (t.get("fields") or []))
+                         and ("今日餘額" in (t.get("fields") or []) or "資餘額" in (t.get("fields") or []))), None)
     price_table = next((t for t in price_tables if ("證券代號" in (t.get("fields") or [])
                         and "收盤價" in (t.get("fields") or []))
                         or ("代號" in (t.get("fields") or []) and "收盤" in (t.get("fields") or []))), None)
