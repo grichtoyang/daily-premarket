@@ -576,7 +576,7 @@ def parse_data_report(report_path):
     basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \|","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|","0")
     foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|","前十大OI")
-    foreign_day_net=must_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|","外資日淨"); foreign_night_net=must_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|","外資夜淨")
+    foreign_day_net=optional_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|"); foreign_night_net=optional_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|")
     call_vol=must_get(r"Call 總成交量 \| ([0-9,]+) \|","Call成交"); call_oi=must_get(r"Call 總未平倉量 OI \| ([0-9,]+) \|","Call OI")
     put_vol=must_get(r"Put 總成交量 \| ([0-9,]+) \|","Put成交"); put_oi=must_get(r"Put 總未平倉量 OI \| ([0-9,]+) \|","Put OI")
     pcr=optional_get(r"Put／Call Ratio \| ([0-9.]+) \|"); call_wall=must_get(r"Call Wall 價位 \| ([0-9,]+) \|","Call Wall")
