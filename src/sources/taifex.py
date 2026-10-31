@@ -75,6 +75,16 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
                 time.sleep(2)
     return None
 
+def _sync_gamma_unavailable(unavailable: list[str], wall, flip) -> list[str]:
+    """Keep unavailable flags aligned with the final resolved Gamma fields."""
+    result = list(unavailable)
+    if wall is not None:
+        result = [field for field in result if field != "gamma_wall"]
+    if flip is not None:
+        result = [field for field in result if field != "gamma_flip"]
+    return result
+
+
 def _rows(payload: dict | None) -> list:
     d = (payload or {}).get("data")
     return d if isinstance(d, list) else []
@@ -537,10 +547,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         gsrc = "options-market-structure-compact (proxy)"
     # Reconcile field-level availability after fallback resolution. A proxy may
     # recover one Gamma field without necessarily providing the other.
-    if wall is not None:
-        unav = [field for field in unav if field != "gamma_wall"]
-    if flip is not None:
-        unav = [field for field in unav if field != "gamma_flip"]
+    unav = _sync_gamma_unavailable(unav, wall, flip)
     gamma = {"wall": wall, "flip": flip,
              "model": gdata.get("model"), "quality": gdata.get("model_quality"),
              "underlying": gdata.get("underlying_price"), "date": gamma_date, "src": gsrc}
