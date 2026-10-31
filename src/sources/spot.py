@@ -11,7 +11,7 @@
   unavailable[] / notes[] / sources{}
 """
 from __future__ import annotations
-from src.sources import twse, twse_proxy, spot_raw, finmind, histock, blave_maint_ratio
+from src.sources import twse, twse_proxy, spot_raw, finmind, histock, listed_maint_ratio, blave_maint_ratio
 
 def _add(a, b):
     if a is None:
@@ -21,27 +21,77 @@ def _add(a, b):
     return a + b
 
 
+SELF_BUILT_RATIO_TIMEOUT = 6
+BLAVE_RATIO_TIMEOUT = 3
+
+
+def _valid_ratio(result, t0: str) -> float | None:
+    if not isinstance(result, dict) or not result.get("ok") or result.get("date") != t0:
+        return None
+    try:
+        ratio = float(result.get("ratio"))
+        coverage = float(result.get("coverage", 1.0))
+    except (TypeError, ValueError):
+        return None
+    if not (50 < ratio < 500) or coverage < 0.999999:
+        return None
+    return ratio
+
+
 def _get_margin_ratio(t0: str, env=None) -> dict:
-    """Blave is the only automatic source; exact-T0 manual input is the only fallback."""
+    """TWSE self-built primary -> Blave cross-check/fallback -> exact-T0 manual input."""
     import os
     values = os.environ if env is None else env
-    try:
-        result = blave_maint_ratio.get(t0, timeout=4)
-    except Exception as exc:
-        result = {"ok": False, "date": None, "ratio": None,
-                  "reason": f"{type(exc).__name__}: {exc}"}
 
-    if isinstance(result, dict) and result.get("ok") and result.get("date") == t0:
-        try:
-            ratio = float(result.get("ratio"))
-        except (TypeError, ValueError):
-            ratio = None
-        if ratio is not None and 50 < ratio < 500:
-            return {
-                "ratio": round(ratio, 4),
-                "source": f"Blave 上市市場融資維持率估算（資料日期：{t0}）",
-                "note": f"上市大盤融資維持率採 Blave 同 T0 數值（{t0}；上市市場估算）",
-            }
+    try:
+        self_result = listed_maint_ratio.get(t0, timeout=SELF_BUILT_RATIO_TIMEOUT)
+    except Exception as exc:
+        self_result = {"ok": False, "date": None, "ratio": None,
+                       "reason": f"{type(exc).__name__}: {exc}"}
+    self_ratio = _valid_ratio(self_result, t0)
+    self_reason = (self_result or {}).get("reason", "invalid result/date/coverage")
+
+    try:
+        blave_result = blave_maint_ratio.get(t0, timeout=BLAVE_RATIO_TIMEOUT)
+    except Exception as exc:
+        blave_result = {"ok": False, "date": None, "ratio": None,
+                        "reason": f"{type(exc).__name__}: {exc}"}
+    blave_ratio = _valid_ratio(blave_result, t0)
+    blave_reason = (blave_result or {}).get("reason", "invalid result/date")
+
+    if self_ratio is not None:
+        financed_count = int(self_result.get("financed_security_count") or 0)
+        stale_count = int(self_result.get("stale_price_security_count") or 0)
+        price_min = self_result.get("price_date_min")
+        price_max = self_result.get("price_date_max")
+        if blave_ratio is not None:
+            diff = abs(self_ratio - blave_ratio)
+            cross_check = f"Blave 同 T0 交叉驗證 {blave_ratio:.4f}%，差異 {diff:.3f} 個百分點"
+        else:
+            cross_check = f"Blave 交叉驗證未取得（{blave_reason}）；不影響自建值"
+        price_note = (
+            f"{stale_count} 檔採最近有效收盤價"
+            + (f"（價格日期 {price_min} 至 {price_max}）" if stale_count and price_min and price_max else "")
+        )
+        source = (
+            f"TWSE 上市自建估算（資料日期：{t0}；估值 {financed_count} 檔；"
+            f"{price_note}；{cross_check}）"
+        )
+        return {
+            "ratio": round(self_ratio, 4),
+            "source": source,
+            "note": (
+                f"上市市場維持率以 TWSE 自建計算為主；{price_note}。"
+                f"{cross_check}。Blave 不可用不影響 DATA_REPORT 產出。"
+            ),
+        }
+
+    if blave_ratio is not None:
+        return {
+            "ratio": round(blave_ratio, 4),
+            "source": f"Blave 上市市場融資維持率估算（資料日期：{t0}；自建計算備援）",
+            "note": f"TWSE 自建計算未成功（{self_reason}）；改用 Blave 同 T0 數值（{t0}）。",
+        }
 
     manual_date = str(values.get("MANUAL_LISTED_MARGIN_RATIO_DATE", "")).strip()
     manual_value = str(values.get("MANUAL_LISTED_MARGIN_RATIO", "")).strip()
@@ -53,15 +103,18 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
         return {
             "ratio": round(manual_ratio, 4),
             "source": f"人工輸入（MANUAL_LISTED_MARGIN_RATIO；資料日期：{t0}）",
-            "note": f"Blave 無可用同 T0 數值；上市維持率採人工輸入（資料日期：{t0}）",
+            "note": (
+                f"TWSE 自建計算未成功（{self_reason}）；Blave 備援未取得（{blave_reason}）；"
+                f"最後採用同 T0 人工輸入（資料日期：{t0}）。"
+            ),
         }
 
     return {
         "ratio": None,
-        "source": "unavailable（Blave、同 T0 人工輸入皆不可用）",
+        "source": "unavailable（TWSE 自建、Blave、同 T0 人工輸入皆不可用）",
         "note": (
-            "上市融資維持率 unavailable（Blave 與同 T0 人工輸入皆不可用）；"
-            "融資餘額、融資增減、融券餘額及融券增減仍獨立呈現，不以代理數值冒充維持率"
+            f"上市融資維持率 unavailable；自建計算：{self_reason}；Blave：{blave_reason}。"
+            "不影響其他融資融券欄位、DATA_REPORT、JSON 與 Dashboard 產出。"
         ),
     }
 
