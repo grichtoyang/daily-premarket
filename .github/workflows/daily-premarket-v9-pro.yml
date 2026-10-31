@@ -37,6 +37,41 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip requests
 
+      - name: Resolve DATA_REPORT
+        env:
+          REQUESTED_DATE: ${{ inputs.date }}
+        run: |
+          set -euo pipefail
+          if [ -n "${REQUESTED_DATE}" ]; then
+            DATE="${REQUESTED_DATE}"
+            if ! [[ "${DATE}" =~ ^[0-9]{8}$ ]]; then
+              echo "Invalid date; expected YYYYMMDD"
+              exit 1
+            fi
+            REPORT="data_reports/DATA_REPORT_${DATE}.md"
+            if [ ! -f "${REPORT}" ]; then
+              REPORT="DATA_REPORT_${DATE}.md"
+            fi
+            if [ ! -f "${REPORT}" ]; then
+              echo "Requested DATA_REPORT not found; refusing silent fallback"
+              exit 1
+            fi
+          else
+            REPORT="$(find data_reports -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print 2>/dev/null | sort -r | head -n1 || true)"
+            if [ -z "${REPORT}" ]; then
+              REPORT="$(find . -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print | sort -r | head -n1 || true)"
+            fi
+            if [ -z "${REPORT}" ]; then
+              echo "No DATA_REPORT found"
+              exit 1
+            fi
+            DATE="$(basename "${REPORT}" | sed -E 's/^DATA_REPORT_([0-9]{8})\.md$/\1/')"
+          fi
+          echo "DATE=${DATE}" >> "${GITHUB_ENV}"
+          echo "REPORT=${REPORT}" >> "${GITHUB_ENV}"
+          echo "Using ${REPORT} for T0 ${DATE}"
+          mkdir -p dashboards
+
       - name: Test Blave-first maintenance ratio policy
         run: |
           set -euo pipefail
