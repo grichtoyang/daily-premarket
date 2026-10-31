@@ -36,9 +36,48 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertEqual(present, [], f"Hardcoded sample data remains: {present}")
 
     def test_factor_and_chart_values_are_not_hardcoded(self):
-        self.assertIsNone(
-            re.search(r"\bv\s*:\s*[-+]?\d+(?:\.\d+)?", self.html),
-            "Numeric chart data literals must come from DATA_REPORT/Builder JSON",
+        scripts = "\\n".join(
+            source for attrs, source in re.findall(
+                r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", self.html, re.IGNORECASE
+            )
+            if "application/json" not in attrs.lower()
+        )
+        data_fields = (
+            "v", "value", "score", "bias", "price", "close", "open", "high", "low",
+            "change", "pct", "percent", "ratio", "volume", "oi", "pcr", "rsi", "macd",
+            "strike", "wall", "flip", "maxPain", "callWall", "putWall", "gammaWall",
+            "count", "weight", "amount", "total", "net", "up", "down", "flat",
+            "timestamp", "year", "month", "day", "x", "y",
+        )
+        fields = "|".join(re.escape(field) for field in data_fields)
+        object_literals = re.findall(
+            rf"\\b(?:{fields})\\s*:\\s*[-+]?\\d+(?:\\.\\d+)?\\b",
+            scripts,
+            re.IGNORECASE,
+        )
+        self.assertEqual(
+            object_literals,
+            [],
+            "Numeric market-data properties must come from DATA_REPORT/Builder JSON",
+        )
+        literal_arrays = re.findall(
+            r"\\b(?:data|series|values|points)\\s*:\\s*\\[\\s*[-+]?\\d+(?:\\.\\d+)?",
+            scripts,
+            re.IGNORECASE,
+        )
+        self.assertEqual(
+            literal_arrays,
+            [],
+            "Chart data arrays must be derived from injected dashboard data",
+        )
+        declared_numeric_arrays = re.findall(
+            r"\\b(?:const|let|var)\\s+[A-Za-z_$][\\w$]*\\s*=\\s*\\[\\s*[-+]?\\d+(?:\\.\\d+)?",
+            scripts,
+        )
+        self.assertEqual(
+            declared_numeric_arrays,
+            [],
+            "Standalone numeric sample arrays are not allowed in the React template",
         )
 
     def test_inline_javascript_syntax(self):
