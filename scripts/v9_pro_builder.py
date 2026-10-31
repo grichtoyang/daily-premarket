@@ -1103,6 +1103,10 @@ def main():
 
     parsed=parse_data_report(report_path)
     print(f"[V9-17F] Parsed {report_path}: spot {parsed['spot']['close']} {parsed['spot']['pct']}% foreign {parsed['inst']['foreign']}")
+    data_warnings=parsed.get('meta',{}).get('data_quality_warnings',[])
+    print(f"[V9-17F] DATA_REPORT consistency: {len(data_warnings)} warning(s)")
+    for warning in data_warnings:
+        print(f"[V9-17F] DATA_REPORT WARNING: {warning}")
 
     tech=fetch_technical_indicators_with_fallback()
 
