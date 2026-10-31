@@ -197,7 +197,7 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
 
     if tw_missing or tx_missing or margin_overlap:
         raise ValueError(
-            "market-universe mismatch; "
+            "no same-day close: market-universe mismatch; "
             f"TWSE_margin_rows={len(tw_margin_rows)} "
             f"TPEx_margin_rows={len(tx_margin_rows)} "
             f"TWSE_price_codes={len(tw_price_codes)} "
