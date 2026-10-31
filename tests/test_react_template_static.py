@@ -51,7 +51,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         )
         fields = "|".join(re.escape(field) for field in data_fields)
         object_literals = re.findall(
-            rf"\b(?:{fields})\s*:\s*[-+]?\d+(?:\.\d+)?\b",
+            rf"\b(?:{fields})\s*:\s*[+-]?\d+(?:\.\d+)?\b",
             scripts,
             re.IGNORECASE,
         )
@@ -61,7 +61,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
             "Numeric market-data properties must come from DATA_REPORT/Builder JSON",
         )
         literal_arrays = re.findall(
-            r"\b(?:data|series|values|points)\s*:\s*\[\s*[-+]?\d+(?:\.\d+)?",
+            r"\b(?:data|series|values|points)\s*:\s*\[\s*[+-]?\d+(?:\.\d+)?",
             scripts,
             re.IGNORECASE,
         )
@@ -71,7 +71,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
             "Chart data arrays must be derived from injected dashboard data",
         )
         declared_numeric_arrays = re.findall(
-            r"\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*\[\s*[-+]?\d+(?:\.\d+)?",
+            r"\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*\[\s*[+-]?\d+(?:\.\d+)?",
             scripts,
         )
         self.assertEqual(
