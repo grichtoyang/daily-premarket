@@ -36,7 +36,11 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Run 17F offline self-tests
         run: python scripts/v9_pro_builder.py --self-test
+      - name: Install Acorn JavaScript parser
+        run: npm install --prefix /tmp/v9-js-parser acorn
       - name: Run React template hardcoded-data and syntax tests
+        env:
+          NODE_PATH: /tmp/v9-js-parser/node_modules
         run: python -m unittest discover -s tests -p "test_react_template_static.py" -v
       - name: Verify DATA_REPORT option tables reach Builder parser
         run: python -m unittest discover -s tests -p "test_builder_option_tables.py" -v
