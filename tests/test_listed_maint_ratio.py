@@ -1,0 +1,58 @@
+import unittest
+
+from src.sources.listed_maint_ratio import calculate
+
+
+class ListedMaintenanceRatioTests(unittest.TestCase):
+    def fixtures(self):
+        margin = {
+            "date": "20261030",
+            "tables": [
+                {"fields": ["項目", "買進", "賣出", "現金(券)償還", "前日餘額", "今日餘額"],
+                 "data": [["融資金額(仟元)", "0", "0", "0", "0", "1000"]]},
+                {"fields": ["代號", "名稱", "買進", "賣出", "現金償還", "前日餘額", "今日餘額"],
+                 "data": [["2330", "台積電", "0", "0", "0", "10", "10"]]},
+            ],
+        }
+        prices = {
+            "date": "20261030",
+            "tables": [{"fields": ["證券代號", "證券名稱", "收盤價"],
+                        "data": [["2330", "台積電", "100"]]}],
+        }
+        return margin, prices
+
+    def test_calculates_listed_only_ratio(self):
+        result = calculate("2026-10-30", *self.fixtures())
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["ratio"], 100.0)
+        self.assertEqual(result["market"], "listed")
+        self.assertEqual(result["coverage"], 1.0)
+        self.assertEqual(result["financed_security_count"], 1)
+
+    def test_rejects_margin_date_mismatch(self):
+        margin, prices = self.fixtures()
+        margin["date"] = "20261029"
+        with self.assertRaisesRegex(ValueError, "date mismatch"):
+            calculate("2026-10-30", margin, prices)
+
+    def test_rejects_price_date_mismatch(self):
+        margin, prices = self.fixtures()
+        prices["date"] = "20261029"
+        with self.assertRaisesRegex(ValueError, "date mismatch"):
+            calculate("2026-10-30", margin, prices)
+
+    def test_rejects_missing_same_day_close(self):
+        margin, prices = self.fixtures()
+        prices["tables"][0]["data"] = []
+        with self.assertRaisesRegex(ValueError, "missing T0 close"):
+            calculate("2026-10-30", margin, prices)
+
+    def test_rejects_zero_financing_amount(self):
+        margin, prices = self.fixtures()
+        margin["tables"][0]["data"][0][5] = "0"
+        with self.assertRaisesRegex(ValueError, "non-positive"):
+            calculate("2026-10-30", margin, prices)
+
+
+if __name__ == "__main__":
+    unittest.main()
