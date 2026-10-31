@@ -323,9 +323,20 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
             if not is_sep and not is_hdr and cells:
                 _label = _norm_label(cells[0])
                 old = old_norm.get((hkey, _label))
-                # 維持率是 T0 市場估算值；本次 unavailable 時絕不可沿用舊 T0 數字。
-                if _label == "融資維持率" and cells[1] == MISSING:
-                    old = None
+                # 維持率是 T0 市場估算值：unavailable 不沿用舊值；新來源依 Blave > 人工輸入優先序更新退役來源。
+                if _label == "融資維持率":
+                    if cells[1] == MISSING:
+                        old = None
+                    elif old and len(old) == len(cells):
+                        _new_source, _old_source = cells[-1], old[-1]
+                        _new_blave = "Blave" in _new_source
+                        _old_blave = "Blave" in _old_source
+                        _new_manual = "人工輸入" in _new_source
+                        _old_manual = "人工輸入" in _old_source
+                        if (_new_blave and not _old_blave) or (
+                            _new_manual and not (_old_blave or _old_manual)
+                        ):
+                            old = None
                 if old and len(old) == len(cells):
                     new_cells = list(cells)
                     new_last = new_cells[-1]
