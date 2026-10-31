@@ -340,8 +340,8 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                         new_priority = _ratio_source_priority(cells[-1])
                         old_priority = _ratio_source_priority(old[-1])
                         if old_priority > new_priority:
-                            cells = list(old)
-                            old = None
+                            out_lines.append("| " + " | ".join(old) + " |")
+                            continue
                         elif new_priority > old_priority:
                             old = None
                 if old and len(old) == len(cells):
