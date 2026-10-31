@@ -149,6 +149,52 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
     tx_margin_table = _find_table(tx_margin_tables, "代號", "資餘額")
     tx_price_table = _find_table(txp, "代號", "收盤")
 
+    # Diagnose market-universe mismatches before calculating. Do not silently
+    # cross-map prices: that could double-count a security across exchanges.
+    tw_margin_rows = _records(tw_margin_table)
+    tx_margin_rows = _records(tx_margin_table)
+    tw_price_rows = _records(tw_price_table)
+    tx_price_rows = _records(tx_price_table)
+
+    def _code(row: dict) -> str:
+        return str(row.get("代號", row.get("證券代號", ""))).strip()
+
+    tw_price_codes = {_code(row) for row in tw_price_rows if _code(row)}
+    tx_price_codes = {_code(row) for row in tx_price_rows if _code(row)}
+    tw_margin_codes = {_code(row) for row in tw_margin_rows if _code(row)}
+    tx_margin_codes = {_code(row) for row in tx_margin_rows if _code(row)}
+    tw_missing = tw_margin_codes - tw_price_codes
+    tx_missing = tx_margin_codes - tx_price_codes
+    margin_overlap = tw_margin_codes & tx_margin_codes
+
+    def _describe_missing(rows: list[dict], missing_codes: set[str],
+                          other_price_codes: set[str], other_margin_codes: set[str],
+                          balance_field: str) -> list[dict]:
+        details = []
+        for row in rows:
+            code = _code(row)
+            if code in missing_codes:
+                details.append({
+                    "code": code,
+                    "name": str(row.get("名稱", row.get("證券名稱", ""))).strip(),
+                    "balance_lots": str(row.get(balance_field, "")).strip(),
+                    "exists_in_other_market_prices": code in other_price_codes,
+                    "exists_in_other_market_margin": code in other_margin_codes,
+                })
+        return details[:50]
+
+    if tw_missing or tx_missing or margin_overlap:
+        raise ValueError(
+            "market-universe mismatch; "
+            f"TWSE_margin_rows={len(tw_margin_rows)} "
+            f"TPEx_margin_rows={len(tx_margin_rows)} "
+            f"TWSE_price_codes={len(tw_price_codes)} "
+            f"TPEx_price_codes={len(tx_price_codes)} "
+            f"TWSE_margin_missing_own_prices={_describe_missing(tw_margin_rows, tw_missing, tx_price_codes, tx_margin_codes, '今日餘額')} "
+            f"TPEx_margin_missing_own_prices={_describe_missing(tx_margin_rows, tx_missing, tw_price_codes, tw_margin_codes, '資餘額')} "
+            f"TWSE_TPEx_margin_code_overlap={sorted(margin_overlap)[:50]}"
+        )
+
     listed = _sum_market_value(tw_margin_table, tw_price_table, "今日餘額",
                                "證券代號", "收盤價", "上市")
     otc = _sum_market_value(tx_margin_table, tx_price_table, "資餘額",
