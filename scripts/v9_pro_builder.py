@@ -383,6 +383,41 @@ def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_histo
         print(f"[V9-17F] Historical similarity error: {e}")
         return None
 
+def validate_data_report_consistency(spot, inst, turnover, tx, options):
+    """Return non-blocking warnings for cross-field contradictions in DATA_REPORT."""
+    warnings=[]
+    def number(value):
+        try:
+            if value is None or value=="": return None
+            result=float(str(value).replace(',','').replace('+','').replace('%','').strip())
+            return result if math.isfinite(result) else None
+        except (TypeError, ValueError):
+            return None
+    def check_close(label, actual, expected, tolerance, detail):
+        a=number(actual); e=number(expected)
+        if a is not None and e is not None and abs(a-e)>tolerance:
+            warnings.append(f"{label}: {detail}；差異 {a-e:+.2f}，容許 ±{tolerance:.2f}")
+    # Spot and futures OHLC must respect the reported intraday range.
+    for label,bar in (("現貨",spot),("台指期日盤",tx.get('day',{}))):
+        o,h,l,c=(number(bar.get(k)) for k in ('open' if label=="現貨" else 'o','high' if label=="現貨" else 'h','low' if label=="現貨" else 'l','close' if label=="現貨" else 'c'))
+        if None not in (o,h,l,c) and (h<max(o,l,c) or l>min(o,h,c) or h<l):
+            warnings.append(f"{label} OHLC 矛盾：O={o:g}, H={h:g}, L={l:g}, C={c:g}")
+    # Institutional and turnover totals are independently reported aggregates.
+    inst_parts=[number(inst.get(k)) for k in ('foreign','trust','dealer')]
+    if all(v is not None for v in inst_parts):
+        check_close("三大法人合計",inst.get('all'),sum(inst_parts),0.21,"外資＋投信＋自營商與合計不一致")
+    check_close("上市櫃成交金額合計",turnover.get('total'),(number(turnover.get('listed')) or 0)+(number(turnover.get('otc')) or 0),0.21,"上市＋上櫃與合計不一致")
+    # Futures basis should reconcile with futures close minus spot close.
+    day=tx.get('day',{})
+    if all(number(v) is not None for v in (day.get('basis'),day.get('c'),spot.get('close'))):
+        check_close("期現基差",day.get('basis'),number(day.get('c'))-number(spot.get('close')),2.01,"台指期收盤－加權指數收盤與申報基差不一致")
+    # PCR in this report is Put OI / Call OI; validate only when both denominators exist.
+    call_oi=number(options.get('callOi')); put_oi=number(options.get('putOi')); pcr=number(options.get('pcr'))
+    if call_oi not in (None,0) and put_oi is not None and pcr is not None:
+        check_close("選擇權 PCR",pcr,put_oi/call_oi,0.02,"Put OI／Call OI 與 PCR 不一致")
+    return warnings
+
+
 # ===== DATA_REPORT 解析 (FULL) =====
 def parse_data_report(report_path):
     text = pathlib.Path(report_path).read_text(encoding='utf-8', errors='ignore')
@@ -416,38 +451,6 @@ def parse_data_report(report_path):
         if not s or s.lower() in ('unavailable','n/a','--','null'): return None
         try: return float(s)
         except (TypeError, ValueError): return None
-def validate_data_report_consistency(spot, inst, turnover, tx, options):
-    """Return non-blocking warnings for cross-field contradictions in DATA_REPORT."""
-    warnings=[]
-    def number(value):
-        try:
-            if value is None or value=="": return None
-            result=float(str(value).replace(',','').replace('+','').replace('%','').strip())
-            return result if math.isfinite(result) else None
-        except (TypeError, ValueError):
-            return None
-    def check_close(label, actual, expected, tolerance, detail):
-        a=number(actual); e=number(expected)
-        if a is not None and e is not None and abs(a-e)>tolerance:
-            warnings.append(f"{label}: {detail}；差異 {a-e:+.2f}，容許 ±{tolerance:.2f}")
-    # Spot and futures OHLC must respect the reported intraday range.
-    for label,bar in (("現貨",spot),("台指期日盤",tx.get('day',{}))):
-        o,h,l,c=(number(bar.get(k)) for k in ('open' if label=="現貨" else 'o','high' if label=="現貨" else 'h','low' if label=="現貨" else 'l','close' if label=="現貨" else 'c'))
-        if None not in (o,h,l,c) and (h<max(o,l,c) or l>min(o,h,c) or h<l):
-            warnings.append(f"{label} OHLC 矛盾：O={o:g}, H={h:g}, L={l:g}, C={c:g}")
-    # Institutional and turnover totals are independently reported aggregates.
-    check_close("三大法人合計",inst.get('all'),sum(number(inst.get(k)) or 0 for k in ('foreign','trust','dealer')),0.21,"外資＋投信＋自營商與合計不一致")
-    check_close("上市櫃成交金額合計",turnover.get('total'),(number(turnover.get('listed')) or 0)+(number(turnover.get('otc')) or 0),0.21,"上市＋上櫃與合計不一致")
-    # Futures basis should reconcile with futures close minus spot close.
-    day=tx.get('day',{})
-    if number(day.get('basis')) is not None:
-        check_close("期現基差",day.get('basis'),(number(day.get('c')) or 0)-(number(spot.get('close')) or 0),2.01,"台指期收盤－加權指數收盤與申報基差不一致")
-    # PCR in this report is Put OI / Call OI; validate only when both denominators exist.
-    call_oi=number(options.get('callOi')); put_oi=number(options.get('putOi')); pcr=number(options.get('pcr'))
-    if call_oi not in (None,0) and put_oi is not None and pcr is not None:
-        check_close("選擇權 PCR",pcr,put_oi/call_oi,0.02,"Put OI／Call OI 與 PCR 不一致")
-    return warnings
-
     def must_get(pattern,name):
         v=get_value(pattern,None)
         if v is None or v=="": raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {name}: {pattern}")
