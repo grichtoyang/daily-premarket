@@ -248,8 +248,8 @@ def get_db_status(db_path="dashboards/v9_pro_history.db"):
                 conn.close()
                 return {'exists':True,'rows':count,'filled':filled,'mode':'db' if count>=3 else 'no-db-partial','path':str(p)}
         return {'exists':False,'rows':0,'filled':0,'mode':'no-db','path':''}
-    except Exception as e:
-        print(f"[V9-17F] DB status error: {e}")
+    except (sqlite3.Error, OSError) as e:
+        print(f"[V9-17F] DB status error: {type(e).__name__}: {e}")
         return {'exists':False,'rows':0,'filled':0,'mode':'no-db-error','path':''}
 
 def _normalize_t0_date(t0_date):
@@ -977,7 +977,21 @@ def run_17f_self_tests():
             migrated_columns={row[1] for row in migrated.execute("PRAGMA table_info(v9_pro_history)").fetchall()}
             migrated.close()
             assert {'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'} <= migrated_columns
-        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, sqlite-schema-migration")
+            conn=sqlite3.connect(legacy_db)
+            conn.execute("CREATE TABLE v8_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
+            conn.commit(); conn.close()
+            migrated=init_db(legacy_db)
+            assert migrated is not None
+            migrated_v8={row[1] for row in migrated.execute("PRAGMA table_info(v8_pro_history)").fetchall()}
+            migrated.close()
+            assert {'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'} <= migrated_v8
+        with tempfile.TemporaryDirectory() as tmp:
+            invalid_db=str(pathlib.Path(tmp)/"invalid-schema.db")
+            conn=sqlite3.connect(invalid_db)
+            conn.execute("CREATE TABLE v9_pro_history (bias INTEGER, spot_close REAL)")
+            conn.commit(); conn.close()
+            assert init_db(invalid_db) is None
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, sqlite-schema-migration, invalid-schema-rejection")
         return 0
     except Exception:
         traceback.print_exc()
