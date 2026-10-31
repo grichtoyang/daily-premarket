@@ -15,7 +15,7 @@ class OfficialMaintenanceRatioTests(unittest.TestCase):
             ],
         }
         tpex_margin = {
-            "date": "115/10/30",
+            "date": "1151030",
             "tables": [
                 {"fields": ["代號", "名稱", "前資餘額(張)", "資買", "資賣", "現償", "資餘額"],
                  "data": [["6488", "環球晶", "2", "0", "0", "0", "2"]],
