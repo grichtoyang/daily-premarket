@@ -37,14 +37,14 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_factor_and_chart_values_are_not_hardcoded(self):
         self.assertIsNone(
-            re.search(r"\\bv\\s*:\\s*[-+]?\\d+(?:\\.\\d+)?", self.html),
+            re.search(r"\bv\s*:\s*[-+]?\d+(?:\.\d+)?", self.html),
             "Numeric chart data literals must come from DATA_REPORT/Builder JSON",
         )
 
     def test_inline_javascript_syntax(self):
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for React template syntax validation")
-        scripts = re.findall(r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", self.html, re.IGNORECASE)
+        scripts = re.findall(r"<script\b([^>]*)>([\s\S]*?)</script\s*>", self.html, re.IGNORECASE)
         checked = 0
         with tempfile.TemporaryDirectory() as tmp:
             for index, (attrs, source) in enumerate(scripts):
@@ -62,7 +62,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 self.assertEqual(
                     result.returncode,
                     0,
-                    f"JavaScript syntax error in inline script {index}:\\n{result.stderr}",
+                    f"JavaScript syntax error in inline script {index}:\n{result.stderr}",
                 )
                 checked += 1
         self.assertGreater(checked, 0, "No inline JavaScript was checked")
