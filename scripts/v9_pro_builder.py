@@ -416,6 +416,38 @@ def parse_data_report(report_path):
         if not s or s.lower() in ('unavailable','n/a','--','null'): return None
         try: return float(s)
         except (TypeError, ValueError): return None
+def validate_data_report_consistency(spot, inst, turnover, tx, options):
+    """Return non-blocking warnings for cross-field contradictions in DATA_REPORT."""
+    warnings=[]
+    def number(value):
+        try:
+            if value is None or value=="": return None
+            result=float(str(value).replace(',','').replace('+','').replace('%','').strip())
+            return result if math.isfinite(result) else None
+        except (TypeError, ValueError):
+            return None
+    def check_close(label, actual, expected, tolerance, detail):
+        a=number(actual); e=number(expected)
+        if a is not None and e is not None and abs(a-e)>tolerance:
+            warnings.append(f"{label}: {detail}；差異 {a-e:+.2f}，容許 ±{tolerance:.2f}")
+    # Spot and futures OHLC must respect the reported intraday range.
+    for label,bar in (("現貨",spot),("台指期日盤",tx.get('day',{}))):
+        o,h,l,c=(number(bar.get(k)) for k in ('open' if label=="現貨" else 'o','high' if label=="現貨" else 'h','low' if label=="現貨" else 'l','close' if label=="現貨" else 'c'))
+        if None not in (o,h,l,c) and (h<max(o,l,c) or l>min(o,h,c) or h<l):
+            warnings.append(f"{label} OHLC 矛盾：O={o:g}, H={h:g}, L={l:g}, C={c:g}")
+    # Institutional and turnover totals are independently reported aggregates.
+    check_close("三大法人合計",inst.get('all'),sum(number(inst.get(k)) or 0 for k in ('foreign','trust','dealer')),0.21,"外資＋投信＋自營商與合計不一致")
+    check_close("上市櫃成交金額合計",turnover.get('total'),(number(turnover.get('listed')) or 0)+(number(turnover.get('otc')) or 0),0.21,"上市＋上櫃與合計不一致")
+    # Futures basis should reconcile with futures close minus spot close.
+    day=tx.get('day',{})
+    if number(day.get('basis')) is not None:
+        check_close("期現基差",day.get('basis'),(number(day.get('c')) or 0)-(number(spot.get('close')) or 0),2.01,"台指期收盤－加權指數收盤與申報基差不一致")
+    # PCR in this report is Put OI / Call OI; validate only when both denominators exist.
+    call_oi=number(options.get('callOi')); put_oi=number(options.get('putOi')); pcr=number(options.get('pcr'))
+    if call_oi not in (None,0) and put_oi is not None and pcr is not None:
+        check_close("選擇權 PCR",pcr,put_oi/call_oi,0.02,"Put OI／Call OI 與 PCR 不一致")
+    return warnings
+
     def must_get(pattern,name):
         v=get_value(pattern,None)
         if v is None or v=="": raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {name}: {pattern}")
@@ -508,6 +540,13 @@ def parse_data_report(report_path):
     put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|"); gamma_wall=must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|","Gamma Wall")
     gamma_flip=must_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|","Gamma Flip"); max_pain=must_get(r"Max Pain 價位 \| ([0-9,]+) \|","Max Pain")
     call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 17．選擇權法人日盤、夜盤交易")
+    consistency_warnings=validate_data_report_consistency(
+        {'open':spot_open,'high':spot_high,'low':spot_low,'close':spot_close},
+        {'foreign':foreign_inst,'trust':trust_inst,'dealer':dealer_inst,'all':all_inst},
+        {'listed':listed_turnover,'otc':otc_turnover,'total':total_turnover},
+        {'day':{'o':fut_day_o,'h':fut_day_h,'l':fut_day_l,'c':fut_day_c,'basis':basis}},
+        {'callOi':call_oi,'putOi':put_oi,'pcr':pcr}
+    )
 
     news_events=[]
     idx=text.find("事件1：")
@@ -530,7 +569,7 @@ def parse_data_report(report_path):
         if curr: news_events.append(curr)
 
     return {
-        'meta': {'report_date': report_date, 't0_date': t0_date, 'generated_at': gen_time},
+        'meta': {'report_date': report_date, 't0_date': t0_date, 'generated_at': gen_time, 'data_quality_warnings': consistency_warnings},
         'usPct_simple': usPct_simple, 'asiaPct_simple': asiaPct_simple, 'futPct_simple': futPct_simple,
         'yieldPct_simple': yieldPct_simple, 'fxPct_simple': fxPct_simple, 'adrPct_simple': adrPct_simple, 'commPct_simple': commPct_simple,
         'usPct_full': usPct_full, 'asiaPct_full': asiaPct_full, 'futPct_full': futPct_full,
@@ -797,6 +836,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
 
     # 41張映射 (依Skill定義)
     cards={
+        'DATA_REPORT 一致性檢查': {
+            "look": f"DATA_REPORT 一致性檢查：{len(parsed['meta'].get('data_quality_warnings',[]))} 項警告",
+            "compass": "；".join(parsed['meta'].get('data_quality_warnings',[])) if parsed['meta'].get('data_quality_warnings') else "現貨 OHLC、法人合計、成交金額、期現基差、選擇權 PCR 交叉檢查未發現矛盾",
+            "target": "警告只標示資料衝突，不自動修改原始數據；請回查 DATA_REPORT 來源"
+        },
         'Bias 盤前偏向': bias_card,
         'KPI 8宮格': {"look": kpi_look, "compass": kpi_compass, "target": kpi_target},
         '大盤全景': spot_card,
@@ -873,7 +917,9 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'factors': f"17F; active={analyzer.factor_quality.get('active_count',0)}/17",
             'db_mode': db_status.get('mode','no-db'),
             'db_rows': db_status.get('rows',0),
-            'output_path_rule': 'dashboards/ 唯一'
+            'output_path_rule': 'dashboards/ 唯一',
+            'data_quality_warning_count': len(parsed['meta'].get('data_quality_warnings',[])),
+            'data_quality_warnings': parsed['meta'].get('data_quality_warnings',[])
         },
         'spot': {
             'close': spot['close'], 'diff': spot['diff'], 'pct': spot['pct'], 'open': spot['open'], 'high': spot['high'], 'low': spot['low'],
@@ -914,6 +960,22 @@ def run_17f_self_tests():
     """Fast offline tests; no network calls, report files, or SQLite writes."""
     import traceback
     try:
+        clean_warnings=validate_data_report_consistency(
+            {'open':100,'high':110,'low':90,'close':105},
+            {'foreign':10,'trust':5,'dealer':-2,'all':13},
+            {'listed':100,'otc':20,'total':120},
+            {'day':{'o':100,'h':110,'l':90,'c':105,'basis':5}},
+            {'callOi':100,'putOi':50,'pcr':0.5}
+        )
+        assert clean_warnings==[]
+        conflict_warnings=validate_data_report_consistency(
+            {'open':100,'high':95,'low':90,'close':105},
+            {'foreign':10,'trust':5,'dealer':-2,'all':99},
+            {'listed':100,'otc':20,'total':999},
+            {'day':{'o':100,'h':110,'l':90,'c':105,'basis':99}},
+            {'callOi':100,'putOi':50,'pcr':0.9}
+        )
+        assert len(conflict_warnings)>=5
         closes=[100.0+i for i in range(25)]
         parsed={
             'spot':{'close':125.0,'pct':1.5,'up':800,'down':300,'vol':5000,'volume_ratio':1.3},
@@ -988,7 +1050,7 @@ def run_17f_self_tests():
             conn.execute("CREATE TABLE v9_pro_history (bias INTEGER, spot_close REAL)")
             conn.commit(); conn.close()
             assert init_db(invalid_db) is None
-        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, sqlite-schema-migration, invalid-schema-rejection")
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, sqlite-schema-migration, invalid-schema-rejection, data-report-consistency")
         return 0
     except Exception:
         traceback.print_exc()
