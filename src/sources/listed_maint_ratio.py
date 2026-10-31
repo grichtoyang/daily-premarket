@@ -250,7 +250,9 @@ def get(t0, timeout=6):
             except FuturesTimeoutError:
                 pass
             finally:
-                executor.shutdown(wait=True, cancel_futures=True)
+                # Do not block the caller after the shared deadline has expired.
+                # Each worker's HTTP request is itself capped by that deadline.
+                executor.shutdown(wait=False, cancel_futures=True)
 
             return calculate(t0, payloads[0], payloads[1], historical_prices=historical)
     except Exception as exc:
