@@ -420,6 +420,28 @@ def validate_data_report_consistency(spot, inst, turnover, tx, options):
     return warnings
 
 
+def parse_markdown_tables(section_text):
+    """Parse all Markdown tables in one section, preserving separate tables."""
+    tables=[]; rows=[]; in_table=False
+    for line in section_text.splitlines():
+        stripped=line.strip()
+        if stripped.startswith("|"):
+            cells=[cell.strip() for cell in stripped.strip("|").split("|")]
+            if cells and all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells):
+                if rows:
+                    tables.append(rows)
+                rows=[]; in_table=True
+            elif in_table:
+                rows.append(cells)
+        else:
+            if in_table and rows:
+                tables.append(rows)
+            rows=[]; in_table=False
+    if rows:
+        tables.append(rows)
+    return tables
+
+
 # ===== DATA_REPORT 解析 (FULL) =====
 def parse_margin_ratio_provenance(report_text, t0_date):
     """Parse maintenance-ratio value and provenance without conflating estimates with stale data."""
@@ -496,6 +518,13 @@ def parse_data_report(report_path):
             else:
                 if in_table and rows: break
         return rows
+    def parse_tables(heading):
+        idx=text.find(heading)
+        if idx==-1: return []
+        end=text.find("\\n### ",idx+len(heading))
+        section=text[idx:end] if end!=-1 else text[idx:]
+        return parse_markdown_tables(section)
+
     def parse_pct(s):
         if s is None: return None
         s=str(s).replace('%','').replace('+','').strip()
@@ -594,6 +623,10 @@ def parse_data_report(report_path):
     put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|"); gamma_wall=must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|","Gamma Wall")
     gamma_flip=must_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|","Gamma Flip"); max_pain=must_get(r"Max Pain 價位 \| ([0-9,]+) \|","Max Pain")
     call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 17．選擇權法人日盤、夜盤交易")
+    opt_inst_force_table=parse_table("#### 法人多空力道表")
+    opt_top10_tables=parse_tables("### 18．選擇權前十大")
+    opt_top10_call=opt_top10_tables[0] if len(opt_top10_tables)>0 else []
+    opt_top10_put=opt_top10_tables[1] if len(opt_top10_tables)>1 else []
     consistency_warnings=validate_data_report_consistency(
         {'open':spot_open,'high':spot_high,'low':spot_low,'close':spot_close},
         {'foreign':foreign_inst,'trust':trust_inst,'dealer':dealer_inst,'all':all_inst},
@@ -634,7 +667,7 @@ def parse_data_report(report_path):
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
         'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
-        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table},
+        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'top10Call': opt_top10_call, 'top10Put': opt_top10_put},
         'news': news_events,
     }
 
@@ -989,7 +1022,8 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
         'options': {
             'callVol': parsed['options']['callVol'], 'callOi': parsed['options']['callOi'], 'putVol': parsed['options']['putVol'], 'putOi': parsed['options']['putOi'],
             'pcr': parsed['options']['pcr'], 'callWall': parsed['options']['callWall'], 'putWall': parsed['options']['putWall'], 'gammaWall': parsed['options']['gammaWall'], 'flip': parsed['options']['flip'], 'maxPain': parsed['options']['maxPain'],
-            'callOiDist': parsed['options']['callOiDist'], 'putOiDist': parsed['options']['putOiDist'], 'instOpt': parsed['options']['instOpt']
+            'callOiDist': parsed['options']['callOiDist'], 'putOiDist': parsed['options']['putOiDist'], 'instOpt': parsed['options']['instOpt'],
+            'instOptForce': parsed['options']['instOptForce'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put']
         },
         'markets': markets, 'marketPct': marketPct,
         'technical': {'rsi': tech.get('rsi'), 'macd': tech.get('macd'), 'macd_signal': tech.get('macd_signal'), 'macd_hist': tech.get('macd_hist'), 'k': tech.get('k'), 'd': tech.get('d'), 'source': tech.get('source'), 'valid': tech.get('valid'), 'closes': tech.get('closes',[])[-30:], 'highs': tech.get('highs',[])[-30:], 'lows': tech.get('lows',[])[-30:]},
@@ -1030,6 +1064,16 @@ def run_17f_self_tests():
             {'callOi':100,'putOi':50,'pcr':0.9}
         )
         assert len(conflict_warnings)>=5
+        sample_tables=parse_markdown_tables("""### sample
+| 項目 | 口數 |
+|---|---|
+| Call | 10 |
+
+| 項目 | 口數 |
+|---|---|
+| Put | 20 |
+""")
+        assert len(sample_tables)==2 and sample_tables[0][0][0]=="Call" and sample_tables[1][0][0]=="Put"
         partial_turnover_warnings=validate_data_report_consistency(
             {'open':100,'high':110,'low':90,'close':105},
             {'foreign':10,'trust':5,'dealer':-2,'all':13},
