@@ -8,6 +8,10 @@ from __future__ import annotations
 from typing import Any
 
 
+def _normalize_date(value: Any) -> str:
+    return str(value or "").strip().replace("/", "").replace("-", "").replace(".", "")
+
+
 def _number(value: Any) -> float:
     text = str(value).strip().replace(",", "").replace("%", "")
     if text in {"", "--", "---", "-", "N/A", "null", "None"}:
@@ -18,9 +22,10 @@ def _number(value: Any) -> float:
 def _tables(payload: dict, expected_date: str, label: str) -> list[dict]:
     if not isinstance(payload, dict):
         raise ValueError(f"{label}: payload is not an object")
-    got = str(payload.get("date", "")).replace("/", "").replace("-", "")
-    if got and got != expected_date:
-        raise ValueError(f"{label}: date mismatch {got} != {expected_date}")
+    got = _normalize_date(payload.get("date", ""))
+    expected = _normalize_date(expected_date)
+    if got and got != expected:
+        raise ValueError(f"{label}: date mismatch {got} != {expected}")
     tables = payload.get("tables")
     if not isinstance(tables, list):
         raise ValueError(f"{label}: tables missing")
@@ -109,9 +114,10 @@ def _twse_financing_amount(payload: dict, t0: str) -> float:
 def _tpex_financing_amount(payload: dict, t0_roc: str) -> float:
     if not isinstance(payload, dict):
         raise ValueError("TPEx margin payload is not an object")
-    got = str(payload.get("date", "")).strip()
-    if got and got.replace("/", "") != t0_roc.replace("/", ""):
-        raise ValueError(f"TPEx margin date mismatch {got} != {t0_roc}")
+    got = _normalize_date(payload.get("date", ""))
+    expected = _normalize_date(t0_roc)
+    if got and got != expected:
+        raise ValueError(f"TPEx margin date mismatch {got} != {expected}")
     tables = payload.get("tables") or []
     if not tables:
         raise ValueError("TPEx margin tables missing")
