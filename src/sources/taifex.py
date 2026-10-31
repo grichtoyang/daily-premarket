@@ -535,6 +535,12 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if wall is None and cgamma.get("gamma_wall_proxy") is not None:
         wall, flip = cgamma.get("gamma_wall_proxy"), cgamma.get("gamma_flip_proxy")
         gsrc = "options-market-structure-compact (proxy)"
+    # Reconcile field-level availability after fallback resolution. A proxy may
+    # recover one Gamma field without necessarily providing the other.
+    if wall is not None:
+        unav = [field for field in unav if field != "gamma_wall"]
+    if flip is not None:
+        unav = [field for field in unav if field != "gamma_flip"]
     gamma = {"wall": wall, "flip": flip,
              "model": gdata.get("model"), "quality": gdata.get("model_quality"),
              "underlying": gdata.get("underlying_price"), "date": gamma_date, "src": gsrc}
