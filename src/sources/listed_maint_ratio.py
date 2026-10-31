@@ -160,7 +160,7 @@ def calculate(t0, margin_payload, price_payload, historical_prices=None):
     if financed == 0:
         raise ValueError("no positive listed financing balance rows")
     if missing:
-        raise ValueError(f"listed securities missing T0 close: {missing[:30]}")
+        raise ValueError(f"listed securities missing T0 close: {missing}")
     ratio = collateral / financing_amount * 100
     return {
         "ok": True, "date": t0, "ratio": round(ratio, 4),
