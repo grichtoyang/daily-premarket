@@ -406,7 +406,9 @@ def validate_data_report_consistency(spot, inst, turnover, tx, options):
     inst_parts=[number(inst.get(k)) for k in ('foreign','trust','dealer')]
     if all(v is not None for v in inst_parts):
         check_close("三大法人合計",inst.get('all'),sum(inst_parts),0.21,"外資＋投信＋自營商與合計不一致")
-    check_close("上市櫃成交金額合計",turnover.get('total'),(number(turnover.get('listed')) or 0)+(number(turnover.get('otc')) or 0),0.21,"上市＋上櫃與合計不一致")
+    listed_turnover=number(turnover.get('listed')); otc_turnover=number(turnover.get('otc'))
+    if listed_turnover is not None and otc_turnover is not None:
+        check_close("上市櫃成交金額合計",turnover.get('total'),listed_turnover+otc_turnover,0.21,"上市＋上櫃與合計不一致")
     # Futures basis should reconcile with futures close minus spot close.
     day=tx.get('day',{})
     if all(number(v) is not None for v in (day.get('basis'),day.get('c'),spot.get('close'))):
@@ -572,7 +574,7 @@ def parse_data_report(report_path):
     margin_ratio_source_date=margin_provenance["source_date"]
     margin_ratio_status=margin_provenance["status"]
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
-    listed_turnover=get_value(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元","0"); otc_turnover=get_value(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元","0"); total_turnover=get_value(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元","0")
+    listed_turnover=optional_get(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元"); otc_turnover=optional_get(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元"); total_turnover=optional_get(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元")
 
     fut_day_o=must_get(r"### 1．台指期近月日盤行情.*?開盤價 \| ([0-9,]+) \|","台指日盤開"); fut_day_h=must_get(r"### 1．台指期近月日盤行情.*?最高價 \| ([0-9,]+) \|","台指日盤高")
     fut_day_l=must_get(r"### 1．台指期近月日盤行情.*?最低價 \| ([0-9,]+) \|","台指日盤低"); fut_day_c=must_get(r"### 1．台指期近月日盤行情.*?收盤價 \| ([0-9,]+) \|","台指日盤收")
@@ -1028,6 +1030,14 @@ def run_17f_self_tests():
             {'callOi':100,'putOi':50,'pcr':0.9}
         )
         assert len(conflict_warnings)>=5
+        partial_turnover_warnings=validate_data_report_consistency(
+            {'open':100,'high':110,'low':90,'close':105},
+            {'foreign':10,'trust':5,'dealer':-2,'all':13},
+            {'listed':None,'otc':20,'total':120},
+            {'day':{'o':100,'h':110,'l':90,'c':105,'basis':0}},
+            {'callOi':100,'putOi':50,'pcr':0.5}
+        )
+        assert partial_turnover_warnings==[]
         mr_blave=parse_margin_ratio_provenance("| 融資維持率 | 171.75 | % | Blave 上市市場融資維持率估算（資料日期：2026-10-30） |", "2026-10-30")
         assert mr_blave["status"]=="estimated_t0" and mr_blave["source"]=="blave" and mr_blave["source_date"]=="2026-10-30" and mr_blave["is_t0"] is True
         mr_manual=parse_margin_ratio_provenance("| 融資維持率 | 172.10 | % | 人工輸入（MANUAL_LISTED_MARGIN_RATIO；資料日期：2026-10-30） |", "2026-10-30")
