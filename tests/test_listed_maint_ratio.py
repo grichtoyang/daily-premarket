@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import patch
+import requests
 
-from src.sources.listed_maint_ratio import calculate
+from src.sources.listed_maint_ratio import calculate, get
 
 
 class ListedMaintenanceRatioTests(unittest.TestCase):
@@ -68,6 +70,15 @@ class ListedMaintenanceRatioTests(unittest.TestCase):
         margin["tables"][0]["data"][0][5] = "0"
         with self.assertRaisesRegex(ValueError, "non-positive"):
             calculate("2026-10-30", margin, prices)
+
+    @patch("src.sources.listed_maint_ratio.requests.get")
+    def test_network_failure_returns_unavailable_with_bounded_timeout(self, get_request):
+        get_request.side_effect = requests.Timeout("simulated timeout")
+        result = get("2026-10-30", timeout=0.2)
+        self.assertFalse(result["ok"])
+        self.assertIsNone(result["ratio"])
+        self.assertIn("timeout", result["reason"].lower())
+        self.assertLessEqual(get_request.call_args.kwargs["timeout"], 0.2)
 
 
 if __name__ == "__main__":
