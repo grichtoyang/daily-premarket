@@ -135,6 +135,22 @@ jobs:
                   if isinstance(data, list) and data:
                       print("RATIO_API_FIRST_ROW=", json.dumps(data[0], ensure_ascii=False)[:1000])
                       print("RATIO_API_LAST_ROW=", json.dumps(data[-1], ensure_ascii=False)[:1000])
+                      dates = [row.get("date") for row in data if isinstance(row, dict)]
+                      values = [row.get("maintenance_ratio") for row in data if isinstance(row, dict)]
+                      print("RATIO_DATE_RANGE=", dates[0], "TO", dates[-1])
+                      print("RATIO_SORTED_ASC=", dates == sorted(dates))
+                      print("RATIO_DUPLICATE_DATES=", len(dates) - len(set(dates)))
+                      print("RATIO_NULL_VALUES=", sum(v is None for v in values))
+                      meta = re.search(r"(\\d{4}-\\d{2}-\\d{2}) 上市融資維持率（估算）為 ([\\d,.]+)%", html)
+                      if meta:
+                          meta_date = meta.group(1)
+                          meta_value = float(meta.group(2).replace(",", ""))
+                          api_value = float(data[-1]["maintenance_ratio"])
+                          print("PAGE_META_DATE_VALUE=", meta_date, meta_value)
+                          print("API_LAST_DATE_VALUE=", data[-1]["date"], api_value)
+                          print("PAGE_API_MATCH=", meta_date == data[-1]["date"] and round(meta_value, 2) == round(api_value, 2))
+                      else:
+                          print("PAGE_META_MATCH=NOT_FOUND")
               except Exception as e:
                   print("RATIO_API_JSON_ERROR=", type(e).__name__, str(e)[:200])
           except Exception as e:
