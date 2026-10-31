@@ -39,11 +39,27 @@ def fetch(label: str, url: str, timeout: int = 30) -> Any:
                     fields = table.get("fields") or []
                     rows = table.get("data") or []
                     print(f"TABLE[{index}] title={table.get('title')} fields={json.dumps(fields, ensure_ascii=False)} rows={len(rows)} sample={json.dumps(rows[:2], ensure_ascii=False)}")
-            for key in ("aaData", "tfootData_one", "tfootData_two", "data", "fields"):
+            # TPEx historical margin endpoint exposes its market totals separately
+            # from per-security rows. Print the complete stat object and any footer
+            # fields so units and aggregate financing money can be identified.
+            for key in ("stat", "aaData", "tfootData_one", "tfootData_two", "data", "fields"):
                 value = payload.get(key)
                 if value is not None:
-                    sample = value[:2] if isinstance(value, list) else value
-                    print(f"{key}={json.dumps(sample, ensure_ascii=False)[:5000]}")
+                    sample = value[:2] if isinstance(value, list) and key not in ("stat", "tfootData_one", "tfootData_two") else value
+                    print(f"{key}={json.dumps(sample, ensure_ascii=False)[:12000]}")
+            if label.startswith("TPEx legacy margin"):
+                print("TPEx_PAYLOAD_META=" + json.dumps({
+                    "date": payload.get("date"),
+                    "stat_type": type(payload.get("stat")).__name__,
+                    "stat_keys": list(payload.get("stat", {}).keys()) if isinstance(payload.get("stat"), dict) else None,
+                    "table_count": len(payload.get("tables", [])) if isinstance(payload.get("tables"), list) else None,
+                    "table_meta": [
+                        {"title": table.get("title"), "fields": table.get("fields"),
+                         "rows": len(table.get("data") or []),
+                         "last_rows": (table.get("data") or [])[-2:]}
+                        for table in (payload.get("tables") or []) if isinstance(table, dict)
+                    ],
+                }, ensure_ascii=False)[:20000])
         elif isinstance(payload, list):
             print(f"ROWS={len(payload)}")
             if payload:
