@@ -1,6 +1,9 @@
 """TWSE listed-only market-wide margin maintenance ratio estimate."""
 from __future__ import annotations
 import math
+import time
+import ast
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FuturesTimeoutError
 from urllib.parse import urlencode
 import requests
 
@@ -44,18 +47,25 @@ def _month_start(date8, offset):
     return f"{year:04d}{month:02d}01"
 
 
-def _last_valid_close(code, date8, timeout=3, max_months=12):
-    """Return the most recent TWSE traded close on/before date8."""
+def _last_valid_close(code, date8, timeout=2, max_months=12, deadline=None):
+    """Return the most recent TWSE traded close on/before date8 within the shared deadline."""
     for offset in range(max_months):
+        remaining = (deadline - time.monotonic()) if deadline is not None else timeout
+        if remaining <= 0:
+            return None
         month_date = _month_start(date8, offset)
         url = BASE + "/afterTrading/STOCK_DAY?" + urlencode(
             {"date": month_date, "stockNo": code, "response": "json"})
-        response = requests.get(url, headers=HEADERS, timeout=timeout)
-        response.raise_for_status()
-        payload = response.json()
+        try:
+            response = requests.get(url, headers=HEADERS, timeout=min(float(timeout), remaining))
+            response.raise_for_status()
+            payload = response.json()
+        except Exception:
+            continue
         rows = payload.get("data") or []
-        date_idx = (payload.get("fields") or []).index("日期") if "日期" in (payload.get("fields") or []) else 0
-        close_idx = (payload.get("fields") or []).index("收盤價") if "收盤價" in (payload.get("fields") or []) else 6
+        fields = payload.get("fields") or []
+        date_idx = fields.index("日期") if "日期" in fields else 0
+        close_idx = fields.index("收盤價") if "收盤價" in fields else 6
         valid = []
         for row in rows:
             if not isinstance(row, list) or len(row) <= max(date_idx, close_idx):
@@ -75,7 +85,6 @@ def _last_valid_close(code, date8, timeout=3, max_months=12):
         if valid:
             return max(valid, key=lambda item: item[0])
     return None
-
 
 def calculate(t0, margin_payload, price_payload, historical_prices=None):
     """T0 listed collateral market value / T0 listed financing amount."""
@@ -177,9 +186,15 @@ def calculate(t0, margin_payload, price_payload, historical_prices=None):
     }
 
 
-def get(t0, timeout=4):
-    """Fetch TWSE T0 data; use latest prior traded close for no-trade/suspended names."""
+def get(t0, timeout=6):
+    """Fetch and calculate the TWSE listed ratio under one total wall-clock budget.
+
+    The two primary TWSE requests and any historical-close lookups share this
+    deadline. Historical lookups run concurrently and are capped at 20 symbols;
+    if the complete listed universe cannot be valued, the caller uses fallback.
+    """
     date8 = _date(t0)
+    deadline = time.monotonic() + max(0.1, float(timeout))
     urls = (
         BASE + "/marginTrading/MI_MARGN?" + urlencode(
             {"date": date8, "selectType": "ALL", "response": "json"}),
@@ -189,26 +204,55 @@ def get(t0, timeout=4):
     try:
         payloads = []
         for url in urls:
-            response = requests.get(url, headers=HEADERS, timeout=timeout)
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("TWSE self-built ratio total time budget exceeded")
+            response = requests.get(url, headers=HEADERS, timeout=min(3.0, remaining))
             response.raise_for_status()
             payloads.append(response.json())
-        # Discover missing same-day closes first, then query monthly history only for them.
+
         try:
-            calculate(t0, payloads[0], payloads[1])
-            historical = {}
+            return calculate(t0, payloads[0], payloads[1])
         except ValueError as exc:
             marker = "listed securities missing T0 close: "
             if marker not in str(exc):
                 raise
-            codes_text = str(exc).split(marker, 1)[1].strip()
-            import ast
-            missing_codes = ast.literal_eval(codes_text)
+            missing_codes = ast.literal_eval(str(exc).split(marker, 1)[1].strip())
+            if not missing_codes:
+                raise
+            if len(missing_codes) > 20:
+                raise ValueError(
+                    f"historical close lookup cap exceeded ({len(missing_codes)} symbols); "
+                    "skip self-built result and use fallback"
+                )
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("TWSE self-built ratio time budget exhausted before historical prices")
+
             historical = {}
-            for code in missing_codes:
-                found = _last_valid_close(code, date8, timeout=min(timeout, 3))
-                if found:
-                    historical[code] = found
-        return calculate(t0, payloads[0], payloads[1], historical_prices=historical)
+            executor = ThreadPoolExecutor(max_workers=min(8, len(missing_codes)))
+            futures = {
+                executor.submit(
+                    _last_valid_close, code, date8, timeout=2.0,
+                    max_months=12, deadline=deadline
+                ): code
+                for code in missing_codes
+            }
+            try:
+                for future in as_completed(futures, timeout=max(0.05, remaining)):
+                    code = futures[future]
+                    try:
+                        found = future.result()
+                        if found:
+                            historical[code] = found
+                    except Exception:
+                        continue
+            except FuturesTimeoutError:
+                pass
+            finally:
+                executor.shutdown(wait=True, cancel_futures=True)
+
+            return calculate(t0, payloads[0], payloads[1], historical_prices=historical)
     except Exception as exc:
         return {"ok": False, "date": t0, "ratio": None,
                 "reason": f"{type(exc).__name__}: {exc}"}
