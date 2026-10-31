@@ -72,6 +72,11 @@ jobs:
           echo "Using ${REPORT} for T0 ${DATE}"
           mkdir -p dashboards
 
+      - name: Run 17F offline self-tests
+        run: |
+          set -euo pipefail
+          python scripts/v9_pro_builder.py --self-test
+
       - name: Build dashboard data
         run: |
           set -euo pipefail
