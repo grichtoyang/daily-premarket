@@ -119,6 +119,27 @@ jobs:
               for value in found[:30]:
                   print("DATA_REFERENCE=", label, value[:500])
 
+          # Probe the first-party chart endpoint discovered in the page's own JavaScript.
+          endpoint = "https://api.blave.org/studio/charts/twmarket/margin_maintenance"
+          try:
+              st, ct, payload = get(endpoint)
+              print("RATIO_API_STATUS=", st, "CONTENT_TYPE=", ct, "BYTES=", len(payload))
+              body = payload.decode("utf-8", "replace")
+              print("RATIO_API_PREVIEW=", body[:1800].replace("\\n", " ")[:1800])
+              try:
+                  import json
+                  obj = json.loads(body)
+                  data = obj.get("data", []) if isinstance(obj, dict) else []
+                  print("RATIO_API_TOP_KEYS=", list(obj.keys()) if isinstance(obj, dict) else type(obj).__name__)
+                  print("RATIO_API_DATA_TYPE=", type(data).__name__, "COUNT=", len(data) if hasattr(data, "__len__") else "NA")
+                  if isinstance(data, list) and data:
+                      print("RATIO_API_FIRST_ROW=", json.dumps(data[0], ensure_ascii=False)[:1000])
+                      print("RATIO_API_LAST_ROW=", json.dumps(data[-1], ensure_ascii=False)[:1000])
+              except Exception as e:
+                  print("RATIO_API_JSON_ERROR=", type(e).__name__, str(e)[:200])
+          except Exception as e:
+              print("RATIO_API_ERROR=", type(e).__name__, str(e)[:300])
+
           # Look for numeric ratio-like payloads around relevant labels, without assuming a value.
           for label, txt in texts:
               lowtxt = txt.lower()
