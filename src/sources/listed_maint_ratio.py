@@ -47,7 +47,8 @@ def calculate(t0, margin_payload, price_payload):
 
     mtables, ptables = margin_payload["tables"], price_payload["tables"]
     balance_table = next((t for t in mtables if "代號" in (t.get("fields") or [])
-                          and "今日餘額" in (t.get("fields") or [])), None)
+                          and ("融資今日餘額" in (t.get("fields") or [])
+                               or "融資餘額" in (t.get("fields") or []))), None)
     price_table = next((t for t in ptables if "證券代號" in (t.get("fields") or [])
                         and "收盤價" in (t.get("fields") or [])), None)
     if balance_table is None or price_table is None:
@@ -75,13 +76,16 @@ def calculate(t0, margin_payload, price_payload):
         if code and close > 0:
             prices[code] = close
 
+    balance_fields = balance_table.get("fields") or []
+    balance_key = ("融資今日餘額" if "融資今日餘額" in balance_fields
+                   else "融資餘額")
     collateral = 0.0
     financed = 0
     missing = []
     for row in _records(balance_table):
         code = str(row.get("代號", "")).strip()
         try:
-            lots = _num(row.get("今日餘額"))
+            lots = _num(row.get(balance_key))
         except ValueError:
             continue
         if not code or lots <= 0:
