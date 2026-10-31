@@ -905,7 +905,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '三市一致性': {"look": f"期現選方向：現貨{foreign} 期貨{foreign_day} 選擇權分歧，一致性低", "compass": f"三市一致性檢核，{regime_label}", "target": "等待一致性收斂"},
         '期現選方向對照': {"look": f"現貨{foreign}億 期貨{foreign_day}口 期選結構{pcr}", "compass": f"期現選對照，{regime_label}", "target": f"{put_wall}為關鍵"},
         '籌碼三市矩陣': {"look": f"籌碼矩陣：外資{foreign} 投信{parsed['inst']['trust']} 自營{parsed['inst']['dealer']}", "compass": "三法人矩陣分歧", "target": "觀察投信撐盤力道"},
-        '主力意圖解碼': {"look": f"主力意圖：外資期空{foreign_fut}口創高，投信現貨買{parsed['inst']['trust']}億", "compass": f"外資空方控盤，投信撐盤，{regime_label}", "target": "主力對作，波動放大"},
+        '主力意圖解碼': {"look": f"主力部位：外資期貨OI {foreign_fut if foreign_fut is not None else 'unavailable'}；投信現貨 {parsed['inst']['trust']} 億", "compass": "僅呈現法人部位，不將單一市場部位解讀為控盤", "target": "搭配現貨、期貨、選擇權三市場方向與變化判斷"},
         '夜盤劇本': {"look": f"夜盤{parsed['tx']['night']['c']} 變化{parsed['tx']['night']['change']} 基差{parsed['tx']['day']['basis']}", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '台指夜盤劇本': {"look": f"台指夜盤{parsed['tx']['night']['c']} 變化{parsed['tx']['night']['change']} 基差{parsed['tx']['day']['basis']}", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '資金流向': spot_card,
