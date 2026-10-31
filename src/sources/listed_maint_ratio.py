@@ -140,7 +140,19 @@ def calculate(t0, margin_payload, price_payload, historical_prices=None):
     for raw_row in balance_table.get("data") or []:
         if isinstance(raw_row, dict):
             code = str(raw_row.get("代號", "")).strip()
-            raw_lots = raw_row.get("融資今日餘額", raw_row.get("今日餘額"))
+            # A dict cannot preserve duplicate TWSE "今日餘額" column names.
+            # Accept only an explicit financing-specific key; never guess whether
+            # a generic 今日餘額 refers to financing or short-selling balance.
+            raw_lots = next(
+                (raw_row[key] for key in ("融資今日餘額", "融資餘額", "融資餘額(張)")
+                 if key in raw_row),
+                None,
+            )
+            if code and raw_lots is None and "今日餘額" in raw_row:
+                raise ValueError(
+                    "ambiguous dict row: duplicate 今日餘額 columns require "
+                    "an explicit financing balance key"
+                )
         elif isinstance(raw_row, list) and len(raw_row) > max(code_idx, financing_balance_idx):
             code = str(raw_row[code_idx]).strip()
             raw_lots = raw_row[financing_balance_idx]
