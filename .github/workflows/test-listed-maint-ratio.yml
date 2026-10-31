@@ -65,3 +65,25 @@ jobs:
           if not result.get("ok"):
               raise SystemExit("LIVE_LISTED_RATIO_FAILED: " + result.get("reason", "unknown"))
           PY
+
+      - name: Diagnose financed symbols without MI_INDEX close
+        if: always()
+        run: |
+          python - <<'PY'
+          import requests
+          h = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.twse.com.tw/"}
+          base = "https://www.twse.com.tw/rwd/zh"
+          m = requests.get(base + "/marginTrading/MI_MARGN?date=20261030&selectType=ALL&response=json", headers=h, timeout=20).json()
+          p = requests.get(base + "/afterTrading/MI_INDEX?date=20261030&type=ALLBUT0999&response=json", headers=h, timeout=20).json()
+          mt = next(t for t in m["tables"] if "代號" in t.get("fields", []) and t.get("fields", []).count("今日餘額") >= 2)
+          pt = next(t for t in p["tables"] if "證券代號" in t.get("fields", []) and "收盤價" in t.get("fields", []))
+          mi, pi = mt["fields"].index("代號"), [i for i,x in enumerate(mt["fields"]) if x == "今日餘額"][0]
+          pcode, pclose = pt["fields"].index("證券代號"), pt["fields"].index("收盤價")
+          codes = {"00682U", "1470", "1589", "5906"}
+          for row in mt["data"]:
+              if row[mi] in codes:
+                  print("MARGIN", row[mi], "financing_balance", row[pi], "name", row[1])
+          for row in pt["data"]:
+              if row[pcode] in codes:
+                  print("PRICE", row[pcode], "close", row[pclose], "name", row[1])
+          PY
