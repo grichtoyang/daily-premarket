@@ -1,7 +1,7 @@
 """大盤融資維持率。
 
 1) 愛玩股 iStock：明確提供上市櫃整體維持率與資料日期，作為合計值主來源。
-2) WantGoo API / StockIntelli SSR：只作上市單邊交叉參考，不可替代上市櫃合計值。
+2) WantGoo API / StockIntelli SSR：計算範圍尚未證實為上市櫃合計，只作交叉參考，不可替代上市櫃合計值。
 注意：官方無每日維持率序列，此為民間估算值，來源須透明標示。
 """
 from __future__ import annotations
@@ -175,9 +175,9 @@ def get(t0: str, timeout: int = 30) -> dict:
         si = f_si.result()
         ist = f_is.result()
 
-    # 這兩個來源目前只當上市單邊參考，不能混入上市櫃合計欄位。
+    # 這兩個來源的計算範圍尚未證實為上市櫃合計，只能交叉參考。
     if wg.get("ok") and wg.get("date") == t0:
-        print(f"[INFO] wantgoo T0 參考值 {wg.get('ratio')}% (不作上市櫃合計)")
+        print(f"[INFO] wantgoo T0 參考值 {wg.get('ratio')}% (口徑未確認，不作上市櫃合計)")
     if si.get("ok") and si.get("date") == t0:
         print(f"[INFO] stockintelli T0 參考值 {si.get('ratio')}% (不作上市櫃合計)")
 
