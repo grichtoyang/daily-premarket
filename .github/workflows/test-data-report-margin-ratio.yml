@@ -8,6 +8,7 @@ on:
       - "src/sources/blave_maint_ratio.py"
       - "src/sources/spot.py"
       - "src/fetch_data.py"
+      - "scripts/v9_pro_builder.py"
       - ".github/workflows/test-data-report-margin-ratio.yml"
   workflow_dispatch:
 
