@@ -23,8 +23,10 @@ class BuilderOptionTableTests(unittest.TestCase):
 
         self.assertEqual(options["instOpt"][0][0], "外資")
         self.assertEqual(options["instOptForce"][0][0], "外資")
-        self.assertIn("買權", options["top10Call"][0][0])
-        self.assertIn("賣權", options["top10Put"][0][0])
+        # parse_markdown_tables preserves the Markdown header row at index 0.
+        # Validate the first data row (index 1), not the generic header "項目".
+        self.assertIn("買權", options["top10Call"][1][0])
+        self.assertIn("賣權", options["top10Put"][1][0])
 
 
     def test_stale_margin_ratio_provenance_is_not_current_t0(self):
