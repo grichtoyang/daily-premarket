@@ -87,3 +87,21 @@ jobs:
               if row[pcode] in codes:
                   print("PRICE", row[pcode], "close", row[pclose], "name", row[1])
           PY
+
+      - name: Probe historical close fallback for unpriced financed symbols
+        if: always()
+        run: |
+          python - <<'PY'
+          import requests
+          h = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.twse.com.tw/"}
+          for code in ("00682U", "1470", "1589", "5906"):
+              url = f"https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date=20261001&stockNo={code}&response=json"
+              r = requests.get(url, headers=h, timeout=20)
+              r.raise_for_status()
+              j = r.json()
+              fields = j.get("fields", [])
+              rows = j.get("data", [])
+              print("STOCK_DAY", code, "stat=", j.get("stat"), "fields=", fields)
+              for row in rows[-3:]:
+                  print("ROW", code, row)
+          PY
