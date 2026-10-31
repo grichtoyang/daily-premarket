@@ -10,7 +10,7 @@
     "no_sample_data": true,
     "factors": "17F; active=13/17",
     "db_mode": "no-db-partial",
-    "db_rows": 1,
+    "db_rows": 2,
     "output_path_rule": "dashboards/ 唯一"
   },
   "spot": {
@@ -1599,7 +1599,7 @@
     "historical": null,
     "db_status": {
       "exists": true,
-      "rows": 1,
+      "rows": 2,
       "filled": 1,
       "mode": "no-db-partial",
       "path": "dashboards/v9_pro_history.db"
