@@ -10,6 +10,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone, timedelta
 import re
+from html import unescape
 import requests
 
 TAIPEI = timezone(timedelta(hours=8))
@@ -112,8 +113,42 @@ def _stockintelli(t0: str, timeout: int = 20) -> dict:
 ISTOCK_URL = "https://www.istock.tw/post/twmarginrequirement"
 
 
+def _parse_istock_html(t0: str, html: str) -> dict:
+    """解析 iStock 頁面；只取「上市櫃整體維持率」，並要求資料日期精確等於 T0。"""
+    out = {"ratio": None, "date": None, "ok": False}
+    text = re.sub(r"<script.*?</script>", " ", html, flags=re.S | re.I)
+    text = re.sub(r"<style.*?</style>", " ", text, flags=re.S | re.I)
+    text = unescape(re.sub(r"<[^>]+>", " ", text))
+    text = re.sub(r"\s+", " ", text)
+
+    date_match = re.search(r"(?:資料日期|更新日期)\s*[:：]?\s*(\d{4}-\d{2}-\d{2})", text)
+    if not date_match:
+        print("[INFO] istock 找不到資料日期")
+        return out
+    source_date = date_match.group(1)
+    if source_date != t0:
+        print(f"[INFO] istock 維持率日期 {source_date} 非 T0 ({t0})")
+        return out
+
+    # 頁面同時列上市、上櫃與上市櫃整體數值；不可誤取第一個（上市）百分比。
+    total_marker = re.search(r"上市櫃整體維持率", text)
+    if not total_marker:
+        print("[INFO] istock 找不到上市櫃整體維持率欄位")
+        return out
+    segment = text[total_marker.end():date_match.start()]
+    ratio_match = re.search(r"(\d{2,3}(?:\.\d+)?)\s*%", segment)
+    if not ratio_match:
+        print("[INFO] istock 上市櫃整體維持率數值解析失敗")
+        return out
+    ratio = float(ratio_match.group(1))
+    if not 50 < ratio < 500:
+        print(f"[INFO] istock 維持率數值異常: {ratio}")
+        return out
+    return {"ratio": ratio, "date": source_date, "ok": True}
+
+
 def _istock(t0: str, timeout: int = 30) -> dict:
-    """istock.tw 爬蟲，回傳 {ratio, date, ok}。"""
+    """iStock SSR/HTML 備援；只回傳 T0 上市櫃整體維持率。"""
     out = {"ratio": None, "date": None, "ok": False}
     code = None
     try:
@@ -121,27 +156,7 @@ def _istock(t0: str, timeout: int = 30) -> dict:
         r = requests.get(ISTOCK_URL, headers=istock_headers, timeout=timeout)
         code = r.status_code
         r.raise_for_status()
-        t = re.sub(r"<script.*?</script>", "", r.text, flags=re.S)
-        t = re.sub(r"<style.*?</style>", "", t, flags=re.S)
-        tx = re.sub(r"<[^>]+>", "|", t)
-        seg0 = tx
-        for mm in re.finditer("大盤融資維持率", tx):
-            cand = tx[mm.start():mm.start() + 2500]
-            if "更新日期" in cand:
-                seg0 = cand
-                break
-        m = re.search(r"更新日期:\s*(\d{4}-\d{2}-\d{2})", seg0)
-        if m and m.group(1) == t0:
-            seg = seg0[m.end():m.end() + 500].split("看更多")[0]
-            v = re.search(r"(\d{2,3}\.\d+)", seg)
-            if v and float(v.group(1)) < 1000:
-                out = {"ratio": float(v.group(1)), "date": t0, "ok": True}
-            else:
-                print("[INFO] istock 維持率數值解析失敗")
-        elif m:
-            print(f"[INFO] istock 維持率日期 {m.group(1)} 非 T0 ({t0})")
-        else:
-            print("[INFO] istock 找不到維持率更新日期")
+        out = _parse_istock_html(t0, r.text)
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] istock failed (HTTP {code}): {e}")
     return out
