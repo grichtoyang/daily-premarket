@@ -249,15 +249,15 @@ def save_today_to_db(bias, signals, tech, t0_date, db_path="dashboards/v9_pro_hi
         conn=init_db(db_path)
         if not conn: return False
         # T0 report date is authoritative; do not use runner's wall-clock date.
-        try:
-            existing=conn.execute("SELECT date FROM v9_pro_history WHERE date=?", (date_str,)).fetchone()
-            table='v9_pro_history'
-        except sqlite3.OperationalError:
-            existing=conn.execute("SELECT date FROM v8_pro_history WHERE date=?", (date_str,)).fetchone()
-            table='v8_pro_history'
-        if existing:
-            print(f"[V9-17F] DB T0 {date_str} exists, skip")
-            conn.close(); return True
+        for table in ('v9_pro_history','v8_pro_history'):
+            try:
+                existing=conn.execute(f"SELECT date FROM {table} WHERE date=?", (date_str,)).fetchone()
+            except sqlite3.OperationalError:
+                continue
+            if existing:
+                print(f"[V9-17F] DB T0 {date_str} exists in {table}, skip")
+                conn.close(); return True
+        table='v9_pro_history'
         conn.execute(f"""
             INSERT INTO {table} (date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
@@ -279,21 +279,20 @@ def update_next_day_pct(t0_date, t0_spot_close, db_path="dashboards/v9_pro_histo
             return False
         conn=init_db(db_path)
         if not conn: return False
-        table='v9_pro_history'
-        try:
-            row=conn.execute(
-                "SELECT date,spot_close FROM v9_pro_history WHERE date<? AND next_day_pct IS NULL AND spot_close>0 ORDER BY date DESC LIMIT 1",
-                (t0_iso,)
-            ).fetchone()
-        except sqlite3.OperationalError:
-            table='v8_pro_history'
-            row=conn.execute(
-                "SELECT date,spot_close FROM v8_pro_history WHERE date<? AND next_day_pct IS NULL AND spot_close>0 ORDER BY date DESC LIMIT 1",
-                (t0_iso,)
-            ).fetchone()
-        if not row:
+        candidates=[]
+        for candidate_table in ('v9_pro_history','v8_pro_history'):
+            try:
+                candidate=conn.execute(
+                    f"SELECT date,spot_close FROM {candidate_table} WHERE date<? AND next_day_pct IS NULL AND spot_close>0 ORDER BY date DESC LIMIT 1",
+                    (t0_iso,)
+                ).fetchone()
+                if candidate:
+                    candidates.append((candidate[0],candidate[1],candidate_table))
+            except sqlite3.OperationalError:
+                continue
+        if not candidates:
             conn.close(); return False
-        previous_date,previous_close=row
+        previous_date,previous_close,table=max(candidates,key=lambda item:item[0])
         next_pct=(current_close-float(previous_close))/float(previous_close)*100
         conn.execute(f"UPDATE {table} SET next_day_pct=? WHERE date=?", (next_pct,previous_date))
         conn.commit(); conn.close()
@@ -942,11 +941,15 @@ def run_17f_self_tests():
         # SQLite date attribution must follow explicit T0, not the runner's current date.
         with tempfile.TemporaryDirectory() as tmp:
             test_db=str(pathlib.Path(tmp)/"t0-test.db")
-            assert save_today_to_db(50,{'spot_close':100.0},{},'20261029',test_db)
+            assert save_today_to_db(50,{'spot_close':95.0},{},'20261028',test_db)
+            assert update_next_day_pct('20261029',100.0,test_db)
+            assert save_today_to_db(51,{'spot_close':100.0},{},'20261029',test_db)
             conn=sqlite3.connect(test_db)
-            stored=conn.execute("SELECT date FROM v9_pro_history").fetchone()[0]
+            rows=conn.execute("SELECT date,spot_close,next_day_pct FROM v9_pro_history ORDER BY date").fetchall()
             conn.close()
-            assert stored=='2026-10-29'
+            assert rows[0][0]=='2026-10-28'
+            assert abs(rows[0][2]-(100.0-95.0)/95.0*100)<1e-6
+            assert rows[1][0]=='2026-10-29'
         print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date")
         return 0
     except Exception:
