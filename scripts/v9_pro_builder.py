@@ -966,25 +966,22 @@ def run_17f_self_tests():
             assert rows[0][0]=='2026-10-28'
             assert abs(rows[0][2]-(100.0-95.0)/95.0*100)<1e-6
             assert rows[1][0]=='2026-10-29'
-        # Legacy SQLite schemas are migrated in place to the complete V9 schema.
+        # Legacy V8/V9 tables must both exist before init_db; init_db creates
+        # any missing counterpart, so creating V8 after the first call collides.
         with tempfile.TemporaryDirectory() as tmp:
             legacy_db=str(pathlib.Path(tmp)/"legacy.db")
             conn=sqlite3.connect(legacy_db)
             conn.execute("CREATE TABLE v9_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
-            conn.commit(); conn.close()
-            migrated=init_db(legacy_db)
-            assert migrated is not None
-            migrated_columns={row[1] for row in migrated.execute("PRAGMA table_info(v9_pro_history)").fetchall()}
-            migrated.close()
-            assert {'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'} <= migrated_columns
-            conn=sqlite3.connect(legacy_db)
             conn.execute("CREATE TABLE v8_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
             conn.commit(); conn.close()
             migrated=init_db(legacy_db)
             assert migrated is not None
+            migrated_columns={row[1] for row in migrated.execute("PRAGMA table_info(v9_pro_history)").fetchall()}
             migrated_v8={row[1] for row in migrated.execute("PRAGMA table_info(v8_pro_history)").fetchall()}
             migrated.close()
-            assert {'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'} <= migrated_v8
+            required_columns={'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'}
+            assert required_columns <= migrated_columns
+            assert required_columns <= migrated_v8
         with tempfile.TemporaryDirectory() as tmp:
             invalid_db=str(pathlib.Path(tmp)/"invalid-schema.db")
             conn=sqlite3.connect(invalid_db)
