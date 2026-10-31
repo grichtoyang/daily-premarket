@@ -88,9 +88,59 @@ jobs:
                   raise SystemExit(f"EXISTING_MARGIN_INDICATOR_MISSING: {label}")
           print("DATA_REPORT_MARGIN_RATIO_INTEGRATION=PASS")
           PY
-      - name: Upload DATA_REPORT artifact
+      - name: Build V9 Pro JSON from generated T0 DATA_REPORT
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          python scripts/v9_pro_builder.py --data_report "data_reports/DATA_REPORT_20261030.md" --out "artifacts/data-20261030.json" --date "20261030"
+          python -m json.tool "artifacts/data-20261030.json" > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("artifacts/data-20261030.json").read_text(encoding="utf-8"))
+          assert data["meta"]["version"] == "v9-pro-17F"
+          assert data["meta"]["date"] == "2026-10-30"
+          margin = data["margin"]
+          assert margin["ratio"] is not None, "Builder ratio missing"
+          assert margin["ratio_status"] == "estimated_t0", margin
+          assert margin["ratio_source_date"] == "2026-10-30", margin
+          assert margin["ratio_is_t0"] is True, margin
+          assert margin["ratio_source_name"] in ("blave", "manual_input"), margin
+          options = data["options"]
+          for key in ("instOptForce", "top10Call", "top10Put"):
+              assert isinstance(options[key], list) and len(options[key]) >= 3, (key, options[key])
+          print("BUILDER_JSON_T0_PROVENANCE=PASS", margin["ratio"], margin["ratio_source_name"], margin["ratio_source_date"])
+          print("BUILDER_OPTION_TABLES=PASS", {key: len(options[key]) for key in ("instOptForce", "top10Call", "top10Put")})
+          PY
+      - name: Generate React Dashboard HTML artifact
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data_path = Path("artifacts/data-20261030.json")
+          template_path = Path("templates/v9-pro-react-template.html")
+          data = json.loads(data_path.read_text(encoding="utf-8"))
+          template = template_path.read_text(encoding="utf-8")
+          if "var vf=window.DASHBOARD_DATA;" not in template:
+              raise SystemExit("React template fallback detected")
+          payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          injection = f"<script>window.DASHBOARD_DATA={payload};</script>\\n"
+          if "</head>" not in template:
+              raise SystemExit("React template closing head missing")
+          html = template.replace("</head>", injection + "</head>", 1)
+          out = Path("artifacts/v9-pro-20261030.html")
+          out.write_text(html, encoding="utf-8")
+          if "window.DASHBOARD_DATA=" not in html:
+              raise SystemExit("React data injection verification failed")
+          print("REACT_HTML_ARTIFACT=PASS", out.stat().st_size)
+          PY
+      - name: Upload DATA_REPORT, JSON and HTML artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: P0-DATA_REPORT-20261030
-          path: data_reports/DATA_REPORT_20261030.md
+          name: P0-V9-Pipeline-20261030
+          path: |
+            data_reports/DATA_REPORT_20261030.md
+            artifacts/data-20261030.json
+            artifacts/v9-pro-20261030.html
           if-no-files-found: error
