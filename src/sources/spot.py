@@ -149,7 +149,7 @@ def build(t0: str) -> dict:
                                        f"(資料日期 {mr['date']}；民間估算；官方無每日序列)")
             notes.append(f"融資維持率資料日期 {mr['date']} (T0 {t0} 尚無，採最新可得)")
         else:
-            sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (民間估算；官方無每日序列)"
+            sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (資料日期 {mr['date']}；民間估算；官方無每日序列)"
     else:
         notes.append("融資維持率未取得 (三源皆失敗；官方無每日序列)")
         _pr, _pdate = _prev_data_ratio(t0)
