@@ -18,8 +18,8 @@ HEADERS = {
 }
 
 
-def fetch_json(label: str, url: str, timeout: int = 45) -> dict:
-    response = requests.get(url, headers=HEADERS, timeout=timeout)
+def fetch_json(label: str, url: str, timeout: int = 45, headers: dict | None = None) -> dict:
+    response = requests.get(url, headers=headers or HEADERS, timeout=timeout)
     response.raise_for_status()
     try:
         payload = response.json()
@@ -103,11 +103,17 @@ def fetch_prior_official_closes(market: str, missing_codes: set[str], t0_date: d
                 {"date": date8, "type": "ALLBUT0999", "response": "json"})
             code_field, close_field = "證券代號", "收盤價"
         else:
+            # The legacy TPEx endpoint may be served through a cache that ignores
+            # the requested date. Add a date-specific cache key and force revalidation.
             url = "https://www.tpex.org.tw/web/stock/aftertrading/daily_close_quotes/stk_quote_result.php?" + urlencode(
-                {"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc,0"})
+                {"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc,0", "_": date8})
             code_field, close_field = "代號", "收盤"
         try:
-            payload = fetch_json(f"{market} prior close {date8}", url)
+            print(f"[OFFICIAL-PRIOR-CLOSE] market={market} requested={date8} url={url}")
+            payload = fetch_json(f"{market} prior close {date8}", url, headers={
+                **HEADERS, "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+            })
         except Exception as exc:  # skip non-trading dates / unavailable archive days
             print(f"[OFFICIAL-PRIOR-CLOSE] market={market} requested={date8} unavailable={type(exc).__name__}: {exc}")
             continue
