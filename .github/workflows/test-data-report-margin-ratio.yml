@@ -125,7 +125,7 @@ jobs:
           if "var vf=window.DASHBOARD_DATA;" not in template:
               raise SystemExit("React template fallback detected")
           payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-          injection = f"<script>window.DASHBOARD_DATA={payload};</script>\\n"
+          injection = f"<script>window.DASHBOARD_DATA={payload};</script>" + chr(10)
           if "</head>" not in template:
               raise SystemExit("React template closing head missing")
           html = template.replace("</head>", injection + "</head>", 1)
