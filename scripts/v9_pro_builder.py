@@ -521,7 +521,7 @@ def parse_data_report(report_path):
     def parse_tables(heading):
         idx=text.find(heading)
         if idx==-1: return []
-        end=text.find("\\n### ",idx+len(heading))
+        end=text.find("\n### ",idx+len(heading))
         section=text[idx:end] if end!=-1 else text[idx:]
         return parse_markdown_tables(section)
 
