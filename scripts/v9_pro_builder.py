@@ -925,11 +925,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         'PCR 0.74→0.57': {"look": f"當日 PCR {pcr_text}；未提供連續歷史序列時不繪製趨勢", "compass": f"PCR {pcr_text}；不以單日數值直接推定散戶恐慌", "target": "PCR 缺值或缺少歷史序列時不產生趨勢與反向訊號"},
         '外資選擇權分歧': {"look": f"外資選擇權日淨分歧，PCR{pcr}", "compass": "外資選擇權偏空", "target": "外資選擇權為空方"},
         '美股指數': us_card,
-        '亞洲指數': {"look": f"亞股：日經韓國恆生，亞洲漲跌互見", "compass": "亞股連動台股", "target": "關注日經225"},
-        '美股期貨': {"look": f"美期：S&P500期貨 Nasdaq100期貨", "compass": "美期夜盤指引", "target": "美期為台指夜盤參考"},
-        '美債殖利率': {"look": f"美債市場資料：{'; '.join(f\"{x.get('l')} {x.get('v')}%\" for x in parsed['yieldPct_full'] if x.get('v') is not None) or 'unavailable'}", "compass": "顯示 DATA_REPORT 原始列值；不以固定門檻推定殖利率曲線", "target": "依當日實際殖利率與期限利差另行判讀"},
-        '匯率': {"look": f"匯率市場資料：{'; '.join(f\"{x.get('l')} {x.get('v')}%\" for x in parsed['fxPct_full'] if x.get('v') is not None) or 'unavailable'}", "compass": "以當日來源資料呈現，不由單一匯率推定外資匯出", "target": "搭配外資現貨與期貨部位交叉觀察"},
-        '商品': {"look": f"WTI原油 黃金 Bitcoin 商品漲跌互見", "compass": "商品與通膨連動", "target": "商品觀察通膨"},
+        '亞洲指數': {"look": f"亞洲市場資料：{parsed['asiaPct_full']}", "compass": "僅呈現有來源的市場數值，不推定同步連動", "target": "依各市場實際變動分別觀察"},
+        '美股期貨': {"look": f"美股期貨資料：{parsed['futPct_full']}", "compass": "僅呈現 DATA_REPORT 有效數值", "target": "資料缺值時不推定夜盤方向"},
+        '美債殖利率': {"look": f"美債市場資料：{parsed['yieldPct_full']}", "compass": "顯示 DATA_REPORT 原始列值；不以固定門檻推定殖利率曲線", "target": "依當日實際殖利率與期限利差另行判讀"},
+        '匯率': {"look": f"匯率市場資料：{parsed['fxPct_full']}", "compass": "以當日來源資料呈現，不由單一匯率推定外資匯出", "target": "搭配外資現貨與期貨部位交叉觀察"},
+        '商品': {"look": f"商品市場資料：{parsed['commPct_full']}", "compass": "商品價格與通膨關係需搭配時間序列判讀", "target": "不以缺值或單日變動推定通膨方向"},
         '重大經濟數據': news_card,
     }
     return cards
