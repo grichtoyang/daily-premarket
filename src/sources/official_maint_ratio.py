@@ -159,10 +159,22 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
     def _code(row: dict) -> str:
         return str(row.get("代號", row.get("證券代號", ""))).strip()
 
+    def _positive_codes(rows: list[dict], balance_field: str) -> set[str]:
+        codes = set()
+        for row in rows:
+            code = _code(row)
+            try:
+                balance = _number(row.get(balance_field))
+            except ValueError:
+                continue
+            if code and balance > 0:
+                codes.add(code)
+        return codes
+
     tw_price_codes = {_code(row) for row in tw_price_rows if _code(row)}
     tx_price_codes = {_code(row) for row in tx_price_rows if _code(row)}
-    tw_margin_codes = {_code(row) for row in tw_margin_rows if _code(row)}
-    tx_margin_codes = {_code(row) for row in tx_margin_rows if _code(row)}
+    tw_margin_codes = _positive_codes(tw_margin_rows, "今日餘額")
+    tx_margin_codes = _positive_codes(tx_margin_rows, "資餘額")
     tw_missing = tw_margin_codes - tw_price_codes
     tx_missing = tx_margin_codes - tx_price_codes
     margin_overlap = tw_margin_codes & tx_margin_codes
