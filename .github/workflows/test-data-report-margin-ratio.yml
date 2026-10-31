@@ -60,7 +60,7 @@ jobs:
           else:
               raise SystemExit("MARGIN_RATIO_SOURCE_NOT_IDENTIFIED")
           for label in ("融資餘額", "融資增減", "融券餘額", "融券增減"):
-              if not any(re.search(rf"\\|\\s*{label}\\s*\\|", line) for line in text.splitlines()):
+              if not any(re.search(rf"\|\s*{label}\s*\|", line) for line in text.splitlines()):
                   raise SystemExit(f"EXISTING_MARGIN_INDICATOR_MISSING: {label}")
           print("DATA_REPORT_MARGIN_RATIO_INTEGRATION=PASS")
           PY
