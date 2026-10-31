@@ -53,6 +53,16 @@ class OfficialMaintenanceRatioTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "no same-day close"):
             calculate("2026-10-30", "115/10/30", *args)
 
+    def test_uses_prior_official_close_and_reports_staleness(self):
+        args = list(self.fixtures())
+        args[3]["tables"][0]["data"] = []
+        fallbacks = {"tpex": {"6488": {"close": 190, "date": "20261028"}}}
+        result = calculate("2026-10-30", "115/10/30", *args, fallbacks)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["otc"]["stale_price_count"], 1)
+        self.assertEqual(result["stale_price_details"][0]["price_date"], "20261028")
+        self.assertEqual(result["stale_price_details"][0]["price"], 190)
+
     def test_accepts_gregorian_tpex_margin_date(self):
         args = list(self.fixtures())
         args[1]["date"] = "20261030"
