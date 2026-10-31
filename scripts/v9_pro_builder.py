@@ -655,7 +655,9 @@ class V9Analyzer:
             'count_coverage_pct':round(active_count/len(base_weights)*100,1),
             'base_weight_coverage_pct':round(coverage,1),
             'effective_weight_total':round(sum(self.weights.values()),6),
-            'confidence':quality,'optimizer':'sqlite' if real_win_rates else 'base_dynamic',
+            'confidence':quality,'bias_reliable':quality in ('high','medium'),
+            'score_status':'calculated' if active_count else 'no_valid_factors_neutral_fallback',
+            'optimizer':'sqlite' if real_win_rates else 'base_dynamic',
             'missing_factors':[x['key'] for x in self.factor_details if x['status']!='active']
         }
         for item in self.factor_details:
@@ -679,7 +681,7 @@ class V9Analyzer:
         total_contribution=sum(x['contribution'] for x in self.factor_details)
         self.bias_score=max(0,min(100,int(round(50.0+total_contribution))))
         self.bias_factors=contributions
-        self.bias_reliable=self.factor_quality['confidence']!='insufficient'
+        self.bias_reliable=self.factor_quality['bias_reliable']
         return self.bias_score,self.bias_factors,self.weights
 
     def gen_bias_card(self):
@@ -886,8 +888,11 @@ def run_17f_self_tests():
             'yieldPct_full':[{'l':'US 10Y','v':-0.06}]
         }
         tech={'rsi':65.0,'macd':1.0,'macd_hist':2.0,'closes':closes,'valid':True}
+        baseline=V9Analyzer(parsed,tech)
+        baseline.calculate_bias()
         analyzer=V9Analyzer(parsed,tech)
         bias,_,weights=analyzer.calculate_bias({'spot_trend':0.7})
+        assert weights['spot_trend']>baseline.weights['spot_trend']
         assert len(analyzer.factor_details)==17
         assert analyzer.factor_quality['active_count']==17
         assert abs(sum(weights.values())-100.0)<1e-5
@@ -908,7 +913,7 @@ def run_17f_self_tests():
         assert empty_bias==50
         assert empty_analyzer.factor_quality['active_count']==0
         assert sum(empty_weights.values())==0
-        assert empty_analyzer.factor_quality['confidence']=='insufficient'
+        assert empty_analyzer.factor_quality['confidence']=='insufficient'\n        assert empty_analyzer.factor_quality['bias_reliable'] is False\n        assert empty_analyzer.factor_quality['score_status']=='no_valid_factors_neutral_fallback'
         print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score")
         return 0
     except Exception:
