@@ -63,7 +63,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 if result.returncode:
                     error_lines = result.stderr.splitlines()
                     for line_index, error_line in enumerate(error_lines):
-                        match = re.search(rf"{re.escape(path.name)}:(\\d+)", error_line)
+                        match = re.search(rf"{re.escape(path.name)}:(\d+)", error_line)
                         if match:
                             source_line = error_lines[line_index + 1] if line_index + 1 < len(error_lines) else ""
                             caret_line = error_lines[line_index + 2] if line_index + 2 < len(error_lines) else ""
@@ -72,11 +72,11 @@ class ReactTemplateStaticTests(unittest.TestCase):
                             diagnostic = f"{error_line}; column={column}; context={context}; message={error_lines[-1] if error_lines else ''}"
                             break
                     if not diagnostic:
-                        diagnostic = "\\n".join(error_lines[-3:])
+                        diagnostic = "\n".join(error_lines[-3:])
                 self.assertEqual(
                     result.returncode,
                     0,
-                    f"JavaScript syntax error in inline script {index}:\\n{diagnostic}",
+                    f"JavaScript syntax error in inline script {index}:\n{diagnostic}",
                 )
                 checked += 1
         self.assertGreater(checked, 0, "No inline JavaScript was checked")
