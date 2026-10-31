@@ -54,9 +54,12 @@ def fetch(label: str, url: str, timeout: int = 30) -> Any:
                     "stat_keys": list(payload.get("stat", {}).keys()) if isinstance(payload.get("stat"), dict) else None,
                     "table_count": len(payload.get("tables", [])) if isinstance(payload.get("tables"), list) else None,
                     "table_meta": [
-                        {"title": table.get("title"), "fields": table.get("fields"),
+                        {"title": table.get("title"), "keys": list(table.keys()),
+                         "fields": table.get("fields"),
                          "rows": len(table.get("data") or []),
-                         "last_rows": (table.get("data") or [])[-2:]}
+                         "last_rows": (table.get("data") or [])[-2:],
+                         "footer": table.get("footer"), "footers": table.get("footers"),
+                         "summary": table.get("summary"), "tfoot": table.get("tfoot")}
                         for table in (payload.get("tables") or []) if isinstance(table, dict)
                     ],
                 }, ensure_ascii=False)[:20000])
@@ -92,6 +95,16 @@ def main() -> int:
         "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
         + urlencode({"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc"})
     )
+    # Probe TPEx's rendered/CSV exports too: the JSON table may omit footer totals
+    # (notably the market-wide financing amount shown below the 919 security rows).
+    tpex_margin_html = (
+        "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
+        + urlencode({"l": "zh-tw", "o": "htm", "d": roc, "s": "0,asc"})
+    )
+    tpex_margin_csv = (
+        "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
+        + urlencode({"l": "zh-tw", "o": "csv", "d": roc, "s": "0,asc"})
+    )
     # Historical daily market quote endpoints are probed separately from margin.
     twse_prices = (
         "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?"
@@ -112,6 +125,8 @@ def main() -> int:
     results = {
         "twse_margin": fetch("TWSE margin detail", twse_margin),
         "tpex_margin": fetch("TPEx legacy margin detail + totals", tpex_margin),
+        "tpex_margin_html": fetch("TPEx margin HTML export (footer totals)", tpex_margin_html),
+        "tpex_margin_csv": fetch("TPEx margin CSV export (footer totals)", tpex_margin_csv),
         "twse_prices": fetch("TWSE historical prices", twse_prices),
         "tpex_prices": fetch("TPEx legacy historical prices", tpex_prices),
         "tpex_openapi_margin": fetch("TPEx OpenAPI latest margin snapshot", tpex_openapi_margin),
