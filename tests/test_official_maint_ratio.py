@@ -63,6 +63,13 @@ class OfficialMaintenanceRatioTests(unittest.TestCase):
         self.assertEqual(result["stale_price_details"][0]["price_date"], "20261028")
         self.assertEqual(result["stale_price_details"][0]["price"], 190)
 
+    def test_rejects_fallback_close_older_than_ten_calendar_days(self):
+        args = list(self.fixtures())
+        args[3]["tables"][0]["data"] = []
+        fallbacks = {"tpex": {"6488": {"close": 190, "date": "20261019"}}}
+        with self.assertRaisesRegex(ValueError, "out of allowed range"):
+            calculate("2026-10-30", "115/10/30", *args, fallbacks)
+
     def test_accepts_gregorian_tpex_margin_date(self):
         args = list(self.fixtures())
         args[1]["date"] = "20261030"
