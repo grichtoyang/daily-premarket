@@ -995,7 +995,7 @@ def main():
     except Exception as e:
         print(f"[V9-17F] SQLite optimizer unavailable; use base/dynamic weights: {e}")
     bias,factors,weights=analyzer.calculate_bias(real_win_rates)
-    print(f"[V9-17F] 17F active={analyzer.factor_quality['active_count']}/17 coverage={analyzer.factor_quality['base_weight_coverage_pct']}% effective_weight_total={sum(weights.values()):.6f}")
+    print(f"[V9-17F] 17F active={analyzer.factor_quality['active_count']}/17 count_coverage={analyzer.factor_quality['count_coverage_pct']}% base_weight_coverage={analyzer.factor_quality['base_weight_coverage_pct']}% effective_weight_total={sum(weights.values()):.6f}")
 
     historical=None
     try:
