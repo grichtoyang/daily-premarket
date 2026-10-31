@@ -75,6 +75,11 @@ jobs:
           echo "Using ${REPORT} for T0 ${DATE}"
           mkdir -p dashboards
 
+      - name: Probe official TWSE and TPEx maintenance ratio inputs
+        run: |
+          set -euo pipefail
+          python scripts/probe_official_maint_ratio.py --date "$DATE"
+
       - name: Probe T0 maintenance ratio providers
         run: |
           export T0_DATE="$DATE"
