@@ -76,9 +76,8 @@ jobs:
           mkdir -p dashboards
 
       - name: Probe T0 maintenance ratio providers
-        env:
-          T0_DATE: ${{ env.DATE }}
         run: |
+          export T0_DATE="$DATE"
           python - <<'PY'
           import json, os
           from src.sources import maint_ratio
