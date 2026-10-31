@@ -4,11 +4,14 @@ on:
   push:
     branches:
       - master
+      - phase2-p0-data-quality
     paths:
       - '.github/workflows/daily-premarket-v9-pro.yml'
       - 'scripts/v9_pro_builder.py'
       - 'templates/v9-pro-react-template.html'
       - 'data_reports/DATA_REPORT_*.md'
+      - 'src/sources/**'
+      - 'tests/**'
   schedule:
     - cron: '30 0 * * 1-5'
   workflow_dispatch:
