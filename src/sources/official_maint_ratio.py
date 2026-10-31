@@ -41,11 +41,12 @@ def _records(table: dict) -> list[dict]:
     return result
 
 
-def _find_table(tables: list[dict], field: str) -> dict:
+def _find_table(tables: list[dict], *required_fields: str) -> dict:
     for table in tables:
-        if field in [str(x).strip() for x in (table.get("fields") or [])]:
+        fields = [str(x).strip() for x in (table.get("fields") or [])]
+        if all(field in fields for field in required_fields):
             return table
-    raise ValueError(f"table containing field {field!r} not found")
+    raise ValueError(f"table containing fields {required_fields!r} not found")
 
 
 def _sum_market_value(margin_table: dict, price_table: dict, balance_field: str,
@@ -130,11 +131,11 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
     twm = _tables(twse_margin, date8, "TWSE margin")
     twp = _tables(twse_prices, date8, "TWSE prices")
     txp = _tables(tpex_prices, date8, "TPEx prices")
-    tw_margin_table = _find_table(twm, "今日餘額")
-    tw_price_table = _find_table(twp, "收盤價")
+    tw_margin_table = _find_table(twm, "證券代號", "今日餘額")
+    tw_price_table = _find_table(twp, "證券代號", "收盤價")
     tx_margin_tables = _tables(tpex_margin, t0_roc, "TPEx margin")
-    tx_margin_table = _find_table(tx_margin_tables, "資餘額")
-    tx_price_table = _find_table(txp, "收盤")
+    tx_margin_table = _find_table(tx_margin_tables, "代號", "資餘額")
+    tx_price_table = _find_table(txp, "代號", "收盤")
 
     listed = _sum_market_value(tw_margin_table, tw_price_table, "今日餘額",
                                "證券代號", "收盤價", "上市")
