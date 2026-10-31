@@ -925,7 +925,9 @@ def run_17f_self_tests():
         assert empty_bias==50
         assert empty_analyzer.factor_quality['active_count']==0
         assert sum(empty_weights.values())==0
-        assert empty_analyzer.factor_quality['confidence']=='insufficient'\n        assert empty_analyzer.factor_quality['bias_reliable'] is False\n        assert empty_analyzer.factor_quality['score_status']=='no_valid_factors_neutral_fallback'
+        assert empty_analyzer.factor_quality['confidence']=='insufficient'
+        assert empty_analyzer.factor_quality['bias_reliable'] is False
+        assert empty_analyzer.factor_quality['score_status']=='no_valid_factors_neutral_fallback'
         print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score")
         return 0
     except Exception:
