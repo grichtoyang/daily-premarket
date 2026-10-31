@@ -9,6 +9,7 @@ on:
       - "src/sources/spot.py"
       - "src/fetch_data.py"
       - "scripts/v9_pro_builder.py"
+      - "tests/test_fetch_data_margin_ratio.py"
       - ".github/workflows/test-data-report-margin-ratio.yml"
   workflow_dispatch:
 
@@ -36,6 +37,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v
           python -m unittest discover -s tests -p "test_spot_margin_ratio.py" -v
+          python -m unittest discover -s tests -p "test_fetch_data_margin_ratio.py" -v
       - name: Build DATA_REPORT for 2026-10-30 T0
         env:
           MANUAL_LISTED_MARGIN_RATIO: ${{ vars.MANUAL_LISTED_MARGIN_RATIO }}
