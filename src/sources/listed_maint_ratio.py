@@ -47,8 +47,7 @@ def calculate(t0, margin_payload, price_payload):
 
     mtables, ptables = margin_payload["tables"], price_payload["tables"]
     balance_table = next((t for t in mtables if "代號" in (t.get("fields") or [])
-                          and ("融資今日餘額" in (t.get("fields") or [])
-                               or "融資餘額" in (t.get("fields") or []))), None)
+                          and (t.get("fields") or []).count("今日餘額") >= 2), None)
     price_table = next((t for t in ptables if "證券代號" in (t.get("fields") or [])
                         and "收盤價" in (t.get("fields") or [])), None)
     if balance_table is None or price_table is None:
@@ -77,15 +76,24 @@ def calculate(t0, margin_payload, price_payload):
             prices[code] = close
 
     balance_fields = balance_table.get("fields") or []
-    balance_key = ("融資今日餘額" if "融資今日餘額" in balance_fields
-                   else "融資餘額")
+    # MI_MARGN repeats "今日餘額": first is financing, second is short.
+    financing_balance_idx = [i for i, field in enumerate(balance_fields)
+                             if field == "今日餘額"][0]
+    code_idx = balance_fields.index("代號")
     collateral = 0.0
     financed = 0
     missing = []
-    for row in _records(balance_table):
-        code = str(row.get("代號", "")).strip()
+    for raw_row in balance_table.get("data") or []:
+        if isinstance(raw_row, dict):
+            code = str(raw_row.get("代號", "")).strip()
+            raw_lots = raw_row.get("融資今日餘額", raw_row.get("今日餘額"))
+        elif isinstance(raw_row, list) and len(raw_row) > max(code_idx, financing_balance_idx):
+            code = str(raw_row[code_idx]).strip()
+            raw_lots = raw_row[financing_balance_idx]
+        else:
+            continue
         try:
-            lots = _num(row.get(balance_key))
+            lots = _num(raw_lots)
         except ValueError:
             continue
         if not code or lots <= 0:
