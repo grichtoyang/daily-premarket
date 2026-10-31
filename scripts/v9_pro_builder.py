@@ -966,7 +966,18 @@ def run_17f_self_tests():
             assert rows[0][0]=='2026-10-28'
             assert abs(rows[0][2]-(100.0-95.0)/95.0*100)<1e-6
             assert rows[1][0]=='2026-10-29'
-        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date")
+        # Legacy SQLite schemas are migrated in place to the complete V9 schema.
+        with tempfile.TemporaryDirectory() as tmp:
+            legacy_db=str(pathlib.Path(tmp)/"legacy.db")
+            conn=sqlite3.connect(legacy_db)
+            conn.execute("CREATE TABLE v9_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
+            conn.commit(); conn.close()
+            migrated=init_db(legacy_db)
+            assert migrated is not None
+            migrated_columns={row[1] for row in migrated.execute("PRAGMA table_info(v9_pro_history)").fetchall()}
+            migrated.close()
+            assert {'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'} <= migrated_columns
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, sqlite-schema-migration")
         return 0
     except Exception:
         traceback.print_exc()
