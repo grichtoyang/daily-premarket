@@ -1,48 +1,50 @@
 {
   "meta": {
     "version": "v9-pro-17F",
-    "skill": "daily-premarket-analysis-v8",
-    "date": "2026-10-29",
-    "report_date": "2026-10-30",
-    "generated_at": "2026-10-30 08:45:09",
+    "skill": "daily-premarket-analysis-v9-pro",
+    "date": "2026-10-30",
+    "report_date": "2026-10-31",
+    "generated_at": "2026-10-31 00:55:48",
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
-    "factors": "17F = 15F + RSI 3% + MACD 3% + VIX動態",
-    "db_mode": "no-db-partial",
-    "db_rows": 1,
-    "output_path_rule": "dashboards/ 唯一"
+    "factors": "17F; active=12/17",
+    "db_mode": "db",
+    "db_rows": 3,
+    "output_path_rule": "dashboards/ 唯一",
+    "data_quality_warning_count": 0,
+    "data_quality_warnings": []
   },
   "spot": {
-    "close": 46368.33,
-    "diff": -667.25,
-    "pct": -1.42,
-    "open": 47014.87,
-    "high": 47015.45,
-    "low": 46055.07,
-    "vol": 8238.1,
-    "vol_str": "8238.1億",
-    "up": 232,
-    "down": 737,
-    "flat": 108,
-    "limit_up": 7,
-    "limit_down": 3,
+    "close": 45211.83,
+    "diff": -1156.5,
+    "pct": -2.49,
+    "open": 46139.79,
+    "high": 46139.79,
+    "low": 44726.26,
+    "vol": 9396.1,
+    "vol_str": "9396.1億",
+    "up": 92,
+    "down": 941,
+    "flat": 45,
+    "limit_up": 4,
+    "limit_down": 11,
     "otc": {
-      "up": 195,
-      "down": 598,
-      "flat": 75,
-      "limit_up": 15,
-      "limit_down": 1
+      "up": 127,
+      "down": 691,
+      "flat": 56,
+      "limit_up": 14,
+      "limit_down": 7
     },
     "spot5": [
+      46041,
       46096,
       47036,
       46368,
-      45212,
-      46368
+      45212
     ],
     "spot5Dates": [
-      "10/26",
+      "10/22",
       "10/27",
       "10/28",
       "10/29",
@@ -50,253 +52,258 @@
     ]
   },
   "institutional": {
-    "all": -832.7,
-    "foreign": -688.2,
-    "trust": 70.4,
-    "dealer": -215.0
+    "all": -1402.2,
+    "foreign": -1124.7,
+    "trust": 236.2,
+    "dealer": -513.7
   },
   "margin": {
-    "finance": 8438.7,
-    "finance_diff": 3.3,
-    "short": 226453.0,
+    "finance": 8287.7,
+    "finance_diff": -151.0,
+    "short": 233537.0,
     "ratio": 178.4,
-    "sbl": 4627918.0,
-    "borrow": "4627918.0張"
+    "ratio_status": "previous_report_fallback",
+    "ratio_source": "前值遞補 (DATA 2026-10-29；當日三源皆失敗；民間估算；官方無每日序列)",
+    "ratio_source_name": "previous_report",
+    "ratio_source_date": "2026-10-29",
+    "ratio_is_t0": false,
+    "sbl": 4632179.0,
+    "borrow": "4632179.0張"
   },
   "turnover": {
-    "listed": 8238.1,
-    "otc": 2084.2,
-    "total": 10322.3
+    "listed": 9396.1,
+    "otc": 1987.7,
+    "total": 11383.7
   },
   "tx": {
     "day": {
-      "o": 47187.0,
-      "h": 47218.0,
-      "l": 46310.0,
-      "c": 46577.0,
-      "diff": -672.0,
-      "pct": -1.42,
-      "vol": 56666.0,
-      "basis": 208.67,
-      "prem": 0.45
+      "o": 45410.0,
+      "h": 45597.0,
+      "l": 44908.0,
+      "c": 45301.0,
+      "diff": -1268.0,
+      "pct": -2.72,
+      "vol": 73987.0,
+      "basis": 89.17,
+      "prem": 0.2
     },
     "night": {
-      "o": 46400.0,
-      "h": 46637.0,
-      "l": 45850.0,
-      "c": 45926.0,
-      "diff": -643.0,
-      "pct": -1.38,
-      "vol": 34357.0,
-      "change": -651.0
+      "o": null,
+      "h": null,
+      "l": null,
+      "c": 45301.0,
+      "diff": null,
+      "pct": null,
+      "vol": 73987.0,
+      "change": "0"
     }
   },
   "futures": {
-    "foreign_oi": -89522.0,
-    "trust_oi": 87218.0,
-    "dealer_oi": 1511.0,
+    "foreign_oi": -92241.0,
+    "trust_oi": 89211.0,
+    "dealer_oi": 1736.0,
     "top10": 11690.0,
-    "foreign_day": -4605.0,
-    "foreign_night": 459.0
+    "foreign_day": -1780.0,
+    "foreign_night": null
   },
   "options": {
-    "callVol": 197738.0,
-    "callOi": 62516.0,
-    "putVol": 159516.0,
-    "putOi": 35052.0,
-    "pcr": 0.56,
+    "callVol": 397427.0,
+    "callOi": 98551.0,
+    "putVol": 376322.0,
+    "putOi": 59945.0,
+    "pcr": 0.61,
     "callWall": 48500.0,
-    "putWall": 46000.0,
-    "gammaWall": 46300.0,
-    "flip": 46131.4,
-    "maxPain": 46000.0,
+    "putWall": 45000.0,
+    "gammaWall": 45200.0,
+    "flip": 44730.73,
+    "maxPain": 45400.0,
     "callOiDist": [
       [
         "C1",
         "48,500",
-        "4,246",
-        "6.79%",
+        "4,116",
+        "4.18%",
         "TAIFEX Proxy"
       ],
       [
         "C2",
-        "49,200",
-        "3,912",
-        "6.26%",
+        "45,300",
+        "4,005",
+        "4.06%",
         "TAIFEX Proxy"
       ],
       [
         "C3",
-        "47,000",
-        "2,685",
-        "4.29%",
+        "49,200",
+        "3,905",
+        "3.96%",
         "TAIFEX Proxy"
       ],
       [
         "C4",
-        "46,300",
-        "1,948",
-        "3.12%",
+        "45,400",
+        "3,662",
+        "3.72%",
         "TAIFEX Proxy"
       ],
       [
         "C5",
-        "46,600",
-        "1,876",
-        "3.0%",
+        "45,200",
+        "3,499",
+        "3.55%",
         "TAIFEX Proxy"
       ],
       [
         "C6",
-        "47,500",
-        "1,799",
-        "2.88%",
+        "45,500",
+        "3,446",
+        "3.5%",
         "TAIFEX Proxy"
       ],
       [
         "C7",
-        "48,000",
-        "1,643",
-        "2.63%",
+        "47,000",
+        "3,364",
+        "3.41%",
         "TAIFEX Proxy"
       ],
       [
         "C8",
-        "46,800",
-        "1,604",
-        "2.57%",
+        "46,000",
+        "3,188",
+        "3.23%",
         "TAIFEX Proxy"
       ],
       [
         "C9",
-        "48,200",
-        "1,555",
-        "2.49%",
+        "45,600",
+        "2,845",
+        "2.89%",
         "TAIFEX Proxy"
       ],
       [
         "C10",
-        "47,300",
-        "1,533",
-        "2.45%",
+        "46,600",
+        "2,271",
+        "2.3%",
         "TAIFEX Proxy"
       ]
     ],
     "putOiDist": [
       [
         "P1",
-        "46,000",
-        "2,822",
-        "8.05%",
+        "45,000",
+        "3,910",
+        "6.52%",
         "TAIFEX Proxy"
       ],
       [
         "P2",
-        "45,000",
-        "2,366",
-        "6.75%",
+        "45,200",
+        "3,659",
+        "6.1%",
         "TAIFEX Proxy"
       ],
       [
         "P3",
-        "45,500",
-        "1,826",
-        "5.21%",
+        "45,250",
+        "2,871",
+        "4.79%",
         "TAIFEX Proxy"
       ],
       [
         "P4",
-        "45,600",
-        "1,446",
-        "4.13%",
+        "45,100",
+        "2,653",
+        "4.43%",
         "TAIFEX Proxy"
       ],
       [
         "P5",
-        "45,700",
-        "1,360",
-        "3.88%",
+        "44,500",
+        "2,484",
+        "4.14%",
         "TAIFEX Proxy"
       ],
       [
         "P6",
-        "45,800",
-        "1,308",
-        "3.73%",
+        "46,000",
+        "2,336",
+        "3.9%",
         "TAIFEX Proxy"
       ],
       [
         "P7",
-        "45,900",
-        "1,304",
-        "3.72%",
+        "45,300",
+        "2,128",
+        "3.55%",
         "TAIFEX Proxy"
       ],
       [
         "P8",
-        "46,500",
-        "1,160",
-        "3.31%",
+        "44,800",
+        "1,875",
+        "3.13%",
         "TAIFEX Proxy"
       ],
       [
         "P9",
-        "46,200",
-        "1,118",
-        "3.19%",
+        "44,900",
+        "1,792",
+        "2.99%",
         "TAIFEX Proxy"
       ],
       [
         "P10",
-        "45,400",
-        "1,048",
-        "2.99%",
+        "44,000",
+        "1,542",
+        "2.57%",
         "TAIFEX Proxy"
       ]
     ],
     "instOpt": [
       [
         "外資",
-        "102,539",
-        "103,342",
-        "-803",
-        "85,297",
-        "85,264",
-        "+33",
-        "-836",
+        "267,270",
+        "260,646",
+        "+6,624",
+        "unavailable",
+        "unavailable",
+        "unavailable",
+        "unavailable",
         "TAIFEX Proxy"
       ],
       [
         "投信",
-        "0",
-        "2,776",
-        "-2,776",
-        "0",
-        "0",
-        "+0",
-        "-2,776",
+        "3,634",
+        "8,571",
+        "-4,937",
+        "unavailable",
+        "unavailable",
+        "unavailable",
+        "unavailable",
         "TAIFEX Proxy"
       ],
       [
         "自營商",
-        "107,375",
-        "113,700",
-        "-6,325",
-        "51,891",
-        "54,156",
-        "-2,265",
-        "-4,060",
+        "226,220",
+        "224,878",
+        "+1,342",
+        "unavailable",
+        "unavailable",
+        "unavailable",
+        "unavailable",
         "TAIFEX Proxy"
       ],
       [
         "三大法人合計",
-        "209,914",
-        "219,818",
-        "-9,904",
-        "137,188",
-        "139,420",
-        "-2,232",
-        "-7,672",
+        "497,124",
+        "494,095",
+        "+3,029",
+        "unavailable",
+        "unavailable",
+        "unavailable",
+        "unavailable",
         "TAIFEX Proxy"
       ]
     ]
@@ -305,79 +312,79 @@
     "us": [
       {
         "l": "S&P 500",
-        "v": -0.3,
-        "close": 7720.39,
+        "v": -1.8,
+        "close": 7581.71,
         "raw": [
           "S&P 500",
           "^GSPC",
-          "7,720.39",
-          "-23.59",
-          "-0.30",
+          "7,581.71",
+          "-138.68",
+          "-1.80",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Nasdaq Composite",
-        "v": -1.38,
-        "close": 26184.72,
+        "v": -2.93,
+        "close": 25417.83,
         "raw": [
           "Nasdaq Composite",
           "^IXIC",
-          "26,184.72",
-          "-365.12",
-          "-1.38",
+          "25,417.83",
+          "-766.89",
+          "-2.93",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Nasdaq 100",
-        "v": -1.38,
-        "close": 29402.51,
+        "v": -3.4,
+        "close": 28404.29,
         "raw": [
           "Nasdaq 100",
           "^NDX",
-          "29,402.51",
-          "-410.65",
-          "-1.38",
+          "28,404.29",
+          "-998.22",
+          "-3.40",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Dow Jones",
-        "v": -0.25,
-        "close": 52342.56,
+        "v": -0.9,
+        "close": 51869.82,
         "raw": [
           "Dow Jones",
           "^DJI",
-          "52,342.56",
-          "-132.54",
-          "-0.25",
+          "51,869.82",
+          "-472.74",
+          "-0.90",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "費城半導體 SOX",
-        "v": -1.42,
-        "close": 11518.2,
+        "v": -7.44,
+        "close": 10660.9,
         "raw": [
           "費城半導體 SOX",
           "^SOX",
-          "11,518.20",
-          "-165.80",
-          "-1.42",
+          "10,660.90",
+          "-857.30",
+          "-7.44",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "VIX",
-        "v": 1.71,
-        "close": 17.2,
+        "v": 15.93,
+        "close": 19.94,
         "raw": [
           "VIX",
           "^VIX",
-          "17.20",
-          "0.29",
-          "+1.71",
+          "19.94",
+          "2.74",
+          "+15.93",
           "Yahoo Finance Chart API"
         ]
       }
@@ -385,66 +392,66 @@
     "asia": [
       {
         "l": "日經225",
-        "v": -0.47,
-        "close": 63650.45,
+        "v": 1.1,
+        "close": 64659.47,
         "raw": [
           "日經225",
           "^N225",
-          "63,650.45",
-          "-303.74",
-          "-0.47",
+          "64,659.47",
+          "705.28",
+          "+1.10",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "韓國KOSPI",
-        "v": -4.76,
-        "close": 5726.35,
+        "v": -1.24,
+        "close": 5937.66,
         "raw": [
           "韓國KOSPI",
           "^KS11",
-          "5,726.35",
-          "-286.09",
-          "-4.76",
+          "5,937.66",
+          "-74.78",
+          "-1.24",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "香港恆生",
-        "v": 0.23,
-        "close": 23094.83,
+        "v": -0.59,
+        "close": 22958.65,
         "raw": [
           "香港恆生",
           "^HSI",
-          "23,094.83",
-          "53.51",
-          "+0.23",
+          "22,958.65",
+          "-136.18",
+          "-0.59",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "上海綜合",
-        "v": 0.91,
-        "close": 3681.47,
+        "v": -0.82,
+        "close": 3651.43,
         "raw": [
           "上海綜合",
           "000001.SS",
-          "3,681.47",
-          "33.17",
-          "+0.91",
+          "3,651.43",
+          "-30.03",
+          "-0.82",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "深圳成分",
-        "v": 2.02,
-        "close": 11473.18,
+        "v": -2.92,
+        "close": 11138.2,
         "raw": [
           "深圳成分",
           "399001.SZ",
-          "11,473.18",
-          "227.45",
-          "+2.02",
+          "11,138.20",
+          "-334.98",
+          "-2.92",
           "Yahoo Finance Chart API"
         ]
       }
@@ -452,53 +459,53 @@
     "usFut": [
       {
         "l": "S&P500期貨",
-        "v": -1.05,
-        "close": 7701.25,
+        "v": -1.58,
+        "close": 7631.75,
         "raw": [
           "S&P500期貨",
           "ES=F",
-          "7,701.25",
-          "-82.00",
-          "-1.05",
+          "7,631.75",
+          "-122.50",
+          "-1.58",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Nasdaq100期貨",
-        "v": -3.07,
-        "close": 29059.75,
+        "v": -3.24,
+        "close": 28603.0,
         "raw": [
           "Nasdaq100期貨",
           "NQ=F",
-          "29,059.75",
-          "-919.75",
-          "-3.07",
+          "28,603.00",
+          "-959.00",
+          "-3.24",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "道瓊期貨",
-        "v": -0.25,
-        "close": 52564.0,
+        "v": -0.75,
+        "close": 52116.0,
         "raw": [
           "道瓊期貨",
           "YM=F",
-          "52,564.00",
-          "-132.00",
-          "-0.25",
+          "52,116.00",
+          "-396.00",
+          "-0.75",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Russell2000期貨",
-        "v": 1.0,
-        "close": 2867.9,
+        "v": -1.69,
+        "close": 2818.9,
         "raw": [
           "Russell2000期貨",
           "RTY=F",
-          "2,867.90",
-          "28.40",
-          "+1.00",
+          "2,818.90",
+          "-48.40",
+          "-1.69",
           "Yahoo Finance Chart API"
         ]
       }
@@ -506,7 +513,7 @@
     "yields": [
       {
         "l": "美國 2 年期殖利率",
-        "v": 0.0,
+        "v": -0.06,
         "close": 4.61,
         "raw": [
           "美國 2 年期殖利率",
@@ -518,25 +525,25 @@
       },
       {
         "l": "美國 10 年期殖利率",
-        "v": 0.0,
-        "close": 4.99,
+        "v": -0.04,
+        "close": 4.95,
         "raw": [
           "美國 10 年期殖利率",
           "10 Yr",
-          "4.99",
-          "-0.06",
+          "4.95",
+          "-0.04",
           "Yahoo Finance (備援)"
         ]
       },
       {
         "l": "美國 30 年期殖利率",
-        "v": 0.0,
-        "close": 5.33,
+        "v": -0.01,
+        "close": 5.32,
         "raw": [
           "美國 30 年期殖利率",
           "30 Yr",
-          "5.33",
-          "-0.03",
+          "5.32",
+          "-0.01",
           "Yahoo Finance (備援)"
         ]
       }
@@ -544,53 +551,53 @@
     "fx": [
       {
         "l": "USD/TWD",
-        "v": 0.5,
-        "close": 32.54,
+        "v": 0.67,
+        "close": 32.6,
         "raw": [
           "USD/TWD",
           "TWD=X",
-          "32.54",
-          "0.16",
-          "+0.50",
+          "32.60",
+          "0.22",
+          "+0.67",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "DXY美元指數",
-        "v": -0.34,
-        "close": 101.85,
+        "v": -0.07,
+        "close": 101.97,
         "raw": [
           "DXY美元指數",
           "DX-Y.NYB",
-          "101.85",
-          "-0.34",
-          "-0.34",
+          "101.97",
+          "-0.07",
+          "-0.07",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "USD/JPY",
-        "v": -0.21,
-        "close": 157.51,
+        "v": -0.23,
+        "close": 157.46,
         "raw": [
           "USD/JPY",
           "JPY=X",
-          "157.51",
-          "-0.32",
-          "-0.21",
+          "157.46",
+          "-0.37",
+          "-0.23",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "USD/KRW",
-        "v": -0.13,
-        "close": 1338.58,
+        "v": -0.49,
+        "close": 1333.79,
         "raw": [
           "USD/KRW",
           "KRW=X",
-          "1,338.58",
-          "-1.76",
-          "-0.13",
+          "1,333.79",
+          "-6.55",
+          "-0.49",
           "Yahoo Finance Chart API"
         ]
       }
@@ -598,40 +605,40 @@
     "adr": [
       {
         "l": "台積電ADR",
-        "v": 0.6,
-        "close": 439.51,
+        "v": -6.16,
+        "close": 405.2,
         "raw": [
           "台積電ADR",
           "TSM",
-          "439.51",
-          "2.64",
-          "+0.60",
+          "405.20",
+          "-26.61",
+          "-6.16",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "聯電ADR",
-        "v": -3.24,
-        "close": 18.82,
+        "v": -8.81,
+        "close": 16.45,
         "raw": [
           "聯電ADR",
           "UMC",
-          "18.82",
-          "-0.63",
-          "-3.24",
+          "16.45",
+          "-1.59",
+          "-8.81",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "日月光ADR",
-        "v": 4.42,
-        "close": 43.92,
+        "v": -12.75,
+        "close": 38.87,
         "raw": [
           "日月光ADR",
           "ASX",
-          "43.92",
-          "1.86",
-          "+4.42",
+          "38.87",
+          "-5.68",
+          "-12.75",
           "Yahoo Finance Chart API"
         ]
       }
@@ -639,40 +646,40 @@
     "commodities": [
       {
         "l": "WTI原油期貨",
-        "v": -0.09,
-        "close": 102.69,
+        "v": 2.07,
+        "close": 104.11,
         "raw": [
           "WTI原油期貨",
           "CL=F",
-          "102.69",
-          "-0.09",
-          "-0.09",
+          "104.11",
+          "2.11",
+          "+2.07",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "黃金期貨",
-        "v": -0.82,
-        "close": 4018.4,
+        "v": -3.12,
+        "close": 3905.5,
         "raw": [
           "黃金期貨",
           "GC=F",
-          "4,018.40",
-          "-33.20",
-          "-0.82",
+          "3,905.50",
+          "-125.90",
+          "-3.12",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Bitcoin",
-        "v": -5.34,
-        "close": 76931.58,
+        "v": -0.83,
+        "close": 77129.0,
         "raw": [
           "Bitcoin",
           "BTC-USD",
-          "76,931.58",
-          "-4,336.01",
-          "-5.34",
+          "77,129.00",
+          "-646.11",
+          "-0.83",
           "Yahoo Finance Chart API"
         ]
       }
@@ -682,127 +689,127 @@
     "usPct": [
       {
         "l": "S&P 500",
-        "v": -0.3
+        "v": -1.8
       },
       {
         "l": "Nasdaq Composite",
-        "v": -1.38
+        "v": -2.93
       },
       {
         "l": "Nasdaq 100",
-        "v": -1.38
+        "v": -3.4
       },
       {
         "l": "Dow Jones",
-        "v": -0.25
+        "v": -0.9
       },
       {
         "l": "費城半導體 SOX",
-        "v": -1.42
+        "v": -7.44
       },
       {
         "l": "VIX",
-        "v": 1.71
+        "v": 15.93
       }
     ],
     "asiaPct": [
       {
         "l": "日經225",
-        "v": -0.47
+        "v": 1.1
       },
       {
         "l": "韓國KOSPI",
-        "v": -4.76
+        "v": -1.24
       },
       {
         "l": "香港恆生",
-        "v": 0.23
+        "v": -0.59
       },
       {
         "l": "上海綜合",
-        "v": 0.91
+        "v": -0.82
       },
       {
         "l": "深圳成分",
-        "v": 2.02
+        "v": -2.92
       }
     ],
     "futPct": [
       {
         "l": "S&P500期貨",
-        "v": -1.05
+        "v": -1.58
       },
       {
         "l": "Nasdaq100期貨",
-        "v": -3.07
+        "v": -3.24
       },
       {
         "l": "道瓊期貨",
-        "v": -0.25
+        "v": -0.75
       },
       {
         "l": "Russell2000期貨",
-        "v": 1.0
+        "v": -1.69
       }
     ],
     "yieldPct": [
       {
         "l": "美國 2 年期殖利率",
-        "v": 0.0
+        "v": -0.06
       },
       {
         "l": "美國 10 年期殖利率",
-        "v": 0.0
+        "v": -0.04
       },
       {
         "l": "美國 30 年期殖利率",
-        "v": 0.0
+        "v": -0.01
       }
     ],
     "fxPct": [
       {
         "l": "USD/TWD",
-        "v": 0.5
+        "v": 0.67
       },
       {
         "l": "DXY美元指數",
-        "v": -0.34
+        "v": -0.07
       },
       {
         "l": "USD/JPY",
-        "v": -0.21
+        "v": -0.23
       },
       {
         "l": "USD/KRW",
-        "v": -0.13
+        "v": -0.49
       }
     ],
     "adrPct": [
       {
         "l": "台積電ADR",
-        "v": 0.6
+        "v": -6.16
       },
       {
         "l": "聯電ADR",
-        "v": -3.24
+        "v": -8.81
       },
       {
         "l": "日月光ADR",
-        "v": 4.42
+        "v": -12.75
       }
     ],
     "commPct": [
       {
         "l": "WTI原油期貨",
-        "v": -0.09
+        "v": 2.07
       },
       {
         "l": "黃金期貨",
-        "v": -0.82
+        "v": -3.12
       },
       {
         "l": "Bitcoin",
-        "v": -5.34
+        "v": -0.83
       }
     ]
   },
@@ -883,279 +890,573 @@
     ]
   },
   "analysis": {
-    "bias": 19,
-    "bias_score": 19,
+    "bias": 22,
+    "bias_score": 22,
     "factors": [
       [
-        "現貨下跌",
-        -6
+        "現貨趨勢",
+        -7
       ],
       [
-        "外資賣超",
+        "外資現貨",
         -8
       ],
       [
-        "外資期空創高",
-        -6
+        "外資期貨",
+        -5
       ],
       [
-        "投信買超",
-        3
+        "投信",
+        2
       ],
       [
-        "夜盤重挫",
-        -7
+        "美股費半",
+        -8
       ],
       [
-        "PCR極低悲觀",
-        -7
+        "PCR",
+        -2
+      ],
+      [
+        "Put Wall",
+        1
+      ],
+      [
+        "ADR 表現代理",
+        -1
+      ],
+      [
+        "均線乖離",
+        -1
       ]
     ],
     "weights": {
-      "spot_trend": 13,
-      "foreign_spot": 12,
-      "foreign_fut": 8,
-      "trust": 5,
-      "basis": 2,
-      "night": 8,
-      "us_sox": 12,
-      "pcr": 7,
-      "gex": 7,
-      "put_wall": 3,
-      "adr": 3,
-      "yield": 5,
-      "volume": 3,
-      "ma_bias": 3,
-      "vix_factor": 2,
-      "rsi": 3,
-      "macd": 3
+      "spot_trend": 16.666667,
+      "foreign_spot": 15.384615,
+      "foreign_fut": 10.25641,
+      "trust": 6.410256,
+      "basis": 8.974359,
+      "night": 0.0,
+      "us_sox": 15.384615,
+      "pcr": 8.974359,
+      "gex": 0.0,
+      "put_wall": 3.846154,
+      "adr": 3.846154,
+      "yield": 0.0,
+      "volume": 0.0,
+      "ma_bias": 3.846154,
+      "vix_factor": 2.564103,
+      "rsi": 3.846154,
+      "macd": 0.0
     },
-    "regime": "極空",
-    "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
-    "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
-    "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
-    "target": "46000.0不收復前空方控盤，反彈至46568減碼",
+    "factor_details": [
+      {
+        "key": "spot_trend",
+        "name": "現貨趨勢",
+        "raw_value": -2.49,
+        "score": -0.8,
+        "status": "active",
+        "reason": "依加權指數日漲跌幅分級",
+        "source": "DATA_REPORT.spot.pct",
+        "base_weight": 13,
+        "adaptive_weight": 13,
+        "effective_weight": 16.666667,
+        "contribution": -6.6667
+      },
+      {
+        "key": "foreign_spot",
+        "name": "外資現貨",
+        "raw_value": -1124.7,
+        "score": -1.0,
+        "status": "active",
+        "reason": "依外資現貨買賣超金額分級",
+        "source": "DATA_REPORT.inst.foreign",
+        "base_weight": 12,
+        "adaptive_weight": 12,
+        "effective_weight": 15.384615,
+        "contribution": -7.6923
+      },
+      {
+        "key": "foreign_fut",
+        "name": "外資期貨",
+        "raw_value": -92241.0,
+        "score": -1.0,
+        "status": "active",
+        "reason": "依外資期貨淨未平倉口數分級",
+        "source": "DATA_REPORT.futures.foreign_oi",
+        "base_weight": 8,
+        "adaptive_weight": 8,
+        "effective_weight": 10.25641,
+        "contribution": -5.1282
+      },
+      {
+        "key": "trust",
+        "name": "投信",
+        "raw_value": 236.2,
+        "score": 0.6,
+        "status": "active",
+        "reason": "依投信現貨買賣超金額分級",
+        "source": "DATA_REPORT.inst.trust",
+        "base_weight": 5,
+        "adaptive_weight": 5,
+        "effective_weight": 6.410256,
+        "contribution": 1.9231
+      },
+      {
+        "key": "basis",
+        "name": "基差",
+        "raw_value": 89.17,
+        "score": 0.0,
+        "status": "active",
+        "reason": "逆價差或過大正價差視為風險",
+        "source": "DATA_REPORT.tx.day.basis",
+        "base_weight": 7,
+        "adaptive_weight": 7,
+        "effective_weight": 8.974359,
+        "contribution": 0.0
+      },
+      {
+        "key": "night",
+        "name": "夜盤",
+        "raw_value": null,
+        "score": null,
+        "status": "disabled",
+        "reason": "依夜盤漲跌幅分級",
+        "source": "DATA_REPORT.tx.night.pct",
+        "base_weight": 8,
+        "adaptive_weight": 8,
+        "effective_weight": 0.0,
+        "contribution": 0.0
+      },
+      {
+        "key": "us_sox",
+        "name": "美股費半",
+        "raw_value": -7.44,
+        "score": -1.0,
+        "status": "active",
+        "reason": "依費半日漲跌幅分級",
+        "source": "DATA_REPORT.usPct_full.SOX",
+        "base_weight": 12,
+        "adaptive_weight": 12,
+        "effective_weight": 15.384615,
+        "contribution": -7.6923
+      },
+      {
+        "key": "pcr",
+        "name": "PCR",
+        "raw_value": 0.61,
+        "score": -0.4,
+        "status": "active",
+        "reason": "沿用現行低 PCR 風險規則；其他區間不推定方向",
+        "source": "DATA_REPORT.options.pcr",
+        "base_weight": 7,
+        "adaptive_weight": 7,
+        "effective_weight": 8.974359,
+        "contribution": -1.7949
+      },
+      {
+        "key": "gex",
+        "name": "GEX",
+        "raw_value": null,
+        "score": null,
+        "status": "disabled",
+        "reason": "僅接受來源直接提供且可驗證的 GEX；不使用硬編碼值",
+        "source": "DATA_REPORT.options.gex",
+        "base_weight": 7,
+        "adaptive_weight": 7,
+        "effective_weight": 0.0,
+        "contribution": 0.0
+      },
+      {
+        "key": "put_wall",
+        "name": "Put Wall",
+        "raw_value": 45000.0,
+        "score": 0.5,
+        "status": "active",
+        "reason": "現價位於有效 Put Wall 上方／下方；僅作位置方向訊號",
+        "source": "DATA_REPORT.spot.close + DATA_REPORT.options.putWall",
+        "base_weight": 3,
+        "adaptive_weight": 3,
+        "effective_weight": 3.846154,
+        "contribution": 0.9615
+      },
+      {
+        "key": "adr",
+        "name": "ADR 表現代理",
+        "raw_value": -6.16,
+        "score": -0.5,
+        "status": "active",
+        "reason": "使用台積電 ADR 漲跌幅代理，不宣稱為 ADR 溢價",
+        "source": "DATA_REPORT.adrPct_full.TSM",
+        "base_weight": 3,
+        "adaptive_weight": 3,
+        "effective_weight": 3.846154,
+        "contribution": -0.9615
+      },
+      {
+        "key": "yield",
+        "name": "美債10Y殖利率變化",
+        "raw_value": null,
+        "score": null,
+        "status": "disabled",
+        "reason": "殖利率日變化以百分點表示；上升偏風險、下降偏緩和",
+        "source": "DATA_REPORT.yieldPct_full.10Y",
+        "base_weight": 5,
+        "adaptive_weight": 5,
+        "effective_weight": 0.0,
+        "contribution": 0.0
+      },
+      {
+        "key": "volume",
+        "name": "量能",
+        "raw_value": null,
+        "score": null,
+        "status": "disabled",
+        "reason": "需有成交量相對均量比；只有單日成交額時不臆測量能強弱",
+        "source": "DATA_REPORT.volume_ratio",
+        "base_weight": 3,
+        "adaptive_weight": 3,
+        "effective_weight": 0.0,
+        "contribution": 0.0
+      },
+      {
+        "key": "ma_bias",
+        "name": "均線乖離",
+        "raw_value": -5.268937510368177,
+        "score": -0.5,
+        "status": "active",
+        "reason": "至少20筆有效收盤價，現價高於／低於SMA20",
+        "source": "Yahoo/FinMind/SQLite closes SMA20",
+        "base_weight": 3,
+        "adaptive_weight": 3,
+        "effective_weight": 3.846154,
+        "contribution": -0.9615
+      },
+      {
+        "key": "vix_factor",
+        "name": "VIX",
+        "raw_value": 19.94,
+        "score": 0.0,
+        "status": "active",
+        "reason": "依 VIX 收盤水準分級",
+        "source": "DATA_REPORT.usPct_full.VIX.close",
+        "base_weight": 2,
+        "adaptive_weight": 2,
+        "effective_weight": 2.564103,
+        "contribution": 0.0
+      },
+      {
+        "key": "rsi",
+        "name": "RSI",
+        "raw_value": 35.75,
+        "score": 0.0,
+        "status": "active",
+        "reason": "RSI14 超買超賣分級；缺值不以中性代替",
+        "source": "Yahoo/FinMind/SQLite RSI14",
+        "base_weight": 3,
+        "adaptive_weight": 3,
+        "effective_weight": 3.846154,
+        "contribution": 0.0
+      },
+      {
+        "key": "macd",
+        "name": "MACD",
+        "raw_value": null,
+        "score": null,
+        "status": "disabled",
+        "reason": "依 MACD histogram 正負及強度分級",
+        "source": "Yahoo/FinMind/SQLite MACD histogram",
+        "base_weight": 3,
+        "adaptive_weight": 3,
+        "effective_weight": 0.0,
+        "contribution": 0.0
+      }
+    ],
+    "factor_quality": {
+      "active_count": 12,
+      "total_factors": 17,
+      "count_coverage_pct": 70.6,
+      "base_weight_coverage_pct": 75.0,
+      "effective_weight_total": 100.0,
+      "confidence": "medium",
+      "bias_reliable": true,
+      "score_status": "calculated",
+      "optimizer": "base_dynamic",
+      "missing_factors": [
+        "night",
+        "gex",
+        "yield",
+        "volume",
+        "macd"
+      ]
+    },
+    "regime": "偏空",
+    "factor_str": "現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2",
+    "look": "加權45,211 -2.49% 外資-1124.7億 現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2 VIX19.9",
+    "compass": "22分偏空，Put Wall 45000.0；缺少價位時不推定防線",
+    "target": "Put Wall 45000.0；依有效價位及價格確認風險",
     "cards": {
+      "DATA_REPORT 一致性檢查": {
+        "look": "DATA_REPORT 一致性檢查：0 項警告",
+        "compass": "現貨 OHLC、法人合計、成交金額、期現基差、選擇權 PCR 交叉檢查未發現矛盾",
+        "target": "警告只標示資料衝突，不自動修改原始數據；請回查 DATA_REPORT 來源"
+      },
       "Bias 盤前偏向": {
-        "bias": 19,
-        "regime": "極空",
+        "bias": 22,
+        "regime": "偏空",
         "factors": [
           [
-            "現貨下跌",
-            -6
+            "現貨趨勢",
+            -7
           ],
           [
-            "外資賣超",
+            "外資現貨",
             -8
           ],
           [
-            "外資期空創高",
-            -6
+            "外資期貨",
+            -5
           ],
           [
-            "投信買超",
-            3
+            "投信",
+            2
           ],
           [
-            "夜盤重挫",
-            -7
+            "美股費半",
+            -8
           ],
           [
-            "PCR極低悲觀",
-            -7
+            "PCR",
+            -2
+          ],
+          [
+            "Put Wall",
+            1
+          ],
+          [
+            "ADR 表現代理",
+            -1
+          ],
+          [
+            "均線乖離",
+            -1
           ]
         ],
-        "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
-        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
-        "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
-        "target": "46000.0不收復前空方控盤，反彈至46568減碼"
+        "factor_str": "現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2",
+        "look": "加權45,211 -2.49% 外資-1124.7億 現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2 VIX19.9",
+        "compass": "22分偏空，Put Wall 45000.0；缺少價位時不推定防線",
+        "target": "Put Wall 45000.0；依有效價位及價格確認風險"
       },
       "KPI 8宮格": {
-        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias19分 空頭 無DB模式(no-db-partial)",
-        "compass": "19分空頭，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
-        "target": "依Bias19分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+        "look": "KPI 8宮格：加權45211.83點 -2.49% 外資-1124.7億元 Bias22分 空頭 無DB模式(db)",
+        "compass": "22分空頭，17因子共振(含RSI/MACD)，VIX動態美股15.384615% 無DB模式(db)",
+        "target": "依Bias22分操作，空頭策略，45000.0為關鍵，無DB模式(db)"
       },
       "大盤全景": {
-        "look": "加權46368.33點 -1.42% 漲跌232上737下，RSI 35.75 MACD None",
-        "compass": "Bias19分，232上737下全面普跌",
-        "target": "觀察46000.0支撐"
+        "look": "加權45211.83點 -2.49% 漲跌92上941下，RSI 35.75 MACD None",
+        "compass": "Bias22分，92上941下全面普跌",
+        "target": "觀察45000.0支撐"
       },
       "台指期 日夜": {
-        "look": "台指基差208.67點 夜盤-1.38% 低45850.0 外資期-89522.0",
-        "compass": "夜盤-1.38%續弱，基差208.67，空頭regime",
-        "target": "夜盤45850.0為支撐"
+        "look": "台指基差89.17點 夜盤None% 低None 外資期-92241.0",
+        "compass": "夜盤None%續弱，基差89.17，空頭regime",
+        "target": "夜盤None為支撐"
       },
       "期貨籌碼": {
-        "look": "台指基差208.67點 夜盤-1.38% 低45850.0 外資期-89522.0",
-        "compass": "夜盤-1.38%續弱，基差208.67，空頭regime",
-        "target": "夜盤45850.0為支撐"
+        "look": "台指基差89.17點 夜盤None% 低None 外資期-92241.0",
+        "compass": "夜盤None%續弱，基差89.17，空頭regime",
+        "target": "夜盤None為支撐"
       },
       "選擇權牆": {
-        "look": "PCR0.56倍 極低悲觀 GEX-2.3B Put Wall46000.0",
-        "compass": "PCR0.56+負GEX加速，46000.0為最後防線",
-        "target": "46000.0守住震盪，破則追空至45500.0"
+        "look": "PCR 0.61；GEX 依有效來源資料；Put Wall 45000.0",
+        "compass": "選擇權資料 PCR 0.61、Put Wall 45000.0；缺值不推定方向",
+        "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
       },
       "美股連動": {
-        "look": "SOX -1.42% 美股漲跌互見 VIX18.7",
-        "compass": "費半-1.4%連動台股，VIX18.7恐慌",
+        "look": "SOX -7.44% 美股漲跌互見/資料不足 VIX19.9",
+        "compass": "費半-7.44%連動台股，VIX19.9",
         "target": "關注費半與台積電ADR連動"
       },
       "關鍵水位": {
-        "look": "12階水位中樞46471失守，現價46368.33貼近46055.07，下一支撐46000.0，Regime空頭",
-        "compass": "階梯式下墜，Put Wall 46000.0與Flip 45920重疊為最後防線",
-        "target": "反彈先看46471能否收復，否則續測45523，空頭操作"
+        "look": "現價45211.83；Put Wall 45000.0；Flip 44730.73；Regime 空頭",
+        "compass": "只採用當日有效關鍵位；缺失價位不補硬編碼水位",
+        "target": "依有效 Put Wall 45000.0 與 Flip 44730.73 觀察，缺值時不設定價位目標"
       },
       "盤前核心判斷": {
-        "look": "7軸中趨勢、結構、價差皆偏弱，僅籌碼投信撐盤，Bias19分空頭，現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
+        "look": "7軸中趨勢、結構、價差皆偏弱，僅籌碼投信撐盤，Bias22分空頭，現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2",
         "compass": "雷達面積縮小至偏空區，空頭格局，跌破月線+外資賣+PCR偏低，空頭regime",
         "target": "等待籌碼與情緒收斂，空頭維持空方思維"
       },
       "三劇本": {
-        "look": "三劇本中悲觀機率升至60%，中性30%，樂觀10%，Bias19分空頭",
-        "compass": "紅黃綠三路徑以紅色悲觀為基準",
-        "target": "以空方操作，破46000.0啟動悲觀劇本"
+        "look": "三劇本中悲觀機率升至45%，中性35%，樂觀20%，Bias22分空頭",
+        "compass": "紅黃綠三路徑以黃色震盪為基準",
+        "target": "以空方操作，破45000.0啟動悲觀劇本"
       },
       "多空條件檢查表": {
-        "look": "空方條件：破46K、SOX崩、GEX負、外資空創高、PCR極低，5中6，多方僅投信買超",
-        "compass": "多方僅投信買超+70.4，條件不足，空頭觀望或空方，Bias19分",
-        "target": "多方條件未滿3不試多，空方已滿3續空至45523，空頭操作"
+        "look": "17F有效12/17；正向2項、負向7項、缺失5項；資料覆蓋75.0%",
+        "compass": "有效因子權重已正規化；信心等級 medium；不以缺失因子推定方向",
+        "target": "Bias 22；資料可信度 medium；依有效因子與價格條件決策"
       },
       "開盤前必核": {
-        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias19分 空頭 無DB模式(no-db-partial)",
-        "compass": "19分空頭，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
-        "target": "依Bias19分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+        "look": "KPI 8宮格：加權45211.83點 -2.49% 外資-1124.7億元 Bias22分 空頭 無DB模式(db)",
+        "compass": "22分空頭，17因子共振(含RSI/MACD)，VIX動態美股15.384615% 無DB模式(db)",
+        "target": "依Bias22分操作，空頭策略，45000.0為關鍵，無DB模式(db)"
       },
       "AI 5面向": {
-        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias19分 空頭 無DB模式(no-db-partial)",
-        "compass": "19分空頭，17因子共振(含RSI/MACD)，VIX動態美股12% 無DB模式(no-db-partial)",
-        "target": "依Bias19分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+        "look": "KPI 8宮格：加權45211.83點 -2.49% 外資-1124.7億元 Bias22分 空頭 無DB模式(db)",
+        "compass": "22分空頭，17因子共振(含RSI/MACD)，VIX動態美股15.384615% 無DB模式(db)",
+        "target": "依Bias22分操作，空頭策略，45000.0為關鍵，無DB模式(db)"
       },
       "AI結論": {
-        "bias": 19,
-        "regime": "極空",
+        "bias": 22,
+        "regime": "偏空",
         "factors": [
           [
-            "現貨下跌",
-            -6
+            "現貨趨勢",
+            -7
           ],
           [
-            "外資賣超",
+            "外資現貨",
             -8
           ],
           [
-            "外資期空創高",
-            -6
+            "外資期貨",
+            -5
           ],
           [
-            "投信買超",
-            3
+            "投信",
+            2
           ],
           [
-            "夜盤重挫",
-            -7
+            "美股費半",
+            -8
           ],
           [
-            "PCR極低悲觀",
-            -7
+            "PCR",
+            -2
+          ],
+          [
+            "Put Wall",
+            1
+          ],
+          [
+            "ADR 表現代理",
+            -1
+          ],
+          [
+            "均線乖離",
+            -1
           ]
         ],
-        "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
-        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
-        "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
-        "target": "46000.0不收復前空方控盤，反彈至46568減碼"
+        "factor_str": "現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2",
+        "look": "加權45,211 -2.49% 外資-1124.7億 現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2 VIX19.9",
+        "compass": "22分偏空，Put Wall 45000.0；缺少價位時不推定防線",
+        "target": "Put Wall 45000.0；依有效價位及價格確認風險"
       },
       "交易計畫": {
-        "bias": 19,
-        "regime": "極空",
+        "bias": 22,
+        "regime": "偏空",
         "factors": [
           [
-            "現貨下跌",
-            -6
+            "現貨趨勢",
+            -7
           ],
           [
-            "外資賣超",
+            "外資現貨",
             -8
           ],
           [
-            "外資期空創高",
-            -6
+            "外資期貨",
+            -5
           ],
           [
-            "投信買超",
-            3
+            "投信",
+            2
           ],
           [
-            "夜盤重挫",
-            -7
+            "美股費半",
+            -8
           ],
           [
-            "PCR極低悲觀",
-            -7
+            "PCR",
+            -2
+          ],
+          [
+            "Put Wall",
+            1
+          ],
+          [
+            "ADR 表現代理",
+            -1
+          ],
+          [
+            "均線乖離",
+            -1
           ]
         ],
-        "factor_str": "現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7",
-        "look": "加權46,368跌-1.42% 外資-688.2億 現貨下跌-6 外資賣超-8 外資期空創高-6 投信買超+3 夜盤重挫-7 PCR極低悲觀-7 VIX18.7恐慌",
-        "compass": "19分極空，46000.0為Put Wall最後防線，跌破加速",
-        "target": "46000.0不收復前空方控盤，反彈至46568減碼"
+        "factor_str": "現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2",
+        "look": "加權45,211 -2.49% 外資-1124.7億 現貨趨勢-7 外資現貨-8 外資期貨-5 投信+2 美股費半-8 PCR-2 VIX19.9",
+        "compass": "22分偏空，Put Wall 45000.0；缺少價位時不推定防線",
+        "target": "Put Wall 45000.0；依有效價位及價格確認風險"
       },
       "行事曆": {
-        "look": "重大新聞11則，首則國巨第三季淨利成長近9成 決議不分派上半年盈餘",
+        "look": "重大新聞11則，首則26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相",
         "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       },
       "法人籌碼": {
-        "look": "外資現貨-688.2億 期貨-89522.0 投信70.4億 自營-215.0億",
+        "look": "外資現貨-1124.7億 期貨-92241.0 投信236.2億 自營-513.7億",
         "compass": "外資空 vs 投信多對作，分歧加劇，空頭",
-        "target": "觀察外資是否續賣，46000.0為關鍵"
+        "target": "觀察外資是否續賣，45000.0為關鍵"
       },
       "主力三市透視": {
-        "look": "三市籌碼透視：現貨外資-688.2億 期貨外資-4605.0口 選擇權外資分歧",
+        "look": "三市籌碼透視：現貨外資-1124.7億 期貨外資-1780.0口 選擇權外資分歧",
         "compass": "主力三市一致偏空",
         "target": "關注主力一致性"
       },
       "三市一致性": {
-        "look": "期現選方向：現貨-688.2 期貨-4605.0 選擇權分歧，一致性低",
+        "look": "期現選方向：現貨-1124.7 期貨-1780.0 選擇權分歧，一致性低",
         "compass": "三市一致性檢核，空頭",
         "target": "等待一致性收斂"
       },
       "期現選方向對照": {
-        "look": "現貨-688.2億 期貨-4605.0口 期選結構0.56",
+        "look": "現貨-1124.7億 期貨-1780.0口 期選結構0.61",
         "compass": "期現選對照，空頭",
-        "target": "46000.0為關鍵"
+        "target": "45000.0為關鍵"
       },
       "籌碼三市矩陣": {
-        "look": "籌碼矩陣：外資-688.2 投信70.4 自營-215.0",
+        "look": "籌碼矩陣：外資-1124.7 投信236.2 自營-513.7",
         "compass": "三法人矩陣分歧",
         "target": "觀察投信撐盤力道"
       },
       "主力意圖解碼": {
-        "look": "主力意圖：外資期空-89522.0口創高，投信現貨買70.4億",
+        "look": "主力意圖：外資期空-92241.0口創高，投信現貨買236.2億",
         "compass": "外資空方控盤，投信撐盤，空頭",
         "target": "主力對作，波動放大"
       },
       "夜盤劇本": {
-        "look": "夜盤45926.0 變化-651.0 基差208.67",
-        "compass": "夜盤-1.38% 空頭",
-        "target": "夜盤低45850.0為支撐"
+        "look": "夜盤45301.0 變化0 基差89.17",
+        "compass": "夜盤None% 空頭",
+        "target": "夜盤低None為支撐"
       },
       "台指夜盤劇本": {
-        "look": "台指夜盤45926.0 變化-651.0 基差208.67",
-        "compass": "夜盤-1.38% 空頭",
-        "target": "夜盤低45850.0為支撐"
+        "look": "台指夜盤45301.0 變化0 基差89.17",
+        "compass": "夜盤None% 空頭",
+        "target": "夜盤低None為支撐"
       },
       "資金流向": {
-        "look": "加權46368.33點 -1.42% 漲跌232上737下，RSI 35.75 MACD None",
-        "compass": "Bias19分，232上737下全面普跌",
-        "target": "觀察46000.0支撐"
+        "look": "加權45211.83點 -2.49% 漲跌92上941下，RSI 35.75 MACD None",
+        "compass": "Bias22分，92上941下全面普跌",
+        "target": "觀察45000.0支撐"
       },
       "PCR 極低": {
-        "look": "PCR0.56倍 極低悲觀 GEX-2.3B Put Wall46000.0",
-        "compass": "PCR0.56+負GEX加速，46000.0為最後防線",
-        "target": "46000.0守住震盪，破則追空至45500.0"
+        "look": "PCR 0.61；GEX 依有效來源資料；Put Wall 45000.0",
+        "compass": "選擇權資料 PCR 0.61、Put Wall 45000.0；缺值不推定方向",
+        "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
       },
       "VIX & DXY": {
-        "look": "SOX -1.42% 美股漲跌互見 VIX18.7",
-        "compass": "費半-1.4%連動台股，VIX18.7恐慌",
+        "look": "SOX -7.44% 美股漲跌互見/資料不足 VIX19.9",
+        "compass": "費半-7.44%連動台股，VIX19.9",
         "target": "關注費半與台積電ADR連動"
       },
       "相關性熱圖": {
@@ -1164,44 +1465,44 @@
         "target": "依相關性調整權重，SOX主導"
       },
       "台指期 日盤": {
-        "look": "台指日盤46577.0 高47218.0 低46310.0 量56666.0",
-        "compass": "日盤-1.42% 基差208.67",
-        "target": "日盤低46310.0為支撐"
+        "look": "台指日盤45301.0 高45597.0 低44908.0 量73987.0",
+        "compass": "日盤-2.72% 基差89.17",
+        "target": "日盤低44908.0為支撐"
       },
       "台指期 夜盤": {
-        "look": "台指夜盤45926.0 高46637.0 低45850.0 量34357.0",
-        "compass": "夜盤-1.38% 變化-651.0",
-        "target": "夜盤低45850.0為支撐"
+        "look": "台指夜盤45301.0 高None 低None 量73987.0",
+        "compass": "夜盤None% 變化0",
+        "target": "夜盤低None為支撐"
       },
       "期貨籌碼深度圖": {
-        "look": "台指基差208.67點 夜盤-1.38% 低45850.0 外資期-89522.0",
-        "compass": "夜盤-1.38%續弱，基差208.67，空頭regime",
-        "target": "夜盤45850.0為支撐"
+        "look": "台指基差89.17點 夜盤None% 低None 外資期-92241.0",
+        "compass": "夜盤None%續弱，基差89.17，空頭regime",
+        "target": "夜盤None為支撐"
       },
       "外資期貨": {
-        "look": "外資期貨OI -89522.0 日淨-4605.0 夜淨459.0",
+        "look": "外資期貨OI -92241.0 日淨-1780.0 夜淨None",
         "compass": "外資期空創高",
-        "target": "外資期-89522.0為空方指標"
+        "target": "外資期-92241.0為觀察指標"
       },
       "前十大與分歧": {
-        "look": "前十大+11690.0口偏多但外資-4605.0口大空，對作16295口，分歧加劇",
+        "look": "前十大+11690.0口偏多但外資-1780.0口大空，對作13470口，分歧加劇",
         "compass": "投信與外資對作，行情易大震盪",
         "target": "前十大11690.0口為多方最後防線"
       },
       "前十大與分歧bar": {
-        "look": "前十大+11690.0口偏多但外資-4605.0口大空，對作16295口，分歧加劇",
+        "look": "前十大+11690.0口偏多但外資-1780.0口大空，對作13470口，分歧加劇",
         "compass": "投信與外資對作，行情易大震盪",
         "target": "前十大11690.0口為多方最後防線"
       },
       "OI結構": {
-        "look": "PCR0.56倍 極低悲觀 GEX-2.3B Put Wall46000.0",
-        "compass": "PCR0.56+負GEX加速，46000.0為最後防線",
-        "target": "46000.0守住震盪，破則追空至45500.0"
+        "look": "PCR 0.61；GEX 依有效來源資料；Put Wall 45000.0",
+        "compass": "選擇權資料 PCR 0.61、Put Wall 45000.0；缺值不推定方向",
+        "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
       },
       "GEX": {
-        "look": "GEX -2.3B 負值加速，Put Wall46000.0",
-        "compass": "負GEX加速區，波動放大",
-        "target": "46000.0為加速起點"
+        "look": "GEX unavailable；Put Wall 45000.0",
+        "compass": "GEX 缺值時停用該因子，不推定正負 Gamma 狀態",
+        "target": "取得可驗證 GEX 數據後再判讀 Gamma regime"
       },
       "IV Skew": {
         "look": "IV Rank 78 高，RR -2.5 偏空，Term 32/26/22 倒掛",
@@ -1214,18 +1515,18 @@
         "target": "觀察Term收斂"
       },
       "PCR 0.74→0.57": {
-        "look": "PCR趨勢 0.74→0.56 偏低悲觀",
-        "compass": "PCR0.56極低，散戶恐慌",
-        "target": "PCR極低反向指標？但結構偏空"
+        "look": "當日 PCR 0.61；未提供連續歷史序列時不繪製趨勢",
+        "compass": "PCR 0.61；不以單日數值直接推定散戶恐慌",
+        "target": "PCR 缺值或缺少歷史序列時不產生趨勢與反向訊號"
       },
       "外資選擇權分歧": {
-        "look": "外資選擇權日淨分歧，PCR0.56",
+        "look": "外資選擇權日淨分歧，PCR0.61",
         "compass": "外資選擇權偏空",
         "target": "外資選擇權為空方"
       },
       "美股指數": {
-        "look": "SOX -1.42% 美股漲跌互見 VIX18.7",
-        "compass": "費半-1.4%連動台股，VIX18.7恐慌",
+        "look": "SOX -7.44% 美股漲跌互見/資料不足 VIX19.9",
+        "compass": "費半-7.44%連動台股，VIX19.9",
         "target": "關注費半與台積電ADR連動"
       },
       "亞洲指數": {
@@ -1254,144 +1555,87 @@
         "target": "商品觀察通膨"
       },
       "重大經濟數據": {
-        "look": "重大新聞11則，首則國巨第三季淨利成長近9成 決議不分派上半年盈餘",
+        "look": "重大新聞11則，首則26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相",
         "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       }
     },
-    "cards_41_count": 47,
+    "cards_41_count": 48,
     "correlation": {
-      "labels": [
-        "加權",
-        "SOX",
-        "NQ",
-        "TSM",
-        "DXY"
-      ],
-      "matrix": [
-        [
-          1,
-          0.82,
-          0.76,
-          0.71,
-          -0.42
-        ],
-        [
-          0.82,
-          1,
-          0.88,
-          0.79,
-          -0.31
-        ],
-        [
-          0.76,
-          0.88,
-          1,
-          0.74,
-          -0.28
-        ],
-        [
-          0.71,
-          0.79,
-          0.74,
-          1,
-          -0.35
-        ],
-        [
-          -0.42,
-          -0.31,
-          -0.28,
-          -0.35,
-          1
-        ]
-      ],
-      "desc": "SOX與台股高相關"
+      "labels": [],
+      "matrix": [],
+      "desc": "歷史日期對齊樣本不足，相關性未計算"
     },
     "levels": [
       {
-        "t": "R4 強壓",
-        "v": 47955,
-        "type": "R"
-      },
-      {
         "t": "R3 高點",
-        "v": 47015,
-        "type": "R"
-      },
-      {
-        "t": "R2",
-        "v": 46868,
+        "v": 46139,
         "type": "R"
       },
       {
         "t": "P 樞紐",
-        "v": 46479,
+        "v": 45359,
         "type": "P"
       },
       {
         "t": "S1 低點",
-        "v": 46055,
+        "v": 44726,
         "type": "S"
       },
       {
-        "t": "S3",
-        "v": 45133,
-        "type": "S"
-      },
-      {
-        "t": "Put Wall 46K",
-        "v": 46000,
+        "t": "Put Wall 45K",
+        "v": 45000,
         "type": "W"
       },
       {
-        "t": "Flip 46K",
-        "v": 46131,
+        "t": "Flip 44K",
+        "v": 44730,
         "type": "F"
       }
     ],
     "historical": null,
     "db_status": {
       "exists": true,
-      "rows": 1,
-      "filled": 0,
-      "mode": "no-db-partial",
+      "rows": 3,
+      "filled": 2,
+      "mode": "db",
       "path": "dashboards/v9_pro_history.db"
     }
   },
   "news": [
     {
-      "t": "國巨第三季淨利成長近9成 決議不分派上半年盈餘",
-      "s": "Yahoo 台股；發布時間：2026-10-29T23:13:18Z；台北時間：2026-10-30 07:13",
-      "d": "國巨第三季營運來自於 AI 相關應用需求的強勁動能，單季營收創歷史新高。",
-      "time": "2026-10-29T23:13:18Z；台北時間：2026-10-30 07:13",
+      "t": "26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相",
+      "s": "Yahoo 台股；發布時間：2026-10-30T11:10:00Z；台北時間：2026-10-30 19:10",
+      "d": "上半年台股漲勢頻頻，近期卻屢屢震盪，投資人的心態也隨之起伏。有網友透露，上半年總資產衝到400萬，但近期因修正獲利回吐60萬，雖然仍是賺錢，感覺卻難以接受。",
+      "time": "2026-10-30T11:10:00Z；台北時間：2026-10-30 19:10",
       "link": ""
     },
     {
-      "t": "美股受創 Alphabet瀉12%、Marvell跌逾13%",
-      "s": "Yahoo 台股；發布時間：2026-10-29T21:30:08Z；台北時間：2026-10-30 05:30",
-      "d": "美股週四收黑，那指、費半跌逾1%，Marvell暴跌逾13%；開拓重工也創2020年3月以來最差日 Alphabet 第三季財報失色，營收與EPS不如預期，自由現金流連續2季陷入負值，股價暴跌逾12% 美國Q3經濟創一年最快，9月PCE月增",
-      "time": "2026-10-29T21:30:08Z；台北時間：2026-10-30 05:30",
+      "t": "9歲已買0050「每天看漲跌」！ 網驚：比巴菲特更早",
+      "s": "Yahoo 台股；發布時間：2026-10-30T10:52:00Z；台北時間：2026-10-30 18:52",
+      "d": "近年來投資理財觀念普及，開始投資的年齡也有下降趨勢，有網友表示家中孩子雖然只有9歲，但已買了10股0050，且每天都關注動態，之後還想買台積電，引發眾人熱議。",
+      "time": "2026-10-30T10:52:00Z；台北時間：2026-10-30 18:52",
       "link": ""
     },
     {
-      "t": "華碩傳將結束手機業務 庫存賣光、已無通訊行報價",
-      "s": "Yahoo 台股；發布時間：2026-10-29T22:47:29Z；台北時間：2026-10-30 06:47",
-      "d": "PC品牌大廠華碩今年初證實，2026年暫無推出手機新機種的計畫，如今市場傳出，華碩手機庫存到了第4季已幾乎銷售一空，上周已無通訊行提供報價，顯示現貨已經售罄，產品走入下市階段。",
-      "time": "2026-10-29T22:47:29Z；台北時間：2026-10-30 06:47",
+      "t": "低軌衛星綠油油！「這2檔」一度跌停暴跌8%　國巨、群創、騰輝也殺破7%",
+      "s": "Yahoo 台股；發布時間：2026-10-30T10:04:00Z；台北時間：2026-10-30 18:04",
+      "d": "[FTNN新聞網]記者陳献朋／綜合報導受美股科技股重跌、市場預期聯準會升息等因素影響，台股大盤今（30）明顯殺低，加權指數收45211.33點，下跌1156.20點，跌幅...",
+      "time": "2026-10-30T10:04:00Z；台北時間：2026-10-30 18:04",
       "link": ""
     },
     {
-      "t": "momo併購foodpanda？總座回應",
-      "s": "Yahoo 台股；發布時間：2026-10-29T09:08:48Z；台北時間：2026-10-29 17:08",
-      "d": "隨著Grab併購foodpanda台灣案遭公平會否決，外界關注是否有其他業者接手。電商龍頭momo富邦媒（8454）總經理谷元宏今（29）日出席雙11記者會，會後被問及是否考慮併購foodpanda時表示，公司過去確實曾評估相關機會，目前仍",
-      "time": "2026-10-29T09:08:48Z；台北時間：2026-10-29 17:08",
+      "t": "中聯停工引爆沙拉油荒 經濟部：缺口仍大 協調業者年底擴量",
+      "s": "Yahoo 台股；發布時間：2026-10-30T09:42:55Z；台北時間：2026-10-30 17:42",
+      "d": "中聯致癌油事件停工後，對國內沙拉油供應衝擊未解。經濟部今（30）日證實，國內油品缺口仍然很大，因應食品業者用油需求，已責成台糖12月起每月再增產500噸，另協調油品進口商第四季多進口5000公噸。經濟部也呼籲地方政府及業者，讓合格檢驗的商品",
+      "time": "2026-10-30T09:42:55Z；台北時間：2026-10-30 17:42",
       "link": ""
     },
     {
-      "t": "連8紅、漲逾47%登強勢股王 誠美材上季仍虧損",
-      "s": "Yahoo 台股；發布時間：2026-10-30T00:00:00Z；台北時間：2026-10-30 08:00",
-      "d": "[FTNN新聞網]記者黃詩雯／綜合報導台股加權指數29日收盤46,368.33點，跌667.25點，跌幅1.42%，觀察昨日強勢個股表現，偏光板廠誠美材（4960）連續8個交易日收...",
-      "time": "2026-10-30T00:00:00Z；台北時間：2026-10-30 08:00",
+      "t": "PCB綠光罩頂！台燿、金像電、定穎投控、楠梓電都摜跌停　「這檔」卻連飆6根漲停",
+      "s": "Yahoo 台股；發布時間：2026-10-30T07:45:00Z；台北時間：2026-10-30 15:45",
+      "d": "[FTNN新聞網]記者陳献朋／綜合報導由於美股四大指數週四全數收跌，台股大盤今（30）日走勢明顯疲軟，加權指數終場來到45211.33點，下跌1156.20點，跌幅2.49%...",
+      "time": "2026-10-30T07:45:00Z；台北時間：2026-10-30 15:45",
       "link": ""
     },
     {
@@ -1409,33 +1653,33 @@
       "link": ""
     },
     {
-      "t": "Third-quarter U.S. GDP increases a better-than-expected 3.4% as September inflation accelerates",
-      "s": "CNBC；發布時間：Thu, 29 Oct 2026 18:06:31 GMT；台北時間：2026-10-30 02:06",
-      "d": "The personal consumption expenditures price index was projected to increase 0.5% in September for an annual rate of 3.7%, according to the Dow Jones c",
+      "t": "Treasury Department announces new Series I bond rate of 5.51% for the next six months",
+      "s": "CNBC；發布時間：Fri, 30 Oct 2026 14:53:12 GMT；台北時間：2026-10-30 22:53",
+      "d": "The U.S. Department of the Treasury has announced new Series I bond rates through April 2027.",
       "time": "",
       "link": ""
     },
     {
-      "t": "The politics of President Lagarde's European Central Bank early exit  — and who could replace her",
-      "s": "CNBC；發布時間：Thu, 29 Oct 2026 14:53:06 GMT；台北時間：2026-10-29 22:53",
-      "d": "European Central Bank President Christine Lagarde will step down on Feb. 7 next year, she announced Thursday.",
+      "t": "St. Louis Fed's Musalem: Another rate hike needed 'soon'",
+      "s": "CNBC；發布時間：Fri, 30 Oct 2026 16:54:37 GMT；台北時間：2026-10-31 00:54",
+      "d": "Musalem's comments offer the first morsels of insight into what leaders at the Fed see next following this week's decision to hold interst rates stead",
       "time": "",
       "link": ""
     },
     {
-      "t": "European Central Bank keeps key interest rate on hold at 2.5%",
-      "s": "CNBC；發布時間：Thu, 29 Oct 2026 14:48:01 GMT；台北時間：2026-10-29 22:48",
-      "d": "Markets saw the decision as a hawkish pause and were last pricing in a 67% chance of a December rate hike.",
+      "t": "Swiss central bank posts bumper $23 billion profit thanks to gold, foreign assets",
+      "s": "CNBC；發布時間：Fri, 30 Oct 2026 15:07:48 GMT；台北時間：2026-10-30 23:07",
+      "d": "Unlike other major central banks, the Swiss National Bank has a significant equity portfolio.",
       "time": "",
       "link": ""
     },
     {
-      "t": "Our church has a $1.5 million bequest earning 3.75% in a bank account. Is inflation eroding it?",
-      "s": "MarketWatch；發布時間：Fri, 30 Oct 2026 00:05:00 GMT；台北時間：2026-10-30 08:05",
-      "d": "&#x201c;Given the size and long-term nature of this gift, we want to make sure the funds are managed prudently.&#x201d;",
+      "t": "This strategist correctly recommended shorting Big Tech debt last year. Now he says the yields make it attractive.",
+      "s": "MarketWatch；發布時間：Fri, 30 Oct 2026 14:30:00 GMT；台北時間：2026-10-30 22:30",
+      "d": "Yields ranging from 6% to 8% on tech bonds provide more competition against stocks than before.",
       "time": "",
       "link": ""
     }
   ],
-  "data_source": "DATA_REPORT 2026-10-29 + Yahoo ^TWII 30d 17F + FinMind + SQLite no-db-partial"
+  "data_source": "DATA_REPORT 2026-10-30 + Yahoo ^TWII 30d 17F + FinMind + SQLite db"
 }
