@@ -33,7 +33,7 @@ class MaintenanceRatioSourceTests(unittest.TestCase):
 
     def test_stale_wantgoo_cannot_override_exact_stockintelli(self):
         with patch.object(maint_ratio, "_wantgoo", return_value={
-            "ratio": None, "date": None, "ok": False
+            "ratio": 178.40, "date": "2026-10-29", "ok": True, "source": "wantgoo"
         }), patch.object(maint_ratio, "_stockintelli", return_value={
             "ratio": 171.80, "date": "2026-10-30", "ok": True
         }), patch.object(maint_ratio, "_istock", return_value={
