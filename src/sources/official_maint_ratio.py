@@ -1,7 +1,9 @@
 """Official TWSE + TPEx market-wide margin maintenance ratio estimator.
 
-All inputs must be same-day T0 official payloads. This is a market-wide
-collateral-value / financing-amount estimate, not an individual account ratio.
+Financing balances and financing amounts must be same-day T0 official payloads.
+Prices use T0 official closes where available; no-trade securities may use a
+bounded prior official close, which is explicitly disclosed in the result.
+This is a market-wide estimate, not an individual account ratio.
 """
 from __future__ import annotations
 
@@ -154,7 +156,7 @@ def _tpex_financing_amount(payload: dict, t0_roc: str) -> float:
 def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
               twse_prices: dict, tpex_prices: dict,
               fallback_prices: dict[str, dict[str, dict]] | None = None) -> dict:
-    """Calculate only when all four sources are present, same-day and fully priced."""
+    """Calculate with T0 official data and explicitly disclosed bounded prior closes."""
     date8 = t0.replace("-", "")
     twm = _tables(twse_margin, date8, "TWSE margin")
     twp = _tables(twse_prices, date8, "TWSE prices")
@@ -263,6 +265,13 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
         "priced_security_count": priced, "listed": listed, "otc": otc,
         "stale_price_count": listed["stale_price_count"] + otc["stale_price_count"],
         "stale_price_details": listed["stale_price_details"] + otc["stale_price_details"],
+        "max_stale_price_age_calendar_days": max(
+            [( _date.fromisoformat(t0) - _date.fromisoformat(
+                _normalize_date(item["price_date"])[:4] + "-"
+                + _normalize_date(item["price_date"])[4:6] + "-"
+                + _normalize_date(item["price_date"])[6:8]
+            )).days for item in listed["stale_price_details"] + otc["stale_price_details"]] or [0]
+        ),
         "method": "official_same_day_financing_balance_x_same_day_close_or_latest_prior_official_close_over_official_same_day_financing_amount",
         "classification": "market_wide_estimate_not_individual_account_ratio",
     }
