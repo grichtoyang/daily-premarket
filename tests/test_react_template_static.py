@@ -55,7 +55,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 self.assertEqual(fetch.returncode, 0, fetch.stderr[-1000:])
                 baseline = subprocess.run(["git", "show", f"{baseline_sha}:templates/v9-pro-react-template.html"], capture_output=True, text=True, check=False)
                 self.assertEqual(baseline.returncode, 0, baseline.stderr[-1000:])
-                scripts = re.findall(r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", baseline.stdout, re.IGNORECASE)
+                scripts = re.findall(r"<script\b([^>]*)>([\s\S]*?)</script\s*>", baseline.stdout, re.IGNORECASE)
                 for index, (attrs, source) in enumerate(scripts):
                     if "application/json" in attrs.lower() or not source.strip():
                         continue
