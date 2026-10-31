@@ -75,6 +75,28 @@ jobs:
           echo "Using ${REPORT} for T0 ${DATE}"
           mkdir -p dashboards
 
+      - name: Probe T0 maintenance ratio providers
+        env:
+          T0_DATE: ${{ env.DATE }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from src.sources import maint_ratio
+          t0 = os.environ["T0_DATE"]
+          result = maint_ratio.get(t0)
+          print("[MR-PROBE] " + json.dumps({
+              "t0": t0,
+              "ok": result.get("ok"),
+              "date": result.get("date"),
+              "ratio": result.get("ratio"),
+              "source": result.get("source", "unavailable")
+          }, ensure_ascii=False))
+          if result.get("ok") and result.get("date") != t0:
+              raise SystemExit("Maintenance ratio provider returned a non-T0 date")
+          if not result.get("ok"):
+              print("[MR-PROBE] No exact-T0 provider value; continue with unavailable/explicit fallback per policy")
+          PY
+
       - name: Run 17F offline self-tests
         run: |
           set -euo pipefail
