@@ -9,7 +9,13 @@ from typing import Any
 
 
 def _normalize_date(value: Any) -> str:
-    return str(value or "").strip().replace("/", "").replace("-", "").replace(".", "")
+    """Normalize Gregorian YYYYMMDD and ROC YYYMMDD dates to Gregorian YYYYMMDD."""
+    raw = str(value or "").strip().replace("/", "").replace("-", "").replace(".", "")
+    if len(raw) == 7 and raw.isdigit():
+        return str(int(raw[:3]) + 1911) + raw[3:]
+    if len(raw) == 8 and raw.isdigit():
+        return raw
+    return raw
 
 
 def _number(value: Any) -> float:
