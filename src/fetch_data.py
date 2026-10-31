@@ -219,7 +219,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
     - 新格 == 'unavailable' 且舊格有值才填入；有填入列的來源格隨值沿用。
     - 新舊皆有實值但不同 → 沿用舊值（連 Yahoo 浮動、新聞輪替一併凍結；
       真正的新值走 gapfill/SOP 3.5 明示補登，報告跟著重驗）。
-      唯一允許新值覆寫的舊例外：新列來源為前值遞補而舊列不是。
+      融資維持率另允許較高優先級來源覆寫較低優先級來源（TWSE 自建 > Blave > 人工）；新列前值遞補而舊列不是時也沿用舊值。
     - 表頭／分隔列／標題／註記行一律不動；有填入才在未取得行後加註記。
     - 盤別規則（C1，2026-10-16：同一 T0 檔先被 19:00 日盤寫、隔晨全日後寫，
       舊規則會把後寫的正確夜盤蓋回去）：
@@ -323,19 +323,26 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
             if not is_sep and not is_hdr and cells:
                 _label = _norm_label(cells[0])
                 old = old_norm.get((hkey, _label))
-                # 維持率是 T0 市場估算值：unavailable 不沿用舊值；新來源依 Blave > 人工輸入優先序更新退役來源。
+                # T0 維持率來源優先序：TWSE 自建 > Blave > 同 T0 人工輸入。
+                # unavailable 必須清除舊值；較高優先級新來源可取代舊來源，低優先級不可倒灌。
                 if _label == "融資維持率":
-                    if cells[1] == MISSING:
+                    if len(cells) > 1 and cells[1] == MISSING:
                         old = None
                     elif old and len(old) == len(cells):
-                        _new_source, _old_source = cells[-1], old[-1]
-                        _new_blave = "Blave" in _new_source
-                        _old_blave = "Blave" in _old_source
-                        _new_manual = "人工輸入" in _new_source
-                        _old_manual = "人工輸入" in _old_source
-                        if (_new_blave and not _old_blave) or (
-                            _new_manual and not (_old_blave or _old_manual)
-                        ):
+                        def _ratio_source_priority(source):
+                            if "TWSE 上市自建估算" in source:
+                                return 3
+                            if "Blave" in source:
+                                return 2
+                            if "人工輸入" in source:
+                                return 1
+                            return 0
+                        new_priority = _ratio_source_priority(cells[-1])
+                        old_priority = _ratio_source_priority(old[-1])
+                        if old_priority > new_priority:
+                            cells = list(old)
+                            old = None
+                        elif new_priority > old_priority:
                             old = None
                 if old and len(old) == len(cells):
                     new_cells = list(cells)
