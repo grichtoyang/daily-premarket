@@ -454,7 +454,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     SRC_OTC = _src.get("otc", "TPEX")
     SRC_INST = _src.get("institutional", "TWSE BFI82U")
     SRC_MG = _src.get("margin", "HiStock")
-    SRC_MR = _src.get("margin_ratio", "istock.tw")
+    SRC_MR = _src.get("margin_ratio", "wantgoo → stockintelli → istock (三源皆失敗時 unavailable)")
     SRC_SBL = _src.get("sbl", "TWSE/TPEX")
 
     L: list[str] = []
@@ -514,7 +514,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 4. 融資融券")
     A("")
-    A("**資料來源：** 上市+上櫃 `HiStock` (金額口徑)；維持率 `istock.tw`；備援官方逐股加總")
+    A(f"**資料來源：** 上市+上櫃 `HiStock` (金額口徑)；維持率 `{SRC_MR}`；官方無每日維持率序列")
     A("")
     A(_tbl([("融資餘額", _f1u(mg["fin_yi"]), "億元", SRC_MG),
             ("融資增減", _f1s(mg["fin_chg_yi"]), "億元", SRC_MG),
