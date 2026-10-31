@@ -30,7 +30,7 @@ class OfficialMaintenanceRatioTests(unittest.TestCase):
             ],
         }
         tpex_prices = {
-            "date": "115/10/30",
+            "date": "20261030",
             "tables": [
                 {"fields": ["代號", "名稱", "收盤"],
                  "data": [["6488", "環球晶", "200"]]},
@@ -55,7 +55,7 @@ class OfficialMaintenanceRatioTests(unittest.TestCase):
 
     def test_rejects_wrong_tpex_price_date(self):
         args = list(self.fixtures())
-        args[3]["date"] = "115/10/29"
+        args[3]["date"] = "20261029"
         with self.assertRaisesRegex(ValueError, "date mismatch"):
             calculate("2026-10-30", "115/10/30", *args)
 
