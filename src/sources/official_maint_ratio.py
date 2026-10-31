@@ -167,6 +167,20 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
     tx_margin_table = _find_table(tx_margin_tables, "代號", "資餘額")
     tx_price_table = _find_table(txp, "代號", "收盤")
 
+    fallback_prices = fallback_prices or {}
+    from datetime import date as _date
+    t0_day = _date.fromisoformat(t0)
+    for market_prices in fallback_prices.values():
+        for code, item in market_prices.items():
+            price_day = _date.fromisoformat(_normalize_date(item.get("date", ""))[:4] + "-"
+                                            + _normalize_date(item.get("date", ""))[4:6] + "-"
+                                            + _normalize_date(item.get("date", ""))[6:8])
+            age_days = (t0_day - price_day).days
+            if age_days < 1 or age_days > 10:
+                raise ValueError(f"fallback close date out of allowed range for {code}: age_days={age_days}")
+            if _number(item.get("close")) <= 0:
+                raise ValueError(f"fallback close must be positive for {code}")
+
     # Diagnose market-universe mismatches before calculating. Do not silently
     # cross-map prices: that could double-count a security across exchanges.
     tw_margin_rows = _records(tw_margin_table)
@@ -193,8 +207,8 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
     tx_price_codes = {_code(row) for row in tx_price_rows if _code(row)}
     tw_margin_codes = _positive_codes(tw_margin_rows, "今日餘額")
     tx_margin_codes = _positive_codes(tx_margin_rows, "資餘額")
-    tw_missing = tw_margin_codes - tw_price_codes
-    tx_missing = tx_margin_codes - tx_price_codes
+    tw_missing = tw_margin_codes - tw_price_codes - set(fallback_prices.get("twse", {}))
+    tx_missing = tx_margin_codes - tx_price_codes - set(fallback_prices.get("tpex", {}))
     margin_overlap = tw_margin_codes & tx_margin_codes
 
     def _describe_missing(rows: list[dict], missing_codes: set[str],
@@ -225,19 +239,6 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
             f"TWSE_TPEx_margin_code_overlap={sorted(margin_overlap)[:50]}"
         )
 
-    fallback_prices = fallback_prices or {}
-    from datetime import date as _date
-    t0_day = _date.fromisoformat(t0)
-    for market_prices in fallback_prices.values():
-        for code, item in market_prices.items():
-            price_day = _date.fromisoformat(_normalize_date(item.get("date", ""))[:4] + "-"
-                                            + _normalize_date(item.get("date", ""))[4:6] + "-"
-                                            + _normalize_date(item.get("date", ""))[6:8])
-            age_days = (t0_day - price_day).days
-            if age_days < 1 or age_days > 10:
-                raise ValueError(f"fallback close date out of allowed range for {code}: age_days={age_days}")
-            if _number(item.get("close")) <= 0:
-                raise ValueError(f"fallback close must be positive for {code}")
     listed = _sum_market_value(tw_margin_table, tw_price_table, "今日餘額",
                                "證券代號", "收盤價", "上市",
                                fallback_prices.get("twse"))
