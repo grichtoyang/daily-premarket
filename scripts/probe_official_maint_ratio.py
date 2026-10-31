@@ -155,16 +155,20 @@ def main() -> int:
         "tpex_openapi_marginspot": fetch("TPEx OpenAPI margin trading balance overview", tpex_openapi_marginspot),
     }
     tpex_price_payload = results["tpex_prices"]
+    tpex_price_tables = tpex_price_payload.get("tables", []) if isinstance(tpex_price_payload, dict) else []
+    tpex_price_table0 = tpex_price_tables[0] if tpex_price_tables and isinstance(tpex_price_tables[0], dict) else {}
+    tpex_price_rows = tpex_price_table0.get("data", []) if isinstance(tpex_price_table0, dict) else []
+    tpex_returned_date = str(tpex_price_payload.get("date", "")).strip() if isinstance(tpex_price_payload, dict) else ""
     tpex_price_meta = {
-        "reportDate": tpex_price_payload.get("reportDate") if isinstance(tpex_price_payload, dict) else None,
-        "reportTitle": tpex_price_payload.get("reportTitle") if isinstance(tpex_price_payload, dict) else None,
-        "iTotalRecords": tpex_price_payload.get("iTotalRecords") if isinstance(tpex_price_payload, dict) else None,
-        "aaData_rows": len(tpex_price_payload.get("aaData", [])) if isinstance(tpex_price_payload, dict) and isinstance(tpex_price_payload.get("aaData"), list) else None,
-        "sample": tpex_price_payload.get("aaData", [])[:2] if isinstance(tpex_price_payload, dict) and isinstance(tpex_price_payload.get("aaData"), list) else None,
-        "date_matches": isinstance(tpex_price_payload, dict) and str(tpex_price_payload.get("reportDate", "")).replace("/", "") in (roc.replace("/", ""), date8),
+        "date": tpex_returned_date,
+        "table_title": tpex_price_table0.get("title"),
+        "fields": tpex_price_table0.get("fields"),
+        "rows": len(tpex_price_rows) if isinstance(tpex_price_rows, list) else None,
+        "sample": tpex_price_rows[:2] if isinstance(tpex_price_rows, list) else None,
+        "date_matches": tpex_returned_date.replace("/", "") in (roc.replace("/", ""), date8),
     }
     print("TPEX_HISTORICAL_PRICE_META=" + json.dumps(tpex_price_meta, ensure_ascii=False))
-    ok = all(results[name] is not None for name in ("twse_margin", "tpex_margin", "twse_prices")) and tpex_price_meta["date_matches"] and (tpex_price_meta["aaData_rows"] or 0) > 0
+    ok = all(results[name] is not None for name in ("twse_margin", "tpex_margin", "twse_prices")) and tpex_price_meta["date_matches"] and (tpex_price_meta["rows"] or 0) > 0
     openapi_meta = {}
     for name in ("tpex_openapi_margin", "tpex_openapi_prices"):
         payload = results[name]
