@@ -133,6 +133,20 @@ jobs:
             git push
           fi
 
+      - name: Checkout P0 dashboard source
+        uses: actions/checkout@v4
+        with:
+          ref: phase2-p0-data-quality
+          path: p0-source
+
+      - name: Include P0 dashboard under isolated Pages path
+        run: |
+          set -euo pipefail
+          mkdir -p dashboards/p0
+          cp -a p0-source/dashboards/. dashboards/p0/
+          test -s dashboards/p0/v9-pro-latest.html
+          echo "Included P0 dashboard without changing master root files"
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
