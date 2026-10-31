@@ -119,3 +119,16 @@ jobs:
               valid = [r for r in rows if len(r) > 6 and r[6] not in ("--", "", None)]
               print("1589", month, "stat=", j.get("stat"), "last_valid=", valid[-1:] or "NONE")
           PY
+
+      - name: Inspect latest valid historical close for missing-price securities
+        if: always()
+        run: |
+          python - <<'PY'
+          import requests
+          h = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.twse.com.tw/"}
+          for code, month in (("00682U","20261001"),("1470","20261001"),("5906","20261001"),("1589","20260401")):
+              url = f"https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date={month}&stockNo={code}&response=json"
+              j = requests.get(url, headers=h, timeout=20).json()
+              rows = [r for r in j.get("data", []) if len(r)>6 and r[6] not in ("--","","-")]
+              print(code, "stat=", j.get("stat"), "last_valid=", rows[-1:] or "NONE")
+          PY
