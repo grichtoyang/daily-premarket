@@ -859,7 +859,33 @@ class V9Analyzer:
 
     def analyze_spot(self):
         s=self.signals; bias=self.bias_score
-        return {"look": f"加權{s.get('spot_close',0)}點 {s.get('spot_pct',0)}% 漲跌{s.get('spot_up',0)}上{s.get('spot_down',0)}下，RSI {s.get('rsi','--')} MACD {s.get('macd_hist','--')}", "compass": f"Bias{bias}分，{s.get('spot_up',0)}上{s.get('spot_down',0)}下{'全面普跌' if s.get('spot_down',0)>500 else '分歧'}", "target": f"觀察{self.parsed['options']['putWall']}支撐"}
+        def fmt(value, digits=2, signed=False):
+            if value is None:
+                return "unavailable"
+            try:
+                number=float(value)
+                if not math.isfinite(number):
+                    return "unavailable"
+                return f"{number:+.{digits}f}" if signed else f"{number:.{digits}f}"
+            except (TypeError, ValueError):
+                return "unavailable"
+
+        close=fmt(s.get('spot_close'),2)
+        pct=fmt(s.get('spot_pct'),2,True)
+        up=s.get('spot_up'); down=s.get('spot_down')
+        up_text=str(up) if up is not None else "unavailable"
+        down_text=str(down) if down is not None else "unavailable"
+        rsi_text=fmt(s.get('rsi'),2)
+        macd_text=fmt(s.get('macd_hist'),4,True)
+        put_wall=self.parsed.get('options',{}).get('putWall')
+        put_wall_text=fmt(put_wall,2)
+        breadth=("全面普跌" if down is not None and down>500 else "分歧") if up is not None and down is not None else "漲跌家數資料不足"
+        target=f"觀察 Put Wall {put_wall_text} 支撐" if put_wall is not None else "Put Wall unavailable；缺值不設定支撐位"
+        return {
+            "look": f"加權{close}點 {pct}% 漲跌{up_text}上{down_text}下，RSI {rsi_text} MACD {macd_text}",
+            "compass": f"Bias{bias}分，{up_text}上{down_text}下{breadth}",
+            "target": target
+        }
 
     def analyze_us_markets(self):
         us_dict=self.signals.get('us_dict',{}); sox=0
@@ -1180,6 +1206,11 @@ def run_17f_self_tests():
         assert empty_analyzer.factor_quality['confidence']=='insufficient'
         assert empty_analyzer.factor_quality['bias_reliable'] is False
         assert empty_analyzer.factor_quality['score_status']=='no_valid_factors_neutral_fallback'
+        empty_spot_card=empty_analyzer.analyze_spot()
+        assert "RSI unavailable" in empty_spot_card["look"]
+        assert "MACD unavailable" in empty_spot_card["look"]
+        assert "Put Wall unavailable" in empty_spot_card["target"]
+        assert "None" not in str(empty_spot_card)
         # SQLite date attribution must follow explicit T0, not the runner's current date.
         with tempfile.TemporaryDirectory() as tmp:
             test_db=str(pathlib.Path(tmp)/"t0-test.db")
