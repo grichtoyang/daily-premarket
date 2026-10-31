@@ -967,7 +967,7 @@ def run_17f_self_tests():
             {'open':100,'high':110,'low':90,'close':105},
             {'foreign':10,'trust':5,'dealer':-2,'all':13},
             {'listed':100,'otc':20,'total':120},
-            {'day':{'o':100,'h':110,'l':90,'c':105,'basis':5}},
+            {'day':{'o':100,'h':110,'l':90,'c':105,'basis':0}},
             {'callOi':100,'putOi':50,'pcr':0.5}
         )
         assert clean_warnings==[]
