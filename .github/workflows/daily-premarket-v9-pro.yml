@@ -109,7 +109,7 @@ jobs:
       - name: Calculate official T0 maintenance ratio from TWSE and TPEx
         run: |
           set -euo pipefail
-          python scripts/calculate_official_maint_ratio.py --date "$DATE"
+          PYTHONPATH=. python scripts/calculate_official_maint_ratio.py --date "$DATE"
 
       - name: Run 17F offline self-tests
         run: |
