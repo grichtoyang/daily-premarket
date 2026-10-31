@@ -9,8 +9,8 @@
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
     "factors": "17F; active=13/17",
-    "db_mode": "no-db-partial",
-    "db_rows": 2,
+    "db_mode": "db",
+    "db_rows": 3,
     "output_path_rule": "dashboards/ 唯一"
   },
   "spot": {
@@ -1243,9 +1243,9 @@
         "target": "Put Wall 46000.0；依有效價位及價格確認風險"
       },
       "KPI 8宮格": {
-        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias25分 空頭 無DB模式(no-db-partial)",
-        "compass": "25分空頭，17因子共振(含RSI/MACD)，VIX動態美股14.814815% 無DB模式(no-db-partial)",
-        "target": "依Bias25分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias25分 空頭 無DB模式(db)",
+        "compass": "25分空頭，17因子共振(含RSI/MACD)，VIX動態美股14.814815% 無DB模式(db)",
+        "target": "依Bias25分操作，空頭策略，46000.0為關鍵，無DB模式(db)"
       },
       "大盤全景": {
         "look": "加權46368.33點 -1.42% 漲跌232上737下，RSI 35.75 MACD None",
@@ -1293,14 +1293,14 @@
         "target": "Bias 25；資料可信度 medium；依有效因子與價格條件決策"
       },
       "開盤前必核": {
-        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias25分 空頭 無DB模式(no-db-partial)",
-        "compass": "25分空頭，17因子共振(含RSI/MACD)，VIX動態美股14.814815% 無DB模式(no-db-partial)",
-        "target": "依Bias25分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias25分 空頭 無DB模式(db)",
+        "compass": "25分空頭，17因子共振(含RSI/MACD)，VIX動態美股14.814815% 無DB模式(db)",
+        "target": "依Bias25分操作，空頭策略，46000.0為關鍵，無DB模式(db)"
       },
       "AI 5面向": {
-        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias25分 空頭 無DB模式(no-db-partial)",
-        "compass": "25分空頭，17因子共振(含RSI/MACD)，VIX動態美股14.814815% 無DB模式(no-db-partial)",
-        "target": "依Bias25分操作，空頭策略，46000.0為關鍵，無DB模式(no-db-partial)"
+        "look": "KPI 8宮格：加權46368.33點 -1.42% 外資-688.2億元 Bias25分 空頭 無DB模式(db)",
+        "compass": "25分空頭，17因子共振(含RSI/MACD)，VIX動態美股14.814815% 無DB模式(db)",
+        "target": "依Bias25分操作，空頭策略，46000.0為關鍵，無DB模式(db)"
       },
       "AI結論": {
         "bias": 25,
@@ -1599,9 +1599,9 @@
     "historical": null,
     "db_status": {
       "exists": true,
-      "rows": 2,
+      "rows": 3,
       "filled": 1,
-      "mode": "no-db-partial",
+      "mode": "db",
       "path": "dashboards/v9_pro_history.db"
     }
   },
@@ -1684,5 +1684,5 @@
       "link": ""
     }
   ],
-  "data_source": "DATA_REPORT 2026-10-29 + Yahoo ^TWII 30d 17F + FinMind + SQLite no-db-partial"
+  "data_source": "DATA_REPORT 2026-10-29 + Yahoo ^TWII 30d 17F + FinMind + SQLite db"
 }
