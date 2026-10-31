@@ -50,6 +50,19 @@ class ListedMaintenanceRatioTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing T0 close"):
             calculate("2026-10-30", margin, prices)
 
+
+    def test_uses_explicit_historical_close_for_no_trade_security(self):
+        margin, prices = self.fixtures()
+        prices["tables"][0]["data"] = []
+        result = calculate(
+            "2026-10-30", margin, prices,
+            historical_prices={"2330": ("20261029", 95.0)},
+        )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["ratio"], 95.0)
+        self.assertEqual(result["stale_price_security_count"], 1)
+        self.assertEqual(result["price_date_min"], "20261029")
+
     def test_rejects_zero_financing_amount(self):
         margin, prices = self.fixtures()
         margin["tables"][0]["data"][0][5] = "0"
