@@ -19,7 +19,6 @@ jobs:
       - name: Probe Blave Taiwan stock margin page
         run: |
           python - <<'PY'
-          import re
           import urllib.error
           import urllib.request
 
@@ -35,35 +34,32 @@ jobs:
           }
 
           for name, headers in profiles.items():
-              print(f"\\n=== PROFILE: {name} ===")
+              print("\\n=== PROFILE: " + name + " ===")
               req = urllib.request.Request(url, headers=headers)
               try:
                   with urllib.request.urlopen(req, timeout=25) as response:
                       body = response.read()
-                      text = body.decode("utf-8", errors="replace")
-                      print(f"HTTP_STATUS={response.status}")
-                      print(f"FINAL_URL={response.geturl()}")
-                      print(f"CONTENT_TYPE={response.headers.get('Content-Type')}")
-                      print(f"BODY_BYTES={len(body)}")
+                      page = body.decode("utf-8", errors="replace")
+                      print("HTTP_STATUS=" + str(response.status))
+                      print("FINAL_URL=" + response.geturl())
+                      print("CONTENT_TYPE=" + str(response.headers.get("Content-Type")))
+                      print("BODY_BYTES=" + str(len(body)))
               except urllib.error.HTTPError as exc:
                   body = exc.read()
-                  text = body.decode("utf-8", errors="replace")
-                  print(f"HTTP_STATUS={exc.code}")
-                  print(f"FINAL_URL={exc.geturl()}")
-                  print(f"BODY_BYTES={len(body)}")
-                  print(f"HTTP_ERROR={exc.reason}")
+                  page = body.decode("utf-8", errors="replace")
+                  print("HTTP_STATUS=" + str(exc.code))
+                  print("FINAL_URL=" + exc.geturl())
+                  print("BODY_BYTES=" + str(len(body)))
+                  print("HTTP_ERROR=" + str(exc.reason))
               except Exception as exc:
-                  print(f"REQUEST_ERROR={type(exc).__name__}: {exc}")
+                  print("REQUEST_ERROR=" + type(exc).__name__ + ": " + str(exc))
                   continue
 
-              title = re.search(r"<title[^>]*>(.*?)</title>", text, re.I | re.S)
-              clean_title = re.sub(r"\\s+", " ", title.group(1)).strip() if title else "NOT_FOUND"
-              print(f"HTML_TITLE={clean_title[:200]}")
-              print(f"HAS_MARGIN_KEYWORD={bool(re.search(r'margin|融資|融券|維持率', text, re.I))}")
-              print(f"HAS_CHALLENGE_MARKER={bool(re.search(r'cloudflare|just a moment|captcha|challenge', text, re.I))}")
-              scripts = re.findall(r'<script[^>]+src=[\\"\\']([^\\"\\']+)', text, re.I)
-              print(f"SCRIPT_COUNT={len(scripts)}")
-              for src in scripts[:20]:
-                  print(f"SCRIPT_SRC={src}")
-              print(f"BODY_PREVIEW={re.sub(r'\\s+', ' ', text[:500])[:300]}")
+              title = "NOT_FOUND"
+              if "<title" in page.lower():
+                  title = page.lower().split("<title", 1)[1].split(">", 1)[-1].split("</title>", 1)[0]
+              print("HTML_TITLE=" + title[:200])
+              print("HAS_MARGIN_KEYWORD=" + str(any(x in page.lower() for x in ["margin", "融資", "融券", "維持率"])))
+              print("HAS_CHALLENGE_MARKER=" + str(any(x in page.lower() for x in ["cloudflare", "just a moment", "captcha", "challenge"])))
+              print("BODY_PREVIEW=" + " ".join(page[:500].split())[:300])
           PY
