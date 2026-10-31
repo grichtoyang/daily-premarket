@@ -53,26 +53,14 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 suffix = ".mjs" if 'type="module"' in attrs.lower() else ".js"
                 path = Path(tmp) / f"inline_{index}{suffix}"
                 path.write_text(source, encoding="utf-8")
+                parser = "const fs=require('fs');const acorn=require('acorn');try{acorn.parse(fs.readFileSync(process.argv[1],'utf8'),{ecmaVersion:'latest',sourceType:'module'});}catch(e){console.error(e.message+' at '+(e.loc?e.loc.line+':'+e.loc.column:''));process.exit(1)}"
                 result = subprocess.run(
-                    [node, "--check", str(path)],
+                    [node, "-e", parser, str(path)],
                     capture_output=True,
                     text=True,
                     check=False,
                 )
-                diagnostic = ""
-                if result.returncode:
-                    error_lines = result.stderr.splitlines()
-                    for line_index, error_line in enumerate(error_lines):
-                        match = re.search(rf"{re.escape(path.name)}:(\d+)", error_line)
-                        if match:
-                            source_line = error_lines[line_index + 1] if line_index + 1 < len(error_lines) else ""
-                            caret_line = error_lines[line_index + 2] if line_index + 2 < len(error_lines) else ""
-                            column = caret_line.find("^")
-                            context = source_line[max(0, column - 100):column + 100] if column >= 0 else source_line[-200:]
-                            diagnostic = f"{error_line}; column={column}; context={context}; message={error_lines[-1] if error_lines else ''}"
-                            break
-                    if not diagnostic:
-                        diagnostic = "\n".join(error_lines[-3:])
+                diagnostic = result.stderr.strip()
                 self.assertEqual(
                     result.returncode,
                     0,
