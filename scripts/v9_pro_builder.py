@@ -731,6 +731,12 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     pcr_text=f"{pcr:.2f}" if pcr is not None else "unavailable"
     put_wall_text=str(put_wall) if put_wall is not None else "unavailable"
     call_wall_text=str(call_wall) if call_wall is not None else "unavailable"
+    flip=s.get('flip'); flip_text=str(flip) if flip is not None else "unavailable"
+    gex=s.get('gex'); gex_text=str(gex) if gex is not None else "unavailable"
+    active_details=[x for x in analyzer.factor_details if x.get('status')=='active']
+    negative_count=sum(1 for x in active_details if x.get('score',0)<0)
+    positive_count=sum(1 for x in active_details if x.get('score',0)>0)
+    disabled_count=17-len(active_details)
 
     def regime_desc():
         pct=s.get('spot_pct'); foreign_value=s.get('foreign'); pcr_value=s.get('pcr')
@@ -772,10 +778,10 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '期貨籌碼': {"look": futures_look, "compass": futures_compass, "target": futures_target},
         '選擇權牆': {"look": options_look, "compass": options_compass, "target": options_target},
         '美股連動': us_card,
-        '關鍵水位': {"look": f"12階水位中樞46471失守，現價{close}貼近{parsed['spot']['low']}，下一支撐{put_wall}，Regime{regime_label}", "compass": f"階梯式下墜，Put Wall {put_wall}與Flip 45920重疊為最後防線", "target": f"反彈先看46471能否收復，否則續測45523，{regime_label}操作"},
+        '關鍵水位': {"look": f"現價{close}；Put Wall {put_wall_text}；Flip {flip_text}；Regime {regime_label}", "compass": f"只採用當日有效關鍵位；缺失價位不補硬編碼水位", "target": f"依有效 Put Wall {put_wall_text} 與 Flip {flip_text} 觀察，缺值時不設定價位目標"},
         '盤前核心判斷': {"look": f"7軸中趨勢、結構、價差皆偏弱，僅籌碼投信撐盤，Bias{bias}分{regime_label}，{factor_str[:60]}", "compass": f"雷達面積縮小至偏空區，{regime_label}格局，{regime_d}", "target": f"等待籌碼與情緒收斂，{regime_label}維持{'空方' if bias<35 else '多方'}思維"},
         '三劇本': {"look": f"三劇本中悲觀機率升至{60 if bias<20 else 45 if bias<35 else 30}%，中性{30 if bias<20 else 35 if bias<35 else 40}%，樂觀{10 if bias<20 else 20 if bias<35 else 30}%，Bias{bias}分{regime_label}", "compass": f"紅黃綠三路徑以{'紅色悲觀' if bias<20 else '黃色震盪' if bias<35 else '綠色樂觀'}為基準", "target": f"以{'空方' if bias<35 else '多方'}操作，破{put_wall}啟動{'悲觀' if bias<35 else '樂觀'}劇本"},
-        '多空條件檢查表': {"look": f"空方條件：破46K、SOX崩、GEX負、外資空創高、PCR極低，{sum(1 for _,v in factors if v<0)}中{len(factors)}，多方僅投信買超", "compass": f"多方僅投信買超+{parsed['inst']['trust']}，條件不足，{regime_label}觀望或空方，Bias{bias}分", "target": f"多方條件未滿3不試多，空方已滿3續空至45523，{regime_label}操作"},
+        '多空條件檢查表': {"look": f"17F有效{len(active_details)}/17；正向{positive_count}項、負向{negative_count}項、缺失{disabled_count}項；資料覆蓋{analyzer.factor_quality['base_weight_coverage_pct']}%", "compass": f"有效因子權重已正規化；信心等級 {analyzer.factor_quality['confidence']}；不以缺失因子推定方向", "target": f"Bias {bias}；資料可信度 {analyzer.factor_quality['confidence']}；依有效因子與價格條件決策"},
         '開盤前必核': {"look": kpi_look, "compass": kpi_compass, "target": kpi_target},
         'AI 5面向': {"look": kpi_look, "compass": kpi_compass, "target": kpi_target},
         'AI結論': bias_card,
@@ -800,10 +806,10 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '前十大與分歧': {"look": top10_look, "compass": top10_compass, "target": top10_target},
         '前十大與分歧bar': {"look": top10_look, "compass": top10_compass, "target": top10_target},
         'OI結構': {"look": options_look, "compass": options_compass, "target": options_target},
-        'GEX': {"look": f"GEX -2.3B 負值加速，Put Wall{put_wall}", "compass": "負GEX加速區，波動放大", "target": f"{put_wall}為加速起點"},
+        'GEX': {"look": f"GEX {gex_text}；Put Wall {put_wall_text}", "compass": "GEX 缺值時停用該因子，不推定正負 Gamma 狀態", "target": "取得可驗證 GEX 數據後再判讀 Gamma regime"},
         'IV Skew': {"look": f"IV Rank 78 高，RR -2.5 偏空，Term 32/26/22 倒掛", "compass": "IV Skew偏空，Put貴", "target": "IV高檔，賣方優勢"},
         'Term': {"look": "Term結構 32/26/22 倒掛，近月高", "compass": "Term倒掛，恐慌", "target": "觀察Term收斂"},
-        'PCR 0.74→0.57': {"look": f"PCR趨勢 0.74→{pcr} 偏低悲觀", "compass": f"PCR{pcr}極低，散戶恐慌", "target": "PCR極低反向指標？但結構偏空"},
+        'PCR 0.74→0.57': {"look": f"當日 PCR {pcr_text}；未提供連續歷史序列時不繪製趨勢", "compass": f"PCR {pcr_text}；不以單日數值直接推定散戶恐慌", "target": "PCR 缺值或缺少歷史序列時不產生趨勢與反向訊號"},
         '外資選擇權分歧': {"look": f"外資選擇權日淨分歧，PCR{pcr}", "compass": "外資選擇權偏空", "target": "外資選擇權為空方"},
         '美股指數': us_card,
         '亞洲指數': {"look": f"亞股：日經韓國恆生，亞洲漲跌互見", "compass": "亞股連動台股", "target": "關注日經225"},
