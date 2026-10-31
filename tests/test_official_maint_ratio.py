@@ -53,6 +53,13 @@ class OfficialMaintenanceRatioTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "no same-day close"):
             calculate("2026-10-30", "115/10/30", *args)
 
+    def test_accepts_gregorian_tpex_margin_date(self):
+        args = list(self.fixtures())
+        args[1]["date"] = "20261030"
+        result = calculate("2026-10-30", "115/10/30", *args)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["coverage"], 1.0)
+
     def test_rejects_wrong_tpex_price_date(self):
         args = list(self.fixtures())
         args[3]["date"] = "20261029"
