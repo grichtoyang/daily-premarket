@@ -71,8 +71,9 @@ def main() -> int:
         "https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN?"
         + urlencode({"date": date8, "selectType": "ALL", "response": "json"})
     )
+    # Historical TPEx margin-balance endpoint. The margin_balance path segment is required.
     tpex_margin = (
-        "https://www.tpex.org.tw/web/stock/margin_trading/margin_bal_result.php?"
+        "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
         + urlencode({"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc"})
     )
     # Historical daily market quote endpoints are probed separately from margin.
@@ -90,6 +91,7 @@ def main() -> int:
     # Probe them separately and report the payload's own Date before considering use.
     tpex_openapi_margin = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_margin_balance"
     tpex_openapi_prices = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes"
+    tpex_openapi_marginspot = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_margin_trading_marginspot"
 
     results = {
         "twse_margin": fetch("TWSE margin detail", twse_margin),
@@ -98,6 +100,7 @@ def main() -> int:
         "tpex_prices": fetch("TPEx legacy historical prices", tpex_prices),
         "tpex_openapi_margin": fetch("TPEx OpenAPI latest margin snapshot", tpex_openapi_margin),
         "tpex_openapi_prices": fetch("TPEx OpenAPI latest price snapshot", tpex_openapi_prices),
+        "tpex_openapi_marginspot": fetch("TPEx OpenAPI margin trading balance overview", tpex_openapi_marginspot),
     }
     ok = all(results[name] is not None for name in ("twse_margin", "tpex_margin", "twse_prices", "tpex_prices"))
     openapi_meta = {}
@@ -109,11 +112,20 @@ def main() -> int:
             openapi_meta[name] = {"rows": len(payload), "dates": dates[:5], "first_row_keys": keys}
         else:
             openapi_meta[name] = {"valid_list": False}
+    marginspot_payload = results["tpex_openapi_marginspot"]
+    marginspot_meta = {
+        "is_list": isinstance(marginspot_payload, list),
+        "rows": len(marginspot_payload) if isinstance(marginspot_payload, list) else None,
+        "sample": marginspot_payload[:5] if isinstance(marginspot_payload, list) else None,
+        "is_dict": isinstance(marginspot_payload, dict),
+        "keys": list(marginspot_payload.keys()) if isinstance(marginspot_payload, dict) else None,
+    }
     print("\\n[OFFICIAL-PROBE-SUMMARY] " + json.dumps({
         "date": date8, "roc_date": roc,
         "historical_four_endpoints_responded": ok,
         "responded": {key: value is not None for key, value in results.items()},
         "tpex_openapi_snapshot": openapi_meta,
+        "tpex_openapi_marginspot": marginspot_meta,
     }, ensure_ascii=False))
     # Diagnostic probe is non-blocking; latest-snapshot dates must match the target date
     # and payload schemas/units must be reviewed before production use.
