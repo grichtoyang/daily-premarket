@@ -477,6 +477,7 @@ def parse_margin_ratio_provenance(report_text, t0_date):
         source_name="unavailable"
     else:
         for candidate, label in (
+            ("TWSE 上市自建估算", "twse_self_built"),
             ("blave", "blave"),
             ("人工輸入", "manual_input"),
             ("wantgoo", "wantgoo"),
@@ -1142,6 +1143,8 @@ def run_17f_self_tests():
             {'callOi':100,'putOi':50,'pcr':0.5}
         )
         assert partial_turnover_warnings==[]
+        mr_self=parse_margin_ratio_provenance("| 融資維持率 | 171.747 | % | TWSE 上市自建估算（資料日期：2026-10-30；估值 1,238 檔） |", "2026-10-30")
+        assert mr_self["status"]=="estimated_t0" and mr_self["source"]=="twse_self_built" and mr_self["source_date"]=="2026-10-30" and mr_self["is_t0"] is True
         mr_blave=parse_margin_ratio_provenance("| 融資維持率 | 171.75 | % | Blave 上市市場融資維持率估算（資料日期：2026-10-30） |", "2026-10-30")
         assert mr_blave["status"]=="estimated_t0" and mr_blave["source"]=="blave" and mr_blave["source_date"]=="2026-10-30" and mr_blave["is_t0"] is True
         mr_manual=parse_margin_ratio_provenance("| 融資維持率 | 172.10 | % | 人工輸入（MANUAL_LISTED_MARGIN_RATIO；資料日期：2026-10-30） |", "2026-10-30")
