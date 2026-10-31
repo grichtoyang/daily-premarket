@@ -875,6 +875,41 @@ class V9Analyzer:
         news=self.parsed['news']
         return {"look": f"重大新聞{len(news)}則，首則{news[0]['t'][:30] if news else '無'}", "compass": f"{len(news)}則新聞，聚焦{news[0]['s'][:20] if news else ''}", "target": "關注法人籌碼與新聞共振"}
 
+def build_factor_quality_summary(analyzer):
+    """Describe the actual active 17F coverage; never imply all factors are active."""
+    details=analyzer.factor_details
+    active=[item for item in details if item.get('status')=='active']
+    positive=sum(1 for item in active if (item.get('score') or 0)>0)
+    negative=sum(1 for item in active if (item.get('score') or 0)<0)
+    neutral=len(active)-positive-negative
+    total=analyzer.factor_quality.get('total_factors',len(details))
+    missing=total-len(active)
+    confidence=analyzer.factor_quality.get('confidence','unknown')
+    effective_total=sum(analyzer.weights.values())
+    return (
+        f"17F有效{len(active)}/{total}；正向{positive}、負向{negative}、"
+        f"中性{neutral}、缺失{missing}；有效權重{effective_total:.1f}%；"
+        f"信心{confidence}"
+    )
+
+
+def build_history_status_text(historical, db_status):
+    """Distinguish an unavailable DB from an enabled DB with too few labeled rows."""
+    if historical:
+        return (
+            f"歷史相似{historical['count']}天，隔日平均"
+            f"{historical['avg_next_pct']:.1f}% 勝率{historical['win_rate']:.0%}"
+        )
+    mode=db_status.get('mode','no-db')
+    if not db_status.get('exists'):
+        return f"SQLite不可用（{mode}），未執行歷史相似分析"
+    rows=int(db_status.get('rows') or 0)
+    filled=int(db_status.get('filled') or 0)
+    if filled<3:
+        return f"SQLite已啟用；有效歷史樣本{filled}/3（DB共{rows}筆），未啟用歷史相似分析"
+    return f"SQLite已啟用；{filled}筆歷史樣本可用，但本次未取得相似分析結果"
+
+
 def build_41_cards(analyzer, parsed, historical, db_status):
     bias=analyzer.bias_score; regime=analyzer.gen_bias_card()['regime']; factors=analyzer.bias_factors; s=analyzer.signals; weights=analyzer.weights
     factor_str=" ".join([f"{n}{v:+d}" for n,v in factors[:6]])
@@ -899,9 +934,8 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         else: return '盤整', '區間震盪，等待方向'
 
     regime_label, regime_d = regime_desc()
-    hist_str=""
-    if historical: hist_str=f"歷史相似{historical['count']}天，隔日平均{historical['avg_next_pct']:.1f}% 勝率{historical['win_rate']:.0%}"
-    else: hist_str=f"無DB模式({db_status.get('mode','no-db')})"
+    hist_str=build_history_status_text(historical,db_status)
+    factor_quality_summary=build_factor_quality_summary(analyzer)
 
     bias_card=analyzer.gen_bias_card(); spot_card=analyzer.analyze_spot(); us_card=analyzer.analyze_us_markets(); news_card=analyzer.analyze_news()
 
@@ -914,7 +948,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     options_target=(f"Put Wall {put_wall}守住觀察震盪，跌破再確認" if pcr is not None and pcr<0.6 and put_wall is not None else f"PCR／Put Wall 有效資料不足時不設定區間目標")
 
     kpi_look=f"KPI 8宮格：加權{close}點 {s.get('spot_pct',0)}% 外資{foreign}億元 Bias{bias}分 {regime_label} {hist_str}"
-    kpi_compass=f"{bias}分{regime_label}，17因子共振(含RSI/MACD)，VIX動態美股{weights.get('us_sox',12)}% {hist_str}"
+    kpi_compass=f"{bias}分{regime_label}；{factor_quality_summary}；費半有效權重{weights.get('us_sox',0):.2f}%；{hist_str}"
     kpi_target=f"依Bias{bias}分操作，{regime_label}策略，{put_wall}為關鍵，{hist_str}"
 
     top10=parsed['futures']['top10']; foreign_day=parsed['futures']['foreign_day']
@@ -1123,6 +1157,18 @@ def run_17f_self_tests():
         assert sparse_analyzer.factor_quality['active_count']<17
         assert abs(sum(sparse_weights.values())-100.0)<1e-5
         assert 0<=sparse_bias<=100
+        full_quality_summary=build_factor_quality_summary(analyzer)
+        assert "17F有效17/17" in full_quality_summary
+        assert "有效權重100.0%" in full_quality_summary
+        assert "17因子共振" not in full_quality_summary
+        sparse_quality_summary=build_factor_quality_summary(sparse_analyzer)
+        assert f"17F有效{sparse_analyzer.factor_quality['active_count']}/17" in sparse_quality_summary
+        assert "缺失" in sparse_quality_summary
+        db_partial_text=build_history_status_text(None,{'exists':True,'rows':3,'filled':1,'mode':'db'})
+        assert "SQLite已啟用" in db_partial_text and "有效歷史樣本1/3" in db_partial_text
+        assert "無DB模式" not in db_partial_text
+        no_db_text=build_history_status_text(None,{'exists':False,'rows':0,'filled':0,'mode':'no-db'})
+        assert "SQLite不可用" in no_db_text
 
         empty={'spot':{},'inst':{},'tx':{'day':{},'night':{}},'options':{},'futures':{},
                'usPct_full':[],'adrPct_full':[],'yieldPct_full':[]}
