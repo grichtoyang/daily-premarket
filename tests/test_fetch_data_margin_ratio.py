@@ -37,6 +37,13 @@ class SameT0MarginRatioMergeTests(unittest.TestCase):
         self.assertIn("| 融資維持率 | 171.754 | % | Blave", merged)
         self.assertNotIn("172.100", merged)
 
+    def test_blave_does_not_replace_old_self_built_value(self):
+        old = report("171.747", "TWSE 上市自建估算（資料日期：2026-10-30）")
+        new = report("171.754", "Blave 上市市場融資維持率估算（資料日期：2026-10-30）")
+        merged, _ = merge_same_t0(old, new, "全日", protect=True)
+        self.assertIn("| 融資維持率 | 171.747 | % | TWSE 上市自建估算", merged)
+        self.assertNotIn("171.754", merged)
+
     def test_manual_does_not_replace_old_blave_value(self):
         old = report("171.754", "Blave 上市市場融資維持率估算（資料日期：2026-10-30）")
         new = report("172.100", "人工輸入（MANUAL_LISTED_MARGIN_RATIO；資料日期：2026-10-30）")
