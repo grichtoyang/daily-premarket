@@ -85,19 +85,40 @@ def main() -> int:
         + urlencode({"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc"})
     )
 
+
+    # TPEx OpenAPI endpoints are latest-snapshot APIs (no historical date parameter).
+    # Probe them separately and report the payload's own Date before considering use.
+    tpex_openapi_margin = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_margin_balance"
+    tpex_openapi_prices = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes"
+
     results = {
         "twse_margin": fetch("TWSE margin detail", twse_margin),
-        "tpex_margin": fetch("TPEx margin detail + totals", tpex_margin),
+        "tpex_margin": fetch("TPEx legacy margin detail + totals", tpex_margin),
         "twse_prices": fetch("TWSE historical prices", twse_prices),
-        "tpex_prices": fetch("TPEx historical prices", tpex_prices),
+        "tpex_prices": fetch("TPEx legacy historical prices", tpex_prices),
+        "tpex_openapi_margin": fetch("TPEx OpenAPI latest margin snapshot", tpex_openapi_margin),
+        "tpex_openapi_prices": fetch("TPEx OpenAPI latest price snapshot", tpex_openapi_prices),
     }
     ok = all(results[name] is not None for name in ("twse_margin", "tpex_margin", "twse_prices", "tpex_prices"))
-    print("\n[OFFICIAL-PROBE-SUMMARY] " + json.dumps({
-        "date": date8, "roc_date": roc, "all_four_endpoints_responded": ok,
+    openapi_meta = {}
+    for name in ("tpex_openapi_margin", "tpex_openapi_prices"):
+        payload = results[name]
+        if isinstance(payload, list):
+            dates = sorted({str(row.get("Date", "")).strip() for row in payload if isinstance(row, dict) and row.get("Date")})
+            keys = list(payload[0].keys()) if payload and isinstance(payload[0], dict) else []
+            openapi_meta[name] = {"rows": len(payload), "dates": dates[:5], "first_row_keys": keys}
+        else:
+            openapi_meta[name] = {"valid_list": False}
+    print("\\n[OFFICIAL-PROBE-SUMMARY] " + json.dumps({
+        "date": date8, "roc_date": roc,
+        "historical_four_endpoints_responded": ok,
         "responded": {key: value is not None for key, value in results.items()},
+        "tpex_openapi_snapshot": openapi_meta,
     }, ensure_ascii=False))
-    # Diagnostic probe is non-blocking initially; endpoint payloads must be reviewed before production use.
+    # Diagnostic probe is non-blocking; latest-snapshot dates must match the target date
+    # and payload schemas/units must be reviewed before production use.
     return 0
+
 
 
 if __name__ == "__main__":
