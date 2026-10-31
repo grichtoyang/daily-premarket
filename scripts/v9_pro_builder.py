@@ -449,10 +449,19 @@ def parse_margin_ratio_provenance(report_text, t0_date):
         source_date=source_date or t0_date
         status="estimated_t0"
     source_name="unknown"
-    for candidate in ("wantgoo","stockintelli","istock"):
-        if candidate in source_cell.lower():
-            source_name=candidate
-            break
+    if ratio is None and "unavailable" in source_cell.lower():
+        source_name="unavailable"
+    else:
+        for candidate, label in (
+            ("blave", "blave"),
+            ("人工輸入", "manual_input"),
+            ("wantgoo", "wantgoo"),
+            ("stockintelli", "stockintelli"),
+            ("istock", "istock"),
+        ):
+            if candidate in source_cell.lower():
+                source_name=label
+                break
     if is_fallback:
         source_name="previous_report"
     return {"ratio":ratio,"status":status,"source":source_name,
@@ -1019,14 +1028,18 @@ def run_17f_self_tests():
             {'callOi':100,'putOi':50,'pcr':0.9}
         )
         assert len(conflict_warnings)>=5
+        mr_blave=parse_margin_ratio_provenance("| 融資維持率 | 171.75 | % | Blave 上市市場融資維持率估算（資料日期：2026-10-30） |", "2026-10-30")
+        assert mr_blave["status"]=="estimated_t0" and mr_blave["source"]=="blave" and mr_blave["source_date"]=="2026-10-30" and mr_blave["is_t0"] is True
+        mr_manual=parse_margin_ratio_provenance("| 融資維持率 | 172.10 | % | 人工輸入（MANUAL_LISTED_MARGIN_RATIO；資料日期：2026-10-30） |", "2026-10-30")
+        assert mr_manual["status"]=="estimated_t0" and mr_manual["source"]=="manual_input" and mr_manual["source_date"]=="2026-10-30" and mr_manual["is_t0"] is True
         mr_t0=parse_margin_ratio_provenance("| 融資維持率 | 178.40 | % | stockintelli 大盤融資維持率 (民間估算；官方無每日序列) |", "2026-10-29")
         assert mr_t0["status"]=="estimated_t0" and mr_t0["source"]=="stockintelli" and mr_t0["source_date"]=="2026-10-29" and mr_t0["is_t0"] is True
         mr_prev=parse_margin_ratio_provenance("| 融資維持率 | 178.40 | % | 前值遞補 (DATA 2026-10-29；當日三源皆失敗；民間估算) |", "2026-10-30")
         assert mr_prev["status"]=="previous_report_fallback" and mr_prev["source_date"]=="2026-10-29" and mr_prev["is_t0"] is False
         mr_stale=parse_margin_ratio_provenance("| 融資維持率 | 178.40 | % | wantgoo 大盤融資維持率 (資料日期 2026-10-27；民間估算) |", "2026-10-29")
         assert mr_stale["status"]=="estimated_stale" and mr_stale["source"]=="wantgoo" and mr_stale["source_date"]=="2026-10-27"
-        mr_none=parse_margin_ratio_provenance("| 融資維持率 | unavailable | % | unavailable |", "2026-10-29")
-        assert mr_none["status"]=="unavailable" and mr_none["ratio"] is None
+        mr_none=parse_margin_ratio_provenance("| 融資維持率 | unavailable | % | unavailable（Blave、同 T0 人工輸入皆不可用） |", "2026-10-29")
+        assert mr_none["status"]=="unavailable" and mr_none["ratio"] is None and mr_none["source"]=="unavailable"
         closes=[100.0+i for i in range(25)]
         parsed={
             'spot':{'close':125.0,'pct':1.5,'up':800,'down':300,'vol':5000,'volume_ratio':1.3},
