@@ -3,9 +3,10 @@ name: P0 DATA_REPORT Margin Ratio Integration
 on:
   push:
     branches:
-      - phase2-p0-data-quality-pending-migration
+      - phase2-p0-data-quality
     paths:
       - "src/sources/blave_maint_ratio.py"
+      - "src/sources/listed_maint_ratio.py"
       - "src/sources/spot.py"
       - "src/fetch_data.py"
       - "scripts/v9_pro_builder.py"
@@ -15,6 +16,7 @@ on:
       - "tests/test_p0_workflow_isolation.py"
       - ".github/workflows/daily-premarket-v9-pro.yml"
       - "tests/test_fetch_data_margin_ratio.py"
+      - "tests/test_listed_maint_ratio.py"
       - ".github/workflows/test-data-report-margin-ratio.yml"
   workflow_dispatch:
 
@@ -48,8 +50,9 @@ jobs:
         run: python -m unittest discover -s tests -p "test_builder_option_tables.py" -v
       - name: Verify P0 GitHub Actions branch isolation
         run: python -m unittest discover -s tests -p "test_p0_workflow_isolation.py" -v
-      - name: Run Blave-first margin ratio policy unit tests
+      - name: Run TWSE-self-built-first margin ratio policy unit tests
         run: |
+          python -m unittest discover -s tests -p "test_listed_maint_ratio.py" -v
           python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v
           python -m unittest discover -s tests -p "test_spot_margin_ratio.py" -v
           python -m unittest discover -s tests -p "test_fetch_data_margin_ratio.py" -v
@@ -58,7 +61,7 @@ jobs:
           MANUAL_LISTED_MARGIN_RATIO: ${{ vars.MANUAL_LISTED_MARGIN_RATIO }}
           MANUAL_LISTED_MARGIN_RATIO_DATE: ${{ vars.MANUAL_LISTED_MARGIN_RATIO_DATE }}
         run: python src/fetch_data.py --date 2026-10-31 --t0 2026-10-30
-      - name: Verify current T0 ratio is not stale carry-forward
+      - name: Verify T0 ratio provenance without blocking unavailable
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -73,9 +76,9 @@ jobs:
               raise SystemExit("MARGIN_RATIO_ROW_MISSING")
           row = rows[-1]
           print("MARGIN_RATIO_ROW:", row)
-          if "前值遞補" in row or "TWSE 上市自建估算" in row:
-              raise SystemExit("RETIRED_MARGIN_RATIO_SOURCE_OR_STALE_CARRY_FORWARD_FOUND")
-          if "Blave" in row or "人工輸入" in row:
+          if "前值遞補" in row:
+              raise SystemExit("STALE_CARRY_FORWARD_FOUND")
+          if "TWSE 上市自建估算" in row or "Blave" in row or "人工輸入" in row:
               if f"資料日期：{t0}" not in row:
                   raise SystemExit("MARGIN_RATIO_SOURCE_DATE_MISMATCH")
               print("MARGIN_RATIO_SOURCE=VALID_T0")
@@ -102,39 +105,78 @@ jobs:
           assert data["meta"]["version"] == "v9-pro-17F"
           assert data["meta"]["date"] == "2026-10-30"
           margin = data["margin"]
-          assert margin["ratio"] is not None, "Builder ratio missing"
-          assert margin["ratio_status"] == "estimated_t0", margin
-          assert margin["ratio_source_date"] == "2026-10-30", margin
-          assert margin["ratio_is_t0"] is True, margin
-          assert margin["ratio_source_name"] in ("blave", "manual_input"), margin
+          if margin["ratio"] is None:
+              assert margin["ratio_status"] == "unavailable", margin
+              assert margin["ratio_source_name"] == "unavailable", margin
+              assert margin["ratio_is_t0"] is False, margin
+              print("BUILDER_JSON_RATIO=UNAVAILABLE_NON_BLOCKING")
+          else:
+              assert margin["ratio_status"] == "estimated_t0", margin
+              assert margin["ratio_source_date"] == "2026-10-30", margin
+              assert margin["ratio_is_t0"] is True, margin
+              assert margin["ratio_source_name"] in ("twse_self_built", "blave", "manual_input"), margin
+              print("BUILDER_JSON_T0_PROVENANCE=PASS", margin["ratio"], margin["ratio_source_name"], margin["ratio_source_date"])
           options = data["options"]
           for key in ("instOptForce", "top10Call", "top10Put"):
               assert isinstance(options[key], list) and len(options[key]) >= 3, (key, options[key])
           print("BUILDER_JSON_T0_PROVENANCE=PASS", margin["ratio"], margin["ratio_source_name"], margin["ratio_source_date"])
           print("BUILDER_OPTION_TABLES=PASS", {key: len(options[key]) for key in ("instOptForce", "top10Call", "top10Put")})
           PY
-      - name: Generate React Dashboard HTML artifact
+      - name: Verify unavailable ratio still builds JSON and Dashboard HTML
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path("data_reports/DATA_REPORT_20261030.md").read_text(encoding="utf-8")
+          pattern = re.compile(r"(?m)^\|\s*融資維持率\s*\|.*$")
+          updated, count = pattern.subn(
+              "| 融資維持率 | unavailable | % | unavailable（TWSE 自建、Blave、人工輸入皆不可用） |",
+              source,
+          )
+          if count != 1:
+              raise SystemExit(f"EXPECTED_ONE_MARGIN_RATIO_ROW, got {count}")
+          Path("artifacts/DATA_REPORT_20261030_unavailable.md").write_text(updated, encoding="utf-8")
+          PY
+          python scripts/v9_pro_builder.py --data_report "artifacts/DATA_REPORT_20261030_unavailable.md" --out "artifacts/data-unavailable.json" --date "20261030"
+          python -m json.tool "artifacts/data-unavailable.json" > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("artifacts/data-unavailable.json").read_text(encoding="utf-8"))
+          margin = data["margin"]
+          assert margin["ratio"] is None, margin
+          assert margin["ratio_status"] == "unavailable", margin
+          assert margin["ratio_source_name"] == "unavailable", margin
+          assert margin["ratio_is_t0"] is False, margin
+          print("UNAVAILABLE_RATIO_BUILDER_JSON=PASS")
+          PY
+      - name: Generate React Dashboard HTML artifacts
         run: |
           set -euo pipefail
           python - <<'PY'
           import json
           from pathlib import Path
-          data_path = Path("artifacts/data-20261030.json")
           template_path = Path("templates/v9-pro-react-template.html")
-          data = json.loads(data_path.read_text(encoding="utf-8"))
           template = template_path.read_text(encoding="utf-8")
           if "var vf=window.DASHBOARD_DATA;" not in template:
               raise SystemExit("React template fallback detected")
-          payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-          injection = f"<script>window.DASHBOARD_DATA={payload};</script>" + chr(10)
           if "</head>" not in template:
               raise SystemExit("React template closing head missing")
-          html = template.replace("</head>", injection + "</head>", 1)
-          out = Path("artifacts/v9-pro-20261030.html")
-          out.write_text(html, encoding="utf-8")
-          if "window.DASHBOARD_DATA=" not in html:
-              raise SystemExit("React data injection verification failed")
-          print("REACT_HTML_ARTIFACT=PASS", out.stat().st_size)
+          cases = [
+              ("artifacts/data-20261030.json", "artifacts/v9-pro-20261030.html"),
+              ("artifacts/data-unavailable.json", "artifacts/v9-pro-20261030-unavailable.html"),
+          ]
+          for data_name, html_name in cases:
+              data = json.loads(Path(data_name).read_text(encoding="utf-8"))
+              payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+              injection = f"<script>window.DASHBOARD_DATA={payload};</script>" + chr(10)
+              html = template.replace("</head>", injection + "</head>", 1)
+              out = Path(html_name)
+              out.write_text(html, encoding="utf-8")
+              if "window.DASHBOARD_DATA=" not in html:
+                  raise SystemExit(f"React data injection verification failed: {html_name}")
+              print("REACT_HTML_ARTIFACT=PASS", html_name, out.stat().st_size)
           PY
       - name: Upload DATA_REPORT, JSON and HTML artifacts
         uses: actions/upload-artifact@v4
@@ -143,5 +185,8 @@ jobs:
           path: |
             data_reports/DATA_REPORT_20261030.md
             artifacts/data-20261030.json
+            artifacts/data-unavailable.json
+            artifacts/DATA_REPORT_20261030_unavailable.md
             artifacts/v9-pro-20261030.html
+            artifacts/v9-pro-20261030-unavailable.html
           if-no-files-found: error
