@@ -1,0 +1,65 @@
+name: P0 DATA_REPORT Margin Ratio Integration
+
+on:
+  push:
+    branches:
+      - phase2-p0-data-quality
+    paths:
+      - "src/sources/listed_maint_ratio.py"
+      - "src/sources/blave_maint_ratio.py"
+      - "src/sources/spot.py"
+      - "src/fetch_data.py"
+      - ".github/workflows/test-data-report-margin-ratio.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  data-report-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout P0 branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase2-p0-data-quality
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Build DATA_REPORT for 2026-10-30 T0
+        env:
+          MANUAL_LISTED_MARGIN_RATIO: ${{ vars.MANUAL_LISTED_MARGIN_RATIO }}
+          MANUAL_LISTED_MARGIN_RATIO_DATE: ${{ vars.MANUAL_LISTED_MARGIN_RATIO_DATE }}
+        run: python src/fetch_data.py --date 2026-10-31 --t0 2026-10-30
+      - name: Verify current T0 ratio is not stale carry-forward
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path("data_reports/DATA_REPORT_20261030.md")
+          if not path.exists():
+              raise SystemExit("DATA_REPORT_NOT_CREATED")
+          text = path.read_text(encoding="utf-8")
+          rows = [line for line in text.splitlines() if re.search(r"\|\\s*融資維持率\\s*\\|", line)]
+          if not rows:
+              raise SystemExit("MARGIN_RATIO_ROW_MISSING")
+          row = rows[-1]
+          print("MARGIN_RATIO_ROW:", row)
+          if "unavailable" in row:
+              raise SystemExit("MARGIN_RATIO_UNAVAILABLE")
+          if "前值遞補" in row:
+              raise SystemExit("STALE_RATIO_CARRY_FORWARD_FOUND")
+          if not any(x in row for x in ("TWSE", "Blave", "人工輸入")):
+              raise SystemExit("MARGIN_RATIO_SOURCE_NOT_IDENTIFIED")
+          print("DATA_REPORT_MARGIN_RATIO_INTEGRATION=PASS")
+          PY
+      - name: Upload DATA_REPORT artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: P0-DATA_REPORT-20261030
+          path: data_reports/DATA_REPORT_20261030.md
+          if-no-files-found: error
