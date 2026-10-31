@@ -31,17 +31,30 @@ class MaintenanceRatioSourceTests(unittest.TestCase):
         self.assertEqual(result["date"], "2026-10-30")
         self.assertEqual(result["ratio"], 170.61)
 
-    def test_stale_wantgoo_cannot_override_exact_stockintelli(self):
+    def test_listed_only_sources_cannot_override_combined_istock(self):
         with patch.object(maint_ratio, "_wantgoo", return_value={
-            "ratio": 178.40, "date": "2026-10-29", "ok": True, "source": "wantgoo"
+            "ratio": 171.75, "date": "2026-10-30", "ok": True, "source": "wantgoo"
         }), patch.object(maint_ratio, "_stockintelli", return_value={
             "ratio": 171.80, "date": "2026-10-30", "ok": True
         }), patch.object(maint_ratio, "_istock", return_value={
             "ratio": 170.61, "date": "2026-10-30", "ok": True
         }):
             result = maint_ratio.get("2026-10-30")
-        self.assertEqual(result["source"], "stockintelli")
-        self.assertEqual(result["ratio"], 171.80)
+        self.assertEqual(result["source"], "istock_combined")
+        self.assertEqual(result["ratio"], 170.61)
+
+    def test_listed_only_sources_are_not_market_wide_fallback(self):
+        with patch.object(maint_ratio, "_wantgoo", return_value={
+            "ratio": 171.75, "date": "2026-10-30", "ok": True
+        }), patch.object(maint_ratio, "_stockintelli", return_value={
+            "ratio": 171.80, "date": "2026-10-30", "ok": True
+        }), patch.object(maint_ratio, "_istock", return_value={
+            "ratio": None, "date": None, "ok": False
+        }):
+            result = maint_ratio.get("2026-10-30")
+        self.assertFalse(result["ok"])
+        self.assertIsNone(result["ratio"])
+        self.assertEqual(result["source"], "unavailable")
 
     def test_all_sources_without_t0_return_unavailable(self):
         unavailable = {"ratio": None, "date": None, "ok": False}
