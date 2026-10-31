@@ -356,7 +356,11 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
             nc = [c.strip() for c in nxt.strip("|").split("|")] if nxt.startswith("|") else []
             is_hdr = bool(nc) and all(_re3.fullmatch(r":?-{3,}:?", c or "") for c in nc)
             if not is_sep and not is_hdr and cells:
-                old = old_norm.get((hkey, _norm_label(cells[0])))
+                _label = _norm_label(cells[0])
+                old = old_norm.get((hkey, _label))
+                # 維持率是 T0 市場估算值；本次 unavailable 時絕不可沿用舊 T0 數字。
+                if _label == "融資維持率" and cells[1] == MISSING:
+                    old = None
                 if old and len(old) == len(cells):
                     new_cells = list(cells)
                     new_last = new_cells[-1]
