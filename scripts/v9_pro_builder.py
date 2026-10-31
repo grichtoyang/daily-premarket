@@ -477,7 +477,7 @@ def parse_margin_ratio_provenance(report_text, t0_date):
         source_name="unavailable"
     else:
         for candidate, label in (
-            ("TWSE 上市自建估算", "twse_self_built"),
+            ("twse 上市自建估算", "twse_self_built"),
             ("blave", "blave"),
             ("人工輸入", "manual_input"),
             ("wantgoo", "wantgoo"),
