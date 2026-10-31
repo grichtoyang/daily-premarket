@@ -21,8 +21,33 @@ HEADERS = {
 ROC = lambda d: f"{d.year - 1911:03d}/{d.month:02d}/{d.day:02d}"
 
 
+def _tpex_footer_totals(table: dict[str, Any]) -> dict[str, Any]:
+    """Extract TPEx market totals from the official JSON table's footers."""
+    footers = table.get("footers")
+    if not isinstance(footers, list):
+        return {"available": False, "reason": "tables[0].footers missing"}
+    result: dict[str, Any] = {"available": False, "raw_footers": footers}
+    for row in footers:
+        if not isinstance(row, list):
+            continue
+        if len(row) > 6 and str(row[1]).strip() == "融資金(仟元)":
+            result.update({
+                "available": True,
+                "label": str(row[1]).strip(),
+                "previous_financing_amount_thousand_ntd": row[2],
+                "financing_buy_thousand_ntd": row[3],
+                "financing_sell_thousand_ntd": row[4],
+                "cash_repayment_thousand_ntd": row[5],
+                "current_financing_amount_thousand_ntd": row[6],
+            })
+            break
+    if not result["available"]:
+        result["reason"] = "融資金(仟元) row not found in tables[0].footers"
+    return result
+
+
 def fetch(label: str, url: str, timeout: int = 30) -> Any:
-    print(f"\n[OFFICIAL-PROBE] {label}")
+    print(f"\\n[OFFICIAL-PROBE] {label}")
     print(f"URL={url}")
     try:
         response = requests.get(url, headers=HEADERS, timeout=timeout)
@@ -38,10 +63,12 @@ def fetch(label: str, url: str, timeout: int = 30) -> Any:
                         continue
                     fields = table.get("fields") or []
                     rows = table.get("data") or []
-                    print(f"TABLE[{index}] title={table.get('title')} fields={json.dumps(fields, ensure_ascii=False)} rows={len(rows)} sample={json.dumps(rows[:2], ensure_ascii=False)}")
-            # TPEx historical margin endpoint exposes its market totals separately
-            # from per-security rows. Print the complete stat object and any footer
-            # fields so units and aggregate financing money can be identified.
+                    sample_rows = rows if label.startswith("TWSE margin") and index == 0 else rows[:2]
+                    print(f"TABLE[{index}] title={table.get('title')} fields={json.dumps(fields, ensure_ascii=False)} rows={len(rows)} sample={json.dumps(sample_rows, ensure_ascii=False)}")
+                    if label.startswith("TPEx legacy margin") and index == 0:
+                        print("TPEX_OFFICIAL_TOTALS=" + json.dumps(
+                            _tpex_footer_totals(table), ensure_ascii=False
+                        )[:12000])
             for key in ("stat", "aaData", "tfootData_one", "tfootData_two", "data", "fields"):
                 value = payload.get(key)
                 if value is not None:
@@ -90,13 +117,10 @@ def main() -> int:
         "https://www.twse.com.tw/rwd/zh/marginTrading/MI_MARGN?"
         + urlencode({"date": date8, "selectType": "ALL", "response": "json"})
     )
-    # Historical TPEx margin-balance endpoint. The margin_balance path segment is required.
     tpex_margin = (
         "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
         + urlencode({"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc"})
     )
-    # Probe TPEx's rendered/CSV exports too: the JSON table may omit footer totals
-    # (notably the market-wide financing amount shown below the 919 security rows).
     tpex_margin_html = (
         "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
         + urlencode({"l": "zh-tw", "o": "htm", "d": roc, "s": "0,asc"})
@@ -105,7 +129,6 @@ def main() -> int:
         "https://www.tpex.org.tw/web/stock/margin_trading/margin_balance/margin_bal_result.php?"
         + urlencode({"l": "zh-tw", "o": "csv", "d": roc, "s": "0,asc"})
     )
-    # Historical daily market quote endpoints are probed separately from margin.
     twse_prices = (
         "https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?"
         + urlencode({"date": date8, "type": "ALLBUT0999", "response": "json"})
@@ -114,10 +137,6 @@ def main() -> int:
         "https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?"
         + urlencode({"l": "zh-tw", "o": "json", "d": roc, "s": "0,asc"})
     )
-
-
-    # TPEx OpenAPI endpoints are latest-snapshot APIs (no historical date parameter).
-    # Probe them separately and report the payload's own Date before considering use.
     tpex_openapi_margin = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_margin_balance"
     tpex_openapi_prices = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes"
     tpex_openapi_marginspot = "https://www.tpex.org.tw/openapi/v1/tpex_mainboard_margin_trading_marginspot"
@@ -158,10 +177,7 @@ def main() -> int:
         "tpex_openapi_snapshot": openapi_meta,
         "tpex_openapi_marginspot": marginspot_meta,
     }, ensure_ascii=False))
-    # Diagnostic probe is non-blocking; latest-snapshot dates must match the target date
-    # and payload schemas/units must be reviewed before production use.
     return 0
-
 
 
 if __name__ == "__main__":
