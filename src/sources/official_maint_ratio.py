@@ -61,7 +61,8 @@ def _find_table(tables: list[dict], *required_fields: str) -> dict:
 
 
 def _sum_market_value(margin_table: dict, price_table: dict, balance_field: str,
-                      code_field: str, close_field: str, market: str) -> dict:
+                      code_field: str, close_field: str, market: str,
+                      fallback_prices: dict[str, dict] | None = None) -> dict:
     balances = _records(margin_table)
     prices = _records(price_table)
     price_map = {}
@@ -76,6 +77,8 @@ def _sum_market_value(margin_table: dict, price_table: dict, balance_field: str,
     total = 0.0
     positive_count = 0
     missing = []
+    stale_price_details = []
+    fallback_prices = fallback_prices or {}
     for row in balances:
         code = str(row.get("代號", row.get("證券代號", ""))).strip()
         if not code:
@@ -89,6 +92,16 @@ def _sum_market_value(margin_table: dict, price_table: dict, balance_field: str,
         positive_count += 1
         close = price_map.get(code)
         if close is None or close <= 0:
+            fallback = fallback_prices.get(code)
+            if fallback:
+                close = _number(fallback.get("close"))
+                if close > 0:
+                    stale_price_details.append({
+                        "code": code,
+                        "price": close,
+                        "price_date": str(fallback.get("date", "")),
+                    })
+        if close is None or close <= 0:
             missing.append(code)
             continue
         total += lots * 1000.0 * close
@@ -98,6 +111,8 @@ def _sum_market_value(margin_table: dict, price_table: dict, balance_field: str,
         "financed_security_count": positive_count,
         "priced_security_count": positive_count - len(missing),
         "missing_price_codes": missing,
+        "stale_price_count": len(stale_price_details),
+        "stale_price_details": stale_price_details,
         "collateral_value_ntd": total,
     }
 
@@ -137,7 +152,8 @@ def _tpex_financing_amount(payload: dict, t0_roc: str) -> float:
 
 
 def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
-              twse_prices: dict, tpex_prices: dict) -> dict:
+              twse_prices: dict, tpex_prices: dict,
+              fallback_prices: dict[str, dict[str, dict]] | None = None) -> dict:
     """Calculate only when all four sources are present, same-day and fully priced."""
     date8 = t0.replace("-", "")
     twm = _tables(twse_margin, date8, "TWSE margin")
@@ -207,10 +223,13 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
             f"TWSE_TPEx_margin_code_overlap={sorted(margin_overlap)[:50]}"
         )
 
+    fallback_prices = fallback_prices or {}
     listed = _sum_market_value(tw_margin_table, tw_price_table, "今日餘額",
-                               "證券代號", "收盤價", "上市")
+                               "證券代號", "收盤價", "上市",
+                               fallback_prices.get("twse"))
     otc = _sum_market_value(tx_margin_table, tx_price_table, "資餘額",
-                            "代號", "收盤", "上櫃")
+                            "代號", "收盤", "上櫃",
+                            fallback_prices.get("tpex"))
     denominator = (_twse_financing_amount(twse_margin, date8)
                    + _tpex_financing_amount(tpex_margin, t0_roc))
     missing = listed["missing_price_codes"] + otc["missing_price_codes"]
@@ -230,6 +249,8 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
         "denominator_financing_amount_ntd": round(denominator, 2),
         "coverage": round(coverage, 6), "financed_security_count": count,
         "priced_security_count": priced, "listed": listed, "otc": otc,
-        "method": "official_same_day_financing_balance_x_close_over_official_same_day_financing_amount",
+        "stale_price_count": listed["stale_price_count"] + otc["stale_price_count"],
+        "stale_price_details": listed["stale_price_details"] + otc["stale_price_details"],
+        "method": "official_same_day_financing_balance_x_same_day_close_or_latest_prior_official_close_over_official_same_day_financing_amount",
         "classification": "market_wide_estimate_not_individual_account_ratio",
     }
