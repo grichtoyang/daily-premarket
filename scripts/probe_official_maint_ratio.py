@@ -21,28 +21,30 @@ HEADERS = {
 ROC = lambda d: f"{d.year - 1911:03d}/{d.month:02d}/{d.day:02d}"
 
 
-def _tpex_footer_totals(table: dict[str, Any]) -> dict[str, Any]:
-    """Extract TPEx market totals from the official JSON table's footers."""
-    footers = table.get("footers")
-    if not isinstance(footers, list):
-        return {"available": False, "reason": "tables[0].footers missing"}
-    result: dict[str, Any] = {"available": False, "raw_footers": footers}
-    for row in footers:
-        if not isinstance(row, list):
+def _tpex_market_totals(table: dict[str, Any]) -> dict[str, Any]:
+    """Extract TPEx market totals from the official JSON table's summary rows."""
+    summary = table.get("summary")
+    if not isinstance(summary, list):
+        return {"available": False, "reason": "tables[0].summary missing"}
+    result: dict[str, Any] = {"available": False, "raw_summary": summary}
+    for row in summary:
+        if not isinstance(row, list) or len(row) <= 6:
             continue
-        if len(row) > 6 and str(row[1]).strip() == "融資金(仟元)":
+        label = str(row[1]).strip()
+        if label == "合計(張)":
+            result["margin_balance_lots"] = row[6]
+        elif label == "融資金(仟元)":
             result.update({
                 "available": True,
-                "label": str(row[1]).strip(),
+                "label": label,
                 "previous_financing_amount_thousand_ntd": row[2],
                 "financing_buy_thousand_ntd": row[3],
                 "financing_sell_thousand_ntd": row[4],
                 "cash_repayment_thousand_ntd": row[5],
                 "current_financing_amount_thousand_ntd": row[6],
             })
-            break
     if not result["available"]:
-        result["reason"] = "融資金(仟元) row not found in tables[0].footers"
+        result["reason"] = "融資金(仟元) row not found in tables[0].summary"
     return result
 
 
@@ -66,8 +68,8 @@ def fetch(label: str, url: str, timeout: int = 30) -> Any:
                     sample_rows = rows if label.startswith("TWSE margin") and index == 0 else rows[:2]
                     print(f"TABLE[{index}] title={table.get('title')} fields={json.dumps(fields, ensure_ascii=False)} rows={len(rows)} sample={json.dumps(sample_rows, ensure_ascii=False)}")
                     if label.startswith("TPEx legacy margin") and index == 0:
-                        print("TPEX_OFFICIAL_TOTALS=" + json.dumps(
-                            _tpex_footer_totals(table), ensure_ascii=False
+                        print("TPEX_OFFICIAL_TOTALS_FROM_SUMMARY=" + json.dumps(
+                            _tpex_market_totals(table), ensure_ascii=False
                         )[:12000])
             for key in ("stat", "aaData", "tfootData_one", "tfootData_two", "data", "fields"):
                 value = payload.get(key)
