@@ -14,10 +14,11 @@ class P0WorkflowIsolationTests(unittest.TestCase):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
         cls.integration = INTEGRATION.read_text(encoding="utf-8")
 
-    def test_manual_dispatch_and_master_only_automatic_trigger(self):
+    def test_manual_dispatch_and_explicit_master_p0_push_triggers(self):
         self.assertIn("workflow_dispatch:", self.workflow)
-        self.assertRegex(self.workflow, r"(?ms)^  push:\s*branches:\s*\n\s+- master(?:\s|$)")
-        self.assertNotIn("- phase2-p0-data-quality", self.workflow.split("  schedule:", 1)[0])
+        push_section = self.workflow.split("  schedule:", 1)[0]
+        self.assertRegex(push_section, r"(?ms)^  push:\s*branches:\s*\n\s+- master(?:\s|$)")
+        self.assertIn("- phase2-p0-data-quality", push_section)
 
     def test_checkout_and_generated_commit_are_explicitly_p0_scoped(self):
         self.assertIn("ref: ${{ github.ref }}", self.workflow)
