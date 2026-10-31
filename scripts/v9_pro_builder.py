@@ -19,7 +19,7 @@ Skill: daily-premarket-analysis-v9-pro (參考 v8 pro skill 2026-10-28)
 
 import pathlib, re, json, argparse, sys, glob
 from datetime import datetime, timedelta
-import sqlite3
+import sqlite3, math
 
 # ===== 技術指標 3層備援 (方案C) =====
 def fetch_yahoo_twii_30d():
@@ -293,32 +293,39 @@ def update_next_day_pct(db_path="dashboards/v9_pro_history.db"):
         return False
 
 def get_factor_win_rates_from_db(db_path="dashboards/v9_pro_history.db"):
+    """Return conservative, sample-gated historical directional hit rates."""
     try:
         conn=init_db(db_path)
         if not conn: return None
         try:
-            rows=conn.execute("SELECT bias,spot_close,spot_pct,foreign_spot,pcr,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
-        except:
-            rows=conn.execute("SELECT bias,spot_close,spot_pct,foreign_spot,pcr,next_day_pct FROM v8_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
+            rows=conn.execute("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 60").fetchall()
+        except sqlite3.OperationalError:
+            rows=conn.execute("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v8_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 60").fetchall()
         conn.close()
-        if len(rows)<5:
-            print(f"[V9-17F] DB insufficient {len(rows)}/5 for win rate")
-            return None
-        wins={'spot_trend':0,'foreign_spot':0,'pcr':0,'foreign_fut':0}
-        totals={'spot_trend':0,'foreign_spot':0,'pcr':0,'foreign_fut':0}
-        for bias,close,pct,foreign,pcr,next_pct in rows:
-            if pct<-1: totals['spot_trend']+=1; wins['spot_trend']+=1 if next_pct<0 else 0
-            if foreign<-200: totals['foreign_spot']+=1; wins['foreign_spot']+=1 if next_pct<0 else 0
-            if pcr<0.8: totals['pcr']+=1; wins['pcr']+=1 if next_pct<0 else 0
-            if bias<35: totals['foreign_fut']+=1; wins['foreign_fut']+=1 if next_pct<0 else 0
-        win_rates={}
-        for f in wins:
-            if totals[f]>=3: win_rates[f]=wins[f]/totals[f] if totals[f]>0 else 0.5
-        print(f"[V9-17F] DB real win rates from {len(rows)} days: {win_rates}")
-        return win_rates
+        wins={k:0 for k in ('spot_trend','foreign_spot','foreign_fut','pcr')}
+        totals={k:0 for k in wins}
+        for pct,foreign,foreign_fut,pcr,next_pct in rows:
+            if next_pct is None: continue
+            candidates=[]
+            if pct is not None and abs(pct)>=1: candidates.append(('spot_trend',1 if pct>0 else -1))
+            if foreign is not None and abs(foreign)>=200: candidates.append(('foreign_spot',1 if foreign>0 else -1))
+            if foreign_fut is not None and abs(foreign_fut)>=50000: candidates.append(('foreign_fut',1 if foreign_fut>0 else -1))
+            if pcr is not None and pcr<0.8: candidates.append(('pcr',-1))
+            actual=1 if next_pct>0 else -1 if next_pct<0 else 0
+            for key,predicted in candidates:
+                totals[key]+=1
+                if actual==predicted: wins[key]+=1
+        rates={}
+        for key,total in totals.items():
+            if total>=8:
+                rates[key]=(wins[key]+5.0)/(total+10.0)
+        print(f"[V9-17F] SQLite optimizer: {len(rows)} labeled rows; eligible factor rates={rates}")
+        return rates or None
     except Exception as e:
-        print(f"[V9-17F] DB get win rates error: {e}")
+        print(f"[V9-17F] DB get win rates non-critical: {e}")
         return None
+
+
 
 def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_history.db", top_n=3):
     try:
@@ -518,137 +525,162 @@ class V9Analyzer:
         self.parsed=parsed; self.tech=tech; self.signals={}; self.bias_score=50; self.bias_factors=[]; self.weights={}; self._parse_signals()
 
     def _parse_signals(self):
-        p=self.parsed; spot=p['spot']
-        self.signals['spot_close']=spot['close']; self.signals['spot_pct']=spot['pct']; self.signals['spot_up']=spot['up']; self.signals['spot_down']=spot['down']; self.signals['spot_vol']=spot['vol']
-        inst=p['inst']; self.signals['foreign']=inst['foreign']; self.signals['trust']=inst['trust']; self.signals['dealer']=inst['dealer']; self.signals['all']=inst['all']
-        tx=p['tx']; self.signals['tx_basis']=tx['day']['basis']; self.signals['tx_prem']=tx['day']['prem']; self.signals['tx_day_pct']=tx['day']['pct']; self.signals['tx_night_pct']=tx['night']['pct']; self.signals['tx_night_low']=tx['night']['l']; self.signals['tx_night_high']=tx['night']['h']; self.signals['tx_day_low']=tx['day']['l']
-        self.signals['put_wall']=p['options']['putWall']; self.signals['call_wall']=p['options']['callWall']; self.signals['gamma_wall']=p['options']['gammaWall']; self.signals['flip']=p['options']['flip']; self.signals['max_pain']=p['options']['maxPain']; self.signals['pcr']=p['options']['pcr']; self.signals['gex']=None
-        us_dict={x['l']:x['v'] for x in p['usPct_full']}; self.signals['us_dict']=us_dict
-        vix_val=None
-        for item in p['usPct_full']:
-            if 'VIX' in item['l']:
-                vix_val=item.get('close')
-                break
-        self.signals['vix']=vix_val
-        adr_dict={x['l']:x['v'] for x in p['adrPct_full']}; tsm=0
-        for k,v in adr_dict.items():
-            if 'TSM' in k or '台積電' in k: tsm=v
-        self.signals['adr_premium']=tsm
-        self.signals['rsi']=self.tech.get('rsi'); self.signals['macd']=self.tech.get('macd'); self.signals['macd_hist']=self.tech.get('macd_hist'); self.signals['k']=self.tech.get('k'); self.signals['d']=self.tech.get('d'); self.signals['tech_valid']=self.tech.get('valid',False)
-        self.signals['foreign_futures']=p['futures']['foreign_oi']
+        p=self.parsed; spot=p.get('spot',{}); inst=p.get('inst',{}); tx=p.get('tx',{})
+        options=p.get('options',{}); futures=p.get('futures',{})
+        self.signals['spot_close']=spot.get('close'); self.signals['spot_pct']=spot.get('pct')
+        self.signals['spot_up']=spot.get('up'); self.signals['spot_down']=spot.get('down')
+        self.signals['spot_vol']=spot.get('vol')
+        self.signals['volume_ratio']=spot.get('volume_ratio',p.get('volume_ratio'))
+        self.signals['foreign']=inst.get('foreign'); self.signals['trust']=inst.get('trust')
+        self.signals['dealer']=inst.get('dealer'); self.signals['all']=inst.get('all')
+        day=tx.get('day',{}); night=tx.get('night',{})
+        self.signals['tx_basis']=day.get('basis'); self.signals['tx_prem']=day.get('prem')
+        self.signals['tx_day_pct']=day.get('pct'); self.signals['tx_night_pct']=night.get('pct')
+        self.signals['tx_night_low']=night.get('l'); self.signals['tx_night_high']=night.get('h')
+        self.signals['tx_day_low']=day.get('l')
+        self.signals['put_wall']=options.get('putWall'); self.signals['call_wall']=options.get('callWall')
+        self.signals['gamma_wall']=options.get('gammaWall'); self.signals['flip']=options.get('flip')
+        self.signals['max_pain']=options.get('maxPain'); self.signals['pcr']=options.get('pcr')
+        self.signals['gex']=options.get('gex')
+        us_rows=p.get('usPct_full',[]) or []
+        self.signals['us_dict']={x.get('l'):x.get('v') for x in us_rows if isinstance(x,dict)}
+        self.signals['sox']=next((x.get('v') for x in us_rows if 'SOX' in str(x.get('l','')).upper()),None)
+        self.signals['vix']=next((x.get('close') for x in us_rows if 'VIX' in str(x.get('l','')).upper()),None)
+        adr_rows=p.get('adrPct_full',[]) or []
+        self.signals['adr_change']=next((x.get('v') for x in adr_rows if 'TSM' in str(x.get('l','')).upper() or '台積電' in str(x.get('l',''))),None)
+        yield_rows=p.get('yieldPct_full',[]) or []
+        self.signals['yield_10y_change']=next((x.get('v') for x in yield_rows if '10Y' in str(x.get('l','')).upper() or '10年' in str(x.get('l',''))),None)
+        tech=self.tech or {}
+        self.signals['rsi']=tech.get('rsi'); self.signals['macd']=tech.get('macd')
+        self.signals['macd_hist']=tech.get('macd_hist'); self.signals['k']=tech.get('k')
+        self.signals['d']=tech.get('d'); self.signals['tech_valid']=tech.get('valid',False)
+        closes=[float(x) for x in (tech.get('closes') or []) if x is not None]
+        self.signals['ma_bias_pct']=((closes[-1]/(sum(closes[-20:])/20))-1)*100 if len(closes)>=20 and sum(closes[-20:]) else None
+        self.signals['foreign_futures']=futures.get('foreign_oi')
 
-    def calculate_weights(self):
-        vix=self.signals.get('vix'); basis=self.signals.get('tx_basis',0); rsi=self.signals.get('rsi'); tech_valid=self.signals.get('tech_valid',False)
-        # 17因子基礎權重 (依Skill)
+    def _evaluate_factors(self):
+        s=self.signals
+        def num(value):
+            try:
+                value=float(value)
+                return value if math.isfinite(value) else None
+            except (TypeError,ValueError):
+                return None
+        def add(key,label,raw,score,source,reason):
+            raw=num(raw)
+            if raw is None or score is None:
+                self.factor_details.append({'key':key,'name':label,'raw_value':raw,'score':None,
+                    'status':'disabled','reason':reason or '資料缺失或無法驗證','source':source})
+            else:
+                self.factor_details.append({'key':key,'name':label,'raw_value':raw,
+                    'score':max(-1.0,min(1.0,float(score))),'status':'active',
+                    'reason':reason or '有效資料','source':source})
+        self.factor_details=[]
+        v=num(s.get('spot_pct'))
+        add('spot_trend','現貨趨勢',v,(-1.0 if v<=-3 else -0.8 if v<=-2 else -0.6 if v<=-1 else -0.25 if v<0 else 0.6 if v>=1 else 0.0) if v is not None else None,'DATA_REPORT.spot.pct','依加權指數日漲跌幅分級')
+        v=num(s.get('foreign'))
+        add('foreign_spot','外資現貨',v,(-1.0 if v<=-800 else -0.8 if v<=-500 else -0.5 if v<=-200 else -0.2 if v<0 else 0.6 if v>=200 else 0.0) if v is not None else None,'DATA_REPORT.inst.foreign','依外資現貨買賣超金額分級')
+        v=num(s.get('foreign_futures'))
+        add('foreign_fut','外資期貨',v,(-1.0 if v<=-80000 else -0.6 if v<=-50000 else -0.25 if v<0 else 0.5 if v>=50000 else 0.0) if v is not None else None,'DATA_REPORT.futures.foreign_oi','依外資期貨淨未平倉口數分級')
+        v=num(s.get('trust'))
+        add('trust','投信',v,(0.6 if v>=50 else -0.6 if v<=-50 else 0.0) if v is not None else None,'DATA_REPORT.inst.trust','依投信現貨買賣超金額分級')
+        v=num(s.get('tx_basis'))
+        add('basis','基差',v,(-0.7 if v<-50 or v>200 else 0.0) if v is not None else None,'DATA_REPORT.tx.day.basis','逆價差或過大正價差視為風險')
+        v=num(s.get('tx_night_pct'))
+        add('night','夜盤',v,(-1.0 if v<=-1 else -0.6 if v<=-0.5 else -0.25 if v<0 else 0.6 if v>=0.5 else 0.0) if v is not None else None,'DATA_REPORT.tx.night.pct','依夜盤漲跌幅分級')
+        v=num(s.get('sox'))
+        add('us_sox','美股費半',v,(-1.0 if v<=-5 else -0.5 if v<=-2 else -0.2 if v<0 else 0.6 if v>=2 else 0.0) if v is not None else None,'DATA_REPORT.usPct_full.SOX','依費半日漲跌幅分級')
+        v=num(s.get('pcr'))
+        add('pcr','PCR',v,(-0.8 if v<0.6 else -0.4 if v<0.8 else 0.0) if v is not None else None,'DATA_REPORT.options.pcr','沿用現行低 PCR 風險規則；其他區間不推定方向')
+        v=num(s.get('gex'))
+        add('gex','GEX',v,(-1.0 if v<0 else 1.0 if v>0 else 0.0) if v is not None else None,'DATA_REPORT.options.gex','僅接受來源直接提供且可驗證的 GEX；不使用硬編碼值')
+        close=num(s.get('spot_close')); wall=num(s.get('put_wall'))
+        wall_score=(0.5 if close>wall else -0.5 if close<wall else 0.0) if close is not None and wall is not None and wall>0 else None
+        add('put_wall','Put Wall',wall,wall_score,'DATA_REPORT.spot.close + DATA_REPORT.options.putWall','現價位於有效 Put Wall 上方／下方；僅作位置方向訊號')
+        v=num(s.get('adr_change'))
+        add('adr','ADR 表現代理',v,(0.5 if v>=2 else -0.5 if v<=-2 else 0.0) if v is not None else None,'DATA_REPORT.adrPct_full.TSM','使用台積電 ADR 漲跌幅代理，不宣稱為 ADR 溢價')
+        v=num(s.get('yield_10y_change'))
+        add('yield','美債10Y殖利率變化',v,(-0.5 if v>=0.05 else 0.5 if v<=-0.05 else 0.0) if v is not None else None,'DATA_REPORT.yieldPct_full.10Y','殖利率日變化以百分點表示；上升偏風險、下降偏緩和')
+        v=num(s.get('volume_ratio')); pct=num(s.get('spot_pct'))
+        volume_score=(0.5 if v>=1.2 and pct>0 else -0.5 if v>=1.2 and pct<0 else 0.0) if v is not None and pct is not None else None
+        add('volume','量能',v,volume_score,'DATA_REPORT.volume_ratio','需有成交量相對均量比；只有單日成交額時不臆測量能強弱')
+        v=num(s.get('ma_bias_pct'))
+        add('ma_bias','均線乖離',v,(0.5 if v>0 else -0.5 if v<0 else 0.0) if v is not None else None,'Yahoo/FinMind/SQLite closes SMA20','至少20筆有效收盤價，現價高於／低於SMA20')
+        v=num(s.get('vix'))
+        add('vix_factor','VIX',v,(-1.0 if v>25 else -0.5 if v>20 else 0.4 if v<15 else 0.0) if v is not None else None,'DATA_REPORT.usPct_full.VIX.close','依 VIX 收盤水準分級')
+        v=num(s.get('rsi'))
+        add('rsi','RSI',v,(-0.5 if v<20 else -0.3 if v<30 else 0.3 if v>80 else 0.0) if v is not None else None,'Yahoo/FinMind/SQLite RSI14','RSI14 超買超賣分級；缺值不以中性代替')
+        v=num(s.get('macd_hist'))
+        add('macd','MACD',v,(-1.0 if v<-50 else -0.5 if v<0 else 0.5 if v>0 else 0.0) if v is not None else None,'Yahoo/FinMind/SQLite MACD histogram','依 MACD histogram 正負及強度分級')
+        return self.factor_details
+
+    def calculate_weights(self, real_win_rates=None):
         base_weights={
-            'spot_trend':13,      # 現貨趨勢13%
-            'foreign_spot':12,    # 外資現貨12%
-            'foreign_fut':8,      # 外資期貨8%
-            'trust':5,            # 投信5%
-            'basis':7,            # 基差7%
-            'night':8,            # 夜盤8%
-            'us_sox':12,          # 美股費半12%
-            'pcr':7,              # PCR7%
-            'gex':7,              # GEX7%
-            'put_wall':3,         # Put Wall3%
-            'adr':3,              # ADR溢價3%
-            'yield':5,            # 殖利率5%
-            'volume':3,           # 量能3%
-            'ma_bias':3,          # 均線乖離3%
-            'vix_factor':2,       # VIX因子2%
-            'rsi':3,              # RSI 3% (新增)
-            'macd':3,             # MACD 3% (新增)
+            'spot_trend':13,'foreign_spot':12,'foreign_fut':8,'trust':5,'basis':7,
+            'night':8,'us_sox':12,'pcr':7,'gex':7,'put_wall':3,'adr':3,'yield':5,
+            'volume':3,'ma_bias':3,'vix_factor':2,'rsi':3,'macd':3
         }
-        if self.signals.get('gex') is None:
-            base_weights['gex']=0
-        if rsi is None:
-            base_weights['rsi']=0; base_weights['spot_trend']+=1.5; base_weights['foreign_spot']+=1.5
-        if self.signals.get('macd_hist') is None:
-            base_weights['macd']=0; base_weights['spot_trend']+=1.5; base_weights['foreign_spot']+=1.5
-        if rsi is None or self.signals.get('macd_hist') is None:
-            print(f"[V9-17F] Technical factor missing; RSI={rsi} MACD_hist={self.signals.get('macd_hist')}")
-        else:
-            print(f"[V9-17F] RSI/MACD valid RSI={rsi} MACD hist={self.signals.get('macd_hist')}")
-        # VIX動態：只有取得真實收盤值才調整權重
+        adaptive=dict(base_weights)
+        vix=self.signals.get('vix'); basis=self.signals.get('tx_basis')
         if vix is not None:
             if vix>25:
-                base_weights['us_sox']+=8; base_weights['spot_trend']-=5; base_weights['foreign_spot']+=3; base_weights['vix_factor']+=3
+                adaptive['us_sox']+=8; adaptive['spot_trend']-=5
+                adaptive['foreign_spot']+=3; adaptive['vix_factor']+=3
             elif vix>20:
-                base_weights['us_sox']+=4; base_weights['spot_trend']-=2
+                adaptive['us_sox']+=4; adaptive['spot_trend']-=2
             elif vix<15:
-                base_weights['us_sox']-=5; base_weights['spot_trend']+=5
-        else:
-            base_weights['vix_factor']=0
-        if basis>100: base_weights['basis']=2
-        elif basis<-50: base_weights['basis']+=3
-        self.weights=base_weights
-        return base_weights
+                adaptive['us_sox']-=5; adaptive['spot_trend']+=5
+        if basis is not None:
+            if basis>100: adaptive['basis']=2
+            elif basis<-50: adaptive['basis']+=3
+        for factor,rate in (real_win_rates or {}).items():
+            if factor in adaptive and isinstance(rate,(int,float)):
+                if rate>=0.65: adaptive[factor]=min(adaptive[factor]+2,25)
+                elif rate<=0.35: adaptive[factor]=max(adaptive[factor]-2,1)
+        active={x['key'] for x in self.factor_details if x['status']=='active'}
+        eligible={k:max(0.0,float(v)) for k,v in adaptive.items() if k in active}
+        total=sum(eligible.values())
+        effective={k:(v*100.0/total if total>0 else 0.0) for k,v in eligible.items()}
+        self.weights={k:round(effective.get(k,0.0),6) for k in base_weights}
+        if total>0:
+            last=next(k for k in reversed(list(base_weights)) if k in eligible)
+            self.weights[last]=round(self.weights[last]+100.0-sum(self.weights.values()),6)
+        base_total=sum(base_weights.values())
+        covered=sum(base_weights[k] for k in active)
+        active_count=len(active)
+        coverage=covered/base_total*100 if base_total else 0.0
+        quality='high' if coverage>=85 else 'medium' if coverage>=65 else 'low' if coverage>=40 else 'insufficient'
+        self.factor_quality={
+            'active_count':active_count,'total_factors':len(base_weights),
+            'count_coverage_pct':round(active_count/len(base_weights)*100,1),
+            'base_weight_coverage_pct':round(coverage,1),
+            'effective_weight_total':round(sum(self.weights.values()),6),
+            'confidence':quality,'optimizer':'sqlite' if real_win_rates else 'base_dynamic',
+            'missing_factors':[x['key'] for x in self.factor_details if x['status']!='active']
+        }
+        for item in self.factor_details:
+            item['base_weight']=base_weights[item['key']]
+            item['adaptive_weight']=round(adaptive[item['key']],4)
+            item['effective_weight']=self.weights[item['key']]
+        return self.weights
 
-    def calculate_bias(self):
-        s=self.signals; weights=self.calculate_weights(); score=50; factors=[]
-        pct=s.get('spot_pct',0); w=weights['spot_trend']
-        if pct<-3: score-=int(12*w/15); factors.append(('現貨重挫',-int(12*w/15)))
-        elif pct<-2: score-=int(10*w/15); factors.append(('現貨大跌',-int(10*w/15)))
-        elif pct<-1: score-=int(8*w/15); factors.append(('現貨下跌',-int(8*w/15)))
-        elif pct>1: score+=int(8*w/15); factors.append(('現貨上漲',+int(8*w/15)))
-
-        foreign=s.get('foreign',0); w=weights['foreign_spot']
-        if foreign<-800: score-=int(10*w/12); factors.append(('外資大賣',-int(10*w/12)))
-        elif foreign<-500: score-=int(8*w/12); factors.append(('外資賣超',-int(8*w/12)))
-        elif foreign<-200: score-=int(5*w/12); factors.append(('外資小賣',-int(5*w/12)))
-        elif foreign>200: score+=int(6*w/12); factors.append(('外資買超',+int(6*w/12)))
-
-        foreign_fut=s.get('foreign_futures',0); w=weights['foreign_fut']
-        if foreign_fut<-80000: score-=int(6*w/8); factors.append(('外資期空創高',-int(6*w/8)))
-        elif foreign_fut<-50000: score-=int(4*w/8); factors.append(('外資期空',-int(4*w/8)))
-
-        trust=s.get('trust',0)
-        if trust>50: score+=3; factors.append(('投信買超',+3))
-
-        basis=s.get('tx_basis',0); w=weights['basis']
-        if w>2:
-            if basis<-50: score-=int(5*w/7); factors.append(('逆價差',-int(5*w/7)))
-            elif basis>200: score-=int(3*w/7); factors.append(('正價差過大假多',-int(3*w/7)))
-
-        night_pct=s.get('tx_night_pct')
-        if night_pct is not None:
-            if night_pct<-1: score-=7; factors.append(('夜盤重挫',-7))
-            elif night_pct<-0.5: score-=4; factors.append(('夜盤下跌',-4))
-
-        us_dict=s.get('us_dict',{}); sox_val=0
-        for k,v in us_dict.items():
-            if 'SOX' in k: sox_val=v
-        w=weights['us_sox']
-        if sox_val is not None:
-            if sox_val<-5: score-=int(8*w/12); factors.append(('費半崩跌',-int(8*w/12)))
-            elif sox_val<-2: score-=int(4*w/12); factors.append(('費半下跌',-int(4*w/12)))
-            elif sox_val>2: score+=int(4*w/12); factors.append(('費半上漲',+int(4*w/12)))
-
-        pcr=s.get('pcr',0.8)
-        if pcr<0.6: score-=7; factors.append(('PCR極低悲觀',-7))
-        elif pcr<0.8: score-=4; factors.append(('PCR偏低',-4))
-
-        rsi=s.get('rsi'); w=weights['rsi']
-        if w>0 and rsi is not None:
-            if rsi<20: score-=int(4*w/3); factors.append(('RSI極度超賣',-int(4*w/3)))
-            elif rsi<30: score-=int(2*w/3); factors.append(('RSI超賣',-int(2*w/3)))
-            elif rsi>80: score+=int(2*w/3); factors.append(('RSI超買',+int(2*w/3)))
-
-        macd_hist=s.get('macd_hist'); w=weights['macd']
-        if w>0 and macd_hist is not None:
-            if macd_hist<-50: score-=int(4*w/3); factors.append(('MACD死叉加劇',-int(4*w/3)))
-            elif macd_hist<0: score-=int(2*w/3); factors.append(('MACD死叉',-int(2*w/3)))
-            elif macd_hist>0: score+=int(2*w/3); factors.append(('MACD金叉',+int(2*w/3)))
-
-        vix=s.get('vix'); w=weights['vix_factor']
-        if vix is not None:
-            if vix>25: score-=int(5*w/2); factors.append(('VIX恐慌',-int(5*w/2)))
-            elif vix<15: score+=int(2*w/2); factors.append(('VIX平靜',+int(2*w/2)))
-
-        if pct<-2 and foreign<-500: score-=8; factors.append(('恐慌加成',-8))
-
-        self.bias_score=max(0,min(100,score)); self.bias_factors=factors
-        return self.bias_score, factors, weights
+    def calculate_bias(self, real_win_rates=None):
+        self._evaluate_factors()
+        weights=self.calculate_weights(real_win_rates)
+        contributions=[]
+        for item in self.factor_details:
+            if item['status']!='active':
+                item['contribution']=0.0
+                continue
+            contribution=50.0*(weights[item['key']]/100.0)*item['score']
+            item['contribution']=round(contribution,4)
+            if abs(contribution)>=0.005:
+                contributions.append((item['name'],int(round(contribution))))
+        total_contribution=sum(x['contribution'] for x in self.factor_details)
+        self.bias_score=max(0,min(100,int(round(50.0+total_contribution))))
+        self.bias_factors=contributions
+        self.bias_reliable=self.factor_quality['confidence']!='insufficient'
+        return self.bias_score,self.bias_factors,self.weights
 
     def gen_bias_card(self):
         bias=self.bias_score; factors=self.bias_factors; s=self.signals
@@ -783,7 +815,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
     spot5=[int(round(c)) for _,c in last5]
     spot5Dates=[datetime.fromtimestamp(ts).strftime("%m/%d") for ts,_ in last5]
 
-    bias, factors, weights=analyzer.calculate_bias(); cards_41=build_41_cards(analyzer, parsed, historical, db_status)
+    bias, factors, weights=analyzer.bias_score, analyzer.bias_factors, analyzer.weights; cards_41=build_41_cards(analyzer, parsed, historical, db_status)
 
     markets={'us': parsed['usPct_full'], 'asia': parsed['asiaPct_full'], 'usFut': parsed['futPct_full'], 'yields': parsed['yieldPct_full'], 'fx': parsed['fxPct_full'], 'adr': parsed['adrPct_full'], 'commodities': parsed['commPct_full']}
     marketPct={'usPct': parsed['usPct_simple'], 'asiaPct': parsed['asiaPct_simple'], 'futPct': parsed['futPct_simple'], 'yieldPct': parsed['yieldPct_simple'], 'fxPct': parsed['fxPct_simple'], 'adrPct': parsed['adrPct_simple'], 'commPct': parsed['commPct_simple']}
@@ -798,7 +830,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'timezone': 'Asia/Taipei',
             'template': 'pure-react + window.DASHBOARD_DATA',
             'no_sample_data': True,
-            'factors': '17F = 15F + RSI 3% + MACD 3% + VIX動態',
+            'factors': f"17F; active={analyzer.factor_quality.get('active_count',0)}/17",
             'db_mode': db_status.get('mode','no-db'),
             'db_rows': db_status.get('rows',0),
             'output_path_rule': 'dashboards/ 唯一'
@@ -823,6 +855,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
         'technical': {'rsi': tech.get('rsi'), 'macd': tech.get('macd'), 'macd_signal': tech.get('macd_signal'), 'macd_hist': tech.get('macd_hist'), 'k': tech.get('k'), 'd': tech.get('d'), 'source': tech.get('source'), 'valid': tech.get('valid'), 'closes': tech.get('closes',[])[-30:], 'highs': tech.get('highs',[])[-30:], 'lows': tech.get('lows',[])[-30:]},
         'analysis': {
             'bias': bias, 'bias_score': bias, 'factors': factors, 'weights': weights,
+            'factor_details': analyzer.factor_details, 'factor_quality': analyzer.factor_quality,
             'regime': analyzer.gen_bias_card()['regime'], 'factor_str': analyzer.gen_bias_card()['factor_str'],
             'look': analyzer.gen_bias_card()['look'], 'compass': analyzer.gen_bias_card()['compass'], 'target': analyzer.gen_bias_card()['target'],
             'cards': cards_41,
@@ -837,13 +870,61 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
     }
     return final
 
+def run_17f_self_tests():
+    """Fast offline tests; no network calls, report files, or SQLite writes."""
+    import traceback
+    try:
+        closes=[100.0+i for i in range(25)]
+        parsed={
+            'spot':{'close':125.0,'pct':1.5,'up':800,'down':300,'vol':5000,'volume_ratio':1.3},
+            'inst':{'foreign':350.0,'trust':80.0,'dealer':10.0,'all':440.0},
+            'tx':{'day':{'basis':30.0,'prem':0.1,'pct':1.0},'night':{'pct':0.8,'l':124.0,'h':128.0}},
+            'options':{'putWall':120.0,'callWall':130.0,'gammaWall':128.0,'flip':122.0,'maxPain':125.0,'pcr':0.9,'gex':1.2},
+            'futures':{'foreign_oi':60000},
+            'usPct_full':[{'l':'SOX','v':3.0},{'l':'VIX','v':-1.0,'close':14.0}],
+            'adrPct_full':[{'l':'TSM ADR','v':2.5}],
+            'yieldPct_full':[{'l':'US 10Y','v':-0.06}]
+        }
+        tech={'rsi':65.0,'macd':1.0,'macd_hist':2.0,'closes':closes,'valid':True}
+        analyzer=V9Analyzer(parsed,tech)
+        bias,_,weights=analyzer.calculate_bias({'spot_trend':0.7})
+        assert len(analyzer.factor_details)==17
+        assert analyzer.factor_quality['active_count']==17
+        assert abs(sum(weights.values())-100.0)<1e-5
+        assert 0<=bias<=100
+
+        sparse={**parsed,'options':{**parsed['options'],'gex':None},'spot':{**parsed['spot'],'volume_ratio':None},
+                'adrPct_full':[],'yieldPct_full':[],'usPct_full':[{'l':'SOX','v':None},{'l':'VIX','v':None,'close':None}]}
+        sparse_analyzer=V9Analyzer(sparse,{'rsi':None,'macd_hist':None,'closes':[]})
+        sparse_bias,_,sparse_weights=sparse_analyzer.calculate_bias()
+        assert sparse_analyzer.factor_quality['active_count']<17
+        assert abs(sum(sparse_weights.values())-100.0)<1e-5
+        assert 0<=sparse_bias<=100
+
+        empty={'spot':{},'inst':{},'tx':{'day':{},'night':{}},'options':{},'futures':{},
+               'usPct_full':[],'adrPct_full':[],'yieldPct_full':[]}
+        empty_analyzer=V9Analyzer(empty,{})
+        empty_bias,_,empty_weights=empty_analyzer.calculate_bias()
+        assert empty_bias==50
+        assert empty_analyzer.factor_quality['active_count']==0
+        assert sum(empty_weights.values())==0
+        assert empty_analyzer.factor_quality['confidence']=='insufficient'
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score")
+        return 0
+    except Exception:
+        traceback.print_exc()
+        return 1
+
 def main():
     parser=argparse.ArgumentParser(description="V9 Pro Builder 17F + SQLite + 41 cards + data.json only - Skill daily-premarket-analysis-v9-pro")
     parser.add_argument('--data_report', default=None, help="path to DATA_REPORT md")
     parser.add_argument('--out', default="dashboards/data-20261027.json", help="output data.json path - must be dashboards/")
     parser.add_argument('--date', default=None, help="YYYYMMDD")
     parser.add_argument('--golden', default='templates/v9-pro-react-template.html', help="golden template path (for reference, v9 no longer injects)")
+    parser.add_argument('--self-test', action='store_true', help="run fast offline 17F scoring tests and exit")
     args=parser.parse_args()
+    if args.self_test:
+        return run_17f_self_tests()
     date_str=args.date if args.date else datetime.now().strftime('%Y%m%d')
     if len(date_str)!=8 or not date_str.isdigit(): date_str=datetime.now().strftime('%Y%m%d')
 
@@ -886,28 +967,26 @@ def main():
     except Exception as e: print(f"[V9-17F] update_next_day non-critical: {e}")
 
     analyzer=V9Analyzer(parsed, tech)
-    bias,factors,weights=analyzer.calculate_bias()
-
     db_status=get_db_status()
     print(f"[V9-17F] DB status: {db_status}")
+
+    real_win_rates=None
+    try:
+        real_win_rates=get_factor_win_rates_from_db()
+    except Exception as e:
+        print(f"[V9-17F] SQLite optimizer unavailable; use base/dynamic weights: {e}")
+    bias,factors,weights=analyzer.calculate_bias(real_win_rates)
+    print(f"[V9-17F] 17F active={analyzer.factor_quality['active_count']}/17 coverage={analyzer.factor_quality['base_weight_coverage_pct']}% effective_weight_total={sum(weights.values()):.6f}")
 
     historical=None
     try:
         save_today_to_db(bias, analyzer.signals, tech)
-        real_win_rates=get_factor_win_rates_from_db()
-        if real_win_rates:
-            for factor, win_rate in real_win_rates.items():
-                if factor in weights:
-                    if win_rate>=0.7: weights[factor]=min(weights[factor]+3,25)
-                    elif win_rate<=0.4: weights[factor]=max(weights[factor]-3,2)
-            print(f"[V9-17F] Weights after DB real optimization: {weights}")
         analyzer.signals['bias']=bias
         historical=find_historical_similarity(analyzer.signals)
         if historical and historical['avg_next_pct']<-1.0:
-            print(f"[V9-17F] Historical bearish bonus avg {historical['avg_next_pct']:.2f}%")
+            print(f"[V9-17F] Historical bearish observation avg {historical['avg_next_pct']:.2f}%")
     except Exception as e:
-        print(f"[V9-17F] DB all failed fallback to no-DB: {e}")
-        db_status={'exists':False,'rows':0,'mode':'no-db-error-fallback'}
+        print(f"[V9-17F] DB history non-critical; continue dashboard build: {e}")
         historical=None
 
     final=build_final_json(parsed, tech, analyzer, historical, db_status, date_str)
