@@ -53,8 +53,9 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 suffix = ".mjs" if 'type="module"' in attrs.lower() else ".js"
                 path = Path(tmp) / f"inline_{index}{suffix}"
                 path.write_text(source, encoding="utf-8")
+                parser = "const fs=require('fs');try{new Function(fs.readFileSync(process.argv[1],'utf8'));}catch(e){console.error(e.name+': '+e.message);process.exit(1)}"
                 result = subprocess.run(
-                    [node, "--check", str(path)],
+                    [node, "-e", parser, str(path)],
                     capture_output=True,
                     text=True,
                     check=False,
