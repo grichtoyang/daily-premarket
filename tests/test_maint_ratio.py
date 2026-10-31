@@ -52,6 +52,29 @@ class MaintenanceRatioSourceTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertIsNone(result["ratio"])
 
+    def test_istock_extracts_combined_ratio_not_listed_only(self):
+        html = """
+        <html><body>
+        <div>大盤融資維持率</div><div>171.75%</div>
+        <div>上櫃融資維持率</div><div>167.14%</div>
+        <div>上市櫃整體維持率</div><div>170.61%</div>
+        <div>資料日期：2026-10-30</div>
+        </body></html>
+        """
+        result = maint_ratio._parse_istock_html("2026-10-30", html)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["date"], "2026-10-30")
+        self.assertEqual(result["ratio"], 170.61)
+
+    def test_istock_rejects_stale_date(self):
+        html = """
+        <div>上市櫃整體維持率</div><div>170.61%</div>
+        <div>資料日期：2026-10-29</div>
+        """
+        result = maint_ratio._parse_istock_html("2026-10-30", html)
+        self.assertFalse(result["ok"])
+        self.assertIsNone(result["ratio"])
+
 
 if __name__ == "__main__":
     unittest.main()
