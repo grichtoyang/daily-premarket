@@ -41,34 +41,28 @@ class ReactTemplateStaticTests(unittest.TestCase):
             "Numeric chart data literals must come from DATA_REPORT/Builder JSON",
         )
 
-    def test_baseline_template_javascript_syntax(self):
+    def test_pre_change_template_stages_parse(self):
         node = shutil.which("node")
         self.assertIsNotNone(node)
-        baseline_sha = "10a1b50848a375436c47efa0e6878dbddccce67b"
-        fetch = subprocess.run(
-            ["git", "fetch", "--no-tags", "--depth=1", "origin", baseline_sha],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(fetch.returncode, 0, fetch.stderr[-1000:])
-        baseline = subprocess.run(
-            ["git", "show", f"{baseline_sha}:templates/v9-pro-react-template.html"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(baseline.returncode, 0, baseline.stderr[-1000:])
-        scripts = re.findall(r"<script\b([^>]*)>([\s\S]*?)</script\s*>", baseline.stdout, re.IGNORECASE)
         parser = "const fs=require('fs');const acorn=require('acorn');try{acorn.parse(fs.readFileSync(process.argv[1],'utf8'),{ecmaVersion:'latest',sourceType:'module'});}catch(e){console.error(e.message+' at '+(e.loc?e.loc.line+':'+e.loc.column:''));process.exit(1)}"
+        baseline_shas = (
+            "10a1b50848a375436c47efa0e6878dbddccce67b",
+            "521676a467fc84b1d9ee8ea83c33332499d8f018",
+        )
         with tempfile.TemporaryDirectory() as tmp:
-            for index, (attrs, source) in enumerate(scripts):
-                if "application/json" in attrs.lower() or not source.strip():
-                    continue
-                path = Path(tmp) / f"baseline_{index}.mjs"
-                path.write_text(source, encoding="utf-8")
-                result = subprocess.run([node, "-e", parser, str(path)], capture_output=True, text=True, check=False)
-                self.assertEqual(result.returncode, 0, result.stderr.strip())
+            for baseline_sha in baseline_shas:
+                fetch = subprocess.run(["git", "fetch", "--no-tags", "--depth=1", "origin", baseline_sha], capture_output=True, text=True, check=False)
+                self.assertEqual(fetch.returncode, 0, fetch.stderr[-1000:])
+                baseline = subprocess.run(["git", "show", f"{baseline_sha}:templates/v9-pro-react-template.html"], capture_output=True, text=True, check=False)
+                self.assertEqual(baseline.returncode, 0, baseline.stderr[-1000:])
+                scripts = re.findall(r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", baseline.stdout, re.IGNORECASE)
+                for index, (attrs, source) in enumerate(scripts):
+                    if "application/json" in attrs.lower() or not source.strip():
+                        continue
+                    path = Path(tmp) / f"baseline_{baseline_sha[:6]}_{index}.mjs"
+                    path.write_text(source, encoding="utf-8")
+                    result = subprocess.run([node, "-e", parser, str(path)], capture_output=True, text=True, check=False)
+                    self.assertEqual(result.returncode, 0, f"Baseline {baseline_sha[:6]} script {index}: {result.stderr.strip()}")
 
     def test_inline_javascript_syntax(self):
         node = shutil.which("node")
