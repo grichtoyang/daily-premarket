@@ -1,10 +1,7 @@
 """大盤融資維持率。
 
-1) 玩股網 API (免費、穩定，但延遲 ~3 天)
-   https://www.wantgoo.com/stock/0000A/margin-trading/historical-lending-balance
-2) 股市智投 stockintelli.com (SSR 頁面爬蟲，通常有當天資料)
-   https://www.stockintelli.com/market/margin-trading
-3) 愛玩股 istock.tw 網頁爬蟲 (最後備援)。
+1) 愛玩股 iStock：明確提供上市櫃整體維持率與資料日期，作為合計值主來源。
+2) WantGoo API / StockIntelli SSR：只作上市單邊交叉參考，不可替代上市櫃合計值。
 注意：官方無每日維持率序列，此為民間估算值，來源須透明標示。
 """
 from __future__ import annotations
