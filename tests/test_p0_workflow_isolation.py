@@ -16,7 +16,7 @@ class P0WorkflowIsolationTests(unittest.TestCase):
 
     def test_manual_dispatch_and_master_only_automatic_trigger(self):
         self.assertIn("workflow_dispatch:", self.workflow)
-        self.assertRegex(self.workflow, r"(?ms)^  push:\\s*branches:\\s*\\n\\s+- master(?:\\s|$)")
+        self.assertRegex(self.workflow, r"(?ms)^  push:\s*branches:\s*\n\s+- master(?:\s|$)")
         self.assertNotIn("- phase2-p0-data-quality", self.workflow.split("  schedule:", 1)[0])
 
     def test_checkout_and_generated_commit_are_explicitly_p0_scoped(self):
@@ -24,7 +24,7 @@ class P0WorkflowIsolationTests(unittest.TestCase):
         self.assertIn("if: github.ref == 'refs/heads/phase2-p0-data-quality'", self.workflow)
         self.assertIn('GITHUB_REF_NAME" != "phase2-p0-data-quality"', self.workflow)
         self.assertIn('git push origin "HEAD:${GITHUB_REF_NAME}"', self.workflow)
-        self.assertNotRegex(self.workflow, r"(?m)^\\s*git push\\s*$")
+        self.assertNotRegex(self.workflow, r"(?m)^\s*git push\s*$")
         self.assertIn("git add dashboards/", self.workflow)
         self.assertNotIn("git add data_reports", self.workflow)
 
@@ -33,9 +33,9 @@ class P0WorkflowIsolationTests(unittest.TestCase):
         self.assertIn("uses: actions/deploy-pages@v4", self.workflow)
 
     def test_p0_integration_workflow_cannot_deploy_pages(self):
-        self.assertIn("permissions:\\n  contents: read", self.integration)
+        self.assertIn("permissions:\n  contents: read", self.integration)
         self.assertNotIn("actions/deploy-pages@", self.integration)
-        self.assertNotRegex(self.integration, r"(?m)^\\s+deploy:")
+        self.assertNotRegex(self.integration, r"(?m)^\s+deploy:")
 
 
 if __name__ == "__main__":
