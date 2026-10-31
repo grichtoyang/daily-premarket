@@ -224,6 +224,18 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
         )
 
     fallback_prices = fallback_prices or {}
+    from datetime import date as _date
+    t0_day = _date.fromisoformat(t0)
+    for market_prices in fallback_prices.values():
+        for code, item in market_prices.items():
+            price_day = _date.fromisoformat(_normalize_date(item.get("date", ""))[:4] + "-"
+                                            + _normalize_date(item.get("date", ""))[4:6] + "-"
+                                            + _normalize_date(item.get("date", ""))[6:8])
+            age_days = (t0_day - price_day).days
+            if age_days < 1 or age_days > 10:
+                raise ValueError(f"fallback close date out of allowed range for {code}: age_days={age_days}")
+            if _number(item.get("close")) <= 0:
+                raise ValueError(f"fallback close must be positive for {code}")
     listed = _sum_market_value(tw_margin_table, tw_price_table, "今日餘額",
                                "證券代號", "收盤價", "上市",
                                fallback_prices.get("twse"))
