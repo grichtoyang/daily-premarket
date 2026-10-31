@@ -165,32 +165,54 @@ def fetch_technical_indicators_with_fallback():
     return {'rsi':rsi,'macd':macd,'macd_signal':macd_signal,'macd_hist':macd_hist,'k':k,'d':d,'source':source,'closes':closes,'highs':highs,'lows':lows,'valid':any(v is not None for v in (rsi,macd,macd_hist,k,d)),'validity':{'rsi':rsi is not None,'macd':macd is not None and macd_signal is not None and macd_hist is not None,'kd':k is not None and d is not None},'raw':data}
 
 # ===== SQLite真DB + 歷史相似度 + 無DB回退 =====
+def _ensure_history_table(conn, table_name):
+    """Create or migrate a history table without hiding non-schema database errors."""
+    if table_name not in ('v9_pro_history','v8_pro_history'):
+        raise ValueError(f"Unsupported history table: {table_name}")
+    conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            date TEXT PRIMARY KEY,
+            bias INTEGER,
+            spot_close REAL,
+            spot_pct REAL,
+            foreign_spot REAL,
+            foreign_fut INTEGER,
+            pcr REAL,
+            gex REAL,
+            put_wall INTEGER,
+            vix REAL,
+            rsi REAL,
+            macd REAL,
+            k REAL,
+            d REAL,
+            next_day_pct REAL,
+            factor_wins TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    required={
+        'bias':'INTEGER','spot_close':'REAL','spot_pct':'REAL',
+        'foreign_spot':'REAL','foreign_fut':'INTEGER','pcr':'REAL',
+        'gex':'REAL','put_wall':'INTEGER','vix':'REAL','rsi':'REAL',
+        'macd':'REAL','k':'REAL','d':'REAL','next_day_pct':'REAL',
+        'factor_wins':'TEXT',
+        'created_at':'TIMESTAMP'
+    }
+    existing={row[1] for row in conn.execute(f"PRAGMA table_info({table_name})").fetchall()}
+    if 'date' not in existing:
+        raise sqlite3.DatabaseError(f"{table_name} is missing required primary-key column 'date'")
+    for column,sql_type in required.items():
+        if column not in existing:
+            conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column} {sql_type}")
+
 def init_db(db_path="dashboards/v9_pro_history.db"):
+    """Initialize/migrate the complete V9/V8 schema; never return a partial fallback DB."""
+    conn=None
     try:
         pathlib.Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-        pathlib.Path("/tmp/dashboards").mkdir(parents=True, exist_ok=True)
         conn=sqlite3.connect(db_path)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS v9_pro_history (
-                date TEXT PRIMARY KEY,
-                bias INTEGER,
-                spot_close REAL,
-                spot_pct REAL,
-                foreign_spot REAL,
-                foreign_fut INTEGER,
-                pcr REAL,
-                gex REAL,
-                put_wall INTEGER,
-                vix REAL,
-                rsi REAL,
-                macd REAL,
-                k REAL,
-                d REAL,
-                next_day_pct REAL,
-                factor_wins TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+        _ensure_history_table(conn,'v9_pro_history')
+        _ensure_history_table(conn,'v8_pro_history')
         conn.execute("""
             CREATE TABLE IF NOT EXISTS factor_performance (
                 factor TEXT PRIMARY KEY,
@@ -201,19 +223,13 @@ def init_db(db_path="dashboards/v9_pro_history.db"):
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # 相容 v8 舊表
-        conn.execute("CREATE TABLE IF NOT EXISTS v8_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL, spot_pct REAL, foreign_spot REAL, foreign_fut INTEGER, pcr REAL, gex REAL, put_wall INTEGER, vix REAL, rsi REAL, macd REAL, k REAL, d REAL, next_day_pct REAL, factor_wins TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
         conn.commit()
         return conn
-    except Exception as e:
-        print(f"[V9-17F] init_db error: {e}")
-        try:
-            backup_path="/tmp/dashboards/v9_pro_history.db"
-            conn=sqlite3.connect(backup_path)
-            conn.execute("CREATE TABLE IF NOT EXISTS v9_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
-            conn.commit()
-            return conn
-        except: return None
+    except (sqlite3.Error, OSError) as e:
+        print(f"[V9-17F] init_db error: {type(e).__name__}: {e}")
+        if conn is not None:
+            conn.close()
+        return None
 
 def get_db_status(db_path="dashboards/v9_pro_history.db"):
     try:
@@ -222,13 +238,13 @@ def get_db_status(db_path="dashboards/v9_pro_history.db"):
                 conn=sqlite3.connect(str(p))
                 try:
                     count=conn.execute("SELECT COUNT(*) FROM v9_pro_history").fetchone()[0]
-                except:
+                except sqlite3.OperationalError:
                     count=conn.execute("SELECT COUNT(*) FROM v8_pro_history").fetchone()[0]
                 try:
                     filled=conn.execute("SELECT COUNT(*) FROM v9_pro_history WHERE next_day_pct IS NOT NULL").fetchone()[0]
-                except:
+                except sqlite3.OperationalError:
                     try: filled=conn.execute("SELECT COUNT(*) FROM v8_pro_history WHERE next_day_pct IS NOT NULL").fetchone()[0]
-                    except: filled=0
+                    except sqlite3.OperationalError: filled=0
                 conn.close()
                 return {'exists':True,'rows':count,'filled':filled,'mode':'db' if count>=3 else 'no-db-partial','path':str(p)}
         return {'exists':False,'rows':0,'filled':0,'mode':'no-db','path':''}
@@ -343,7 +359,7 @@ def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_histo
         if not conn: return None
         try:
             rows=conn.execute("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
-        except:
+        except sqlite3.OperationalError:
             rows=conn.execute("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v8_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
         conn.close()
         if len(rows)<3:
