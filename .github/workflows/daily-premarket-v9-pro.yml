@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip requests
 
+      - name: Test maintenance ratio source date gating
+        run: python -m unittest discover -s tests -p 'test_maint_ratio.py' -v
+
       - name: Resolve DATA_REPORT
         env:
           REQUESTED_DATE: ${{ inputs.date }}
