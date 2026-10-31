@@ -419,6 +419,46 @@ def validate_data_report_consistency(spot, inst, turnover, tx, options):
 
 
 # ===== DATA_REPORT 解析 (FULL) =====
+def parse_margin_ratio_provenance(report_text, t0_date):
+    """Parse maintenance-ratio value and provenance without conflating estimates with stale data."""
+    line=next((x for x in report_text.splitlines() if "融資維持率" in x and x.strip().startswith("|")), "")
+    m=re.search(r"\|\s*融資維持率\s*\|\s*([0-9,.]+)\s*\|\s*%\s*\|\s*(.*?)\s*\|?\s*$", line)
+    ratio=None
+    source_cell=""
+    if m:
+        try:
+            value=float(m.group(1).replace(",",""))
+            if math.isfinite(value) and 50.0 < value < 500.0:
+                ratio=value
+        except (TypeError, ValueError):
+            pass
+        source_cell=m.group(2).strip()
+    date_match=re.search(r"(?:DATA|資料日期)\s*[:：]?\s*(\d{4}-\d{2}-\d{2}|\d{8})", source_cell, re.I)
+    source_date=date_match.group(1) if date_match else None
+    if source_date and len(source_date)==8:
+        source_date=f"{source_date[:4]}-{source_date[4:6]}-{source_date[6:]}"
+    is_fallback="前值遞補" in source_cell
+    if ratio is None:
+        status="unavailable"
+    elif is_fallback:
+        status="previous_report_fallback"
+    elif source_date and source_date != t0_date:
+        status="estimated_stale"
+    else:
+        # Live-source rows without an explicit date are emitted only after T0 validation.
+        source_date=source_date or t0_date
+        status="estimated_t0"
+    source_name="unknown"
+    for candidate in ("wantgoo","stockintelli","istock"):
+        if candidate in source_cell.lower():
+            source_name=candidate
+            break
+    if is_fallback:
+        source_name="previous_report"
+    return {"ratio":ratio,"status":status,"source":source_name,
+            "source_detail":source_cell or None,"source_date":source_date,
+            "is_t0":bool(ratio is not None and status=="estimated_t0" and source_date==t0_date)}
+
 def parse_data_report(report_path):
     text = pathlib.Path(report_path).read_text(encoding='utf-8', errors='ignore')
     def get_value(pattern, default=None, is_float=True):
@@ -516,10 +556,12 @@ def parse_data_report(report_path):
     foreign_inst=optional_get(r"\| 外資 \| ([-\+0-9,.]+) \| 億元"); trust_inst=optional_get(r"\| 投信 \| ([-\+0-9,.]+) \| 億元")
     dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9,.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9,.]+) \| 億元","三大法人")
     margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元","0"); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元","0")
-    margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0"); margin_ratio=get_value(r"\| 融資維持率 \| ([0-9.]+) \| %",None)
-    margin_ratio_line=next((line for line in text.splitlines() if "融資維持率" in line and "|" in line), "")
-    margin_ratio_source=margin_ratio_line.strip()
-    margin_ratio_date_match=re.search(r"DATA\s*(\d{4}-\d{2}-\d{2}|\d{8})", margin_ratio_line, re.I)
+    margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0")
+    margin_provenance=parse_margin_ratio_provenance(text, t0_date)
+    margin_ratio=margin_provenance["ratio"]
+    margin_ratio_source=margin_provenance["source_detail"] or ""
+    margin_ratio_source_date=margin_provenance["source_date"]
+    margin_ratio_status=margin_provenance["status"]
     margin_ratio_source_date=margin_ratio_date_match.group(1) if margin_ratio_date_match else None
     margin_ratio_status=("estimated_previous_day" if any(k in margin_ratio_line for k in ("前值遞補","民間估算","估算")) else ("reported" if margin_ratio is not None else "unavailable"))
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
@@ -578,7 +620,7 @@ def parse_data_report(report_path):
         'usPct_full': usPct_full, 'asiaPct_full': asiaPct_full, 'futPct_full': futPct_full,
         'yieldPct_full': yieldPct_full, 'fxPct_full': fxPct_full, 'adrPct_full': adrPct_full, 'commPct_full': commPct_full,
         'spot': {'close': spot_close, 'open': spot_open, 'high': spot_high, 'low': spot_low, 'diff': spot_diff, 'pct': spot_pct, 'vol': spot_vol_raw, 'up': up, 'down': down, 'flat': flat, 'limit_up': limit_up, 'limit_down': limit_down, 'otc_up': otc_up, 'otc_down': otc_down, 'otc_flat': otc_flat, 'otc_limit_up': otc_limit_up, 'otc_limit_down': otc_limit_down},
-        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_date': margin_ratio_source_date, 'sbl': sbl_balance},
+        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_name': margin_provenance["source"], 'ratio_source_date': margin_ratio_source_date, 'ratio_is_t0': margin_provenance["is_t0"], 'sbl': sbl_balance},
         'turnover': {'listed': listed_turnover, 'otc': otc_turnover, 'total': total_turnover},
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
@@ -931,7 +973,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'spot5': spot5, 'spot5Dates': spot5Dates
         },
         'institutional': {'all': parsed['inst']['all'], 'foreign': parsed['inst']['foreign'], 'trust': parsed['inst']['trust'], 'dealer': parsed['inst']['dealer']},
-        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'sbl': parsed['margin']['sbl'], 'borrow': f"{parsed['margin']['sbl']}張"},
+        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': f"{parsed['margin']['sbl']}張"},
         'turnover': parsed['turnover'],
         'tx': parsed['tx'],
         'futures': parsed['futures'],
@@ -979,6 +1021,14 @@ def run_17f_self_tests():
             {'callOi':100,'putOi':50,'pcr':0.9}
         )
         assert len(conflict_warnings)>=5
+        mr_t0=parse_margin_ratio_provenance("| 融資維持率 | 178.40 | % | stockintelli 大盤融資維持率 (民間估算；官方無每日序列) |", "2026-10-29")
+        assert mr_t0["status"]=="estimated_t0" and mr_t0["source"]=="stockintelli" and mr_t0["source_date"]=="2026-10-29" and mr_t0["is_t0"] is True
+        mr_prev=parse_margin_ratio_provenance("| 融資維持率 | 178.40 | % | 前值遞補 (DATA 2026-10-29；當日三源皆失敗；民間估算) |", "2026-10-30")
+        assert mr_prev["status"]=="previous_report_fallback" and mr_prev["source_date"]=="2026-10-29" and mr_prev["is_t0"] is False
+        mr_stale=parse_margin_ratio_provenance("| 融資維持率 | 178.40 | % | wantgoo 大盤融資維持率 (資料日期 2026-10-27；民間估算) |", "2026-10-29")
+        assert mr_stale["status"]=="estimated_stale" and mr_stale["source"]=="wantgoo" and mr_stale["source_date"]=="2026-10-27"
+        mr_none=parse_margin_ratio_provenance("| 融資維持率 | unavailable | % | unavailable |", "2026-10-29")
+        assert mr_none["status"]=="unavailable" and mr_none["ratio"] is None
         closes=[100.0+i for i in range(25)]
         parsed={
             'spot':{'close':125.0,'pct':1.5,'up':800,'down':300,'vol':5000,'volume_ratio':1.3},
