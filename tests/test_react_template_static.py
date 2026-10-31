@@ -44,7 +44,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_baseline_template_javascript_syntax(self):
         node = shutil.which("node")
         self.assertIsNotNone(node)
-        baseline_sha = "10a1b50848a3"
+        baseline_sha = "10a1b50848a375436c47efa0e6878dbddccce67b"
         fetch = subprocess.run(
             ["git", "fetch", "--no-tags", "--depth=1", "origin", baseline_sha],
             capture_output=True,
@@ -59,7 +59,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
             check=False,
         )
         self.assertEqual(baseline.returncode, 0, baseline.stderr[-1000:])
-        scripts = re.findall(r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>", baseline.stdout, re.IGNORECASE)
+        scripts = re.findall(r"<script\b([^>]*)>([\s\S]*?)</script\s*>", baseline.stdout, re.IGNORECASE)
         parser = "const fs=require('fs');const acorn=require('acorn');try{acorn.parse(fs.readFileSync(process.argv[1],'utf8'),{ecmaVersion:'latest',sourceType:'module'});}catch(e){console.error(e.message+' at '+(e.loc?e.loc.line+':'+e.loc.column:''));process.exit(1)}"
         with tempfile.TemporaryDirectory() as tmp:
             for index, (attrs, source) in enumerate(scripts):
