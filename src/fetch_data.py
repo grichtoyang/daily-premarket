@@ -82,8 +82,8 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
 
 # ── F11（2026-10-19）：protect 模式（該 T0 已有已發布報告）三項凍結 ──
 # 表格欄位早由 merge_same_t0 保護，但「表格以外」的內容會被新抓取整段覆寫：
-# 新聞是當天事件流（必然輪替）、標頭四行是已驗證報告的稽核憑據、維持率三源全滅時
-# spot.py 會退成「前值遞補」。三者任一被覆寫，已發布報告對新 DATA 就會驗證轉紅。
+# 新聞是當天事件流（必然輪替）、標頭四行是已驗證報告的稽核憑據。
+# 維持率缺值必須維持 unavailable，不得沿用前一交易日數值。
 # 以下純函式只在 protect=True 時套用；protect=False（無凍結對象）完全不動。
 
 _HEADER_FIELDS = ("報告日期", "資料產出時間", "產出者", "排定班別")
@@ -145,39 +145,6 @@ def _freeze_news(old_text: str, new_text: str) -> str:
     if not any(x.strip() for x in seg):
         return new_text
     return "\n".join(nl[:ns[0]] + seg + nl[ns[1]:])
-
-
-def _freeze_margin_ratio(old_text: str, new_text: str) -> str:
-    """protect 模式：維持率不得降級成「前值遞補」。
-
-    三源全滅時 spot.py 會取前一份 DATA 的值並在來源欄標「前值遞補」；表格列本身
-    已由 _fb 規則還原前版值，但第五章的 `- margin_ratio：` 來源行與兩條失敗註記
-    仍會外洩，把 DATA 的口徑降級。此處把來源行還原前版並丟棄本次失敗註記。
-    前版本來就是遞補值時不動（避免把舊的降級洗成新的）。
-    """
-    import re as _r
-    _pat = _r.compile(r"^(\s*-\s*margin_ratio：)(.*?)(\s*)$")
-
-    def _val(text: str) -> str | None:
-        for ln in text.split("\n"):
-            m = _pat.match(ln)
-            if m:
-                return m.group(2)
-        return None
-
-    ov, nv = _val(old_text), _val(new_text)
-    if not ov or not nv or "遞補" not in nv or "遞補" in ov:
-        return new_text
-    _drop = ("- 註記：融資維持率未取得", "- 註記：融資維持率採前值遞補")
-    out: list[str] = []
-    for ln in new_text.split("\n"):
-        m = _pat.match(ln)
-        if m:
-            ln = m.group(1) + ov + m.group(3)
-        elif ln.strip().startswith(_drop):
-            continue  # 本次三源失敗的說明與還原後的真值矛盾
-        out.append(ln)
-    return "\n".join(out)
 
 
 _SRC_TIME_PAT = r"^(\s*-\s*資料日期：.*?；資料時間：)([^；]*)(；.*)$"
@@ -265,8 +232,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
       盤別規則全部照舊。
     - protect=True 時另在表格比對之前凍結表格以外的內容（F11，2026-10-19：
       已發布報告的 T0 被重跑時 DATA 不得被破壞）：
-      · 維持率來源行：兩種情境都凍結（它是 T0 的數值，不是事件流，永不讓
-        「前值遞補」降級覆蓋前版）→ _freeze_margin_ratio。
+       · 維持率列：本次 unavailable 時不得沿用前版數值；由表格合併的 T0 缺值特例處理。
       · 同盤別重跑（Case A：週五全日已發布，週一早上又是同 T0 同盤別）→ 新聞
         凍結沿用前版（否則被換成週一的新聞）、標頭四行凍結、資料時間行凍結。
       · 盤別升級（Case B：前版日盤 → 本次全日）→ 新聞與標頭、資料時間都允許
@@ -285,7 +251,6 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
         prefer_new = False
 
     if protect:  # F11：表格以外的三塊（標頭／新聞／維持率來源）也沿用前版
-        new_text = _freeze_margin_ratio(old_text, new_text)  # 維持率：兩種情境都凍結
         if not _is_session_upgrade(old_text, new_session):
             new_text = _freeze_header(old_text, new_text)
             new_text = _freeze_news(old_text, new_text)
@@ -458,7 +423,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     SRC_OTC = _src.get("otc", "TPEX")
     SRC_INST = _src.get("institutional", "TWSE BFI82U")
     SRC_MG = _src.get("margin", "HiStock")
-    SRC_MR = _src.get("margin_ratio", "wantgoo → stockintelli → istock (三源皆失敗時 unavailable)")
+    SRC_MR = _src.get("margin_ratio", "Blave（同 T0）→ 人工輸入（同 T0）→ unavailable")
     SRC_SBL = _src.get("sbl", "TWSE/TPEX")
 
     L: list[str] = []
