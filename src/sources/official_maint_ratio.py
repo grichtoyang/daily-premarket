@@ -137,7 +137,7 @@ def calculate(t0: str, t0_roc: str, twse_margin: dict, tpex_margin: dict,
     twm = _tables(twse_margin, date8, "TWSE margin")
     twp = _tables(twse_prices, date8, "TWSE prices")
     txp = _tables(tpex_prices, date8, "TPEx prices")
-    tw_margin_table = _find_table(twm, "證券代號", "今日餘額")
+    tw_margin_table = _find_table(twm, "代號", "今日餘額")
     tw_price_table = _find_table(twp, "證券代號", "收盤價")
     tx_margin_tables = _tables(tpex_margin, t0_roc, "TPEx margin")
     tx_margin_table = _find_table(tx_margin_tables, "代號", "資餘額")
