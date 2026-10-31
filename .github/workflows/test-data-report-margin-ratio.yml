@@ -92,7 +92,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          python scripts/v9_pro_builder.py --data_report "data_reports/DATA_REPORT_20261030.md" --out "artifacts/data-20261030.json" --date "20261030"
+          python scripts/v9_pro_builder.py --data_report "data_reports/DATA_REPORT_20261030.md" --out "dashboards/data-20261030.json" --date "20261030"
+          cp "dashboards/data-20261030.json" "artifacts/data-20261030.json"
           python -m json.tool "artifacts/data-20261030.json" > /dev/null
           python - <<'PY'
           import json
