@@ -19,7 +19,7 @@ Skill: daily-premarket-analysis-v9-pro (參考 v8 pro skill 2026-10-28)
 
 import pathlib, re, json, argparse, sys, glob
 from datetime import datetime, timedelta
-import sqlite3, math
+import sqlite3, math, tempfile
 
 # ===== 技術指標 3層備援 (方案C) =====
 def fetch_yahoo_twii_30d():
@@ -236,57 +236,68 @@ def get_db_status(db_path="dashboards/v9_pro_history.db"):
         print(f"[V9-17F] DB status error: {e}")
         return {'exists':False,'rows':0,'filled':0,'mode':'no-db-error','path':''}
 
-def save_today_to_db(bias, signals, tech, db_path="dashboards/v9_pro_history.db"):
+def _normalize_t0_date(t0_date):
+    """Validate workflow/report T0 date (YYYYMMDD) and return SQLite ISO date."""
     try:
+        return datetime.strptime(str(t0_date), '%Y%m%d').strftime('%Y-%m-%d')
+    except (TypeError, ValueError):
+        raise ValueError(f"Invalid T0 date {t0_date!r}; expected YYYYMMDD")
+
+def save_today_to_db(bias, signals, tech, t0_date, db_path="dashboards/v9_pro_history.db"):
+    try:
+        date_str=_normalize_t0_date(t0_date)
         conn=init_db(db_path)
         if not conn: return False
-        date_str=datetime.now().strftime('%Y-%m-%d')
-        # 若已有不覆蓋
+        # T0 report date is authoritative; do not use runner's wall-clock date.
         try:
             existing=conn.execute("SELECT date FROM v9_pro_history WHERE date=?", (date_str,)).fetchone()
-        except:
+            table='v9_pro_history'
+        except sqlite3.OperationalError:
             existing=conn.execute("SELECT date FROM v8_pro_history WHERE date=?", (date_str,)).fetchone()
+            table='v8_pro_history'
         if existing:
-            print(f"[V9-17F] DB today {date_str} exists, skip")
+            print(f"[V9-17F] DB T0 {date_str} exists, skip")
             conn.close(); return True
-        try:
-            conn.execute("""
-                INSERT INTO v9_pro_history (date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-            """, (date_str,bias,signals.get('spot_close',0),signals.get('spot_pct',0),signals.get('foreign',0),signals.get('foreign_futures',0),signals.get('pcr',0),signals.get('gex',0),signals.get('put_wall',0),signals.get('vix',0),tech.get('rsi'),tech.get('macd'),tech.get('k'),tech.get('d')))
-        except:
-            conn.execute("INSERT INTO v8_pro_history (date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                         (date_str,bias,signals.get('spot_close',0),signals.get('spot_pct',0),signals.get('foreign',0),signals.get('foreign_futures',0),signals.get('pcr',0),signals.get('gex',0),signals.get('put_wall',0),signals.get('vix',0),tech.get('rsi'),tech.get('macd'),tech.get('k'),tech.get('d')))
+        conn.execute(f"""
+            INSERT INTO {table} (date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (date_str,bias,signals.get('spot_close',0),signals.get('spot_pct',0),signals.get('foreign',0),signals.get('foreign_futures',0),signals.get('pcr',0),signals.get('gex',0),signals.get('put_wall',0),signals.get('vix',0),tech.get('rsi'),tech.get('macd'),tech.get('k'),tech.get('d')))
         conn.commit(); conn.close()
-        print(f"[V9-17F] DB saved today {date_str} bias={bias}")
+        print(f"[V9-17F] DB saved T0 {date_str} bias={bias}")
         return True
     except Exception as e:
         print(f"[V9-17F] DB save error: {e}")
         return False
 
-def update_next_day_pct(db_path="dashboards/v9_pro_history.db"):
+def update_next_day_pct(t0_date, t0_spot_close, db_path="dashboards/v9_pro_history.db"):
+    """Use the current T0 report close to label the latest earlier trading row."""
     try:
+        t0_iso=_normalize_t0_date(t0_date)
+        current_close=float(t0_spot_close)
+        if not math.isfinite(current_close) or current_close<=0:
+            print("[V9-17F] update_next_day skipped: invalid T0 spot close")
+            return False
         conn=init_db(db_path)
         if not conn: return False
-        yesterday=(datetime.now()-timedelta(days=1)).strftime('%Y-%m-%d')
+        table='v9_pro_history'
         try:
-            row=conn.execute("SELECT spot_close FROM v9_pro_history WHERE date=?", (yesterday,)).fetchone()
-        except:
-            row=conn.execute("SELECT spot_close FROM v8_pro_history WHERE date=?", (yesterday,)).fetchone()
+            row=conn.execute(
+                "SELECT date,spot_close FROM v9_pro_history WHERE date<? AND next_day_pct IS NULL AND spot_close>0 ORDER BY date DESC LIMIT 1",
+                (t0_iso,)
+            ).fetchone()
+        except sqlite3.OperationalError:
+            table='v8_pro_history'
+            row=conn.execute(
+                "SELECT date,spot_close FROM v8_pro_history WHERE date<? AND next_day_pct IS NULL AND spot_close>0 ORDER BY date DESC LIMIT 1",
+                (t0_iso,)
+            ).fetchone()
         if not row:
             conn.close(); return False
-        yest_close=row[0]
-        today_data=fetch_yahoo_twii_30d()
-        if not today_data:
-            conn.close(); return False
-        today_close=today_data[-1]['close']
-        next_pct=(today_close-yest_close)/yest_close*100 if yest_close!=0 else 0
-        try:
-            conn.execute("UPDATE v9_pro_history SET next_day_pct=? WHERE date=?", (next_pct,yesterday))
-        except:
-            conn.execute("UPDATE v8_pro_history SET next_day_pct=? WHERE date=?", (next_pct,yesterday))
+        previous_date,previous_close=row
+        next_pct=(current_close-float(previous_close))/float(previous_close)*100
+        conn.execute(f"UPDATE {table} SET next_day_pct=? WHERE date=?", (next_pct,previous_date))
         conn.commit(); conn.close()
-        print(f"[V9-17F] DB updated {yesterday} next={next_pct:.2f}%")
+        print(f"[V9-17F] DB updated {previous_date} next={next_pct:.2f}% using T0 {t0_iso}")
         return True
     except Exception as e:
         print(f"[V9-17F] DB update_next_day error: {e}")
@@ -928,7 +939,15 @@ def run_17f_self_tests():
         assert empty_analyzer.factor_quality['confidence']=='insufficient'
         assert empty_analyzer.factor_quality['bias_reliable'] is False
         assert empty_analyzer.factor_quality['score_status']=='no_valid_factors_neutral_fallback'
-        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score")
+        # SQLite date attribution must follow explicit T0, not the runner's current date.
+        with tempfile.TemporaryDirectory() as tmp:
+            test_db=str(pathlib.Path(tmp)/"t0-test.db")
+            assert save_today_to_db(50,{'spot_close':100.0},{},'20261029',test_db)
+            conn=sqlite3.connect(test_db)
+            stored=conn.execute("SELECT date FROM v9_pro_history").fetchone()[0]
+            conn.close()
+            assert stored=='2026-10-29'
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date")
         return 0
     except Exception:
         traceback.print_exc()
@@ -981,8 +1000,8 @@ def main():
 
     tech=fetch_technical_indicators_with_fallback()
 
-    # SQLite flow
-    try: update_next_day_pct()
+    # SQLite flow: all history attribution follows the requested T0 report date.
+    try: update_next_day_pct(date_str, parsed['spot']['close'])
     except Exception as e: print(f"[V9-17F] update_next_day non-critical: {e}")
 
     analyzer=V9Analyzer(parsed, tech)
@@ -999,7 +1018,7 @@ def main():
 
     historical=None
     try:
-        save_today_to_db(bias, analyzer.signals, tech)
+        save_today_to_db(bias, analyzer.signals, tech, date_str)
         analyzer.signals['bias']=bias
         historical=find_historical_similarity(analyzer.signals)
         if historical and historical['avg_next_pct']<-1.0:
