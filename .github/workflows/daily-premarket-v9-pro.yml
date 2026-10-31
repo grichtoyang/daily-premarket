@@ -37,79 +37,11 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip requests
 
-      - name: Test maintenance ratio source date gating
-        run: python -m unittest discover -s tests -p 'test_maint_ratio.py' -v
-
-      - name: Resolve DATA_REPORT
-        env:
-          REQUESTED_DATE: ${{ inputs.date }}
+      - name: Test Blave-first maintenance ratio policy
         run: |
           set -euo pipefail
-          if [ -n "${REQUESTED_DATE}" ]; then
-            DATE="${REQUESTED_DATE}"
-            if ! [[ "${DATE}" =~ ^[0-9]{8}$ ]]; then
-              echo "Invalid date; expected YYYYMMDD"
-              exit 1
-            fi
-            REPORT="data_reports/DATA_REPORT_${DATE}.md"
-            if [ ! -f "${REPORT}" ]; then
-              REPORT="DATA_REPORT_${DATE}.md"
-            fi
-            if [ ! -f "${REPORT}" ]; then
-              echo "Requested DATA_REPORT not found; refusing silent fallback"
-              exit 1
-            fi
-          else
-            REPORT="$(find data_reports -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print 2>/dev/null | sort -r | head -n1 || true)"
-            if [ -z "${REPORT}" ]; then
-              REPORT="$(find . -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print | sort -r | head -n1 || true)"
-            fi
-            if [ -z "${REPORT}" ]; then
-              echo "No DATA_REPORT found"
-              exit 1
-            fi
-            DATE="$(basename "${REPORT}" | sed -E 's/^DATA_REPORT_([0-9]{8})\.md$/\1/')"
-          fi
-          echo "DATE=${DATE}" >> "${GITHUB_ENV}"
-          echo "REPORT=${REPORT}" >> "${GITHUB_ENV}"
-          echo "Using ${REPORT} for T0 ${DATE}"
-          mkdir -p dashboards
-
-      - name: Probe official TWSE and TPEx maintenance ratio inputs
-        run: |
-          set -euo pipefail
-          python scripts/probe_official_maint_ratio.py --date "$DATE"
-
-      - name: Probe T0 maintenance ratio providers
-        run: |
-          export T0_DATE="$DATE"
-          python - <<'PY'
-          import json, os
-          from src.sources import maint_ratio
-          t0 = os.environ["T0_DATE"]
-          result = maint_ratio.get(t0)
-          print("[MR-PROBE] " + json.dumps({
-              "t0": t0,
-              "ok": result.get("ok"),
-              "date": result.get("date"),
-              "ratio": result.get("ratio"),
-              "source": result.get("source", "unavailable")
-          }, ensure_ascii=False))
-          if result.get("ok") and result.get("date") != t0:
-              raise SystemExit("Maintenance ratio provider returned a non-T0 date")
-          if not result.get("ok"):
-              print("[MR-PROBE] No exact-T0 provider value; continue with unavailable/explicit fallback per policy")
-          PY
-
-      - name: Test official maintenance ratio calculator
-        run: |
-          set -euo pipefail
-          python -m unittest discover -s tests -p "test_official_maint_ratio.py" -v
-
-      - name: Calculate official T0 maintenance ratio from TWSE and TPEx
-        run: |
-          set -euo pipefail
-          PYTHONPATH=. python scripts/calculate_official_maint_ratio.py --date "$DATE"
+          python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v
+          python -m unittest discover -s tests -p "test_spot_margin_ratio.py" -v
 
       - name: Run 17F offline self-tests
         run: |
