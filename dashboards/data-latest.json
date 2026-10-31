@@ -11,7 +11,9 @@
     "factors": "17F; active=13/17",
     "db_mode": "db",
     "db_rows": 3,
-    "output_path_rule": "dashboards/ 唯一"
+    "output_path_rule": "dashboards/ 唯一",
+    "data_quality_warning_count": 0,
+    "data_quality_warnings": []
   },
   "spot": {
     "close": 46368.33,
@@ -1192,6 +1194,11 @@
     "compass": "25分偏空，Put Wall 46000.0；缺少價位時不推定防線",
     "target": "Put Wall 46000.0；依有效價位及價格確認風險",
     "cards": {
+      "DATA_REPORT 一致性檢查": {
+        "look": "DATA_REPORT 一致性檢查：0 項警告",
+        "compass": "現貨 OHLC、法人合計、成交金額、期現基差、選擇權 PCR 交叉檢查未發現矛盾",
+        "target": "警告只標示資料衝突，不自動修改原始數據；請回查 DATA_REPORT 來源"
+      },
       "Bias 盤前偏向": {
         "bias": 25,
         "regime": "偏空",
@@ -1563,7 +1570,7 @@
         "target": "關注法人籌碼與新聞共振"
       }
     },
-    "cards_41_count": 47,
+    "cards_41_count": 48,
     "correlation": {
       "labels": [],
       "matrix": [],
