@@ -74,11 +74,13 @@ jobs:
           echo "Using ${REPORT} for T0 ${DATE}"
           mkdir -p dashboards
 
-      - name: Test TWSE-self-built-first maintenance ratio policy
+      - name: Test listed maintenance ratio source chain and DATA_REPORT merge
         run: |
           set -euo pipefail
+          python -m unittest discover -s tests -p "test_listed_maint_ratio.py" -v
           python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v
           python -m unittest discover -s tests -p "test_spot_margin_ratio.py" -v
+          python -m unittest discover -s tests -p "test_fetch_data_margin_ratio.py" -v
 
       - name: Run 17F offline self-tests
         run: |
