@@ -101,6 +101,11 @@ jobs:
               print("[MR-PROBE] No exact-T0 provider value; continue with unavailable/explicit fallback per policy")
           PY
 
+      - name: Test official maintenance ratio calculator
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p "test_official_maint_ratio.py" -v
+
       - name: Run 17F offline self-tests
         run: |
           set -euo pipefail
