@@ -430,7 +430,7 @@ def parse_data_report(report_path):
 
     spot_close=must_get(r"加權指數 \| ([0-9,.]+) \| 點","加權收盤"); spot_open=must_get(r"開盤 \| ([0-9,.]+) \| 點","開盤")
     spot_high=must_get(r"最高 \| ([0-9,.]+) \| 點","最高"); spot_low=must_get(r"最低 \| ([0-9,.]+) \| 點","最低")
-    spot_diff=must_get(r"漲跌點數 \| ([-\+0-9,.]+) \| 點","漲跌點"); spot_pct=must_get(r"漲跌幅 \| ([-\+0-9,.]+) \| %","漲跌幅")
+    spot_diff=must_get(r"漲跌點數 \| ([-\+0-9,.]+) \| 點","漲跌點"); spot_pct=optional_get(r"漲跌幅 \| ([-\+0-9,.]+) \| %")
     spot_vol_raw=must_get(r"成交金額 \| ([0-9,.]+) \| 億元","成交金額")
 
     up=int(must_get(r"\| 上漲家數 \| ([0-9]+) \|","上漲家數")); down=int(must_get(r"\| 下跌家數 \| ([0-9]+) \|","下跌家數"))
@@ -452,7 +452,7 @@ def parse_data_report(report_path):
         m=re.search(r"\| 跌停家數 \| ([0-9]+) \|", otc_sub); 
         if m: otc_limit_down=int(m.group(1))
 
-    foreign_inst=must_get(r"\| 外資 \| ([-\+0-9,.]+) \| 億元","外資"); trust_inst=must_get(r"\| 投信 \| ([-\+0-9,.]+) \| 億元","投信")
+    foreign_inst=optional_get(r"\| 外資 \| ([-\+0-9,.]+) \| 億元"); trust_inst=optional_get(r"\| 投信 \| ([-\+0-9,.]+) \| 億元")
     dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9,.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9,.]+) \| 億元","三大法人")
     margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元","0"); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元","0")
     margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0"); margin_ratio=get_value(r"\| 融資維持率 \| ([0-9.]+) \| %",None)
@@ -472,14 +472,14 @@ def parse_data_report(report_path):
     fut_night_l=optional_get(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|"); fut_night_c=optional_get(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|")
     fut_night_diff=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|"); fut_night_pct=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|")
     fut_night_vol=optional_get(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|")
-    basis=get_value(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|","0"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \|","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|","0")
-    foreign_fut_oi=must_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|","外資OI"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
+    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \|","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|","0")
+    foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|","前十大OI")
     foreign_day_net=must_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|","外資日淨"); foreign_night_net=must_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|","外資夜淨")
     call_vol=must_get(r"Call 總成交量 \| ([0-9,]+) \|","Call成交"); call_oi=must_get(r"Call 總未平倉量 OI \| ([0-9,]+) \|","Call OI")
     put_vol=must_get(r"Put 總成交量 \| ([0-9,]+) \|","Put成交"); put_oi=must_get(r"Put 總未平倉量 OI \| ([0-9,]+) \|","Put OI")
-    pcr=must_get(r"Put／Call Ratio \| ([0-9.]+) \|","PCR"); call_wall=must_get(r"Call Wall 價位 \| ([0-9,]+) \|","Call Wall")
-    put_wall=must_get(r"Put Wall 價位 \| ([0-9,]+) \|","Put Wall"); gamma_wall=must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|","Gamma Wall")
+    pcr=optional_get(r"Put／Call Ratio \| ([0-9.]+) \|"); call_wall=must_get(r"Call Wall 價位 \| ([0-9,]+) \|","Call Wall")
+    put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|"); gamma_wall=must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|","Gamma Wall")
     gamma_flip=must_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|","Gamma Flip"); max_pain=must_get(r"Max Pain 價位 \| ([0-9,]+) \|","Max Pain")
     call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 17．選擇權法人日盤、夜盤交易")
 
@@ -693,15 +693,16 @@ class V9Analyzer:
         elif bias<65: regime="震盪"
         elif bias<80: regime="偏多"
         else: regime="極多"
-        close=s.get('spot_close',0); vix=s.get('vix'); vix_text=f"VIX{vix:.1f}" if vix is not None else "VIX unavailable"; put_wall=s.get('put_wall',45000)
+        close=s.get('spot_close') or 0; vix=s.get('vix'); vix_text=f"VIX{vix:.1f}" if vix is not None else "VIX unavailable"; put_wall=s.get('put_wall')
+        pct=s.get('spot_pct'); pct_text=f"{pct:+.2f}%" if pct is not None else "漲跌幅 unavailable"
         if bias<35:
-            look=f"加權{int(close):,}跌{'+%.2f%%'%s.get('spot_pct',0) if s.get('spot_pct',0)>0 else '%.2f%%'%s.get('spot_pct',0)} 外資{s.get('foreign',0)}億 {factor_str} {vix_text}"
-            compass=f"{bias}分{regime}，{put_wall}為Put Wall最後防線，跌破加速"
-            target=f"{put_wall}不收復前空方控盤，反彈至{int(close+200)}減碼"
+            look=f"加權{int(close):,} {pct_text} 外資{s.get('foreign') if s.get('foreign') is not None else 'unavailable'}億 {factor_str} {vix_text}"
+            compass=f"{bias}分{regime}，Put Wall {put_wall if put_wall is not None else 'unavailable'}；缺少價位時不推定防線"
+            target=f"Put Wall {put_wall if put_wall is not None else 'unavailable'}；依有效價位及價格確認風險"
         else:
-            look=f"加權{int(close):,}漲跌{s.get('spot_pct',0)}% {factor_str}"
+            look=f"加權{int(close):,} {pct_text} {factor_str}"
             compass=f"{bias}分{regime}，觀察外資續賣"
-            target=f"依Bias{bias}分操作，{put_wall}為關鍵"
+            target=f"依Bias{bias}分操作，Put Wall {put_wall if put_wall is not None else 'unavailable'}"
         return {'bias':bias,'regime':regime,'factors':factors,'factor_str':factor_str,'look':look,'compass':compass,'target':target}
 
     def analyze_spot(self):
@@ -725,13 +726,18 @@ class V9Analyzer:
 def build_41_cards(analyzer, parsed, historical, db_status):
     bias=analyzer.bias_score; regime=analyzer.gen_bias_card()['regime']; factors=analyzer.bias_factors; s=analyzer.signals; weights=analyzer.weights
     factor_str=" ".join([f"{n}{v:+d}" for n,v in factors[:6]])
-    close=s.get('spot_close',0); put_wall=s.get('put_wall',45000); call_wall=s.get('call_wall',48000)
-    pcr=s.get('pcr',0.8); foreign=s.get('foreign',0); foreign_fut=s.get('foreign_futures',0)
+    close=s.get('spot_close',0); put_wall=s.get('put_wall'); call_wall=s.get('call_wall')
+    pcr=s.get('pcr'); foreign=s.get('foreign'); foreign_fut=s.get('foreign_futures')
+    pcr_text=f"{pcr:.2f}" if pcr is not None else "unavailable"
+    put_wall_text=str(put_wall) if put_wall is not None else "unavailable"
+    call_wall_text=str(call_wall) if call_wall is not None else "unavailable"
 
     def regime_desc():
-        pct=s.get('spot_pct',0); foreign=s.get('foreign',0); pcr=s.get('pcr',0.8)
-        if pct<-1 and foreign<-200 and pcr<0.8: return '空頭', '跌破月線+外資賣+PCR偏低，空頭regime'
-        elif pct>1 and foreign>200 and pcr>1.0: return '多頭', '站上月線+外資買+PCR偏高，多頭regime'
+        pct=s.get('spot_pct'); foreign_value=s.get('foreign'); pcr_value=s.get('pcr')
+        if pct is None or foreign_value is None or pcr_value is None:
+            return '資料不足', '趨勢、法人或 PCR 缺值；不推定市場 regime'
+        if pct<-1 and foreign_value<-200 and pcr_value<0.8: return '空頭', '跌破月線+外資賣+PCR偏低，空頭regime'
+        elif pct>1 and foreign_value>200 and pcr_value>1.0: return '多頭', '站上月線+外資買+PCR偏高，多頭regime'
         else: return '盤整', '區間震盪，等待方向'
 
     regime_label, regime_d = regime_desc()
@@ -745,9 +751,9 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     futures_compass=f"夜盤{s.get('tx_night_pct',0)}%續弱，基差{s.get('tx_basis',0)}，{regime_label}regime"
     futures_target=f"夜盤{s.get('tx_night_low',0)}為支撐"
 
-    options_look=f"PCR{pcr}倍 {'極低悲觀' if pcr<0.6 else '中性'} GEX-2.3B Put Wall{put_wall}"
-    options_compass=f"PCR{pcr}+負GEX加速，{put_wall}為最後防線" if pcr<0.6 else f"選擇權中性 {put_wall}-{call_wall}區間"
-    options_target=f"{put_wall}守住震盪，破則追空至{put_wall-500}" if pcr<0.6 else f"區間{put_wall}-{call_wall}操作"
+    options_look=f"PCR {pcr_text}；GEX 依有效來源資料；Put Wall {put_wall_text}"
+    options_compass=(f"PCR{pcr_text}偏低，Put Wall {put_wall_text}為觀察位" if pcr is not None and pcr<0.6 and put_wall is not None else f"選擇權資料 PCR {pcr_text}、Put Wall {put_wall_text}；缺值不推定方向")
+    options_target=(f"Put Wall {put_wall}守住觀察震盪，跌破再確認" if pcr is not None and pcr<0.6 and put_wall is not None else f"PCR／Put Wall 有效資料不足時不設定區間目標")
 
     kpi_look=f"KPI 8宮格：加權{close}點 {s.get('spot_pct',0)}% 外資{foreign}億元 Bias{bias}分 {regime_label} {hist_str}"
     kpi_compass=f"{bias}分{regime_label}，17因子共振(含RSI/MACD)，VIX動態美股{weights.get('us_sox',12)}% {hist_str}"
@@ -776,7 +782,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '交易計畫': bias_card,
         '行事曆': news_card,
         '法人籌碼': {"look": f"外資現貨{foreign}億 期貨{foreign_fut} 投信{parsed['inst']['trust']}億 自營{parsed['inst']['dealer']}億", "compass": f"外資空 vs 投信多對作，分歧加劇，{regime_label}", "target": f"觀察外資是否續賣，{put_wall}為關鍵"},
-        '主力三市透視': {"look": f"三市籌碼透視：現貨外資{foreign}億 期貨外資{foreign_day}口 選擇權外資分歧", "compass": f"主力三市{'一致偏空' if foreign<0 and int(foreign_day)<0 else '分歧'}", "target": "關注主力一致性"},
+        '主力三市透視': {"look": f"三市籌碼透視：現貨外資{foreign if foreign is not None else 'unavailable'}億 期貨外資{foreign_day}口 選擇權外資分歧", "compass": f"主力三市{'一致偏空' if foreign is not None and foreign<0 and int(foreign_day)<0 else '資料不足或分歧'}", "target": "關注主力一致性"},
         '三市一致性': {"look": f"期現選方向：現貨{foreign} 期貨{foreign_day} 選擇權分歧，一致性低", "compass": f"三市一致性檢核，{regime_label}", "target": "等待一致性收斂"},
         '期現選方向對照': {"look": f"現貨{foreign}億 期貨{foreign_day}口 期選結構{pcr}", "compass": f"期現選對照，{regime_label}", "target": f"{put_wall}為關鍵"},
         '籌碼三市矩陣': {"look": f"籌碼矩陣：外資{foreign} 投信{parsed['inst']['trust']} 自營{parsed['inst']['dealer']}", "compass": "三法人矩陣分歧", "target": "觀察投信撐盤力道"},
@@ -790,7 +796,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '台指期 日盤': {"look": f"台指日盤{parsed['tx']['day']['c']} 高{parsed['tx']['day']['h']} 低{parsed['tx']['day']['l']} 量{parsed['tx']['day']['vol']}", "compass": f"日盤{parsed['tx']['day']['pct']}% 基差{parsed['tx']['day']['basis']}", "target": f"日盤低{parsed['tx']['day']['l']}為支撐"},
         '台指期 夜盤': {"look": f"台指夜盤{parsed['tx']['night']['c']} 高{parsed['tx']['night']['h']} 低{parsed['tx']['night']['l']} 量{parsed['tx']['night']['vol']}", "compass": f"夜盤{parsed['tx']['night']['pct']}% 變化{parsed['tx']['night']['change']}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '期貨籌碼深度圖': {"look": futures_look, "compass": futures_compass, "target": futures_target},
-        '外資期貨': {"look": f"外資期貨OI {foreign_fut} 日淨{foreign_day} 夜淨{parsed['futures']['foreign_night']}", "compass": f"外資期空{'創高' if foreign_fut<-80000 else '偏空'}", "target": f"外資期{foreign_fut}為空方指標"},
+        '外資期貨': {"look": f"外資期貨OI {foreign_fut if foreign_fut is not None else 'unavailable'} 日淨{foreign_day} 夜淨{parsed['futures']['foreign_night']}", "compass": f"外資期空{'創高' if foreign_fut is not None and foreign_fut<-80000 else '資料不足' if foreign_fut is None else '偏空'}", "target": f"外資期{foreign_fut if foreign_fut is not None else 'unavailable'}為觀察指標"},
         '前十大與分歧': {"look": top10_look, "compass": top10_compass, "target": top10_target},
         '前十大與分歧bar': {"look": top10_look, "compass": top10_compass, "target": top10_target},
         'OI結構': {"look": options_look, "compass": options_compass, "target": options_target},
