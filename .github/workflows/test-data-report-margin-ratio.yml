@@ -29,6 +29,12 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
+      - name: Run 17F offline self-tests
+        run: python scripts/v9_pro_builder.py --self-test
+      - name: Run Blave-first margin ratio policy unit tests
+        run: |
+          python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v
+          python -m unittest discover -s tests -p "test_spot_margin_ratio.py" -v
       - name: Build DATA_REPORT for 2026-10-30 T0
         env:
           MANUAL_LISTED_MARGIN_RATIO: ${{ vars.MANUAL_LISTED_MARGIN_RATIO }}
