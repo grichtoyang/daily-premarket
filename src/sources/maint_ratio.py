@@ -26,7 +26,7 @@ WANTGOO_URL = "https://www.wantgoo.com/stock/0000A/margin-trading/historical-len
 
 
 def _wantgoo(t0: str, timeout: int = 20) -> dict:
-    """玩股網 API，回傳 {ratio, date, ok}。延遲 1~3 天，取最接近 T0 的資料。"""
+    """玩股網 API；只接受資料日期精確等於 T0 的數值。較舊資料視為不可用。"""
     out = {"ratio": None, "date": None, "ok": False}
     code = None
     try:
@@ -42,13 +42,12 @@ def _wantgoo(t0: str, timeout: int = 20) -> dict:
             dt = datetime.fromtimestamp(ts / 1000, tz=TAIPEI)
             date_str = dt.strftime("%Y-%m-%d")
             mr = item.get("marginRatio")
-            if mr is not None and date_str <= t0:
+            if mr is not None and date_str == t0:
                 best = (date_str, round(mr * 100, 2))
-                break  # API 已按日期降序，第一筆 <= T0 即為最接近
+                break  # API 已按日期降序；只接受精確 T0
         if best:
             out = {"ratio": best[1], "date": best[0], "ok": True}
-            if best[0] != t0:
-                print(f"[INFO] wantgoo 維持率日期 {best[0]} 非 T0 ({t0})，取最接近")
+
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] wantgoo margin ratio failed (HTTP {code}): {e}")
     return out
@@ -151,8 +150,9 @@ def _istock(t0: str, timeout: int = 30) -> dict:
 # ---------- 對外介面 ----------
 
 def get(t0: str, timeout: int = 30) -> dict:
-    """回傳 {ratio(%), date, ok, source}。優先序 wantgoo → stockintelli → istock。
+    """回傳 {ratio(%), date, ok, source}。只接受精確 T0，優先序 wantgoo → stockintelli → istock。
 
+    T0 嚴格日期閘門：WantGoo 常落後數日，舊資料不得回報 ok，也不得阻擋其他來源的 T0 值。
     F7（2026-10-19）：三源改並行（max_workers=3）各自抓完再照原優先序挑選，
     選用結果、source 標記（istock 失敗時回傳不含 source 鍵）、失敗訊息與
     例外處理語意全部照舊；只是把「前一個失敗才打下一個」的順序等待改成同時等待。
