@@ -35,6 +35,12 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Checkout master dashboard source
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: master-site
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -155,10 +161,21 @@ jobs:
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 
+      - name: Assemble isolated Pages site
+        run: |
+          set -euo pipefail
+          rm -rf pages-site
+          mkdir -p pages-site/p0
+          cp -a master-site/dashboards/. pages-site/
+          cp -a dashboards/. pages-site/p0/
+          test -s pages-site/v9-pro-latest.html
+          test -s pages-site/p0/v9-pro-latest.html
+          echo "Master root and P0 subpath are both present"
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dashboards
+          path: pages-site
 
   deploy:
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
