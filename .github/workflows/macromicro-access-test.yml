@@ -1,0 +1,70 @@
+name: MacroMicro Access Probe
+
+on:
+  push:
+    branches:
+      - phase2-p0-data-quality
+    paths:
+      - '.github/workflows/macromicro-access-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe MacroMicro chart page
+        run: |
+          python - <<'PY'
+          import re
+          import urllib.error
+          import urllib.request
+
+          url = "https://www.macromicro.me/charts/53117/taiwan-taiex-maintenance-margin"
+          profiles = {
+              "default": {},
+              "browser_like": {
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+                  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                  "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+                  "Referer": "https://www.macromicro.me/",
+              },
+          }
+
+          for name, headers in profiles.items():
+              print(f"\\n=== PROFILE: {name} ===")
+              req = urllib.request.Request(url, headers=headers)
+              try:
+                  with urllib.request.urlopen(req, timeout=25) as response:
+                      status = response.status
+                      body = response.read()
+                      text = body.decode("utf-8", errors="replace")
+                      print(f"HTTP_STATUS={status}")
+                      print(f"FINAL_URL={response.geturl()}")
+                      print(f"CONTENT_TYPE={response.headers.get('Content-Type')}")
+                      print(f"BODY_BYTES={len(body)}")
+              except urllib.error.HTTPError as exc:
+                  status = exc.code
+                  body = exc.read()
+                  text = body.decode("utf-8", errors="replace")
+                  print(f"HTTP_STATUS={status}")
+                  print(f"FINAL_URL={exc.geturl()}")
+                  print(f"BODY_BYTES={len(body)}")
+                  print(f"HTTP_ERROR={exc.reason}")
+              except Exception as exc:
+                  print(f"REQUEST_ERROR={type(exc).__name__}: {exc}")
+                  continue
+
+              title = re.search(r"<title[^>]*>(.*?)</title>", text, re.I | re.S)
+              print(f"HTML_TITLE={(re.sub(r'\\s+', ' ', title.group(1)).strip() if title else 'NOT_FOUND')[:200]}")
+              print(f"HAS_CHART_ID={'53117' in text}")
+              print(f"HAS_MAINTENANCE_KEYWORD={bool(re.search(r'maintenance|維持率|融資', text, re.I))}")
+              scripts = re.findall(r'<script[^>]+src=[\"\']([^\"\']+)', text, re.I)
+              print(f"SCRIPT_COUNT={len(scripts)}")
+              for src in scripts[:20]:
+                  print(f"SCRIPT_SRC={src}")
+              print(f"BODY_PREVIEW={re.sub(r'\\s+', ' ', text[:500])[:300]}")
+          PY
