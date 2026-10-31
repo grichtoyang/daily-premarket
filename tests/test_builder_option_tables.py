@@ -27,5 +27,16 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertIn("賣權", options["top10Put"][0][0])
 
 
+    def test_stale_margin_ratio_provenance_is_not_current_t0(self):
+        report = ROOT / "data_reports" / "DATA_REPORT_20261030.md"
+        parsed = parse_data_report(report)
+        margin = parsed["margin"]
+
+        self.assertEqual(margin["ratio"], 178.40)
+        self.assertEqual(margin["ratio_status"], "previous_report_fallback")
+        self.assertEqual(margin["ratio_source_date"], "2026-10-29")
+        self.assertFalse(margin["ratio_is_t0"])
+
+
 if __name__ == "__main__":
     unittest.main()
