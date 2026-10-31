@@ -5,7 +5,6 @@ on:
     branches:
       - phase2-p0-data-quality
     paths:
-      - "src/sources/listed_maint_ratio.py"
       - "src/sources/blave_maint_ratio.py"
       - "src/sources/spot.py"
       - "src/fetch_data.py"
@@ -40,6 +39,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import re
+          t0 = "2026-10-30"
           path = Path("data_reports/DATA_REPORT_20261030.md")
           if not path.exists():
               raise SystemExit("DATA_REPORT_NOT_CREATED")
@@ -49,12 +49,19 @@ jobs:
               raise SystemExit("MARGIN_RATIO_ROW_MISSING")
           row = rows[-1]
           print("MARGIN_RATIO_ROW:", row)
-          if "unavailable" in row:
-              raise SystemExit("MARGIN_RATIO_UNAVAILABLE")
-          if "前值遞補" in row:
-              raise SystemExit("STALE_RATIO_CARRY_FORWARD_FOUND")
-          if not any(x in row for x in ("TWSE", "Blave", "人工輸入")):
+          if "前值遞補" in row or "TWSE 上市自建估算" in row:
+              raise SystemExit("RETIRED_MARGIN_RATIO_SOURCE_OR_STALE_CARRY_FORWARD_FOUND")
+          if "Blave" in row or "人工輸入" in row:
+              if f"資料日期：{t0}" not in row:
+                  raise SystemExit("MARGIN_RATIO_SOURCE_DATE_MISMATCH")
+              print("MARGIN_RATIO_SOURCE=VALID_T0")
+          elif "unavailable" in row:
+              print("MARGIN_RATIO_SOURCE=UNAVAILABLE_NON_BLOCKING")
+          else:
               raise SystemExit("MARGIN_RATIO_SOURCE_NOT_IDENTIFIED")
+          for label in ("融資餘額", "融資增減", "融券餘額", "融券增減"):
+              if not any(re.search(rf"\\|\\s*{label}\\s*\\|", line) for line in text.splitlines()):
+                  raise SystemExit(f"EXISTING_MARGIN_INDICATOR_MISSING: {label}")
           print("DATA_REPORT_MARGIN_RATIO_INTEGRATION=PASS")
           PY
       - name: Upload DATA_REPORT artifact
