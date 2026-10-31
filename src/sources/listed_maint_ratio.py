@@ -35,7 +35,49 @@ def _records(table):
             (isinstance(row, list) and len(row) >= len(fields))]
 
 
-def calculate(t0, margin_payload, price_payload):
+def _month_start(date8, offset):
+    year, month = int(date8[:4]), int(date8[4:6])
+    month -= offset
+    while month <= 0:
+        year -= 1
+        month += 12
+    return f"{year:04d}{month:02d}01"
+
+
+def _last_valid_close(code, date8, timeout=3, max_months=12):
+    """Return the most recent TWSE traded close on/before date8."""
+    for offset in range(max_months):
+        month_date = _month_start(date8, offset)
+        url = BASE + "/afterTrading/STOCK_DAY?" + urlencode(
+            {"date": month_date, "stockNo": code, "response": "json"})
+        response = requests.get(url, headers=HEADERS, timeout=timeout)
+        response.raise_for_status()
+        payload = response.json()
+        rows = payload.get("data") or []
+        date_idx = (payload.get("fields") or []).index("日期") if "日期" in (payload.get("fields") or []) else 0
+        close_idx = (payload.get("fields") or []).index("收盤價") if "收盤價" in (payload.get("fields") or []) else 6
+        valid = []
+        for row in rows:
+            if not isinstance(row, list) or len(row) <= max(date_idx, close_idx):
+                continue
+            try:
+                close = _num(row[close_idx])
+            except ValueError:
+                continue
+            roc_date = str(row[date_idx]).strip()
+            try:
+                y, m, d = roc_date.split("/")
+                row_date = f"{int(y) + 1911:04d}{int(m):02d}{int(d):02d}"
+            except Exception:
+                continue
+            if row_date <= date8 and close > 0:
+                valid.append((row_date, close))
+        if valid:
+            return max(valid, key=lambda item: item[0])
+    return None
+
+
+def calculate(t0, margin_payload, price_payload, historical_prices=None):
     """T0 listed collateral market value / T0 listed financing amount."""
     expected = _date(t0)
     for label, payload in (("TWSE margin", margin_payload), ("TWSE prices", price_payload)):
@@ -80,9 +122,12 @@ def calculate(t0, margin_payload, price_payload):
     financing_balance_idx = [i for i, field in enumerate(balance_fields)
                              if field == "今日餘額"][0]
     code_idx = balance_fields.index("代號")
+    historical_prices = historical_prices or {}
     collateral = 0.0
     financed = 0
     missing = []
+    price_dates = {}
+    stale_price_codes = []
     for raw_row in balance_table.get("data") or []:
         if isinstance(raw_row, dict):
             code = str(raw_row.get("代號", "")).strip()
@@ -100,10 +145,17 @@ def calculate(t0, margin_payload, price_payload):
             continue
         financed += 1
         close = prices.get(code)
+        price_date = _date(t0)
+        if close is None:
+            historical = historical_prices.get(code)
+            if historical:
+                price_date, close = historical
+                stale_price_codes.append(code)
         if close is None:
             missing.append(code)
         else:
             collateral += lots * 1000 * close
+            price_dates[code] = price_date
 
     if financed == 0:
         raise ValueError("no positive listed financing balance rows")
@@ -116,13 +168,17 @@ def calculate(t0, margin_payload, price_payload):
         "denominator_financing_amount_ntd": round(financing_amount, 2),
         "financed_security_count": financed, "priced_security_count": financed,
         "coverage": 1.0, "market": "listed",
-        "method": "TWSE listed financing balance lots x same-day close / TWSE listed financing amount",
+        "stale_price_security_count": len(stale_price_codes),
+        "stale_price_security_codes": stale_price_codes,
+        "price_date_min": min(price_dates.values()) if price_dates else None,
+        "price_date_max": max(price_dates.values()) if price_dates else None,
+        "method": "TWSE listed financing balance lots x latest available close on/before T0 / TWSE listed financing amount",
         "classification": "listed_market_estimate_not_individual_account_ratio",
     }
 
 
 def get(t0, timeout=4):
-    """Fetch exactly two TWSE T0 endpoints, once each; fail fast to caller fallback."""
+    """Fetch TWSE T0 data; use latest prior traded close for no-trade/suspended names."""
     date8 = _date(t0)
     urls = (
         BASE + "/marginTrading/MI_MARGN?" + urlencode(
@@ -136,7 +192,23 @@ def get(t0, timeout=4):
             response = requests.get(url, headers=HEADERS, timeout=timeout)
             response.raise_for_status()
             payloads.append(response.json())
-        return calculate(t0, payloads[0], payloads[1])
+        # Discover missing same-day closes first, then query monthly history only for them.
+        try:
+            calculate(t0, payloads[0], payloads[1])
+            historical = {}
+        except ValueError as exc:
+            marker = "listed securities missing T0 close: "
+            if marker not in str(exc):
+                raise
+            codes_text = str(exc).split(marker, 1)[1].strip()
+            import ast
+            missing_codes = ast.literal_eval(codes_text)
+            historical = {}
+            for code in missing_codes:
+                found = _last_valid_close(code, date8, timeout=min(timeout, 3))
+                if found:
+                    historical[code] = found
+        return calculate(t0, payloads[0], payloads[1], historical_prices=historical)
     except Exception as exc:
         return {"ok": False, "date": t0, "ratio": None,
                 "reason": f"{type(exc).__name__}: {exc}"}
