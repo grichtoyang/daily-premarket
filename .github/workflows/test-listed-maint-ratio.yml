@@ -29,3 +29,29 @@ jobs:
         run: python -m pip install requests
       - name: Run listed maintenance ratio tests
         run: python -m unittest discover -s tests -p "test_listed_maint_ratio.py" -v
+      - name: Probe live TWSE payload schema (2026-10-30)
+        run: |
+          python - <<'PY'
+          import requests
+          base = "https://www.twse.com.tw/rwd/zh"
+          headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.twse.com.tw/"}
+          urls = [
+              base + "/marginTrading/MI_MARGN?date=20261030&selectType=ALL&response=json",
+              base + "/afterTrading/MI_INDEX?date=20261030&type=ALLBUT0999&response=json",
+          ]
+          for url in urls:
+              r = requests.get(url, headers=headers, timeout=20)
+              r.raise_for_status()
+              j = r.json()
+              print("URL:", url)
+              print("top-level:", list(j) if isinstance(j, dict) else type(j).__name__)
+              print("date/stat:", j.get("date"), j.get("stat"))
+              for i, table in enumerate(j.get("tables", []) if isinstance(j, dict) else []):
+                  fields = table.get("fields") or []
+                  title = table.get("title", "")
+                  if ("融資" in title or "信用" in title or
+                      ("代號" in fields and ("融資今日餘額" in fields or "今日餘額" in fields)) or
+                      ("證券代號" in fields and "收盤價" in fields)):
+                      print("table", i, "title=", title, "fields=", fields,
+                            "first_row=", (table.get("data") or [])[:1])
+          PY
