@@ -22,7 +22,7 @@ class P0WorkflowIsolationTests(unittest.TestCase):
     def test_checkout_and_generated_commit_are_explicitly_p0_scoped(self):
         self.assertIn("ref: ${{ github.ref }}", self.workflow)
         self.assertIn("if: github.ref == 'refs/heads/phase2-p0-data-quality'", self.workflow)
-        self.assertIn('GITHUB_REF_NAME" != "phase2-p0-data-quality"', self.workflow)
+        self.assertIn('${GITHUB_REF_NAME}" != "phase2-p0-data-quality"', self.workflow)
         self.assertIn('git push origin "HEAD:${GITHUB_REF_NAME}"', self.workflow)
         self.assertNotRegex(self.workflow, r"(?m)^\s*git push\s*$")
         self.assertIn("git add dashboards/", self.workflow)
