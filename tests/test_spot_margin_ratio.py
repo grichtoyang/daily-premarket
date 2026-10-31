@@ -85,7 +85,7 @@ class SpotMarginRatioPolicyTests(unittest.TestCase):
         self.assertIn("DATA_REPORT", result["note"])
 
     def test_total_source_wait_budget_is_bounded(self):
-        self.assertEqual(SELF_BUILT_RATIO_TIMEOUT + BLAVE_RATIO_TIMEOUT, 9)
+        self.assertEqual(SELF_BUILT_RATIO_TIMEOUT + BLAVE_RATIO_TIMEOUT, 13)
 
 
 if __name__ == "__main__":

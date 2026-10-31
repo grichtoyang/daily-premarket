@@ -21,7 +21,7 @@ def _add(a, b):
     return a + b
 
 
-SELF_BUILT_RATIO_TIMEOUT = 6
+SELF_BUILT_RATIO_TIMEOUT = 10
 BLAVE_RATIO_TIMEOUT = 3
 
 
@@ -238,7 +238,7 @@ def build(t0: str) -> dict:
             margin["s_chg"] = _add(mtw["schg"], mtp["schg"])
             notes.append("融券沿用官方逐股加總 (張)")
             sources["margin_short"] = "TWSE MI_MARGN + TPEX margin_balance (張)"
-    # ---- 上市大盤融資維持率：Blave 唯一自動來源 → 同 T0 人工輸入 → unavailable ----
+    # ---- 上市大盤融資維持率：TWSE 自建主引擎 → Blave 交叉驗證／備援 → 同 T0 人工最後備援 ----
     ratio_result = _get_margin_ratio(t0)
     margin["ratio"] = ratio_result["ratio"]
     sources["margin_ratio"] = ratio_result["source"]

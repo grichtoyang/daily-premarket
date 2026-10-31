@@ -138,7 +138,8 @@ jobs:
               raise SystemExit(f"EXPECTED_ONE_MARGIN_RATIO_ROW, got {count}")
           Path("artifacts/DATA_REPORT_20261030_unavailable.md").write_text(updated, encoding="utf-8")
           PY
-          python scripts/v9_pro_builder.py --data_report "artifacts/DATA_REPORT_20261030_unavailable.md" --out "artifacts/data-unavailable.json" --date "20261030"
+          python scripts/v9_pro_builder.py --data_report "artifacts/DATA_REPORT_20261030_unavailable.md" --out "dashboards/data-unavailable.json" --date "20261030"
+          cp "dashboards/data-unavailable.json" "artifacts/data-unavailable.json"
           python -m json.tool "artifacts/data-unavailable.json" > /dev/null
           python - <<'PY'
           import json

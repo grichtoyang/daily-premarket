@@ -64,8 +64,14 @@ jobs:
           python - <<'PY'
           from src.sources.listed_maint_ratio import get as get_listed
           from src.sources.blave_maint_ratio import get as get_blave
-          listed = get_listed("2026-10-30", timeout=20)
-          blave = get_blave("2026-10-30", timeout=20)
+          import time
+          started = time.monotonic()
+          listed = get_listed("2026-10-30", timeout=10)
+          elapsed = time.monotonic() - started
+          print("LISTED_SELF_BUILD_ELAPSED_SECONDS:", round(elapsed, 2))
+          if elapsed > 11:
+              raise SystemExit(f"LISTED_SELF_BUILD_EXCEEDED_10S_BUDGET: {elapsed:.2f}s")
+          blave = get_blave("2026-10-30", timeout=3)
           print("LISTED_SELF_BUILD:", listed)
           print("BLAVE_FALLBACK_REFERENCE:", blave)
           if not listed.get("ok"):

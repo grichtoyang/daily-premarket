@@ -74,7 +74,7 @@ jobs:
           echo "Using ${REPORT} for T0 ${DATE}"
           mkdir -p dashboards
 
-      - name: Test Blave-first maintenance ratio policy
+      - name: Test TWSE-self-built-first maintenance ratio policy
         run: |
           set -euo pipefail
           python -m unittest discover -s tests -p "test_blave_maint_ratio.py" -v

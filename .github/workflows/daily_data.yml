@@ -33,6 +33,9 @@ jobs:
         run: pip install -r requirements.txt
       - name: Fetch daily data
         timeout-minutes: 18
+        env:
+          MANUAL_LISTED_MARGIN_RATIO: ${{ vars.MANUAL_LISTED_MARGIN_RATIO }}
+          MANUAL_LISTED_MARGIN_RATIO_DATE: ${{ vars.MANUAL_LISTED_MARGIN_RATIO_DATE }}
         run: |
           echo "PYTHONUNBUFFERED=1" >> $GITHUB_ENV
           TODAY=$(TZ=Asia/Taipei date +%F)
