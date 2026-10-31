@@ -422,17 +422,17 @@ def validate_data_report_consistency(spot, inst, turnover, tx, options):
 def parse_margin_ratio_provenance(report_text, t0_date):
     """Parse maintenance-ratio value and provenance without conflating estimates with stale data."""
     line=next((x for x in report_text.splitlines() if "融資維持率" in x and x.strip().startswith("|")), "")
-    m=re.search(r"\|\s*融資維持率\s*\|\s*([0-9,.]+)\s*\|\s*%\s*\|\s*(.*?)\s*\|?\s*$", line)
+    cells=[cell.strip() for cell in line.strip().strip("|").split("|")] if line else []
     ratio=None
-    source_cell=""
-    if m:
+    source_cell=cells[3] if len(cells)>=4 else ""
+    raw_value=cells[1] if len(cells)>=4 else ""
+    if raw_value and raw_value.lower() not in ("unavailable","n/a","--","null"):
         try:
-            value=float(m.group(1).replace(",",""))
+            value=float(raw_value.replace(",",""))
             if math.isfinite(value) and 50.0 < value < 500.0:
                 ratio=value
         except (TypeError, ValueError):
             pass
-        source_cell=m.group(2).strip()
     date_match=re.search(r"(?:DATA|資料日期)\s*[:：]?\s*(\d{4}-\d{2}-\d{2}|\d{8})", source_cell, re.I)
     source_date=date_match.group(1) if date_match else None
     if source_date and len(source_date)==8:
