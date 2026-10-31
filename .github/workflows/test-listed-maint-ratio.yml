@@ -105,3 +105,17 @@ jobs:
               for row in rows[-3:]:
                   print("ROW", code, row)
           PY
+
+      - name: Check older STOCK_DAY history for residual margin balances
+        if: always()
+        run: |
+          python - <<'PY'
+          import requests
+          h = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.twse.com.tw/"}
+          for month in ("20260901", "20260801", "20260701", "20260601"):
+              url = f"https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY?date={month}&stockNo=1589&response=json"
+              j = requests.get(url, headers=h, timeout=20).json()
+              rows = j.get("data", [])
+              valid = [r for r in rows if len(r) > 6 and r[6] not in ("--", "", None)]
+              print("1589", month, "stat=", j.get("stat"), "last_valid=", valid[-1:] or "NONE")
+          PY
