@@ -44,7 +44,7 @@ jobs:
           if not path.exists():
               raise SystemExit("DATA_REPORT_NOT_CREATED")
           text = path.read_text(encoding="utf-8")
-          rows = [line for line in text.splitlines() if re.search(r"\|\\s*融資維持率\\s*\\|", line)]
+          rows = [line for line in text.splitlines() if re.search(r"\|\s*融資維持率\s*\|", line)]
           if not rows:
               raise SystemExit("MARGIN_RATIO_ROW_MISSING")
           row = rows[-1]
