@@ -3,7 +3,7 @@ name: P0 DATA_REPORT Margin Ratio Integration
 on:
   push:
     branches:
-      - phase2-p0-data-quality
+      - phase2-p0-data-quality-pending-migration
     paths:
       - "src/sources/blave_maint_ratio.py"
       - "src/sources/spot.py"
