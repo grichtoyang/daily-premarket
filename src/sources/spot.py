@@ -11,7 +11,7 @@
   unavailable[] / notes[] / sources{}
 """
 from __future__ import annotations
-from src.sources import twse, twse_proxy, spot_raw, finmind, histock, maint_ratio
+from src.sources import twse, twse_proxy, spot_raw, finmind, histock, listed_maint_ratio, blave_maint_ratio
 
 def _add(a, b):
     if a is None:
@@ -140,24 +140,43 @@ def build(t0: str) -> dict:
             margin["s_chg"] = _add(mtw["schg"], mtp["schg"])
             notes.append("融券沿用官方逐股加總 (張)")
             sources["margin_short"] = "TWSE MI_MARGN + TPEX margin_balance (張)"
-    mr = maint_ratio.get(t0)
-    if mr["ok"]:
+    # ---- 上市大盤融資維持率：自建主來源 → Blave → 人工輸入 ----
+    mr = listed_maint_ratio.get(t0)
+    if mr.get("ok"):
         margin["ratio"] = mr["ratio"]
-        src_name = mr.get("source", "unknown")
-        if mr.get("date") and mr["date"] != t0:
-            sources["margin_ratio"] = (f"{src_name} 大盤融資維持率 "
-                                       f"(資料日期 {mr['date']}；民間估算；官方無每日序列)")
-            notes.append(f"融資維持率資料日期 {mr['date']} (T0 {t0} 尚無，採最新可得)")
-        else:
-            sources["margin_ratio"] = f"{src_name} 大盤融資維持率 (資料日期 {mr['date']}；民間估算；官方無每日序列)"
+        sources["margin_ratio"] = (
+            "TWSE 上市自建估算（逐股融資餘額×最近有效收盤價／上市融資金額）"
+        )
+        if mr.get("stale_price_security_count", 0):
+            notes.append(
+                f"上市維持率自建估算：{mr['stale_price_security_count']} 檔使用前次有效收盤價；"
+                f"估值日期範圍 {mr.get('price_date_min')} 至 {mr.get('price_date_max')}；"
+                f"證券代碼 {','.join(mr.get('stale_price_security_codes', []))}"
+            )
     else:
-        notes.append("融資維持率未取得 (三源皆失敗；官方無每日序列)")
-        _pr, _pdate = _prev_data_ratio(t0)
-        if _pr is not None:
-            margin["ratio"] = _pr
-            sources["margin_ratio"] = (f"前值遞補 (DATA {_pdate}；當日三源皆失敗；"
-                                       "民間估算；官方無每日序列)")
-            notes.append(f"融資維持率採前值遞補 (DATA {_pdate})，非 T0 {t0}")
+        notes.append(f"上市維持率自建計算失敗：{mr.get('reason', 'unknown')}")
+        br = blave_maint_ratio.get(t0)
+        if br.get("ok"):
+            margin["ratio"] = br["ratio"]
+            sources["margin_ratio"] = "Blave 上市大盤融資維持率估算（自建失敗時第二順位）"
+            notes.append("上市維持率採 Blave 同 T0 數值（自建計算失敗）")
+        else:
+            notes.append(f"Blave 上市維持率備援失敗：{br.get('reason', 'unknown')}")
+            import os as _os
+            manual_date = _os.getenv("MANUAL_LISTED_MARGIN_RATIO_DATE", "").strip()
+            manual_value = _os.getenv("MANUAL_LISTED_MARGIN_RATIO", "").strip()
+            try:
+                manual_ratio = float(manual_value)
+            except (TypeError, ValueError):
+                manual_ratio = None
+            if manual_date == t0 and manual_ratio is not None and 50 < manual_ratio < 500:
+                margin["ratio"] = round(manual_ratio, 4)
+                sources["margin_ratio"] = "人工輸入（MANUAL_LISTED_MARGIN_RATIO；同 T0）"
+                notes.append(f"上市維持率採人工輸入值，資料日期 {manual_date}")
+            else:
+                sources["margin_ratio"] = "unavailable（自建、Blave、人工輸入皆不可用）"
+                notes.append("上市融資維持率 unavailable；不沿用前一交易日數值")
+
     notes.append("上市 MI_MARGN / TWT96U 無日期欄，採用最新可得")
     for k in ("fin_yi", "fin_chg_yi", "s_bal", "s_chg", "ratio"):
         if margin[k] is None:
