@@ -65,6 +65,25 @@ class ListedMaintenanceRatioTests(unittest.TestCase):
         self.assertEqual(result["stale_price_security_count"], 1)
         self.assertEqual(result["price_date_min"], "20261029")
 
+    def test_supports_dict_row_with_explicit_financing_balance_key(self):
+        margin, prices = self.fixtures()
+        margin["tables"][1]["data"] = [{
+            "代號": "2330",
+            "融資今日餘額": "10",
+        }]
+        result = calculate("2026-10-30", margin, prices)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["ratio"], 100.0)
+
+    def test_rejects_ambiguous_dict_row_with_duplicate_today_balance(self):
+        margin, prices = self.fixtures()
+        margin["tables"][1]["data"] = [{
+            "代號": "2330",
+            "今日餘額": "999",
+        }]
+        with self.assertRaisesRegex(ValueError, "ambiguous dict row"):
+            calculate("2026-10-30", margin, prices)
+
     def test_rejects_zero_financing_amount(self):
         margin, prices = self.fixtures()
         margin["tables"][0]["data"][0][5] = "0"
