@@ -62,7 +62,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 self.assertEqual(
                     result.returncode,
                     0,
-                    f"JavaScript syntax error in inline script {index}:\n{result.stderr[-2000:]}",
+                    f"JavaScript syntax error in inline script {index}:\n{chr(10).join(result.stderr.splitlines()[-4:])}",
                 )
                 checked += 1
         self.assertGreater(checked, 0, "No inline JavaScript was checked")
