@@ -16,6 +16,7 @@ on:
       - "tests/test_p0_workflow_isolation.py"
       - ".github/workflows/daily-premarket-v9-pro.yml"
       - "tests/test_fetch_data_margin_ratio.py"
+      - "tests/test_spot_margin_ratio.py"
       - "tests/test_listed_maint_ratio.py"
       - ".github/workflows/test-data-report-margin-ratio.yml"
   workflow_dispatch:
@@ -119,7 +120,6 @@ jobs:
           options = data["options"]
           for key in ("instOptForce", "top10Call", "top10Put"):
               assert isinstance(options[key], list) and len(options[key]) >= 3, (key, options[key])
-          print("BUILDER_JSON_T0_PROVENANCE=PASS", margin["ratio"], margin["ratio_source_name"], margin["ratio_source_date"])
           print("BUILDER_OPTION_TABLES=PASS", {key: len(options[key]) for key in ("instOptForce", "top10Call", "top10Put")})
           PY
       - name: Verify unavailable ratio still builds JSON and Dashboard HTML
