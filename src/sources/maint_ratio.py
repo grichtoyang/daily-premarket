@@ -168,14 +168,14 @@ def get(t0: str, timeout: int = 30) -> dict:
         si = f_si.result()
         # 3) 愛玩股 istock.tw
         ist = f_is.result()
-    if wg["ok"]:
+    if wg["ok"] and wg.get("date") == t0:
         wg["source"] = "wantgoo"
         return wg
     print("[INFO] wantgoo 維持率不可用，嘗試 stockintelli")
-    if si["ok"]:
+    if si["ok"] and si.get("date") == t0:
         si["source"] = "stockintelli"
         return si
     print("[INFO] stockintelli 維持率不可用，嘗試 istock 備援")
-    if ist["ok"]:
+    if ist["ok"] and ist.get("date") == t0:
         ist["source"] = "istock"
     return ist
