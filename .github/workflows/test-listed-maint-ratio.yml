@@ -62,11 +62,20 @@ jobs:
       - name: Calculate listed-only ratio for 2026-10-30
         run: |
           python - <<'PY'
-          from src.sources.listed_maint_ratio import get
-          result = get("2026-10-30", timeout=20)
-          print(result)
-          if not result.get("ok"):
-              raise SystemExit("LIVE_LISTED_RATIO_FAILED: " + result.get("reason", "unknown"))
+          from src.sources.listed_maint_ratio import get as get_listed
+          from src.sources.blave_maint_ratio import get as get_blave
+          listed = get_listed("2026-10-30", timeout=20)
+          blave = get_blave("2026-10-30", timeout=20)
+          print("LISTED_SELF_BUILD:", listed)
+          print("BLAVE_FALLBACK_REFERENCE:", blave)
+          if not listed.get("ok"):
+              raise SystemExit("LIVE_LISTED_RATIO_FAILED: " + listed.get("reason", "unknown"))
+          if not blave.get("ok"):
+              raise SystemExit("LIVE_BLAVE_RATIO_FAILED: " + blave.get("reason", "unknown"))
+          delta = abs(float(listed["ratio"]) - float(blave["ratio"]))
+          print("ABSOLUTE_DIFFERENCE_PP:", round(delta, 4))
+          if delta > 0.05:
+              raise SystemExit(f"SELF_BUILD_BLAVE_DELTA_TOO_LARGE: {delta}")
           PY
 
       - name: Diagnose financed symbols without MI_INDEX close
