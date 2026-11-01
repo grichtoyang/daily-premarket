@@ -3,10 +3,11 @@
 https://taifex.grichtoyang.workers.dev/
 端點：futures-price[-after-hours]、futures-institutional[-after-hours]、
   futures-institutional-oi[-history]、futures-options-chain、
-  options-delta、options-key-levels、options-market-structure-compact、
-  options-institutional[-after-hours]、options-after-hours
-(gamma-levels 上游 502；Gamma Wall/Flip 改由 options-market-structure-compact 備援，
-  備援成功時保留數值並記錄原始端點故障；備援也失敗才標 unavailable)
+  options-delta、options-gamma-levels、options-key-levels、
+  options-market-structure-compact、options-institutional[-after-hours]、
+  options-after-hours
+(options-gamma-levels 提供 Gamma Wall/Flip 與完整 GEX；端點失敗時，
+  Gamma Wall/Flip 可由 options-market-structure-compact 備援，GEX 不以 proxy 代替)
 
 金額欄位單位：千元 (→億元 /1e5)。近月 = 日盤成交量最大契約。
 前十大交易人走 taifex_official (proxy 優先)。
@@ -19,7 +20,7 @@ from src.utils import HEADERS
 
 BASE = "https://taifex.grichtoyang.workers.dev"
 DATE_EPS = {"futures-institutional-oi", "futures-institutional-oi-history", "futures-options-chain",
-            "options-key-levels", "options-market-structure-compact"}
+            "options-gamma-levels", "options-key-levels", "options-market-structure-compact"}
 FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional",
             "futures-institutional-after-hours", "options-institutional",
             "options-institutional-after-hours", "options-after-hours",
