@@ -1,9 +1,27 @@
 import unittest
+from unittest.mock import Mock, patch
 
-from src.sources.taifex import _gamma_status, _sync_gamma_unavailable, _valid_gex_levels
+from src.sources.taifex import BASE, DATE_EPS, _get, _gamma_status, _sync_gamma_unavailable, _valid_gex_levels
 
 
 class GammaFallbackAvailabilityTests(unittest.TestCase):
+    def test_gamma_levels_fetch_uses_requested_t0_date(self):
+        response = Mock(status_code=200)
+        response.json.return_value = {
+            "ok": True,
+            "date": "2026-10-30",
+            "data": {"levels": []},
+        }
+        with patch("src.sources.taifex.requests.get", return_value=response) as get:
+            payload = _get("options-gamma-levels", "2026-10-30")
+
+        self.assertIsNotNone(payload)
+        self.assertIn("options-gamma-levels", DATE_EPS)
+        self.assertEqual(
+            get.call_args.args[0],
+            f"{BASE}/options-gamma-levels?date=2026-10-30",
+        )
+
     def test_validates_source_schema_and_sorts_levels(self):
         rows = [
             {"strike": 45600, "call_gex_1pct": 20, "put_gex_1pct": -5,
