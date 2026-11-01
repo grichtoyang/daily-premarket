@@ -257,3 +257,57 @@ P0 Dashboard：
 2. 選擇權法人圖表解析帶逗號的數字字串，並加單元測試覆蓋正數、負數、千分位、缺值。
 
 其餘三項先維持誠實缺值／未校準提示，待另行確認 GEX/IV 資料源、三劇本無機率圖示需求、相關性資料與樣本門檻後再規劃；不擴大本輪修正範圍。
+
+
+## 11. 2026-11-01 DATA-UI-01／02 修正實作與恢復入口
+
+> 本節為最新狀態，優先於本文件較早章節中「尚未開始修正」及「下一步唯讀根因調查」的描述。
+
+### 11.1 最新分支與 Commit
+- Repository：`grichtoyang/daily-premarket`
+- 修正分支：`phase2-p0-ui-fixes`
+- 修正分支 HEAD：`eb861a470ff5a90faa73ae4097c3c15d227f3d10`
+- 基底分支：`phase2-p0-data-quality`
+- 基底／P0 HEAD：`49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`
+- Compare：UI fixes ahead 14、behind 0；merge base 正是 P0 HEAD。
+- master HEAD：`0ac95b2521e7bdcb357431cc7725da4e2c26e602`。
+- Recovery 文件分支更新前 HEAD：`7e5bd237ab229a5108adb13b5200707136b4bed4`。
+- P0 原分支與 master 均未修改；未 Merge／Rebase／Force Push；V8 未修改。
+
+### 11.2 變更檔案（僅五個）
+1. `.github/workflows/test-v9-ui-fixes.yml`：新增 UI 修正分支專用回歸流程，checkout 使用 `github.ref`；只執行測試及 JSON 驗證，不部署、不推送產物。
+2. `scripts/v9_pro_builder.py`：解析借券賣出餘額、增減與資料範圍，將三欄傳遞至 Dashboard JSON。
+3. `templates/v9-pro-react-template.html`：借券區塊顯示餘額與增減範圍；選擇權法人圖表改用 `v9ProOptionNetNumber` 解析含千分位的正負數，無效值不繪成有效 0。
+4. `tests/test_builder_option_tables.py`：新增借券欄位與 scope 測試。
+5. `tests/test_react_template_static.py`：新增正／負／千分位／缺值解析測試、React 內部事件函式保護及借券 UI 欄位測試。
+
+重要修正細節：
+- React template 原有 `qn(e,n)` 是 React 內部事件註冊函式，不是可任意覆寫的名稱。實作過程曾由 CI 抓出重複宣告及內部函式被誤改；最終已恢復原始 `function qn(e,n){kr(e,n),kr(e+"Capture",n)}`，並以唯一名稱 `v9ProOptionNetNumber` 作為新數字解析函式。
+- Builder 遵守 `dashboards/` 唯一輸出路徑；專用 Workflow 的 JSON 驗證也使用 `dashboards/v9-ui-fixes-data.json`。
+
+### 11.3 最新驗收證據
+UI 專用 GitHub Actions：
+- Run ID：`41301487409`
+- Workflow：`V9 UI Fixes Regression`
+- Branch：`phase2-p0-ui-fixes`
+- Head SHA：`eb861a470ff5a90faa73ae4097c3c15d227f3d10`
+- Conclusion：Success
+
+逐項結果：
+- V9 Builder offline self-tests：PASS。
+- React template regression：10 tests，PASS；包含 inline JavaScript syntax、數字解析、缺值過濾、React 內部函式保護。
+- DATA_REPORT parser regression：3 tests，PASS；包含借券餘額、借券賣出增減及範圍。
+- Builder JSON 驗證：PASS；借券賣出餘額 36,178 張、增減 -1,273 張，增減範圍明確標示「上櫃（上市 TWT93U 未取得）」。
+- 選擇權法人圖表解析：`+6,624 → 6624`、`-4,937 → -4937`、缺值／非數字 → null 並排除於圖表 series。
+- 曾有早期 CI 失敗，分別是 helper 名稱與 React 內部函式衝突，以及測試輸出路徑不符合 Builder Output Path Rule；已修正。最終 Run `41301487409` 全步驟 Success。
+
+### 11.4 未完成／不得誤報
+- 桌面／手機瀏覽器實際視覺驗收：NOT TESTED。
+- 修正分支未部署 GitHub Pages：NOT DONE。
+- 未合併回 P0／master：NOT DONE。
+- 本機／OpenCode 工作目錄 dirty status：NOT TESTED；本次僅查證 GitHub 遠端狀態。
+- DATA-UI-03／04／05 未修改，沿用既有誠實缺值／未校準設計。
+- 本次 Auditor 為單模型自我審查，沒有獨立模型或 Agent 審核。
+
+### 11.5 下一步唯一指令
+先在 `phase2-p0-ui-fixes` 建立 T0 2026-10-30 的不部署預覽 HTML（從已驗證 DATA_REPORT 建立 JSON，再注入 React template），只供檢查 DATA-UI-01／02；不得推送 Pages、不得改 P0／master／V8。預覽生成後再由使用者檢查桌面及手機顯示，未完成視覺驗收前不得宣稱 Dashboard UI 最終驗收 PASS。
