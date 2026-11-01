@@ -81,6 +81,7 @@ V9 Pro Dashboard 保留以下六頁：
 
 每次修改分析引擎時，必須逐項核對：
 - 因子清單、輸入欄位及資料來源。
+- 基礎權重採相對權重點數（目前總和 104），不是百分比；動態調整後只對有效因子重新正規化至 100%。缺值因子有效權重為 0。輸出須明確標示 `base_weight_total`、`base_weight_unit=relative_points` 與 `weight_normalization=active_factors_rescaled_to_100_percent`。
 - 權重總和、動態權重調整公式及缺值處理。
 - RSI、MACD 的資料期間、計算方式及備援來源。
 - 缺值時是否停用因子、重新正規化權重，或採取其他策略。
