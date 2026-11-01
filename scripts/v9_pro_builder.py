@@ -299,16 +299,21 @@ def update_next_day_pct(t0_date, t0_spot_close, db_path="dashboards/v9_pro_histo
         for candidate_table in ('v9_pro_history','v8_pro_history'):
             try:
                 candidate=conn.execute(
-                    f"SELECT date,spot_close FROM {candidate_table} WHERE date<? AND next_day_pct IS NULL AND spot_close>0 ORDER BY date DESC LIMIT 1",
+                    f"SELECT date,spot_close,next_day_pct FROM {candidate_table} WHERE date<? AND spot_close>0 ORDER BY date DESC LIMIT 1",
                     (t0_iso,)
                 ).fetchone()
                 if candidate:
-                    candidates.append((candidate[0],candidate[1],candidate_table))
+                    candidates.append((candidate[0],candidate[1],candidate[2],candidate_table))
             except sqlite3.OperationalError:
                 continue
         if not candidates:
             conn.close(); return False
-        previous_date,previous_close,table=max(candidates,key=lambda item:item[0])
+        # Only label the immediately latest prior history row. Never skip a
+        # previously labeled row and apply today's return to an older date.
+        previous_date,previous_close,already_labeled,table=max(candidates,key=lambda item:item[0])
+        if already_labeled is not None:
+            print(f"[V9-17F] update_next_day skipped: latest prior row {previous_date} is already labeled")
+            conn.close(); return False
         next_pct=(current_close-float(previous_close))/float(previous_close)*100
         conn.execute(f"UPDATE {table} SET next_day_pct=? WHERE date=?", (next_pct,previous_date))
         conn.commit(); conn.close()
@@ -1233,6 +1238,14 @@ def run_17f_self_tests():
             assert rows[0][0]=='2026-10-28'
             assert abs(rows[0][2]-(100.0-95.0)/95.0*100)<1e-6
             assert rows[1][0]=='2026-10-29'
+            # A repeated T0 must not leapfrog an already-labeled prior row and
+            # incorrectly attach the current return to an older history row.
+            assert update_next_day_pct('20261030',110.0,test_db) is False
+            conn=sqlite3.connect(test_db)
+            after=conn.execute("SELECT date,spot_close,next_day_pct FROM v9_pro_history ORDER BY date").fetchall()
+            conn.close()
+            assert after[0][0]=='2026-10-28' and after[0][2] is not None
+            assert after[1][0]=='2026-10-29' and after[1][2] is None
         # Legacy V8/V9 tables must both exist before init_db; init_db creates
         # any missing counterpart, so creating V8 after the first call collides.
         with tempfile.TemporaryDirectory() as tmp:
@@ -1271,8 +1284,11 @@ def main():
     args=parser.parse_args()
     if args.self_test:
         return run_17f_self_tests()
-    date_str=args.date if args.date else datetime.now().strftime('%Y%m%d')
-    if len(date_str)!=8 or not date_str.isdigit(): date_str=datetime.now().strftime('%Y%m%d')
+    date_str=args.date.strip() if args.date else ""
+    if date_str and (len(date_str)!=8 or not date_str.isdigit()):
+        raise ValueError(f"Invalid --date {date_str!r}; expected YYYYMMDD")
+    if date_str:
+        _normalize_t0_date(date_str)
 
     # Output Path Rule check
     out_path=pathlib.Path(args.out)
@@ -1304,7 +1320,13 @@ def main():
         if not report_path or not report_path.exists(): return 1
 
     parsed=parse_data_report(report_path)
-    print(f"[V9-17F] Parsed {report_path}: spot {parsed['spot']['close']} {parsed['spot']['pct']}% foreign {parsed['inst']['foreign']}")
+    report_t0=str(parsed.get('meta',{}).get('t0_date') or '').replace('-','')
+    if not report_t0 or len(report_t0)!=8 or not report_t0.isdigit():
+        raise ValueError(f"DATA_REPORT has invalid or missing T0 date: {parsed.get('meta',{}).get('t0_date')!r}")
+    if date_str and date_str!=report_t0:
+        raise ValueError(f"--date {date_str} does not match DATA_REPORT T0 {report_t0}")
+    date_str=report_t0
+    print(f"[V9-17F] Parsed {report_path}: T0={date_str}, spot {parsed['spot']['close']} {parsed['spot']['pct']}% foreign {parsed['inst']['foreign']}")
     data_warnings=parsed.get('meta',{}).get('data_quality_warnings',[])
     print(f"[V9-17F] DATA_REPORT consistency: {len(data_warnings)} warning(s)")
     for warning in data_warnings:
