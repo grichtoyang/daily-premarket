@@ -324,3 +324,11 @@ P1 尚未開始。啟動前必須：
 | DATA-UI-03／04、V8、Master | 未修改 |
 
 - Auditor：單模型自我審查，非獨立多模型審核。
+
+
+## 16. 2026-11-01 DATA-UI-05 真實資料樣本數盤點
+
+- 檢查 `dashboards/data-latest.json`（UI branch，SHA `9f031928b02f9b652e9ff31f0397224db2086cb4`）：T0 `2026-10-30`、`db_mode=db`、`db_rows=3`。
+- correlation `labels=[]`、`matrix=[]`，desc 為「歷史日期對齊樣本不足，相關性未計算」。最低門檻 5 筆有效樣本；DB 目前僅 3 列，故真實歷史相關性驗證 BLOCKED，待資料自然累積，禁止以合成資料填入正式 DB。
+- 手機兩種 UI 狀態（0/5 與合成 8×8）PASS；桌面視覺 NOT TESTED。
+- 本輪未修改程式、正式資料庫、Dashboard 資料；未部署／合併。
