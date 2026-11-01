@@ -368,3 +368,49 @@ UI 專用 GitHub Actions：
 
 ### 下一步
 桌面版視覺驗收尚未提供截圖；若使用者希望完整跨裝置驗收，需在桌面瀏覽器開啟同一 Artifact 並檢查 DATA-UI-01／02。未取得桌面證據前，不得宣稱桌面視覺 PASS。部署或合併仍須使用者另行明確授權。
+
+
+## 14. 2026-11-01 DATA-UI-05 修正與 CI 驗收
+
+> 本節為最新工作狀態，優先於前文將 DATA-UI-05 標示為未實作／待唯讀調查的舊紀錄。此輪只處理 DATA-UI-05；DATA-UI-03／04、V8、Master、部署均未觸碰。
+
+### 14.1 分支與變更
+- Repository：`grichtoyang/daily-premarket`
+- 工作分支：`phase2-p0-ui-fixes`
+- 最新 Commit：`4d2ccc4769f1df819601d70742312e75e388829d`
+- 基準 Commit：`d0f644e661fc43596bc4886ae0fd92977891db17`
+- 相對基準新增 5 個 Commit；Compare 顯示僅修改兩個檔案：
+  1. `scripts/v9_pro_builder.py`
+  2. `templates/v9-pro-react-template.html`
+- 未修改 DATA-UI-03／04、V8、Master、部署設定；未 Merge／Cherry-pick。
+
+### 14.2 DATA-UI-05 實作摘要
+- 歷史資料新增 `correlation_eligible` 品質資格欄位；缺失值以 NULL 儲存，不再以 0 假造。
+- 使用 T0 日期正規化；同日期已存在資料則跳過，不覆寫既有紀錄。
+- 相關性採 8 個有效欄位，僅讀取明確標記 eligible 的完整樣本；排除非有限值，依日期排序後計算 Pearson 相關係數。
+- 最低樣本數預設 5；樣本不足或有效欄位不足時回傳空矩陣與明確說明。
+- 前端只有在 matrix 與 labels 均有效時才建立熱圖；否則顯示資料不足描述，不再渲染空白格與色階。
+- 舊歷史資料未全面重建；既有不符合資格的舊列不會被納入本次計算。
+
+### 14.3 CI 證據
+- Workflow：`V9 UI Fixes Regression`
+- Run ID：`41307754019`
+- Run URL：`https://github.com/grichtoyang/daily-premarket/actions/runs/41307754019`
+- Head SHA：`4d2ccc4769f1df819601d70742312e75e388829d`
+- Conclusion：Success；regression job 全部步驟成功。
+- 通過項目：V9 Builder offline self-tests、React template regression、DATA_REPORT parser regression、Dashboard JSON build／借券欄位檢查、非部署 HTML preview 產生及 Artifact 上傳。
+
+### 14.4 驗收狀態與限制
+| 項目 | 狀態 |
+|---|---|
+| 缺值 NULL／eligible 資料篩選 | PASS（CI 自我測試） |
+| T0 日期正規化／重複日期跳過 | PASS（程式與既有測試查核） |
+| 最低樣本數與 Pearson 矩陣 | PASS（CI 自我測試） |
+| 無有效矩陣時隱藏熱圖 | PASS（React regression） |
+| Android／桌面實際視覺 | NOT TESTED |
+| 正式 Pages 部署 | NOT DONE |
+| Merge／Cherry-pick | NOT DONE |
+| Recovery 工作目錄 dirty status | NOT TESTED |
+
+### 14.5 下一步唯一指令
+DATA-UI-05 程式與 CI 驗收已完成。若要繼續，先由使用者檢查非部署 HTML Artifact 的相關性區塊（有效樣本時的熱圖，以及樣本不足時的空狀態）；取得實際畫面驗收後，再決定是否結案及是否授權後續整合。不得自行部署或 Merge。
