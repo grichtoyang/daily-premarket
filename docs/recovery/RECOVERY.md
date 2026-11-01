@@ -448,3 +448,34 @@ DATA-UI-05 程式與 CI 驗收已完成。若要繼續，先由使用者檢查�
 
 ### 下一步
 DATA-UI-05 樣本不足狀態的手機視覺驗收已完成。有效樣本矩陣與桌面畫面仍未驗證；不得將其標示為 PASS。部署或合併須另行取得使用者明確授權。
+
+
+## 16. 2026-11-01 DATA-UI-05 手機有效樣本熱圖驗收
+
+### 修正內容
+- UI branch：`phase2-p0-ui-fixes`
+- Commit：`98df6c782346b01dc6f66d3b4692786c32e133e1`
+- 僅修改 `templates/v9-pro-react-template.html` 的 `t2` 熱圖繪製函式。
+- 手機版取消矩陣上方擠壓的欄名，改由左側列標籤辨識欄位；依畫布寬高動態縮放儲存格，並預留右側色階空間。
+- 相關性數值、矩陣資料及色彩映射邏輯未更動。
+
+### 測試證據
+- GitHub Actions Run `41309915998`：Success；Builder offline self-tests、React template regression、DATA_REPORT parser regression、JSON build、非部署預覽及隔離有效矩陣 Fixture 均成功。
+- Run URL：`https://github.com/grichtoyang/daily-premarket/actions/runs/41309915998`。
+- 隔離 Artifact：`V9-Correlation-Heatmap-Test-Fixture`，Artifact ID `13084587818`；只含合成測試資料，標示不得部署。
+- 使用者提供最新版 Android 手機截圖：8×8 矩陣完整顯示；列標籤清楚、數值可讀、色階與 1.0／-1.0 刻度可見；未見先前欄名重疊問題。手機有效樣本熱圖視覺 PASS。
+
+### 最新狀態
+| 項目 | 狀態 |
+|---|---|
+| 樣本不足 0/5 手機狀態 | PASS |
+| 有效樣本 8×8 熱圖手機渲染（合成資料） | PASS |
+| 手機矩陣標籤／數值／色階排版 | PASS |
+| CI 回歸測試與隔離 Fixture 產生 | PASS |
+| 真實歷史資料達標時的矩陣內容與統計正確性 | NOT TESTED（合成資料僅驗證 UI 渲染） |
+| 桌面視覺 | NOT TESTED |
+| 正式部署／Merge／Cherry-pick | NOT DONE |
+| DATA-UI-03／04、V8、Master | 本輪未修改 |
+
+### 下一步
+DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已驗收。若要進一步驗證真實歷史資料相關係數，須使用正式資料自然累積的有效樣本；不得將合成 Fixture 寫入正式歷史資料。桌面視覺仍未測試。部署或合併須另行取得使用者明確授權。
