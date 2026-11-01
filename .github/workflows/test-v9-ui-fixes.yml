@@ -54,12 +54,12 @@ jobs:
       - name: Build dashboard JSON and verify borrowed securities fields
         run: |
           set -euo pipefail
-          python scripts/v9_pro_builder.py --data_report "data_reports/DATA_REPORT_20261030.md" --out "/tmp/v9-ui-fixes-data.json" --date "20261030"
-          python -m json.tool /tmp/v9-ui-fixes-data.json > /dev/null
+          python scripts/v9_pro_builder.py --data_report "data_reports/DATA_REPORT_20261030.md" --out "dashboards/v9-ui-fixes-data.json" --date "20261030"
+          python -m json.tool dashboards/v9-ui-fixes-data.json > /dev/null
           python - <<'PY'
           import json
           from pathlib import Path
-          data = json.loads(Path("/tmp/v9-ui-fixes-data.json").read_text(encoding="utf-8"))
+          data = json.loads(Path("dashboards/v9-ui-fixes-data.json").read_text(encoding="utf-8"))
           margin = data["margin"]
           assert margin["borrowedSell"] == 36178.0, margin
           assert margin["borrowedSellDiff"] == -1273.0, margin
