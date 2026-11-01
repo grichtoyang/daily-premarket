@@ -696,6 +696,17 @@ def parse_data_report(report_path):
     pcr=optional_get(r"Put／Call Ratio \| ([0-9.]+) \|"); call_wall=must_get(r"Call Wall 價位 \| ([0-9,]+) \|","Call Wall")
     put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|"); gamma_wall=must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|","Gamma Wall")
     gamma_flip=must_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|","Gamma Flip"); max_pain=must_get(r"Max Pain 價位 \| ([0-9,]+) \|","Max Pain")
+    gex_payload_match=re.search(r"GEX_LEVELS_JSON.*?```json\s*(\{.*?\})\s*```", text, re.S)
+    gex_payload={}
+    if gex_payload_match:
+        try:
+            candidate=json.loads(gex_payload_match.group(1))
+            if isinstance(candidate,dict) and candidate.get('date')==t0_date and isinstance(candidate.get('levels'),list):
+                gex_payload=candidate
+        except (json.JSONDecodeError, TypeError):
+            gex_payload={}
+    gex_levels=gex_payload.get('levels',[])
+    gex_status='available' if gex_levels and gex_payload.get('net_gex_1pct') is not None and gex_payload.get('gross_gex_1pct') is not None else 'unavailable'
     call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 17．選擇權法人日盤、夜盤交易")
     opt_inst_force_table=parse_table("#### 法人多空力道表")
     opt_top10_tables=parse_tables("### 18．選擇權前十大")
@@ -741,7 +752,7 @@ def parse_data_report(report_path):
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
         'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
-        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'top10Call': opt_top10_call, 'top10Put': opt_top10_put},
+        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'top10Call': opt_top10_call, 'top10Put': opt_top10_put},
         'news': news_events,
     }
 
@@ -1159,6 +1170,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
         'options': {
             'callVol': parsed['options']['callVol'], 'callOi': parsed['options']['callOi'], 'putVol': parsed['options']['putVol'], 'putOi': parsed['options']['putOi'],
             'pcr': parsed['options']['pcr'], 'callWall': parsed['options']['callWall'], 'putWall': parsed['options']['putWall'], 'gammaWall': parsed['options']['gammaWall'], 'flip': parsed['options']['flip'], 'maxPain': parsed['options']['maxPain'],
+            'netGex1pct': parsed['options']['netGex1pct'], 'grossGex1pct': parsed['options']['grossGex1pct'], 'gexLevels': parsed['options']['gexLevels'], 'gexDate': parsed['options']['gexDate'], 'gexStatus': parsed['options']['gexStatus'],
             'callOiDist': parsed['options']['callOiDist'], 'putOiDist': parsed['options']['putOiDist'], 'instOpt': parsed['options']['instOpt'],
             'instOptForce': parsed['options']['instOptForce'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put']
         },
