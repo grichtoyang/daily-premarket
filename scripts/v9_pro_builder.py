@@ -194,6 +194,7 @@ def _ensure_history_table(conn, table_name):
         'gex':'REAL','put_wall':'INTEGER','vix':'REAL','rsi':'REAL',
         'macd':'REAL','k':'REAL','d':'REAL','next_day_pct':'REAL',
         'factor_wins':'TEXT',
+        'correlation_eligible':'INTEGER',
         'created_at':'TIMESTAMP'
     }
     existing={row[1] for row in conn.execute(f"PRAGMA table_info({table_name})").fetchall()}
@@ -249,6 +250,80 @@ def _normalize_t0_date(t0_date):
     except (TypeError, ValueError):
         raise ValueError(f"Invalid T0 date {t0_date!r}; expected YYYYMMDD")
 
+def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min_samples=5, lookback=60):
+    """Build a Pearson matrix only from complete, explicitly eligible V9 history rows."""
+    fields = [
+        ("大盤漲跌幅", "spot_pct"),
+        ("外資現貨", "foreign_spot"),
+        ("外資期貨", "foreign_fut"),
+        ("選擇權 PCR", "pcr"),
+        ("VIX", "vix"),
+        ("RSI", "rsi"),
+        ("KD-K", "k"),
+        ("KD-D", "d"),
+    ]
+    conn = None
+    try:
+        conn = init_db(db_path)
+        if not conn:
+            return {"labels": [], "matrix": [], "desc": "歷史資料庫不可用，相關性未計算"}
+        rows = conn.execute(
+            "SELECT " + ",".join(column for _, column in fields) +
+            " FROM v9_pro_history WHERE correlation_eligible=1 "
+            "ORDER BY date DESC LIMIT ?", (int(lookback),)
+        ).fetchall()
+        conn.close()
+        conn = None
+        valid = []
+        for row in reversed(rows):
+            values = []
+            for value in row:
+                try:
+                    number = float(value)
+                    if not math.isfinite(number):
+                        raise ValueError("non-finite")
+                    values.append(number)
+                except (TypeError, ValueError):
+                    values = []
+                    break
+            if values:
+                valid.append(values)
+        if len(valid) < min_samples:
+            return {
+                "labels": [], "matrix": [],
+                "desc": f"完整且通過資料品質檢查的歷史樣本 {len(valid)}/{min_samples} 筆；累積足夠後顯示熱圖"
+            }
+        columns = list(zip(*valid))
+        # Constant series have undefined Pearson correlation and are omitted.
+        keep = []
+        for index, values in enumerate(columns):
+            if max(values) - min(values) > 1e-12:
+                keep.append(index)
+        if len(keep) < 2:
+            return {"labels": [], "matrix": [], "desc": "有效歷史欄位不足 2 項或欄位無變異，相關性未計算"}
+        labels = [fields[index][0] for index in keep]
+        matrix = []
+        for i in keep:
+            row_values = []
+            x = [sample[i] for sample in valid]
+            mean_x = sum(x) / len(x)
+            dx = [value - mean_x for value in x]
+            for j in keep:
+                y = [sample[j] for sample in valid]
+                mean_y = sum(y) / len(y)
+                dy = [value - mean_y for value in y]
+                denominator = math.sqrt(sum(v*v for v in dx) * sum(v*v for v in dy))
+                corr = sum(a*b for a, b in zip(dx, dy)) / denominator if denominator else None
+                row_values.append(round(max(-1.0, min(1.0, corr)), 4) if corr is not None else None)
+            matrix.append(row_values)
+        return {"labels": labels, "matrix": matrix, "desc": f"Pearson 相關係數｜完整有效樣本 {len(valid)} 筆｜最近 {lookback} 筆"}
+    except (sqlite3.Error, OSError, ValueError) as e:
+        return {"labels": [], "matrix": [], "desc": f"相關性資料讀取失敗：{type(e).__name__}"}
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 def save_today_to_db(bias, signals, tech, t0_date, db_path="dashboards/v9_pro_history.db"):
     try:
         date_str=_normalize_t0_date(t0_date)
@@ -260,10 +335,23 @@ def save_today_to_db(bias, signals, tech, t0_date, db_path="dashboards/v9_pro_hi
             print(f"[V9-17F] V9 DB T0 {date_str} already exists, skip")
             conn.close(); return True
         table='v9_pro_history'
+        corr_fields = (
+            signals.get('spot_pct'), signals.get('foreign'), signals.get('foreign_futures'),
+            signals.get('pcr'), signals.get('vix'), tech.get('rsi'), tech.get('k'), tech.get('d')
+        )
+        correlation_eligible = int(all(
+            value is not None and str(value).strip() != "" and math.isfinite(float(value))
+            for value in corr_fields
+        ))
         conn.execute(f"""
-            INSERT INTO {table} (date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """, (date_str,bias,signals.get('spot_close',0),signals.get('spot_pct',0),signals.get('foreign',0),signals.get('foreign_futures',0),signals.get('pcr',0),signals.get('gex',0),signals.get('put_wall',0),signals.get('vix',0),tech.get('rsi'),tech.get('macd'),tech.get('k'),tech.get('d')))
+            INSERT INTO {table} (
+                date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d,correlation_eligible
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            date_str,bias,signals.get('spot_close'),signals.get('spot_pct'),signals.get('foreign'),
+            signals.get('foreign_futures'),signals.get('pcr'),signals.get('gex'),signals.get('put_wall'),
+            signals.get('vix'),tech.get('rsi'),tech.get('macd'),tech.get('k'),tech.get('d'),correlation_eligible
+        ))
         conn.commit(); conn.close()
         print(f"[V9-17F] DB saved T0 {date_str} bias={bias}")
         return True
@@ -1080,7 +1168,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'look': analyzer.gen_bias_card()['look'], 'compass': analyzer.gen_bias_card()['compass'], 'target': analyzer.gen_bias_card()['target'],
             'cards': cards_41,
             'cards_41_count': len(cards_41),
-            'correlation': {'labels': [], 'matrix': [], 'desc': "歷史日期對齊樣本不足，相關性未計算"},
+            'correlation': calculate_historical_correlation(),
             'levels': ([{'t':"R3 高點", 'v': int(spot['high']), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"}, {'t':"S1 低點", 'v': int(spot['low']), 'type':"S"}] + ([{'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"}] if parsed['options']['putWall'] is not None else []) + ([{'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}] if parsed['options']['flip'] is not None else [])),
             'historical': historical,
             'db_status': db_status
