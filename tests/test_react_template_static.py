@@ -52,6 +52,20 @@ class ReactTemplateStaticTests(unittest.TestCase):
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_option_pcr_card_shows_call_put_volume_structure(self):
+        self.assertIn('function yf({callVol:e,putVol:n,height:l=200})', self.html)
+        self.assertIn('title:"PCR／成交量結構"', self.html)
+        self.assertIn('chart:p(yf,{callVol:n.callVol,putVol:n.putVol,height:200})', self.html)
+        self.assertIn('Call 成交量占比', self.html)
+        self.assertIn('Put 成交量', self.html)
+        self.assertIn('成交量只呈現 Call／Put 相對結構，不直接代表多空方向', self.html)
+        self.assertIn('Call OI', self.html)
+        self.assertIn('Put OI', self.html)
+        self.assertIn('PCR 是 Put／Call 比值；成交量反映當日交易活躍度，OI 反映未平倉部位', self.html)
+        self.assertNotIn('title:"Call/Put Vol OI PCR"', self.html)
+        self.assertNotIn('label:`上市 ${g(e)}億', self.html)
+        self.assertNotIn('label:`上櫃 ${g(n)}億', self.html)
+
     def test_known_hardcoded_market_samples_are_absent(self):
         forbidden = (
             "-86043", "85052", "48600", "1972口", "48500", "53500", "47000",
