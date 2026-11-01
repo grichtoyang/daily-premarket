@@ -497,3 +497,18 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 觀察結果：8×8 矩陣完整顯示；列標籤與數值無明顯重疊；正負相關色彩可辨；右側色階及上下限刻度可見；熱圖卡片未破壞雙欄排列。
 - 寬版／雙欄畫面視覺驗收 PASS。因截圖寬度為 911px，不將此結果擴大宣稱為大型桌面螢幕（例如 1440px）驗收；大型桌面視覺 NOT TESTED。
 - 本次僅依使用者截圖驗收，未修改程式、正式資料或部署狀態。
+
+
+## 19. 2026-11-01 UI 修正分支與 P0 基底差異審查
+
+- Repository：`grichtoyang/daily-premarket`。
+- Base：`phase2-p0-data-quality`，HEAD `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`。
+- Head：`phase2-p0-ui-fixes`，HEAD `98df6c782346b01dc6f66d3b4692786c32e133e1`。
+- Compare：ahead 31、behind 0；merge base 即 P0 HEAD。
+- 僅 5 個檔案變更：`.github/workflows/test-v9-ui-fixes.yml`、`scripts/v9_pro_builder.py`、`templates/v9-pro-react-template.html`、`tests/test_builder_option_tables.py`、`tests/test_react_template_static.py`。
+- 變更範圍涵蓋先前 DATA-UI-01／02（借券欄位、選擇權法人數字解析）及 DATA-UI-05（歷史相關性計算與熱圖呈現），沒有發現額外檔案變更。
+- Workflow 已讀取完整內容：僅對 `phase2-p0-ui-fixes` 觸發；`contents: read`；執行離線測試、JSON 驗證、非部署 HTML 預覽及 Artifact 上傳；未見 Pages 部署、正式產物推送或合併步驟。
+- P0 branch HEAD 維持 `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`；master HEAD 維持 `0ac95b2521e7bdcb357431cc7725da4e2c26e602`；V8 備份分支未修改（本次未比較其內容）。
+- 差異審查結果 PASS（檔案範圍及 Workflow 靜態審查）；未執行 Merge／Rebase／Cherry-pick／Deploy。
+- DATA-UI-05 真實歷史相關性仍 BLOCKED（有效樣本不足）；大尺寸桌面 1440px 視覺 NOT TESTED；本機／OpenCode 工作目錄狀態 NOT TESTED。
+- Auditor 為單模型自我審查，非獨立多模型審核。
