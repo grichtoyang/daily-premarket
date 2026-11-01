@@ -37,6 +37,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         # The chart must render both session fields, not just the daytime field.
         self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"日"}', self.html)
         self.assertIn('{l:String(x[0])+"夜",v:v9ProOptionNetNumber(x[6]),extra:"夜"}', self.html)
+        self.assertIn('height:390}),table:p("div",{className:"text-[10px] mono space-y-1"', self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
         match = re.search(r"function v9ProOptionNetNumber\(e\)\{[^}]+\}", self.html)
         self.assertIsNotNone(match, "Chart number normalizer v9ProOptionNetNumber must exist")
