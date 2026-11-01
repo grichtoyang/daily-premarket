@@ -1,6 +1,6 @@
 import unittest
 
-from src.sources.taifex import _sync_gamma_unavailable
+from src.sources.taifex import _gamma_status, _sync_gamma_unavailable
 
 
 class GammaFallbackAvailabilityTests(unittest.TestCase):
@@ -18,6 +18,29 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         unavailable = ["gamma_wall", "gamma_flip"]
         result = _sync_gamma_unavailable(unavailable, None, None)
         self.assertEqual(result, unavailable)
+
+    def test_primary_502_with_proxy_values_is_not_unavailable(self):
+        unavailable, notes = _gamma_status(
+            [], True, 44500, 44049.22, "options-market-structure-compact (proxy)"
+        )
+        self.assertEqual(unavailable, [])
+        self.assertEqual(len(notes), 1)
+        self.assertIn("原始端點不可用", notes[0])
+        self.assertIn("備援取得", notes[0])
+        self.assertNotIn("unavailable", notes[0])
+
+    def test_partial_proxy_marks_only_missing_field_unavailable(self):
+        unavailable, notes = _gamma_status([], True, 44500, None, "compact proxy")
+        self.assertEqual(unavailable, ["gamma_flip"])
+        self.assertEqual(len(notes), 2)
+        self.assertIn("Wall 有值", notes[0])
+        self.assertIn("Gamma Flip 無資料", notes[1])
+
+    def test_primary_and_proxy_failure_marks_both_unavailable(self):
+        unavailable, notes = _gamma_status([], True, None, None, "compact proxy")
+        self.assertEqual(unavailable, ["gamma_wall", "gamma_flip"])
+        self.assertEqual(len(notes), 2)
+        self.assertTrue(all("unavailable" in note for note in notes))
 
 
 if __name__ == "__main__":
