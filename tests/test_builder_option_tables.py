@@ -28,6 +28,18 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertIn("買權", options["top10Call"][1][0])
         self.assertIn("賣權", options["top10Put"][1][0])
 
+    def test_borrowed_securities_balance_and_change_preserve_scope(self):
+        report = ROOT / "data_reports" / "DATA_REPORT_20261030.md"
+        parsed = parse_data_report(report)
+        margin = parsed["margin"]
+
+        self.assertEqual(margin["borrowed_sell"], 36178.0)
+        self.assertEqual(margin["borrowed_sell_diff"], -1273.0)
+        self.assertEqual(
+            margin["borrowed_sell_diff_scope"],
+            "上櫃（上市 TWT93U 未取得）",
+        )
+
 
     def test_stale_margin_ratio_provenance_is_not_current_t0(self):
         # Use an explicit stale-source fixture. The checked-in DATA_REPORT is
