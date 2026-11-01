@@ -5,7 +5,8 @@ https://taifex.grichtoyang.workers.dev/
   futures-institutional-oi[-history]、futures-options-chain、
   options-delta、options-key-levels、options-market-structure-compact、
   options-institutional[-after-hours]、options-after-hours
-(gamma-levels 上游 502，Gamma Wall/Flip 標 unavailable)
+(gamma-levels 上游 502；Gamma Wall/Flip 改由 options-market-structure-compact 備援，
+  備援成功時保留數值並記錄原始端點故障；備援也失敗才標 unavailable)
 
 金額欄位單位：千元 (→億元 /1e5)。近月 = 日盤成交量最大契約。
 前十大交易人走 taifex_official (proxy 優先)。
