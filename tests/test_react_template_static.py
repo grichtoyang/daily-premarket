@@ -34,7 +34,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn(".borrowed-sbl-table > div > span:last-child { flex-shrink: 0; white-space: nowrap; }", self.html)
 
     def test_option_institutional_chart_parses_signed_thousands(self):
-        self.assertIn("v:v9ProOptionNetNumber(x[3])", self.html)
+        self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"日"}', self.html)
+        self.assertIn('{l:String(x[0])+"夜",v:v9ProOptionNetNumber(x[6]),extra:"夜"}', self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
         match = re.search(r"function v9ProOptionNetNumber\(e\)\{[^}]+\}", self.html)
         self.assertIsNotNone(match, "Chart number normalizer v9ProOptionNetNumber must exist")
