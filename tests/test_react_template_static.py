@@ -28,15 +28,15 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("借券賣出增減｜", self.html)
 
     def test_option_institutional_chart_parses_signed_thousands(self):
-        self.assertIn("v:parseOptNetValue(x[3])", self.html)
+        self.assertIn("v:v9ProOptionNetNumber(x[3])", self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
-        match = re.search(r"function parseOptNetValue\(e\)\{[^}]+\}", self.html)
-        self.assertIsNotNone(match, "Chart number normalizer parseOptNetValue must exist")
+        match = re.search(r"function v9ProOptionNetNumber\(e\)\{[^}]+\}", self.html)
+        self.assertIsNotNone(match, "Chart number normalizer v9ProOptionNetNumber must exist")
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for chart number parsing tests")
         script = (
             match.group(0)
-            + ';const actual=[parseOptNetValue("+6,624"),parseOptNetValue("-4,937"),parseOptNetValue("0"),parseOptNetValue(null),parseOptNetValue(""),parseOptNetValue("not-a-number")];'
+            + ';const actual=[v9ProOptionNetNumber("+6,624"),v9ProOptionNetNumber("-4,937"),v9ProOptionNetNumber("0"),v9ProOptionNetNumber(null),v9ProOptionNetNumber(""),v9ProOptionNetNumber("not-a-number")];'
             + 'const expected=[6624,-4937,0,null,null,null];'
             + 'if(JSON.stringify(actual)!==JSON.stringify(expected)){console.error(actual);process.exit(1)}'
         )
