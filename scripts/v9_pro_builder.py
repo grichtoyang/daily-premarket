@@ -79,21 +79,19 @@ def fetch_finmind_twii_14d():
 
 def fetch_db_history_14d():
     try:
-        for p in [pathlib.Path("dashboards/v8_pro_history.db"), pathlib.Path("dashboards/v9_pro_history.db"), pathlib.Path("/tmp/dashboards/v8_pro_history.db")]:
+        for p in [pathlib.Path("dashboards/v9_pro_history.db"), pathlib.Path("/tmp/dashboards/v9_pro_history.db")]:
             if p.exists():
                 conn = sqlite3.connect(str(p))
-                rows = conn.execute("SELECT spot_close FROM v8_pro_history ORDER BY date DESC LIMIT 30").fetchall()
-                if not rows:
-                    rows = conn.execute("SELECT spot_close FROM v9_pro_history ORDER BY date DESC LIMIT 30").fetchall()
+                rows = conn.execute("SELECT spot_close FROM v9_pro_history ORDER BY date DESC LIMIT 30").fetchall()
                 conn.close()
                 if len(rows) >=14:
                     valid = [{'close': float(r[0]), 'high': None, 'low': None, 'ts': None} for r in reversed(rows)]
                     print(f"[V9-17F] DB fallback {len(valid)} days from {p}")
                     return valid
-        print("[V9-17F] DB not found for fallback")
+        print("[V9-17F] V9 DB not found for fallback")
         return None
     except Exception as e:
-        print(f"[V9-17F] DB fallback exception: {e}")
+        print(f"[V9-17F] V9 DB fallback exception: {e}")
         return None
 
 def calc_rsi(closes, period=14):
@@ -167,7 +165,7 @@ def fetch_technical_indicators_with_fallback():
 # ===== SQLite真DB + 歷史相似度 + 無DB回退 =====
 def _ensure_history_table(conn, table_name):
     """Create or migrate a history table without hiding non-schema database errors."""
-    if table_name not in ('v9_pro_history','v8_pro_history'):
+    if table_name != 'v9_pro_history':
         raise ValueError(f"Unsupported history table: {table_name}")
     conn.execute(f"""
         CREATE TABLE IF NOT EXISTS {table_name} (
@@ -206,26 +204,12 @@ def _ensure_history_table(conn, table_name):
             conn.execute(f"ALTER TABLE {table_name} ADD COLUMN {column} {sql_type}")
 
 def init_db(db_path="dashboards/v9_pro_history.db"):
-    """Initialize/migrate the complete V9/V8 schema; never return a partial fallback DB."""
+    """Initialize the V9-only history schema; never return a partial fallback DB."""
     conn=None
     try:
         pathlib.Path(db_path).parent.mkdir(parents=True, exist_ok=True)
         conn=sqlite3.connect(db_path)
         _ensure_history_table(conn,'v9_pro_history')
-        _ensure_history_table(conn,'v8_pro_history')
-        # V9 is the canonical read/write history. Merge legacy V8 rows into it
-        # after both schemas are ready; INSERT OR IGNORE preserves any V9 row
-        # already recorded for the same T0 date.
-        history_columns=(
-            'date','bias','spot_close','spot_pct','foreign_spot','foreign_fut',
-            'pcr','gex','put_wall','vix','rsi','macd','k','d',
-            'next_day_pct','factor_wins','created_at'
-        )
-        column_sql=','.join(history_columns)
-        conn.execute(
-            f"INSERT OR IGNORE INTO v9_pro_history ({column_sql}) "
-            f"SELECT {column_sql} FROM v8_pro_history"
-        )
         conn.execute("""
             CREATE TABLE IF NOT EXISTS factor_performance (
                 factor TEXT PRIMARY KEY,
@@ -246,18 +230,11 @@ def init_db(db_path="dashboards/v9_pro_history.db"):
 
 def get_db_status(db_path="dashboards/v9_pro_history.db"):
     try:
-        for p in [pathlib.Path(db_path), pathlib.Path("dashboards/v8_pro_history.db"), pathlib.Path("/tmp/dashboards/v9_pro_history.db")]:
+        for p in [pathlib.Path(db_path), pathlib.Path("/tmp/dashboards/v9_pro_history.db")]:
             if p.exists():
                 conn=sqlite3.connect(str(p))
-                try:
-                    count=conn.execute("SELECT COUNT(*) FROM v9_pro_history").fetchone()[0]
-                except sqlite3.OperationalError:
-                    count=conn.execute("SELECT COUNT(*) FROM v8_pro_history").fetchone()[0]
-                try:
-                    filled=conn.execute("SELECT COUNT(*) FROM v9_pro_history WHERE next_day_pct IS NOT NULL").fetchone()[0]
-                except sqlite3.OperationalError:
-                    try: filled=conn.execute("SELECT COUNT(*) FROM v8_pro_history WHERE next_day_pct IS NOT NULL").fetchone()[0]
-                    except sqlite3.OperationalError: filled=0
+                count=conn.execute("SELECT COUNT(*) FROM v9_pro_history").fetchone()[0]
+                filled=conn.execute("SELECT COUNT(*) FROM v9_pro_history WHERE next_day_pct IS NOT NULL").fetchone()[0]
                 conn.close()
                 return {'exists':True,'rows':count,'filled':filled,'mode':'db' if count>=3 else 'no-db-partial','path':str(p)}
         return {'exists':False,'rows':0,'filled':0,'mode':'no-db','path':''}
@@ -278,14 +255,10 @@ def save_today_to_db(bias, signals, tech, t0_date, db_path="dashboards/v9_pro_hi
         conn=init_db(db_path)
         if not conn: return False
         # T0 report date is authoritative; do not use runner's wall-clock date.
-        for table in ('v9_pro_history','v8_pro_history'):
-            try:
-                existing=conn.execute(f"SELECT date FROM {table} WHERE date=?", (date_str,)).fetchone()
-            except sqlite3.OperationalError:
-                continue
-            if existing:
-                print(f"[V9-17F] DB T0 {date_str} exists in {table}, skip")
-                conn.close(); return True
+        existing=conn.execute("SELECT date FROM v9_pro_history WHERE date=?", (date_str,)).fetchone()
+        if existing:
+            print(f"[V9-17F] V9 DB T0 {date_str} already exists, skip")
+            conn.close(); return True
         table='v9_pro_history'
         conn.execute(f"""
             INSERT INTO {table} (date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d)
@@ -308,22 +281,16 @@ def update_next_day_pct(t0_date, t0_spot_close, db_path="dashboards/v9_pro_histo
             return False
         conn=init_db(db_path)
         if not conn: return False
-        candidates=[]
-        for candidate_table in ('v9_pro_history','v8_pro_history'):
-            try:
-                candidate=conn.execute(
-                    f"SELECT date,spot_close,next_day_pct FROM {candidate_table} WHERE date<? AND spot_close>0 ORDER BY date DESC LIMIT 1",
-                    (t0_iso,)
-                ).fetchone()
-                if candidate:
-                    candidates.append((candidate[0],candidate[1],candidate[2],candidate_table))
-            except sqlite3.OperationalError:
-                continue
-        if not candidates:
+        previous=conn.execute(
+            "SELECT date,spot_close,next_day_pct FROM v9_pro_history WHERE date<? AND spot_close>0 ORDER BY date DESC LIMIT 1",
+            (t0_iso,)
+        ).fetchone()
+        if not previous:
             conn.close(); return False
-        # Only label the immediately latest prior history row. Never skip a
+        # Only label the immediately latest prior V9 history row. Never skip a
         # previously labeled row and apply today's return to an older date.
-        previous_date,previous_close,already_labeled,table=max(candidates,key=lambda item:item[0])
+        previous_date,previous_close,already_labeled=previous
+        table='v9_pro_history'
         if already_labeled is not None:
             print(f"[V9-17F] update_next_day skipped: latest prior row {previous_date} is already labeled")
             conn.close(); return False
@@ -341,10 +308,7 @@ def get_factor_win_rates_from_db(db_path="dashboards/v9_pro_history.db"):
     try:
         conn=init_db(db_path)
         if not conn: return None
-        try:
-            rows=conn.execute("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 60").fetchall()
-        except sqlite3.OperationalError:
-            rows=conn.execute("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v8_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 60").fetchall()
+        rows=conn.execute("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 60").fetchall()
         conn.close()
         wins={k:0 for k in ('spot_trend','foreign_spot','foreign_fut','pcr')}
         totals={k:0 for k in wins}
@@ -375,10 +339,7 @@ def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_histo
     try:
         conn=init_db(db_path)
         if not conn: return None
-        try:
-            rows=conn.execute("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
-        except sqlite3.OperationalError:
-            rows=conn.execute("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v8_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
+        rows=conn.execute("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
         conn.close()
         if len(rows)<3:
             print(f"[V9-17F] Historical insufficient {len(rows)}/3")
