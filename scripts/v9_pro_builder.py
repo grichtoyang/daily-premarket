@@ -583,6 +583,9 @@ def parse_data_report(report_path):
     margin_ratio_source_date=margin_provenance["source_date"]
     margin_ratio_status=margin_provenance["status"]
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
+    sbl_sold_balance=get_value(r"\| 借券賣出餘額 \| ([0-9,]+) \| 張",None)
+    sbl_sold_change=get_value(r"\| 借券賣出增減 \| ([-\\+0-9,]+) \| 張",None)
+    sbl_sold_change_scope=("上櫃（上市 TWT93U 未取得）" if re.search(r"借券賣出增減僅上櫃值",text) else "範圍未註明")
     listed_turnover=optional_get(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元"); otc_turnover=optional_get(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元"); total_turnover=optional_get(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元")
 
     fut_day_o=must_get(r"### 1．台指期近月日盤行情.*?開盤價 \| ([0-9,]+) \|","台指日盤開"); fut_day_h=must_get(r"### 1．台指期近月日盤行情.*?最高價 \| ([0-9,]+) \|","台指日盤高")
@@ -642,7 +645,7 @@ def parse_data_report(report_path):
         'usPct_full': usPct_full, 'asiaPct_full': asiaPct_full, 'futPct_full': futPct_full,
         'yieldPct_full': yieldPct_full, 'fxPct_full': fxPct_full, 'adrPct_full': adrPct_full, 'commPct_full': commPct_full,
         'spot': {'close': spot_close, 'open': spot_open, 'high': spot_high, 'low': spot_low, 'diff': spot_diff, 'pct': spot_pct, 'vol': spot_vol_raw, 'up': up, 'down': down, 'flat': flat, 'limit_up': limit_up, 'limit_down': limit_down, 'otc_up': otc_up, 'otc_down': otc_down, 'otc_flat': otc_flat, 'otc_limit_up': otc_limit_up, 'otc_limit_down': otc_limit_down},
-        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_name': margin_provenance["source"], 'ratio_source_date': margin_ratio_source_date, 'ratio_is_t0': margin_provenance["is_t0"], 'sbl': sbl_balance},
+        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_name': margin_provenance["source"], 'ratio_source_date': margin_ratio_source_date, 'ratio_is_t0': margin_provenance["is_t0"], 'sbl': sbl_balance, 'borrowed_sell': sbl_sold_balance, 'borrowed_sell_diff': sbl_sold_change, 'borrowed_sell_diff_scope': sbl_sold_change_scope},
         'turnover': {'listed': listed_turnover, 'otc': otc_turnover, 'total': total_turnover},
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
@@ -1058,7 +1061,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'spot5': spot5, 'spot5Dates': spot5Dates
         },
         'institutional': {'all': parsed['inst']['all'], 'foreign': parsed['inst']['foreign'], 'trust': parsed['inst']['trust'], 'dealer': parsed['inst']['dealer']},
-        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': f"{parsed['margin']['sbl']}張"},
+        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': f"{parsed['margin']['sbl']}張", 'borrowedSell': parsed['margin']['borrowed_sell'], 'borrowedSellDiff': parsed['margin']['borrowed_sell_diff'], 'borrowedSellDiffScope': parsed['margin']['borrowed_sell_diff_scope']},
         'turnover': parsed['turnover'],
         'tx': parsed['tx'],
         'futures': parsed['futures'],
