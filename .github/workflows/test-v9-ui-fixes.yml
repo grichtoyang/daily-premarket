@@ -69,3 +69,35 @@ jobs:
           print("BORROWED_SELL_CHANGE_SCOPE=PASS", margin["borrowedSellDiff"], margin["borrowedSellDiffScope"])
           print("OPTIONS_INSTITUTIONAL_TABLE=PASS")
           PY
+
+      - name: Generate non-deploy HTML preview
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          template_path = Path("templates/v9-pro-react-template.html")
+          data_path = Path("dashboards/v9-ui-fixes-data.json")
+          template = template_path.read_text(encoding="utf-8")
+          data = json.loads(data_path.read_text(encoding="utf-8"))
+          if "var vf=window.DASHBOARD_DATA;" not in template:
+              raise SystemExit("React template must consume injected DATA_REPORT JSON")
+          payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          injection = f"<script>window.DASHBOARD_DATA={payload};</script>" + chr(10)
+          if "</head>" not in template:
+              raise SystemExit("React template closing head missing")
+          html = template.replace("</head>", injection + "</head>", 1)
+          output = Path("artifacts/v9-pro-ui-fixes-preview-20261030.html")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(html, encoding="utf-8")
+          if "window.DASHBOARD_DATA=" not in html:
+              raise SystemExit("Preview data injection failed")
+          print("NON_DEPLOY_HTML_PREVIEW=PASS", output.stat().st_size)
+          PY
+
+      - name: Upload non-deploy HTML preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: V9-UI-Fixes-Preview-20261030
+          path: artifacts/v9-pro-ui-fixes-preview-20261030.html
+          if-no-files-found: error
