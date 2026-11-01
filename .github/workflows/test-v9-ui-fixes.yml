@@ -95,6 +95,53 @@ jobs:
           print("NON_DEPLOY_HTML_PREVIEW=PASS", output.stat().st_size)
           PY
 
+      - name: Generate isolated valid-correlation heatmap fixture
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          template = Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
+          data = json.loads(Path("dashboards/v9-ui-fixes-data.json").read_text(encoding="utf-8"))
+          labels = ["大盤漲跌幅", "外資現貨", "外資期貨", "選擇權 PCR", "VIX", "RSI", "KD-K", "KD-D"]
+          matrix = [
+              [1.00, 0.90, 0.75, -0.30, -0.65, 0.55, 0.40, 0.35],
+              [0.90, 1.00, 0.80, -0.25, -0.60, 0.50, 0.45, 0.40],
+              [0.75, 0.80, 1.00, -0.20, -0.50, 0.45, 0.35, 0.30],
+              [-0.30, -0.25, -0.20, 1.00, 0.35, -0.40, -0.20, -0.15],
+              [-0.65, -0.60, -0.50, 0.35, 1.00, -0.55, -0.35, -0.30],
+              [0.55, 0.50, 0.45, -0.40, -0.55, 1.00, 0.85, 0.80],
+              [0.40, 0.45, 0.35, -0.20, -0.35, 0.85, 1.00, 0.92],
+              [0.35, 0.40, 0.30, -0.15, -0.30, 0.80, 0.92, 1.00],
+          ]
+          assert len(matrix) == len(labels) == 8
+          assert all(len(row) == 8 for row in matrix)
+          data.setdefault("analysis", {})["correlation"] = {
+              "labels": labels,
+              "matrix": matrix,
+              "desc": "測試資料：8 個欄位、6 筆有效樣本（非正式歷史數據）"
+          }
+          payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          injection = f"<script>window.DASHBOARD_DATA={payload};</script>\\n"
+          if "var vf=window.DASHBOARD_DATA;" not in template or "</head>" not in template:
+              raise SystemExit("React template data injection anchors missing")
+          html = template.replace("</head>", injection + "</head>", 1)
+          banner = '<div style="position:fixed;z-index:99999;top:8px;left:8px;background:#7f1d1d;color:white;padding:8px 12px;border-radius:8px;font:12px sans-serif">測試資料預覽｜非正式歷史數據｜不得部署</div>'
+          html = html.replace("</body>", banner + "</body>", 1)
+          output = Path("artifacts/v9-pro-correlation-fixture.html")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(html, encoding="utf-8")
+          print("CORRELATION_FIXTURE_HTML=PASS", output.stat().st_size)
+          print("FIXTURE_MATRIX=8x8; SYNTHETIC_SAMPLE_COUNT=6; PRODUCTION_DB=UNCHANGED")
+          PY
+
+      - name: Upload isolated correlation fixture artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: V9-Correlation-Heatmap-Test-Fixture
+          path: artifacts/v9-pro-correlation-fixture.html
+          if-no-files-found: error
+
       - name: Upload non-deploy HTML preview artifact
         uses: actions/upload-artifact@v4
         with:
