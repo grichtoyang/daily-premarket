@@ -30,7 +30,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_option_institutional_chart_parses_signed_thousands(self):
         self.assertIn("v:qn(x[3])", self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
-        match = re.search(r"function qn\\(e\\)\\{[^}]+\\}", self.html)
+        match = re.search(r"function qn\(e\)\{[^}]+\}", self.html)
         self.assertIsNotNone(match, "Chart number normalizer qn must exist")
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for chart number parsing tests")
