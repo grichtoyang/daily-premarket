@@ -3,8 +3,8 @@
     "version": "v9-pro-17F",
     "skill": "daily-premarket-analysis-v9-pro",
     "date": "2026-10-30",
-    "report_date": "2026-10-31",
-    "generated_at": "2026-10-31 22:52:48",
+    "report_date": "2026-11-01",
+    "generated_at": "2026-11-01 12:23:06",
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
@@ -762,14 +762,14 @@
       },
       {
         "l": "Bitcoin",
-        "v": 0.24,
-        "close": 77381.15,
+        "v": 0.6,
+        "close": 77661.14,
         "raw": [
           "Bitcoin",
           "BTC-USD",
-          "77,381.15",
-          "182.94",
-          "+0.24",
+          "77,661.14",
+          "462.93",
+          "+0.60",
           "Yahoo Finance Chart API"
         ]
       }
@@ -899,7 +899,7 @@
       },
       {
         "l": "Bitcoin",
-        "v": 0.24
+        "v": 0.6
       }
     ]
   },
@@ -1505,7 +1505,7 @@
         "target": "Put Wall 45000.0；依有效價位及價格確認風險"
       },
       "行事曆": {
-        "look": "重大新聞11則，首則大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「",
+        "look": "重大新聞11則，首則二哥神話破滅？聯電兩天慘崩近13%、股民嘆「準備回60元」　",
         "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       },
@@ -1655,12 +1655,12 @@
         "target": "搭配外資現貨與期貨部位交叉觀察"
       },
       "商品": {
-        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': 2.08, 'close': 104.12, 'raw': ['WTI原油期貨', 'CL=F', '104.12', '2.12', '+2.08', 'Yahoo Finance Chart API']}, {'l': '黃金期貨', 'v': -3.29, 'close': 3898.9, 'raw': ['黃金期貨', 'GC=F', '3,898.90', '-132.50', '-3.29', 'Yahoo Finance Chart API']}, {'l': 'Bitcoin', 'v': 0.24, 'close': 77381.15, 'raw': ['Bitcoin', 'BTC-USD', '77,381.15', '182.94', '+0.24', 'Yahoo Finance Chart API']}]",
+        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': 2.08, 'close': 104.12, 'raw': ['WTI原油期貨', 'CL=F', '104.12', '2.12', '+2.08', 'Yahoo Finance Chart API']}, {'l': '黃金期貨', 'v': -3.29, 'close': 3898.9, 'raw': ['黃金期貨', 'GC=F', '3,898.90', '-132.50', '-3.29', 'Yahoo Finance Chart API']}, {'l': 'Bitcoin', 'v': 0.6, 'close': 77661.14, 'raw': ['Bitcoin', 'BTC-USD', '77,661.14', '462.93', '+0.60', 'Yahoo Finance Chart API']}]",
         "compass": "商品價格與通膨關係需搭配時間序列判讀",
         "target": "不以缺值或單日變動推定通膨方向"
       },
       "重大經濟數據": {
-        "look": "重大新聞11則，首則大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「",
+        "look": "重大新聞11則，首則二哥神話破滅？聯電兩天慘崩近13%、股民嘆「準備回60元」　",
         "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       }
@@ -1709,6 +1709,13 @@
   },
   "news": [
     {
+      "t": "二哥神話破滅？聯電兩天慘崩近13%、股民嘆「準備回60元」　不敗教主曝觀點：還是可以買",
+      "s": "Yahoo 台股；發布時間：2026-10-31T04:25:00Z；台北時間：2026-10-31 12:25",
+      "d": "[FTNN新聞網]記者陳宣穎／綜合報導晶圓二哥聯電（2303）法說會後股價狂跌，繼29日收在跌停價115.5元，30日再跌3.46%、收在111.5元，連2天跌幅達12.89%，此情...",
+      "time": "2026-10-31T04:25:00Z；台北時間：2026-10-31 12:25",
+      "link": ""
+    },
+    {
       "t": "大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「第一桶金300萬」急問致富秘訣",
       "s": "Yahoo 台股；發布時間：2026-10-30T13:45:00Z；台北時間：2026-10-30 21:45",
       "d": "[FTNN新聞網]記者林欣愉／綜合報導一名大三學生靠著打工、兼職家教，累積近100萬元資產，目前主要投資市值型ETF「富邦台50」（006208），長期目標是存滿100張...",
@@ -1737,13 +1744,6 @@
       "link": ""
     },
     {
-      "t": "中聯停工引爆沙拉油荒 經濟部：缺口仍大 協調業者年底擴量",
-      "s": "Yahoo 台股；發布時間：2026-10-30T09:42:55Z；台北時間：2026-10-30 17:42",
-      "d": "中聯致癌油事件停工後，對國內沙拉油供應衝擊未解。經濟部今（30）日證實，國內油品缺口仍然很大，因應食品業者用油需求，已責成台糖12月起每月再增產500噸，另協調油品進口商第四季多進口5000公噸。經濟部也呼籲地方政府及業者，讓合格檢驗的商品",
-      "time": "2026-10-30T09:42:55Z；台北時間：2026-10-30 17:42",
-      "link": ""
-    },
-    {
       "t": "Federal Reserve Board announces approval of application by The Bank of Nova Scotia",
       "s": "Federal Reserve；發布時間：Thu, 29 Oct 2026 20:30:00 GMT；台北時間：2026-10-30 04:30",
       "d": "Federal Reserve Board announces approval of application by The Bank of Nova Scotia",
@@ -1765,16 +1765,16 @@
       "link": ""
     },
     {
-      "t": "Anthropic's path to the Nasdaq just got a lot bumpier",
-      "s": "CNBC；發布時間：Sat, 31 Oct 2026 11:00:01 GMT；台北時間：2026-10-31 19:00",
-      "d": "Concerning projections from hyperscalers this week punished tech stocks and pushed the Nasdaq to its first three-week losing streak since March.",
+      "t": "We're in our 70s. Should we pay off our 2.5% mortgage &#x2014; or put the money in a high-yield savings account?",
+      "s": "MarketWatch；發布時間：Sat, 31 Oct 2026 19:00:00 GMT；台北時間：2026-11-01 03:00",
+      "d": "&#x201c;Let&#x2019;s say 10 years from now, when I&#x2019;m 84, we need a substantial amount of cash.&#x201d;",
       "time": "",
       "link": ""
     },
     {
-      "t": "Meta outlook revised downward by S&P on cash flow and capex concerns",
-      "s": "CNBC；發布時間：Fri, 30 Oct 2026 22:42:26 GMT；台北時間：2026-10-31 06:42",
-      "d": "Meta has been given a negative outlook by S&P Global Ratings due to the company's hefty capital expenditures and concerns about free cash flow.",
+      "t": "Anthropic's path to the Nasdaq just got a lot bumpier",
+      "s": "CNBC；發布時間：Sat, 31 Oct 2026 11:00:01 GMT；台北時間：2026-10-31 19:00",
+      "d": "Concerning projections from hyperscalers this week punished tech stocks and pushed the Nasdaq to its first three-week losing streak since March.",
       "time": "",
       "link": ""
     },
