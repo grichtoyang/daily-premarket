@@ -7,7 +7,7 @@ description: V9 Pro 台股每日盤前分析系統操作與維護規範。涵蓋
 
 ## 1. 文件適用範圍與優先原則
 
-本 Skill 僅適用於 V9 Pro 專案，不代表 Repository 內其他 V7/V8 或通用資料流程也屬於 V9 Pro。
+本 Skill 僅適用於 V9 Pro。V9 Pro 是唯一後續維護與執行版本；不得回退 V8、讀取 V8 資料庫、建立 V8 Schema，或保留 V8 相容／遷移路徑。
 
 修改前必須先讀取並檢查當前分支的實際程式，不可只依賴本文件中的歷史描述。若本文件與程式、Workflow 不一致，以當前程式的可驗證行為為準，並回報差異；不得自行假定文件描述一定正確。
 
@@ -29,7 +29,7 @@ description: V9 Pro 台股每日盤前分析系統操作與維護規範。涵蓋
 | Dashboard 與 JSON 輸出 | `dashboards/` |
 | 輸入分析報告 | `data_reports/DATA_REPORT_YYYYMMDD.md` |
 
-Repository 內另有 V7、V8 及其他工作流程；不可將它們當成 V9 Pro 的實作檔案。
+歷史 Repository 內容可能仍留有 V7/V8 檔案或舊工作流程，但它們不屬於 V9 Pro 執行鏈；V9 Pro 僅使用 v9_pro_history.db 與 v9_pro_history Schema。
 
 ## 3. 目前可確認的執行流程
 
