@@ -311,3 +311,30 @@ UI 專用 GitHub Actions：
 
 ### 11.5 下一步唯一指令
 先在 `phase2-p0-ui-fixes` 建立 T0 2026-10-30 的不部署預覽 HTML（從已驗證 DATA_REPORT 建立 JSON，再注入 React template），只供檢查 DATA-UI-01／02；不得推送 Pages、不得改 P0／master／V8。預覽生成後再由使用者檢查桌面及手機顯示，未完成視覺驗收前不得宣稱 Dashboard UI 最終驗收 PASS。
+
+
+## 12. 2026-11-01 非部署 HTML 預覽已產生
+
+> 本節覆蓋第 11.5 節「下一步產生預覽」的待辦狀態。
+
+- UI fixes branch 最新 HEAD：`2ee248dd21fa5ad9545c7c70d9e427f793721d7c`。
+- Workflow Run：`41301631710`（`V9 UI Fixes Regression`），Conclusion：Success。
+- 預覽生成步驟：PASS；使用 T0 2026-10-30 DATA_REPORT 產生 Builder JSON，再注入 React template。
+- Artifact：`V9-UI-Fixes-Preview-20261030`。
+- 檔案：`v9-pro-ui-fixes-preview-20261030.html`，88,133 bytes。
+- Artifact ID：`13081122728`。
+- Run URL：`https://github.com/grichtoyang/daily-premarket/actions/runs/41301631710`。
+- Artifact 到期時間：2027-01-30。
+- 本次只有上傳 GitHub Actions Artifact；未部署 Pages、未推送 Dashboard 產物到 P0／master、未 Merge。
+
+### 最新狀態
+- DATA-UI-01／02 程式與 JSON 回歸：PASS。
+- 非部署 HTML 預覽產生及上傳：PASS。
+- 桌面／手機實際瀏覽器視覺驗收：NOT TESTED，等待使用者檢查 Artifact。
+- P0 原分支 HEAD：`49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`（未變）。
+- master HEAD：`0ac95b2521e7bdcb357431cc7725da4e2c26e602`（未變）。
+- Recovery 文件分支更新前 HEAD：`4479bbafd893adb9bf37257a3d2e4ccb8c8ed960`。
+- 本機／OpenCode 工作目錄狀態仍為 NOT TESTED。
+
+### 下一個唯一工作
+請使用者開啟上述 GitHub Actions Run，下載 Artifact `V9-UI-Fixes-Preview-20261030`，檢查借券／券區塊及選擇權法人交易區塊的數字、單位、標籤與圖表；桌面與手機各檢查一次。回報結果後再處理必要視覺調整。不要部署、不要 Merge、不要修改 P0／master／V8。
