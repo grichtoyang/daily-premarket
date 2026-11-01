@@ -338,3 +338,33 @@ UI 專用 GitHub Actions：
 
 ### 下一個唯一工作
 請使用者開啟上述 GitHub Actions Run，下載 Artifact `V9-UI-Fixes-Preview-20261030`，檢查借券／券區塊及選擇權法人交易區塊的數字、單位、標籤與圖表；桌面與手機各檢查一次。回報結果後再處理必要視覺調整。不要部署、不要 Merge、不要修改 P0／master／V8。
+
+
+## 13. 2026-11-01 DATA-UI-01／02 手機版視覺驗收完成
+
+> 本節為最新驗收狀態，覆蓋前文「等待使用者檢查 Artifact」的待辦敘述。
+
+### 最新預覽版本
+- Repository：`grichtoyang/daily-premarket`
+- 修正分支：`phase2-p0-ui-fixes`
+- HEAD：`d0f644e661fc43596bc4886ae0fd92977891db17`
+- Workflow Run：`41303525878`，Success。
+- Artifact：`V9-UI-Fixes-Preview-20261030`，Artifact ID：`13082301670`，88,306 bytes。
+- 預覽 Run：`https://github.com/grichtoyang/daily-premarket/actions/runs/41303525878`。
+
+### 手機實際畫面驗收
+1. DATA-UI-01 借券／券：借券餘額、借券賣出、借券賣出增減、資料範圍及融券均正確顯示；手機版改為單欄排列，`-1,273 張` 與資料範圍標籤完整同列，沒有截圖可見的折行或重疊。PASS。
+2. DATA-UI-02 選擇權法人交易：圖表呈現日盤與夜盤各四筆資料；日盤為外資 +6,624、投信 -4,937、自營商 +1,342、合計 +3,029；夜盤為外資 -94、投信 0、自營商 -1,391、合計 -1,485。明細與圖表數值一致，手機畫面無明顯裁切或重疊。PASS。
+
+### 總驗收狀態
+- DATA-UI-01 手機視覺：PASS。
+- DATA-UI-02 手機視覺：PASS。
+- DATA-UI-01／02 程式與 CI：PASS（Run `41303525878`）。
+- 桌面視覺驗收：NOT TESTED。
+- DATA-UI-03／04／05：未修改，非本輪驗收範圍。
+- 尚未部署、尚未 Merge／Cherry-pick；P0 原分支、master、V8 未修改。
+- 本機／OpenCode 工作目錄狀態：NOT TESTED。
+- 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+桌面版視覺驗收尚未提供截圖；若使用者希望完整跨裝置驗收，需在桌面瀏覽器開啟同一 Artifact 並檢查 DATA-UI-01／02。未取得桌面證據前，不得宣稱桌面視覺 PASS。部署或合併仍須使用者另行明確授權。
