@@ -584,3 +584,32 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 
 - 官方參考：TAIFEX OpenAPI `https://openapi.taifex.com.tw/`；TAIFEX VIX／歷史資料說明 `https://www.taifex.com.tw/enl/eng9/tradersQAProducts`；TAIFEX 選擇權歷史行情下載 `https://www.taifex.com.tw/enl/eng3/optDailyMarketView?menuid1=03`。
 - 本次 Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 22. 2026-11-01 DATA-UI-03 GEX 資料鏈第一階段實作
+
+### 實作範圍
+- 實作分支：`phase2-p0-ui-fixes`；未修改 Master、P0 baseline 或 V8。
+- `src/sources/taifex.py`：保留既有 Gamma endpoint 已計算的 `levels`、`net_gex_1pct`、`gross_gex_1pct`、`gamma_diagnostics`、模型與品質欄位；逐履約價欄位依實際來源 schema（`call_gex_1pct`、`put_gex_1pct`、`net_gex_1pct`、`gross_gex_1pct`）驗證數值、有限值及正履約價，並排序。
+- Gamma 主端點回傳日期不符 T0 時拒收；compact proxy 只保留 Wall／Flip，不將 proxy 值冒充 GEX。GEX 明細不完整時狀態為 unavailable。
+- `src/fetch_data.py`：DATA_REPORT 新增 Net／Gross GEX、模型品質、履約價筆數、正負 Net GEX Top 5；附加衍生後逐履約價 GEX JSON 區塊，不包含原始報價。
+- `scripts/v9_pro_builder.py`：只接受日期與 DATA_REPORT T0 相符的 GEX JSON 區塊，並將摘要、日期、狀態及逐履約價資料輸出至 Dashboard JSON。
+- `templates/v9-pro-react-template.html`：原「IV / GEX 深度」卡改為「履約價 GEX 分布」，繪製逐履約價 Net GEX；缺資料時明確顯示 unavailable。
+- 新增逐履約價來源欄位驗證測試。
+
+### Commit／驗證
+- Source validation：`613ce0146b19db70859560c430ae470e81d267b6`；欄位 schema 修正：`dfba4b6bd6074551330fe8e24c8139f0f4f62f32`。
+- 測試：`4c95cdefa92db010e47c023a7196c639242b3c6c`。
+- DATA_REPORT：`0c2f6aa8c7b038664959ae8c93b92121e6ab5091`。
+- Builder JSON：`5125d66613b8e2ee21d09e914a299bac43779241`。
+- Dashboard UI：`833b0220ad87d768a6805d68f47e5447f590fcc9`。
+- GitHub Actions Run `41316484376`：Success；17F offline self-test、React template regression、DATA_REPORT parser regression、Dashboard JSON build、非部署 HTML preview 均通過。
+
+### 未完成／風險
+- **Live Gamma endpoint／當日 GEX 明細：NOT TESTED**；CI 的 DATA_REPORT／JSON build 成功不代表當日 Gamma endpoint 有資料。
+- Gamma payload 日期是否在正式端點穩定等於 T0，仍需以實際當日回應確認；不符時目前採 fail-closed。
+- Dashboard 真實 GEX 圖表視覺（手機／桌面）：NOT TESTED；尚待使用者實際畫面驗收。
+- IV Rank／TAIWAN VIX Rank／IV Term：NOT IMPLEMENTED。
+- Signed／Dealer GEX：BLOCKED；本次沒有新增方向估計模型，也沒有把 gross/net model output 宣稱為 dealer positioning。
+- Actions 增量耗時是否低於 10 秒：NOT TESTED。
+- 未 Merge／Rebase／Cherry-pick／Deploy；本次 Auditor 為單模型自我審查，非獨立多模型審核。
