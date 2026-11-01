@@ -213,6 +213,19 @@ def init_db(db_path="dashboards/v9_pro_history.db"):
         conn=sqlite3.connect(db_path)
         _ensure_history_table(conn,'v9_pro_history')
         _ensure_history_table(conn,'v8_pro_history')
+        # V9 is the canonical read/write history. Merge legacy V8 rows into it
+        # after both schemas are ready; INSERT OR IGNORE preserves any V9 row
+        # already recorded for the same T0 date.
+        history_columns=(
+            'date','bias','spot_close','spot_pct','foreign_spot','foreign_fut',
+            'pcr','gex','put_wall','vix','rsi','macd','k','d',
+            'next_day_pct','factor_wins','created_at'
+        )
+        column_sql=','.join(history_columns)
+        conn.execute(
+            f"INSERT OR IGNORE INTO v9_pro_history ({column_sql}) "
+            f"SELECT {column_sql} FROM v8_pro_history"
+        )
         conn.execute("""
             CREATE TABLE IF NOT EXISTS factor_performance (
                 factor TEXT PRIMARY KEY,
@@ -1267,6 +1280,26 @@ def run_17f_self_tests():
             required_columns={'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'}
             assert required_columns <= migrated_columns
             assert required_columns <= migrated_v8
+        # A V8-only legacy database must migrate historical rows into canonical V9.
+        with tempfile.TemporaryDirectory() as tmp:
+            legacy_v8_db=str(pathlib.Path(tmp)/"v8-only.db")
+            conn=sqlite3.connect(legacy_v8_db)
+            conn.execute("""CREATE TABLE v8_pro_history (
+                date TEXT PRIMARY KEY,bias INTEGER,spot_close REAL,spot_pct REAL,
+                foreign_spot REAL,foreign_fut INTEGER,pcr REAL,gex REAL,put_wall INTEGER,
+                vix REAL,rsi REAL,macd REAL,k REAL,d REAL,next_day_pct REAL,
+                factor_wins TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )""")
+            conn.execute("INSERT INTO v8_pro_history(date,bias,spot_close,spot_pct,next_day_pct) VALUES(?,?,?,?,?)",
+                         ('2026-10-27',49,23000.0,0.8,1.25))
+            conn.commit(); conn.close()
+            migrated=init_db(legacy_v8_db)
+            assert migrated is not None
+            legacy_row=migrated.execute(
+                "SELECT date,bias,spot_close,spot_pct,next_day_pct FROM v9_pro_history"
+            ).fetchone()
+            assert legacy_row==('2026-10-27',49,23000.0,0.8,1.25)
+            migrated.close()
         with tempfile.TemporaryDirectory() as tmp:
             invalid_db=str(pathlib.Path(tmp)/"invalid-schema.db")
             conn=sqlite3.connect(invalid_db)
