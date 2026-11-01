@@ -339,10 +339,13 @@ def save_today_to_db(bias, signals, tech, t0_date, db_path="dashboards/v9_pro_hi
             signals.get('spot_pct'), signals.get('foreign'), signals.get('foreign_futures'),
             signals.get('pcr'), signals.get('vix'), tech.get('rsi'), tech.get('k'), tech.get('d')
         )
-        correlation_eligible = int(all(
-            value is not None and str(value).strip() != "" and math.isfinite(float(value))
-            for value in corr_fields
-        ))
+        try:
+            correlation_eligible = int(all(
+                value is not None and str(value).strip() != "" and math.isfinite(float(value))
+                for value in corr_fields
+            ))
+        except (TypeError, ValueError, OverflowError):
+            correlation_eligible = 0
         conn.execute(f"""
             INSERT INTO {table} (
                 date,bias,spot_close,spot_pct,foreign_spot,foreign_fut,pcr,gex,put_wall,vix,rsi,macd,k,d,correlation_eligible
@@ -1337,6 +1340,36 @@ def run_17f_self_tests():
             conn.execute("CREATE TABLE v9_pro_history (bias INTEGER, spot_close REAL)")
             conn.commit(); conn.close()
             assert init_db(invalid_db) is None
+        # DATA-UI-05: correlation is hidden until five complete, quality-approved rows exist.
+        with tempfile.TemporaryDirectory() as tmp:
+            corr_db=str(pathlib.Path(tmp)/"correlation.db")
+            corr_conn=init_db(corr_db)
+            assert corr_conn is not None
+            corr_conn.execute(
+                "INSERT INTO v9_pro_history (date,spot_pct,foreign_spot,foreign_fut,pcr,vix,rsi,k,d,correlation_eligible) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                ("2026-10-01",1,2,3,0.8,18,40,20,25,1)
+            )
+            corr_conn.commit(); corr_conn.close()
+            insufficient=calculate_historical_correlation(corr_db)
+            assert insufficient["matrix"]==[] and "1/5" in insufficient["desc"]
+            corr_conn=sqlite3.connect(corr_db)
+            for day in range(2,7):
+                corr_conn.execute(
+                    "INSERT INTO v9_pro_history (date,spot_pct,foreign_spot,foreign_fut,pcr,vix,rsi,k,d,correlation_eligible) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                    (f"2026-10-0{day}",day,day*2,day*3,0.5+day/10,15+day,30+day,10+day,15+day,1)
+                )
+            # An incomplete row must never enter the matrix.
+            corr_conn.execute(
+                "INSERT INTO v9_pro_history (date,spot_pct,correlation_eligible) VALUES (?,?,?)",
+                ("2026-10-07",99,0)
+            )
+            corr_conn.commit(); corr_conn.close()
+            enough=calculate_historical_correlation(corr_db)
+            assert len(enough["labels"])==8 and len(enough["matrix"])==8
+            assert len(enough["matrix"][0])==8 and "5 筆" in enough["desc"]
+            assert abs(enough["matrix"][0][1]-1.0)<1e-9
         print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, v9-only-schema, invalid-schema-rejection, data-report-consistency")
         return 0
     except Exception:
