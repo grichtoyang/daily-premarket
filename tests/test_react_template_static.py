@@ -110,6 +110,17 @@ class ReactTemplateStaticTests(unittest.TestCase):
             "Standalone numeric sample arrays are not allowed in the React template",
         )
 
+
+    def test_three_scenario_paths_render_conditionally_without_probability_or_maxpain_target(self):
+        self.assertIn('function Pth({current:e,levels:n})', self.html)
+        self.assertIn('chart:p(Pth,{current:i.close,levels:{putWall:l.putWall,callWall:l.callWall,gammaWall:l.gammaWall,flip:l.flip}})', self.html)
+        self.assertIn('情境一｜偏多', self.html)
+        self.assertIn('情境二｜區間', self.html)
+        self.assertIn('情境三｜偏空', self.html)
+        self.assertIn('MaxPain 僅作磁吸參考，不當作跌破後的下跌目標', self.html)
+        self.assertIn('缺少位於現價正確方向的有效關鍵價位，暫不繪製延伸路徑', self.html)
+        self.assertNotIn('"加速至$",g(l.maxPain)', self.html)
+
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
