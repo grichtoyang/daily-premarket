@@ -200,3 +200,60 @@ P0 Dashboard：
 
 ### 9.5 下一個唯一工作
 先完成五個區塊的唯讀資料追蹤與根因分類；本輪不啟動 P1、不修改 P0 程式、不合併分支。五項根因及修正範圍釐清後，再更新本文件並由使用者決定是否進入修正。
+
+
+## 10. 2026-11-01 五區塊唯讀根因查核（初輪）
+
+查核對象：P0 branch `phase2-p0-data-quality`，T0 `2026-10-30`。
+- `data_reports/DATA_REPORT_20261030.md` SHA：`b25266b606408615e247cdeecd7641fc52fce26b`。
+- `dashboards/data-20261030.json` SHA：`9f031928b02f9b652e9ff31f0397224db2086cb4`。
+- `scripts/v9_pro_builder.py` SHA：`011224e54a32ddbf52db6fc1347d2c865fa010eb`。
+- `templates/v9-pro-react-template.html` SHA：`018fcff6bd49f7f796904fed47d96784aec8fe26`。
+
+### 已確認的根因／狀態
+
+1. **DATA-UI-01 借券／券：部分顯示是正確換算，部分欄位確實漏傳。**
+   - DATA_REPORT 借券餘額為 4,651,514 張；JSON `margin.sbl=4651514`。圖表將其除以 10,000，顯示約 465.2 萬張；下方顯示 4,651,514 張，兩者數值等價，並非單位錯誤。
+   - DATA_REPORT 同時有借券賣出餘額 36,178 張、增減 -1,273 張，但 JSON `margin` 僅有 `sbl`、`borrow`，缺少 `borrowedSell`。HTML 圖表讀取 `l.borrowedSell`，故顯示 unavailable／零值位置。這是 Builder parse／JSON schema 漏傳，不是上游無資料。
+   - 融券 233,537 張除以 10,000 約 23.4 萬張，換算正確。
+   - 狀態：單位換算 PASS；借券賣出欄位傳遞 FAIL（已定位，未修正）。
+
+2. **DATA-UI-02 選擇權法人交易：資料存在，圖表轉數字失敗。**
+   - JSON `options.instOpt` 已包含日盤淨額，例如 `+6,624`、`-4,937`、`+1,342`、`+3,029`，且夜盤欄位也有數值。
+   - HTML 圖表使用 `Number(x[3]||0)`；來源字串含千分位逗號（如 `+6,624`），JavaScript `Number("+6,624")` 會得到 NaN，圖表元件再將無效值呈現為 0。因此畫面出現 0 日，但下方明細仍正常顯示。
+   - 根因：前端數值正規化漏掉逗號處理；不是資料缺失。最小修正應先移除千分位逗號再轉數字，並保留正負號。
+   - 狀態：FAIL（根因已定位，未修正）。
+
+3. **DATA-UI-03 IV／GEX 深度：缺值主要來自 DATA_REPORT／Builder 未提供欄位。**
+   - JSON `options` 目前只有 call/put Vol、OI、PCR、牆位、法人交易及前十大等欄位；沒有 `gex`、IV Rank、Risk Reversal、各期限 IV。
+   - Builder 明確將 GEX 缺值時停用因子，並註記 IV Rank／Risk Reversal、Term 結構「DATA_REPORT 未提供」。
+   - 因此 GEX、IV Rank、Term 顯示 unavailable 是誠實的缺值狀態，不是前端漏畫；PCR 0.61 與 Call/Put Vol% 可用是因為對應欄位存在。
+   - 狀態：缺值呈現 PASS；資料源／計算能力是否納入後續需求 NOT TESTED（不在本次自行擴充範圍）。
+
+4. **DATA-UI-04 三劇本路徑：目前空白區是程式明確設計的未校準機率提示，不是價格資料缺漏。**
+   - React template 的「三劇本路徑」chart slot 明確渲染文字「情境機率未經回測校準，暫不顯示百分比。」；三個價格情境另於下方 table 呈現。
+   - JSON `analysis.cards.三劇本` 亦明確註記尚未建立經回測校準的機率模型，不提供機率。
+   - 因此空白主圖區是目前元件設計結果；是否要將其改成非機率型路徑示意圖屬需求／UX 決策，不應當成數據缺失直接補圖。
+   - 狀態：防止輸出未驗證機率 PASS；圖表呈現是否符合使用者預期 BLOCKED（需先確認要不要保留提示或改成無機率路徑圖）。
+
+5. **DATA-UI-05 相關性熱圖：根因是 Builder 目前硬編碼輸出空矩陣，且歷史樣本量極少。**
+   - JSON `analysis.correlation` 為空 labels、空 matrix，描述「歷史日期對齊樣本不足，相關性未計算」。
+   - JSON `analysis.db_status` 顯示 DB 共 3 筆、filled 2；歷史有效樣本不足。
+   - Builder 目前直接輸出 `correlation: {'labels': [], 'matrix': [], 'desc': ...}`，沒有執行相關係數計算流程。因此不只是資料缺失，也包含相關性計算尚未實作／未接線。
+   - 狀態：不捏造相關係數的空狀態 PASS；相關性計算功能 NOT IMPLEMENTED（後續需先定義資料來源、最小樣本數與計算方法）。
+
+### 本輪結論
+- 五項中，借券餘額與融券的單位換算正確；借券賣出欄位確定在 Builder→JSON 傳遞時遺漏。
+- 選擇權法人圖表的 0 日是前端字串轉數字錯誤。
+- GEX／IV／Term 是上游欄位未提供，現有 unavailable 顯示符合誠實資料原則。
+- 三劇本空白是刻意不顯示未校準機率的 UI 設計；如要圖形化，需先確認不呈現機率的視覺方案。
+- 相關性矩陣未計算：DB 僅 3 筆／有效 filled 2，且 Builder 目前硬編碼空矩陣，並非僅調整日期即可解決。
+
+本輪僅唯讀查核；未修改程式、JSON、HTML、DATA_REPORT、P0 分支或 master。以上根因是單模型程式碼／資料追蹤審查，非獨立多模型稽核。
+
+### 下一個工作建議
+先處理兩個可明確修正的資料鏈缺陷：
+1. 將 DATA_REPORT 的借券賣出餘額／增減欄位完整傳入 JSON，前端使用正確欄位顯示；不得把借券餘額存量誤標為當日增減。
+2. 選擇權法人圖表解析帶逗號的數字字串，並加單元測試覆蓋正數、負數、千分位、缺值。
+
+其餘三項先維持誠實缺值／未校準提示，待另行確認 GEX/IV 資料源、三劇本無機率圖示需求、相關性資料與樣本門檻後再規劃；不擴大本輪修正範圍。
