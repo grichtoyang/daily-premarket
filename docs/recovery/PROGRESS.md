@@ -417,3 +417,29 @@ P1 尚未開始。啟動前必須：
 | Merge／Deploy | NOT DONE |
 
 - Auditor：單模型自我審查，非獨立多模型審核。
+
+
+## 22. 2026-11-01 DATA-UI-03 GEX 第一階段交接狀態（最新）
+
+- UI branch phase2-p0-ui-fixes HEAD：833b0220ad87d768a6805d68f47e5447f590fcc9。
+- 已提交：Gamma source 保留並驗證逐履約價 GEX；DATA_REPORT 輸出 Net／Gross GEX 摘要與衍生履約價 JSON；Builder 將日期相符的 GEX 資料傳至 Dashboard JSON；選擇權頁接上逐履約價 GEX 分布卡片。
+- 關鍵 commits：613ce0146b19db70859560c430ae470e81d267b6、dfba4b6bd6074551330fe8e24c8139f0f4f62f32、4c95cdefa92db010e47e023a7196c639242b3c6c、0c2f6aa8c7b038664959ae8c93b92121e6ab5091、5125d66613b8e2ee21d09e914a299bac43779241、833b0220ad87d768a6805d68f47e5447f590fcc9。
+- GitHub Actions Run 41316484376：completed / success；head SHA 與 UI branch HEAD 相同。
+
+| 驗收項目 | 狀態 |
+|---|---|
+| 程式接線與 CI 自動化檢查 | PASS |
+| 真實當日 Gamma endpoint／GEX 有值資料 | NOT TESTED |
+| 手機／桌面 GEX 圖表視覺 | NOT TESTED |
+| GEX 模型獨立正確性驗證 | NOT TESTED |
+| IV Rank／VIX Rank／期限 IV | NOT IMPLEMENTED |
+| Signed／Dealer GEX | BLOCKED |
+| Actions 新增耗時低於 10 秒 | NOT TESTED |
+| Merge／Cherry-pick／正式部署 | NOT DONE |
+
+### 下一步
+1. 用當日 T0 真實資料驗證 DATA_REPORT → Builder → Dashboard JSON 完整資料鏈及日期一致性。
+2. 產生非部署 HTML Artifact，完成手機與桌面 GEX 圖表視覺驗收。
+3. 量測 Actions 實際增量耗時。
+
+- 未修改 Master、P0 baseline、V8；未部署、未合併。Auditor 為單模型自我審查，非獨立多模型審核。
