@@ -349,3 +349,26 @@ P1 尚未開始。啟動前必須：
 - P0 HEAD 維持 `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`；master HEAD 維持 `0ac95b2521e7bdcb357431cc7725da4e2c26e602`。
 - 未 Merge／Rebase／Cherry-pick／Deploy。DATA-UI-05 真實資料驗證仍 BLOCKED；1440px 視覺 NOT TESTED；本機工作目錄 NOT TESTED。
 - Auditor：單模型自我審查，非獨立多模型審核。
+
+
+## 19. 2026-11-01 DATA-UI-04 三劇本路徑完成手機驗收
+
+- UI branch：`phase2-p0-ui-fixes`。
+- 區間路徑修正 Commit：`9a4ca2ce4a646badedbc98ab1469c3e8fb9995a8`；回歸斷言 Commit：`d303ac600c17fc275b690ae183d0d67b7bf3cf8e`。
+- 區間情境改為「現價 位於 Put Wall ↔ Call Wall」，避免用單向箭頭造成先後目標誤讀。偏多／偏空方向路徑、機率未校準聲明及 MaxPain 磁吸參考規則保留。
+- GitHub Actions Run `41312758676`：Success；React template regression、JavaScript parser、DATA_REPORT parser、JSON build、非部署預覽及 Artifact 產生／上傳均成功。
+- 使用者提供新版 Android 截圖，三情境價格路徑與區間上下界語意均清楚，無明顯重疊或裁切；DATA-UI-04 手機視覺 PASS。
+
+### 狀態
+| 項目 | 狀態 |
+|---|---|
+| 三情境條件式價格路徑 | PASS |
+| 區間上下界語意 | PASS |
+| MaxPain／未校準機率防誤導 | PASS |
+| CI／回歸測試 | PASS |
+| Android 手機畫面 | PASS |
+| 桌面（含 1440px） | NOT TESTED |
+| 真實回測／機率校準 | NOT TESTED |
+| Merge／Cherry-pick／Deploy | NOT DONE |
+
+- Auditor：單模型自我審查，非獨立多模型審核。
