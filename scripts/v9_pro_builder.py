@@ -1370,7 +1370,7 @@ def run_17f_self_tests():
             assert len(enough["labels"])==8 and len(enough["matrix"])==8
             assert len(enough["matrix"][0])==8 and "5 筆" in enough["desc"]
             assert abs(enough["matrix"][0][1]-1.0)<1e-9
-        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, v9-only-schema, invalid-schema-rejection, data-report-consistency")
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, v9-only-schema, invalid-schema-rejection, data-report-consistency, data-ui-05-correlation")
         return 0
     except Exception:
         traceback.print_exc()
