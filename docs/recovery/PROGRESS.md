@@ -224,3 +224,33 @@ P1 尚未開始。啟動前必須：
 - 此產物只用於預覽，沒有部署 GitHub Pages、沒有推送產物到 P0／master，也沒有 Merge。
 - 使用者桌面／手機實際視覺驗收仍為 NOT TESTED；下一步由使用者下載 Artifact 檢查 DATA-UI-01／02 兩個區塊，回報結果後再決定是否需要視覺微調。
 - 最新查證：P0 HEAD 仍為 `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`；master HEAD 仍為 `0ac95b2521e7bdcb357431cc7725da4e2c26e602`；Recovery 文件分支更新前 HEAD `4479bbafd893adb9bf37257a3d2e4ccb8c8ed960`。
+
+
+## 12. 2026-11-01 DATA-UI-01／02 手機版視覺驗收
+
+### 最新程式與預覽證據
+- UI fixes branch：`phase2-p0-ui-fixes`
+- 最新 UI branch HEAD：`d0f644e661fc43596bc4886ae0fd92977891db17`
+- Workflow Run：`41303525878`，Conclusion：Success。
+- Artifact：`V9-UI-Fixes-Preview-20261030`
+- Artifact ID：`13082301670`；大小 88,306 bytes；到期時間 2027-01-30。
+- Run URL：`https://github.com/grichtoyang/daily-premarket/actions/runs/41303525878`
+- CI 成功且 Artifact 已上傳；本節手機截圖驗收對應此輪修正內容。
+
+### 使用者手機截圖驗收
+| 項目 | 驗收結果 | 證據／說明 |
+|---|---|---|
+| DATA-UI-01 借券資料欄位 | PASS | 借券餘額 4,651,514 張；借券賣出 36,178 張；增減 -1,273 張；融券 233,537 張；範圍標示「上櫃（上市 TWT93U 未取得）」。 |
+| DATA-UI-01 手機排版 | PASS | 手機單欄排列；增減標籤與 -1,273 張完整同列，未見折行／重疊。 |
+| DATA-UI-02 日盤解析及顯示 | PASS | 外資 +6,624、投信 -4,937、自營商 +1,342、三大法人合計 +3,029。 |
+| DATA-UI-02 夜盤解析及顯示 | PASS | 外資 -94、投信 0、自營商 -1,391、三大法人合計 -1,485。 |
+| DATA-UI-02 手機圖表 | PASS | 圖表呈現 8 筆日盤／夜盤資料，標籤、正負方向及數值可辨識，未見裁切／重疊。 |
+
+### 範圍與尚未驗證事項
+- DATA-UI-01／02：使用者提供手機截圖，手機實際視覺驗收 PASS。
+- 桌面版實際視覺驗收：NOT TESTED（尚無桌面截圖）。
+- DATA-UI-03／04／05：本輪未修改，不列入本次驗收。
+- 未部署 GitHub Pages、未 Merge／Cherry-pick 回 P0 或 master；P0、master、V8 不得擅自修改。
+- 本機／OpenCode 工作目錄狀態：NOT TESTED。
+- Auditor 為單模型自我審查，非獨立多模型審核。
+- 下一步：確認是否需要桌面版視覺驗收；之後才可討論 UI fixes 回 P0 的整合方式，需另行取得使用者明確授權。
