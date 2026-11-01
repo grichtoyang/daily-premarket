@@ -543,3 +543,44 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 | Merge／Cherry-pick／正式部署 | NOT DONE |
 
 - Auditor：單模型自我審查，非獨立多模型審核。
+
+
+## 21. 2026-11-01 DATA-UI-03 IV／GEX 深度資料鏈第二輪調查
+
+### 查核範圍（唯讀）
+- Repo：`grichtoyang/daily-premarket`；程式查核分支：`phase2-p0-ui-fixes`。
+- 查核檔案：`src/sources/taifex.py`、`scripts/v9_pro_builder.py`、`docs/DATA_SOURCES.md`、`docs/DATA_REPORT_TEMPLATE.md`、`data_reports/DATA_REPORT_20261030.md`、`dashboards/data-latest.json`、`templates/v9-pro-react-template.html`。
+- 本次未修改任何程式、資料或部署設定。
+
+### 根因確認
+1. Builder 的 TAIFEX options chain 流程目前只使用合約月份、Call/Put、履約價、成交量及 OI，計算 Call/Put Vol、OI 與 PCR；沒有將隱含波動率、Bid/Ask、Gamma 等欄位納入 DATA_REPORT／JSON。
+2. DATA_REPORT 選擇權章節目前列有成交量、OI、PCR、Wall、Gamma Wall／Flip、Max Pain、法人與前十大資料，沒有 IV Rank、Risk Reversal、期限 IV 序列或逐履約價 Greeks。
+3. JSON `options` 無 `gex`、`ivRank`、`riskReversal`、`ivTerm` 等欄位。Builder 的 GEX 因子只接受來源直接提供且可驗證的值；IV／Term 分析卡明確註記 DATA_REPORT 未提供。
+4. React 卡片標題為「IV / GEX 深度」，但圖表實際只繪 PCR、Call Vol%、Put Vol%；表格另列 GEX、IV Rank、Term 為 unavailable。這造成標題與圖表內容不完全一致，屬 UI 語意問題；PCR／成交量比例本身有來源資料，不應描述為 IV／GEX 圖。
+5. TAIFEX 官方公開資料目錄可查到選擇權每日行情、每日 Delta、Put/Call Ratio 與 TAIEX Options Volatility Index（TAIWAN VIX）；官方 FAQ 說明 VIX 代表市場預期未來 30 日波動率，並提供歷史資料下載。官方公開目錄未列出直接供應的 GEX 或 IV Rank 欄位。
+
+### 可行性與限制（不得把推導值冒充官方原始值）
+- **TAIWAN VIX／波動率歷史排名：** 可評估使用官方 VIX 歷史序列計算 rolling 52-week percentile／rank；必須將名稱標示為「TAIWAN VIX Rank／30D 波動率歷史排名」，不能未經定義直接稱為單一履約價 IV Rank。
+- **期限結構：** 可評估由各到期月份的選擇權報價（優先有效 Bid/Ask mid，無效／零報價排除）、標的價格、到期時間及利率／股利假設反解 ATM IV，再插值為固定期限（如 7D／14D／30D／60D）。必須保存輸入、報價時間、到期日、方法與品質旗標；不可用成交量／OI 代替 IV。
+- **GEX：** 可由逐履約價 OI、Gamma、合約乘數與標的價格計算 gross gamma exposure；但 OI 本身不帶多空持有人方向，不能直接推導做市商淨 Gamma 正負。若要 signed/dealer GEX，必須先定義並驗證持倉方向估計方法；否則只可呈現 unsigned/gross GEX 或明確標為模型估計。
+- **TAIFEX DailyOptionsDelta：** Delta 不等於 Gamma；不能直接把 Delta 當 Gamma，也不能單靠每日 Delta 直接得到 GEX。
+
+### UI／資料處理建議（待實作）
+1. 將現有圖表標題改為「PCR／成交量結構」，避免把成交比例誤稱 IV／GEX 深度。
+2. GEX、IV Rank、Term 仍維持 unavailable，直到資料源、公式、日期對齊與品質檢查通過。
+3. 後續若實作，先定義 gross GEX、TAIWAN VIX Rank 與期限 ATM IV 的欄位 schema、單位、時間基準、到期範圍及回歸測試，再接入 DATA_REPORT／Builder／JSON／Dashboard。
+
+### 狀態
+| 項目 | 狀態 |
+|---|---|
+| 上游欄位缺漏根因 | PASS（已追到來源／DATA_REPORT／Builder／JSON） |
+| 現有缺值不造假 | PASS |
+| 卡片標題與圖表內容不一致 | FAIL（已定位，尚未修正） |
+| TAIFEX VIX 歷史序列接入 | NOT TESTED |
+| 各期限 ATM IV 計算 | NOT IMPLEMENTED |
+| Gross GEX 計算 | NOT IMPLEMENTED |
+| Signed／Dealer GEX 方法驗證 | BLOCKED（OI 無方向資訊，需另定估計方法） |
+| DATA-UI-03 完整結案 | NOT DONE |
+
+- 官方參考：TAIFEX OpenAPI `https://openapi.taifex.com.tw/`；TAIFEX VIX／歷史資料說明 `https://www.taifex.com.tw/enl/eng9/tradersQAProducts`；TAIFEX 選擇權歷史行情下載 `https://www.taifex.com.tw/enl/eng3/optDailyMarketView?menuid1=03`。
+- 本次 Auditor 為單模型自我審查，非獨立多模型審核。
