@@ -96,6 +96,11 @@ jobs:
           set -euo pipefail
           python scripts/v9_pro_builder.py --self-test
 
+      - name: Run Gamma fallback availability regression tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p "test_taifex_gamma_fallback.py" -v
+
       - name: Build dashboard data
         run: |
           set -euo pipefail
