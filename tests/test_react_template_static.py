@@ -56,7 +56,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('function yf({callVol:e,putVol:n,height:l=200})', self.html)
         self.assertIn('title:"PCR／成交量結構"', self.html)
         self.assertIn('chart:p(yf,{callVol:n.callVol,putVol:n.putVol,height:200})', self.html)
-        self.assertIn('Call 成交量占比', self.html)
+        self.assertIn('Call／Put 成交量占比（合計 100%）', self.html)
         self.assertIn('Put 成交量', self.html)
         self.assertIn('成交量只呈現 Call／Put 相對結構，不直接代表多空方向', self.html)
         self.assertIn('Call OI', self.html)
