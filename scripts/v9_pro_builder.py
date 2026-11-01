@@ -1225,49 +1225,28 @@ def run_17f_self_tests():
             assert after[0][0]=='2026-10-27' and after[0][2] is not None
             assert after[1][0]=='2026-10-28' and after[1][2] is not None
             assert after[2][0]=='2026-10-29' and after[2][2]==1.0
-        # Legacy V8/V9 tables must both exist before init_db; init_db creates
-        # any missing counterpart, so creating V8 after the first call collides.
+        # V9 is the only supported history schema; init_db must not create V8 tables.
         with tempfile.TemporaryDirectory() as tmp:
-            legacy_db=str(pathlib.Path(tmp)/"legacy.db")
-            conn=sqlite3.connect(legacy_db)
-            conn.execute("CREATE TABLE v9_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
-            conn.execute("CREATE TABLE v8_pro_history (date TEXT PRIMARY KEY, bias INTEGER, spot_close REAL)")
-            conn.commit(); conn.close()
-            migrated=init_db(legacy_db)
-            assert migrated is not None
-            migrated_columns={row[1] for row in migrated.execute("PRAGMA table_info(v9_pro_history)").fetchall()}
-            migrated_v8={row[1] for row in migrated.execute("PRAGMA table_info(v8_pro_history)").fetchall()}
-            migrated.close()
+            v9_db=str(pathlib.Path(tmp)/"v9-only.db")
+            v9_conn=init_db(v9_db)
+            assert v9_conn is not None
+            table_names={row[0] for row in v9_conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()}
+            v9_columns={row[1] for row in v9_conn.execute("PRAGMA table_info(v9_pro_history)").fetchall()}
+            v9_conn.close()
             required_columns={'date','bias','spot_close','spot_pct','foreign_spot','next_day_pct','factor_wins','created_at'}
-            assert required_columns <= migrated_columns
-            assert required_columns <= migrated_v8
-        # A V8-only legacy database must migrate historical rows into canonical V9.
-        with tempfile.TemporaryDirectory() as tmp:
-            legacy_v8_db=str(pathlib.Path(tmp)/"v8-only.db")
-            conn=sqlite3.connect(legacy_v8_db)
-            conn.execute("""CREATE TABLE v8_pro_history (
-                date TEXT PRIMARY KEY,bias INTEGER,spot_close REAL,spot_pct REAL,
-                foreign_spot REAL,foreign_fut INTEGER,pcr REAL,gex REAL,put_wall INTEGER,
-                vix REAL,rsi REAL,macd REAL,k REAL,d REAL,next_day_pct REAL,
-                factor_wins TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )""")
-            conn.execute("INSERT INTO v8_pro_history(date,bias,spot_close,spot_pct,next_day_pct) VALUES(?,?,?,?,?)",
-                         ('2026-10-27',49,23000.0,0.8,1.25))
-            conn.commit(); conn.close()
-            migrated=init_db(legacy_v8_db)
-            assert migrated is not None
-            legacy_row=migrated.execute(
-                "SELECT date,bias,spot_close,spot_pct,next_day_pct FROM v9_pro_history"
-            ).fetchone()
-            assert legacy_row==('2026-10-27',49,23000.0,0.8,1.25)
-            migrated.close()
+            assert 'v9_pro_history' in table_names
+            assert 'factor_performance' in table_names
+            assert 'v8_pro_history' not in table_names
+            assert required_columns <= v9_columns
         with tempfile.TemporaryDirectory() as tmp:
             invalid_db=str(pathlib.Path(tmp)/"invalid-schema.db")
             conn=sqlite3.connect(invalid_db)
             conn.execute("CREATE TABLE v9_pro_history (bias INTEGER, spot_close REAL)")
             conn.commit(); conn.close()
             assert init_db(invalid_db) is None
-        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, sqlite-schema-migration, invalid-schema-rejection, data-report-consistency")
+        print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, v9-only-schema, invalid-schema-rejection, data-report-consistency")
         return 0
     except Exception:
         traceback.print_exc()
