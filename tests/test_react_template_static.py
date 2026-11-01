@@ -117,6 +117,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('情境一｜偏多', self.html)
         self.assertIn('情境二｜區間', self.html)
         self.assertIn('情境三｜偏空', self.html)
+        self.assertIn('d.id==="range"?(x.k==="putWall"?"位於":"↔"):"→"', self.html)
         self.assertIn('MaxPain 僅作磁吸參考，不當作跌破後的下跌目標', self.html)
         self.assertIn('缺少位於現價正確方向的有效關鍵價位，暫不繪製延伸路徑', self.html)
         self.assertNotIn('"加速至$",g(l.maxPain)', self.html)
