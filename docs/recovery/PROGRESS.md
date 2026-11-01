@@ -302,3 +302,25 @@ P1 尚未開始。啟動前必須：
 | DATA-UI-03／04、V8、Master | 未修改 |
 
 - 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 15. 2026-11-01 DATA-UI-05 手機有效樣本熱圖驗收
+
+- UI branch：`phase2-p0-ui-fixes`，Commit `98df6c782346b01dc6f66d3b4692786c32e133e1`。
+- 僅修改 `templates/v9-pro-react-template.html` 熱圖繪製函式：欄名改由左側標籤呈現，儲存格依手機畫布寬高縮放，保留右側色階空間；未改相關性數值及色彩映射。
+- GitHub Actions Run `41309915998`：Success；Regression、Fixture 產生與 Artifact 上傳皆成功。
+- 隔離 Artifact `V9-Correlation-Heatmap-Test-Fixture`（ID `13084587818`），使用合成矩陣，不得部署。
+- 使用者新版 Android 截圖確認 8×8 矩陣、標籤、數值及色階可讀，手機有效矩陣 UI PASS。
+
+### 狀態
+| 項目 | 狀態 |
+|---|---|
+| 0/5 樣本不足手機畫面 | PASS |
+| 合成 8×8 有效矩陣手機畫面 | PASS |
+| CI／隔離 Fixture | PASS |
+| 真實歷史數據相關係數準確性 | NOT TESTED |
+| 桌面視覺 | NOT TESTED |
+| 部署／合併 | NOT DONE |
+| DATA-UI-03／04、V8、Master | 未修改 |
+
+- Auditor：單模型自我審查，非獨立多模型審核。
