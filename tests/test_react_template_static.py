@@ -80,6 +80,10 @@ class ReactTemplateStaticTests(unittest.TestCase):
             "Standalone numeric sample arrays are not allowed in the React template",
         )
 
+    def test_kpi_sparklines_do_not_fabricate_history(self):
+        self.assertNotIn("Math.random()", self.html)
+        self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
+
     def test_inline_javascript_syntax(self):
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for React template syntax validation")
