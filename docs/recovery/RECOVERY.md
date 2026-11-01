@@ -512,3 +512,34 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 差異審查結果 PASS（檔案範圍及 Workflow 靜態審查）；未執行 Merge／Rebase／Cherry-pick／Deploy。
 - DATA-UI-05 真實歷史相關性仍 BLOCKED（有效樣本不足）；大尺寸桌面 1440px 視覺 NOT TESTED；本機／OpenCode 工作目錄狀態 NOT TESTED。
 - Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 20. 2026-11-01 DATA-UI-04 三劇本路徑修正與手機視覺驗收
+
+### 修正內容
+- UI branch：`phase2-p0-ui-fixes`。
+- 修正 Commit：`9a4ca2ce4a646badedbc98ab1469c3e8fb9995a8`（區間路徑語意）；回歸測試 Commit：`d303ac600c17fc275b690ae183d0d67b7bf3cf8e`。
+- 區間情境不再以連續單向箭頭暗示先後目標；現價至 Put Wall 顯示「位於」，Put Wall 至 Call Wall 顯示「↔」，表示價格位於上下界之間。
+- 偏多／偏空價格節點篩選、機率未校準聲明及 MaxPain 僅作磁吸參考的規則維持不變。
+- 僅修改 UI template 與對應靜態回歸測試；未修改 P0、Master、V8、正式資料或部署設定。
+
+### 測試與視覺證據
+- GitHub Actions Run `41312758676`：Success；Builder offline self-tests、JavaScript parser、React template regression、DATA_REPORT parser、JSON build、非部署 HTML preview、隔離 heatmap fixture 及 Artifact 上傳皆成功。
+- Run URL：`https://github.com/grichtoyang/daily-premarket/actions/runs/41312758676`。
+- 非部署預覽 Artifact：`V9-UI-Fixes-Preview-20261030`，Artifact ID `13085608534`。
+- 使用者提供新版 Android 手機截圖：偏多、區間、偏空三條路徑均顯示實際有效價格節點；區間情境已呈現「現價 位於 Put Wall ↔ Call Wall」；未見卡片重疊或裁切。DATA-UI-04 手機視覺驗收 PASS。
+
+### 最新狀態
+| 項目 | 狀態 |
+|---|---|
+| 三劇本價格節點條件式呈現 | PASS |
+| 區間上下界語意與箭頭修正 | PASS |
+| MaxPain 不作下跌目標 | PASS |
+| 機率未校準、不輸出虛構機率 | PASS |
+| CI／回歸測試／非部署預覽 | PASS |
+| Android 手機畫面 | PASS |
+| 桌面視覺（含 1440px） | NOT TESTED |
+| 真實市場情境回測與機率校準 | NOT TESTED（本功能不宣稱已回測） |
+| Merge／Cherry-pick／正式部署 | NOT DONE |
+
+- Auditor：單模型自我審查，非獨立多模型審核。
