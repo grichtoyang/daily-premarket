@@ -316,9 +316,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         _w = (((_p or {}).get("data") or {}).get("gamma_wall") or {}).get("strike")
         if _w is not None:
             g_pay, g_date = _p, t0
-    if g_pay is None:
-        unav += ["gamma_wall", "gamma_flip"]
-        notes.append("Gamma Wall/Flip 端點不可用（上游 502），標 unavailable")
+    gamma_endpoint_unavailable = g_pay is None
     # Market-structure-compact 仍保留 T-1/T-2 遞補（Gamma Wall proxy 來源）
     c_pay, c_date = None, None
     for _d in _prev_dates(t0, 2):
@@ -545,16 +543,27 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if wall is None and cgamma.get("gamma_wall_proxy") is not None:
         wall, flip = cgamma.get("gamma_wall_proxy"), cgamma.get("gamma_flip_proxy")
         gsrc = "options-market-structure-compact (proxy)"
-    # Reconcile field-level availability after fallback resolution. A proxy may
-    # recover one Gamma field without necessarily providing the other.
+    # Reconcile field-level availability only after primary + proxy resolution.
+    # Primary endpoint failure is provenance, not final unavailability when proxy recovered values.
     unav = _sync_gamma_unavailable(unav, wall, flip)
     gamma = {"wall": wall, "flip": flip,
              "model": gdata.get("model"), "quality": gdata.get("model_quality"),
              "underlying": gdata.get("underlying_price"), "date": gamma_date, "src": gsrc}
-    if gamma["wall"] is None:
-        unav += ["gamma_wall", "gamma_flip"]
-        notes.append("Gamma Wall/Flip 無資料 (proxy 端點上游無資料)，標 unavailable")
-    elif gamma_date and gamma_date != t0:
+    if gamma_endpoint_unavailable and (wall is not None or flip is not None):
+        notes.append(f"Gamma 原始端點不可用（上游 502）；已由 {gsrc} 備援取得"
+                     f"（Wall {'有值' if wall is not None else '仍缺值'}；"
+                     f"Flip {'有值' if flip is not None else '仍缺值'}）")
+    if wall is None:
+        if "gamma_wall" not in unav:
+            unav.append("gamma_wall")
+        if not any("Gamma Wall" in n and "unavailable" in n for n in notes):
+            notes.append("Gamma Wall 無資料（原始端點與 Proxy 備援皆未取得），標 unavailable")
+    if flip is None:
+        if "gamma_flip" not in unav:
+            unav.append("gamma_flip")
+        if not any("Gamma Flip" in n and "unavailable" in n for n in notes):
+            notes.append("Gamma Flip 無資料（原始端點與 Proxy 備援皆未取得），標 unavailable")
+    if gamma_date and gamma_date != t0:
         notes.append(f"Gamma Wall/Flip 資料日期 {gamma_date} (來源 {gsrc})")
 
     # ---------- 快照差值 (V1.4+；無快照則維持 unavailable) ----------
