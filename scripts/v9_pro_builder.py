@@ -1181,6 +1181,10 @@ def run_17f_self_tests():
         assert analyzer.factor_quality['active_count']==17
         assert abs(sum(weights.values())-100.0)<1e-5
         assert 0<=bias<=100
+        assert analyzer.factor_quality['base_weight_total']==104
+        assert analyzer.factor_quality['base_weight_unit']=='relative_points'
+        assert analyzer.factor_quality['weight_normalization']=='active_factors_rescaled_to_100_percent'
+        assert abs(analyzer.factor_quality['effective_weight_total']-100.0)<1e-5
 
         sparse={**parsed,'options':{**parsed['options'],'gex':None},'spot':{**parsed['spot'],'volume_ratio':None},
                 'adrPct_full':[],'yieldPct_full':[],'usPct_full':[{'l':'SOX','v':None},{'l':'VIX','v':None,'close':None}]}
