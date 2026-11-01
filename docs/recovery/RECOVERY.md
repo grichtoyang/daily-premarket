@@ -613,3 +613,36 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - Signed／Dealer GEX：BLOCKED；本次沒有新增方向估計模型，也沒有把 gross/net model output 宣稱為 dealer positioning。
 - Actions 增量耗時是否低於 10 秒：NOT TESTED。
 - 未 Merge／Rebase／Cherry-pick／Deploy；本次 Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 23. 2026-11-01 DATA-UI-03 GEX 第一階段狀態複核（交接基準）
+
+> 本節為目前交接的最新狀態；與第 22 節重複的實作細節以第 22 節為準。本節補上遠端分支與 Actions 的即時查證結果。
+
+- Repo：grichtoyang/daily-premarket。
+- UI branch：phase2-p0-ui-fixes，查證 HEAD：833b0220ad87d768a6805d68f47e5447f590fcc9。
+- HEAD commit message：Render actual per-strike GEX distribution in options card；其 parent 為 Builder commit 5125d66613b8e2ee21d09e914a299bac43779241。
+- GitHub Actions Run 41316484376 已由 GitHub API 查證：completed / success，head SHA 與 UI branch HEAD 相同；Workflow 為 V9 UI Fixes Regression。
+- 第 22 節記錄的 Dashboard GEX 卡片接線與該輪 CI 成功有遠端 commit／run 證據；但 CI 成功只代表該 workflow 的自動化檢查通過，不等同真實當日 Gamma 端點有資料，也不等同使用者實際畫面驗收。
+
+### 最新驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| 來源 Gamma GEX 欄位保留及格式驗證 | PASS（程式提交；CI run success） |
+| DATA_REPORT GEX 摘要及衍生履約價資料區塊 | PASS（程式提交；CI run success） |
+| Builder 日期檢查及 Dashboard JSON 欄位接線 | PASS（程式提交；CI run success；真實有值資料情境仍待確認） |
+| React 選擇權頁 GEX 分布卡片接線 | PASS（程式提交；CI run success） |
+| 真實當日 Gamma endpoint 回應及逐履約價 GEX 有值 | NOT TESTED |
+| 手機／桌面實際 GEX 圖表視覺 | NOT TESTED |
+| GEX 計算模型獨立正確性／與外部基準交叉驗證 | NOT TESTED（沿用既有模型，本輪未重算） |
+| IV Rank／TAIWAN VIX Rank／期限 IV | NOT IMPLEMENTED |
+| Signed／Dealer GEX | BLOCKED（持倉方向估計方法未定） |
+| Actions 增量耗時是否低於 10 秒 | NOT TESTED |
+| Merge／Cherry-pick／正式部署 | NOT DONE |
+
+### 下一個工作（唯一順序）
+1. 先以當日 T0 真實資料跑完整 DATA_REPORT → Builder → Dashboard JSON，確認 options.gexStatus、gexLevels、Net／Gross GEX 日期一致且非空；若來源失敗則確認明確 unavailable，不能沿用舊日期。
+2. 取得非部署 HTML Artifact，驗收手機及桌面 GEX 圖表；完成前 DATA-UI-03 不結案。
+3. 最後量測 Actions 執行時間，確認新增處理耗時；不可預先宣稱低於 10 秒。
+
+- 本次交接文件更新不改動程式、正式資料或部署設定。Auditor 為單模型自我審查，非獨立多模型審核。
