@@ -62,6 +62,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('Call OI', self.html)
         self.assertIn('Put OI', self.html)
         self.assertIn('PCR 是 Put／Call 比值；成交量反映當日交易活躍度，OI 反映未平倉部位', self.html)
+        self.assertIn('PCR ${B(n.pcr,2)}；成交量與 OI 分開觀察', self.html)
         self.assertNotIn('title:"Call/Put Vol OI PCR"', self.html)
         self.assertNotIn('label:`上市 ${g(e)}億', self.html)
         self.assertNotIn('label:`上櫃 ${g(n)}億', self.html)
