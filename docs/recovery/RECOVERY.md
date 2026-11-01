@@ -414,3 +414,37 @@ UI 專用 GitHub Actions：
 
 ### 14.5 下一步唯一指令
 DATA-UI-05 程式與 CI 驗收已完成。若要繼續，先由使用者檢查非部署 HTML Artifact 的相關性區塊（有效樣本時的熱圖，以及樣本不足時的空狀態）；取得實際畫面驗收後，再決定是否結案及是否授權後續整合。不得自行部署或 Merge。
+
+
+## 15. 2026-11-01 DATA-UI-05 手機畫面驗收與重複提示修正
+
+> 本節更新第 14 節的最新狀態；只記錄 DATA-UI-05，不代表已部署或整合。
+
+### 最新修正
+- UI branch：`phase2-p0-ui-fixes`
+- 修正 Commit：`8a74e30144571413cfd2ea42bfb646500cf02214`
+- 變更檔案：`templates/v9-pro-react-template.html`。
+- 修正前使用者截圖顯示資料不足說明重複兩次；已移除熱圖區塊下方重複的描述，只保留熱圖區內的狀態提示。
+- 新版模板已從 GitHub 遠端讀回，確認重複描述片段已移除，條件式欄位標籤仍保留。
+
+### CI 與實際畫面證據
+- Workflow Run `41308547210`：Conclusion Success。
+- Regression job 全部步驟成功，包括 Builder offline self-tests、React template regression、DATA_REPORT parser regression、JSON build、非部署 HTML preview 產生及 Artifact 上傳。
+- Run URL：`https://github.com/grichtoyang/daily-premarket/actions/runs/41308547210`。
+- Artifact：`V9-UI-Fixes-Preview-20261030`，Artifact ID `13084755255`，未過期。
+- 使用者提供新版手機截圖：`0/5` 樣本提示只出現一次；未顯示空白矩陣／色階；原有分析、判斷、操作說明卡片正常呈現。手機畫面驗收 PASS。
+
+### 最新驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| DATA-UI-05 樣本不足狀態（手機） | PASS |
+| 重複提示移除 | PASS |
+| 無效矩陣不顯示熱圖 | PASS |
+| Builder／React／DATA_REPORT CI | PASS |
+| 有效樣本達 5 筆時的實際熱圖視覺 | NOT TESTED（目前截圖為 0/5） |
+| 桌面視覺 | NOT TESTED |
+| 正式部署／Merge／Cherry-pick | NOT DONE |
+| DATA-UI-03／04、V8、Master | 本輪未修改 |
+
+### 下一步
+DATA-UI-05 樣本不足狀態的手機視覺驗收已完成。有效樣本矩陣與桌面畫面仍未驗證；不得將其標示為 PASS。部署或合併須另行取得使用者明確授權。
