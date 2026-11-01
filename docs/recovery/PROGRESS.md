@@ -211,3 +211,16 @@ P1 尚未開始。啟動前必須：
 
 ### 下一個唯一工作
 在 `phase2-p0-ui-fixes` 產生不部署的 T0 預覽 HTML，確認兩個修正區塊的資料注入與呈現；再交由使用者做桌面／手機畫面驗收。不得觸碰 P0 原分支、master、V8 或執行部署／合併。
+
+
+## 11. 2026-11-01 非部署 HTML 預覽產物
+
+- UI fixes branch 最新 HEAD：`2ee248dd21fa5ad9545c7c70d9e427f793721d7c`。
+- UI 專用 Workflow Run `41301631710`：Success。
+- 新增非部署 HTML 預覽產生與上傳步驟：PASS。
+- Artifact：`V9-UI-Fixes-Preview-20261030`，檔案 `v9-pro-ui-fixes-preview-20261030.html`，88,133 bytes。
+- Artifact ID：`13081122728`；GitHub Actions run：`https://github.com/grichtoyang/daily-premarket/actions/runs/41301631710`。
+- Artifact 預計於 2027-01-30 到期。
+- 此產物只用於預覽，沒有部署 GitHub Pages、沒有推送產物到 P0／master，也沒有 Merge。
+- 使用者桌面／手機實際視覺驗收仍為 NOT TESTED；下一步由使用者下載 Artifact 檢查 DATA-UI-01／02 兩個區塊，回報結果後再決定是否需要視覺微調。
+- 最新查證：P0 HEAD 仍為 `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`；master HEAD 仍為 `0ac95b2521e7bdcb357431cc7725da4e2c26e602`；Recovery 文件分支更新前 HEAD `4479bbafd893adb9bf37257a3d2e4ccb8c8ed960`。
