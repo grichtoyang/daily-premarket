@@ -85,6 +85,29 @@ def _sync_gamma_unavailable(unavailable: list[str], wall, flip) -> list[str]:
         result = [field for field in result if field != "gamma_flip"]
     return result
 
+def _valid_gex_levels(levels) -> list[dict]:
+    """Keep only computed strike-level GEX rows with finite numeric values."""
+    import math
+    if not isinstance(levels, list):
+        return []
+    valid = []
+    for row in levels:
+        if not isinstance(row, dict):
+            continue
+        try:
+            strike = float(row.get("strike"))
+            net_gex = float(row.get("net_gex"))
+            gross_gex = float(row.get("gross_gex"))
+            call_gex = float(row.get("call_gex"))
+            put_gex = float(row.get("put_gex"))
+        except (TypeError, ValueError):
+            continue
+        if not all(math.isfinite(v) for v in (strike, net_gex, gross_gex, call_gex, put_gex)) or strike <= 0:
+            continue
+        valid.append({**row, "strike": strike, "net_gex": net_gex, "gross_gex": gross_gex,
+                      "call_gex": call_gex, "put_gex": put_gex})
+    return sorted(valid, key=lambda item: item["strike"])
+
 
 def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
                   wall, flip, source: str) -> tuple[list[str], list[str]]:
@@ -333,10 +356,12 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # Gamma 端點需 TAIEX 收盤 (FMTQIK 落後約一日)：僅查詢 T0 一次，上游 502 則標 unavailable，不再跑 T-1/T-2
     g_pay, g_date = None, None
     _p = _get("options-gamma-levels", t0)
-    if _p is not None:
+    if _p is not None and (_p.get("date") or t0) == t0:
         _w = (((_p or {}).get("data") or {}).get("gamma_wall") or {}).get("strike")
         if _w is not None:
             g_pay, g_date = _p, t0
+    elif _p is not None:
+        notes.append(f"Gamma 端點日期 {_p.get('date')} 非 T0 {t0}，拒絕採用（避免舊值混入）")
     gamma_endpoint_unavailable = g_pay is None
     # Market-structure-compact 仍保留 T-1/T-2 遞補（Gamma Wall proxy 來源）
     c_pay, c_date = None, None
@@ -568,9 +593,20 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # Primary endpoint failure is provenance, not final unavailability when proxy recovered values.
     unav, _gamma_notes = _gamma_status(unav, gamma_endpoint_unavailable, wall, flip, gsrc)
     notes.extend(_gamma_notes)
+    _gex_levels = _valid_gex_levels(gdata.get("levels")) if g_pay is not None else []
+    _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
+    _gross_gex = gdata.get("gross_gex_1pct") if g_pay is not None else None
     gamma = {"wall": wall, "flip": flip,
-             "model": gdata.get("model"), "quality": gdata.get("model_quality"),
-             "underlying": gdata.get("underlying_price"), "date": gamma_date, "src": gsrc}
+             "model": gdata.get("model") if g_pay is not None else None,
+             "quality": gdata.get("model_quality") if g_pay is not None else None,
+             "underlying": gdata.get("underlying_price") if g_pay is not None else None,
+             "net_gex_1pct": _net_gex, "gross_gex_1pct": _gross_gex,
+             "levels": _gex_levels, "levels_count": len(_gex_levels),
+             "diagnostics": gdata.get("gamma_diagnostics") if g_pay is not None else None,
+             "gex_status": "available" if _gex_levels and _net_gex is not None and _gross_gex is not None else "unavailable",
+             "date": gamma_date, "src": gsrc}
+    if gamma["gex_status"] == "unavailable":
+        notes.append("逐履約價 GEX／Net GEX／Gross GEX 未取得或資料不完整，標 unavailable（不以 Wall/Flip proxy 代替）")
     if gamma_date and gamma_date != t0:
         notes.append(f"Gamma Wall/Flip 資料日期 {gamma_date} (來源 {gsrc})")
 
