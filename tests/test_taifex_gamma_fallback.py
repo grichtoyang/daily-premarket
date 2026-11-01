@@ -1,9 +1,26 @@
 import unittest
 
-from src.sources.taifex import _gamma_status, _sync_gamma_unavailable
+from src.sources.taifex import _gamma_status, _sync_gamma_unavailable, _valid_gex_levels
 
 
 class GammaFallbackAvailabilityTests(unittest.TestCase):
+    def test_validates_source_schema_and_sorts_levels(self):
+        rows = [
+            {"strike": 45600, "call_gex_1pct": 20, "put_gex_1pct": -5,
+             "net_gex_1pct": 15, "gross_gex_1pct": 25},
+            {"strike": 45500, "call_gex_1pct": 10, "put_gex_1pct": -8,
+             "net_gex_1pct": 2, "gross_gex_1pct": 18},
+            {"strike": 0, "call_gex_1pct": 1, "put_gex_1pct": -1,
+             "net_gex_1pct": 0, "gross_gex_1pct": 2},
+            {"strike": 45700, "call_gex_1pct": "bad", "put_gex_1pct": -1,
+             "net_gex_1pct": 0, "gross_gex_1pct": 2},
+        ]
+        result = _valid_gex_levels(rows)
+        self.assertEqual([row["strike"] for row in result], [45500.0, 45600.0])
+        self.assertEqual(result[0]["net_gex_1pct"], 2.0)
+
+    def test_missing_levels_returns_empty_list(self):
+        self.assertEqual(_valid_gex_levels(None), [])
     def test_proxy_success_clears_recovered_gamma_fields(self):
         unavailable = ["gamma_wall", "gamma_flip", "gex"]
         result = _sync_gamma_unavailable(unavailable, 44500, 44049.22)
