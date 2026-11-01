@@ -394,3 +394,26 @@ P1 尚未開始。啟動前必須：
 | DATA-UI-03 完成 | NOT DONE |
 
 - 本輪唯讀；未改程式、資料或部署設定。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 21. 2026-11-01 DATA-UI-03 GEX 資料鏈第一階段
+
+- UI branch `phase2-p0-ui-fixes` 完成來源欄位保留、DATA_REPORT GEX 摘要／衍生履約價 JSON、Builder JSON 輸出及選擇權頁 GEX 分布卡片。
+- GEX 僅承接既有 Gamma endpoint 計算結果，未重寫 Gamma 模型；逐履約價數值驗證、排序，T0 日期不符拒收；compact proxy 不冒充 GEX。
+- 主要 Commit：source `613ce0146b19db70859560c430ae470e81d267b6`、schema fix `dfba4b6bd6074551330fe8e24c8139f0f4f62f32`、test `4c95cdefa92db010e47c023a7196c639242b3c6c`、DATA_REPORT `0c2f6aa8c7b038664959ae8c93b92121e6ab5091`、Builder `5125d66613b8e2ee21d09e914a299bac43779241`、UI `833b0220ad87d768a6805d68f47e5447f590fcc9`。
+- GitHub Actions Run `41316484376`：Success；offline self-test、React regression、DATA_REPORT parser regression、Dashboard JSON build、非部署 HTML preview 通過。
+- Recovery docs 僅記錄狀態；未 Merge／Deploy，未修改 Master／P0 baseline／V8。
+
+| 項目 | 狀態 |
+|---|---|
+| Gamma payload 欄位保留與逐履約價基本驗證 | PASS（程式與 CI） |
+| DATA_REPORT GEX 摘要／明細 JSON | PASS（程式與 CI build） |
+| Builder 將 GEX 傳至 Dashboard JSON | PASS（CI build；真實 GEX 有值情境尚未驗證） |
+| 選擇權頁 GEX 卡片接線 | PASS（靜態回歸）；實際視覺 NOT TESTED |
+| 當日 Gamma endpoint 與 GEX 數據 | NOT TESTED |
+| IV Rank／VIX Rank／期限 IV | NOT IMPLEMENTED |
+| Signed／Dealer GEX | BLOCKED |
+| Actions 增量耗時 <10 秒 | NOT TESTED |
+| Merge／Deploy | NOT DONE |
+
+- Auditor：單模型自我審查，非獨立多模型審核。
