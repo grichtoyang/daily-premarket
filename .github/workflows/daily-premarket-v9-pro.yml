@@ -24,6 +24,11 @@ on:
 permissions:
   contents: write
 
+# Serialize dashboard builds per branch to prevent concurrent generated-history pushes.
+concurrency:
+  group: daily-premarket-v9-pro-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
