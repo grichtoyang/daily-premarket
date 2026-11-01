@@ -31,7 +31,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("v:parseOptNetValue(x[3])", self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
         match = re.search(r"function parseOptNetValue\(e\)\{[^}]+\}", self.html)
-        self.assertIsNotNone(match, "Chart number normalizer qn must exist")
+        self.assertIsNotNone(match, "Chart number normalizer parseOptNetValue must exist")
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for chart number parsing tests")
         script = (
