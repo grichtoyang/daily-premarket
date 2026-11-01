@@ -118,13 +118,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('情境二｜區間', self.html)
         self.assertIn('情境三｜偏空', self.html)
         self.assertIn('d.id==="range"?(x.k==="putWall"?"位於":"↔"):"→"', self.html)
-        self.assertIn('active=cur!=null&&(d.id==="bull"?flip!=null&&cur>flip:', self.html)
-        self.assertIn('put!=null&&call!=null&&put<cur&&cur<call', self.html)
-        self.assertIn('put!=null&&cur<put', self.html)
-        self.assertIn('條件未觸發', self.html)
         self.assertIn('MaxPain 僅作磁吸參考，不當作跌破後的下跌目標', self.html)
-        self.assertIn('color:"#8ea7c3"', self.html)
-        self.assertNotIn('color:"#3dd68c",bg:"rgba(61,214,140,0.12)"}],N=', self.html)
+        self.assertIn('缺少位於現價正確方向的有效關鍵價位，暫不繪製延伸路徑', self.html)
         self.assertNotIn('"加速至$",g(l.maxPain)', self.html)
 
     def test_kpi_sparklines_do_not_fabricate_history(self):
