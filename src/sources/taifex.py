@@ -96,16 +96,16 @@ def _valid_gex_levels(levels) -> list[dict]:
             continue
         try:
             strike = float(row.get("strike"))
-            net_gex = float(row.get("net_gex"))
-            gross_gex = float(row.get("gross_gex"))
-            call_gex = float(row.get("call_gex"))
-            put_gex = float(row.get("put_gex"))
+            net_gex = float(row.get("net_gex_1pct"))
+            gross_gex = float(row.get("gross_gex_1pct"))
+            call_gex = float(row.get("call_gex_1pct"))
+            put_gex = float(row.get("put_gex_1pct"))
         except (TypeError, ValueError):
             continue
         if not all(math.isfinite(v) for v in (strike, net_gex, gross_gex, call_gex, put_gex)) or strike <= 0:
             continue
-        valid.append({**row, "strike": strike, "net_gex": net_gex, "gross_gex": gross_gex,
-                      "call_gex": call_gex, "put_gex": put_gex})
+        valid.append({**row, "strike": strike, "net_gex_1pct": net_gex, "gross_gex_1pct": gross_gex,
+                      "call_gex_1pct": call_gex, "put_gex_1pct": put_gex})
     return sorted(valid, key=lambda item: item["strike"])
 
 
