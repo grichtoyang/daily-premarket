@@ -107,3 +107,35 @@ P1 尚未開始。啟動前必須：
 | 日期 | 更新 |
 |---|---|
 | 2026-11-01 | 建立專案進度基準；記錄 P0 結案待辦、Dashboard 缺陷、CDN NOT TESTED、分支整合 BLOCKED、P1 未啟動。 |
+
+
+## 8. 2026-11-01 最新狀態追加
+
+### P0 視覺與自動化驗收
+- 使用者確認目前 Dashboard 所有先前指出的圖示／文字重疊均已消失：PASS（使用者畫面驗收）。
+- Build／Deploy Run `41297437934`：PASS。
+- Integration Run `41297437923`：PASS。
+- 17F offline self-tests：PASS（以該次 Workflow log 為證）。
+- 原始 11 張基準截圖逐張比對：NOT TESTED；不阻擋目前重疊問題結案。
+
+### 五個新異常區塊
+以下僅為使用者截圖觀察，尚未讀取相同 T0 的 DATA_REPORT／JSON／HTML／來源資料，故根因均未確認：
+
+| ID | 區塊 | 初步假說／待查 | 狀態 |
+|---|---|---|---|
+| DATA-UI-01 | 借券／券 | 單位換算、餘額與變化值口徑、張／股倍率 | BLOCKED：待查來源欄位與 Builder formatter |
+| DATA-UI-02 | 選擇權法人交易 | 圖表的 0 日與明細日夜盤口數不一致；查 schema／series mapping／欄位定義 | BLOCKED：待查原始輸入與 JSON |
+| DATA-UI-03 | IV／GEX 深度 | PCR、Vol% 可用但 GEX／IV Rank／Term unavailable；查來源與計算是否實作 | BLOCKED：待查原始輸入與計算程式 |
+| DATA-UI-04 | 三劇本路徑 | 未校準機率不顯示可能符合規則，但主圖空白仍須查 payload／rendering | BLOCKED：待查 JSON 與前端元件 |
+| DATA-UI-05 | 相關性熱圖 | 畫面提示日期對齊樣本不足；查歷史資料、日期對齊及樣本門檻 | BLOCKED：上游原因未確認 |
+
+### Git 基準（2026-11-01 查證）
+- P0 branch `phase2-p0-data-quality` HEAD：`49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`。
+- Recovery branch `ops/recovery-handoff` 更新前 HEAD：`d07f384157b9ca919019a903b1b373d9ae45fb84`。
+- 本次 Recovery 文件更新 Commit：`2432be63f7afa6bcf4d2ba74a2cecc16630fb21d`（RECOVERY.md）；PROGRESS.md 本次更新後續 Commit 待補。
+- 未修改 P0／master／V8／程式／Dashboard／Workflow；未 Merge。
+
+### 下一步
+1. 先對五個區塊做唯讀根因追蹤：同一 T0 的 DATA_REPORT → V9 Pro JSON → Builder → HTML 元件。
+2. 分類根因並提出最小修正方案；未經確認不改程式。
+3. 五項問題釐清後再決定 P0 收尾／P1 啟動順序；P1 尚未開始。
