@@ -83,10 +83,11 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
-    def test_market_index_rows_have_no_random_sparkline(self):
-        self.assertNotIn("function gf({data:e,height:n=220})", self.html)
+    def test_market_index_renderer_exists_without_fabricated_sparkline(self):
+        self.assertIn("function gf({data:e,height:n=220})", self.html)
+        self.assertIn('走勢(無資料)', self.html)
+        self.assertIn('F+f/2,k+t/2+1', self.html)
         self.assertNotIn("(Math.random()-0.5)*0.6", self.html)
-
     def test_financing_gauge_uses_dynamic_range(self):
         self.assertIn(
             "F=Math.max(0,Math.floor((e-1000)/1000)*1000),a=F+2000,v=(e-F)/(a-F)",
