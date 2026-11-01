@@ -1229,23 +1229,28 @@ def run_17f_self_tests():
         # SQLite date attribution must follow explicit T0, not the runner's current date.
         with tempfile.TemporaryDirectory() as tmp:
             test_db=str(pathlib.Path(tmp)/"t0-test.db")
+            assert save_today_to_db(49,{'spot_close':90.0},{},'20261027',test_db)
             assert save_today_to_db(50,{'spot_close':95.0},{},'20261028',test_db)
+            assert update_next_day_pct('20261028',95.0,test_db)
             assert update_next_day_pct('20261029',100.0,test_db)
             assert save_today_to_db(51,{'spot_close':100.0},{},'20261029',test_db)
             conn=sqlite3.connect(test_db)
             rows=conn.execute("SELECT date,spot_close,next_day_pct FROM v9_pro_history ORDER BY date").fetchall()
-            conn.close()
-            assert rows[0][0]=='2026-10-28'
-            assert abs(rows[0][2]-(100.0-95.0)/95.0*100)<1e-6
-            assert rows[1][0]=='2026-10-29'
-            # A repeated T0 must not leapfrog an already-labeled prior row and
-            # incorrectly attach the current return to an older history row.
+            assert rows[0][0]=='2026-10-27'
+            assert abs(rows[0][2]-(95.0-90.0)/90.0*100)<1e-6
+            assert rows[1][0]=='2026-10-28'
+            assert abs(rows[1][2]-(100.0-95.0)/95.0*100)<1e-6
+            # Simulate an already-labeled latest prior row while an older row
+            # remains unlabeled. Current T0 must not leapfrog to the older row.
+            conn.execute("UPDATE v9_pro_history SET next_day_pct=1.0 WHERE date='2026-10-29'")
+            conn.commit(); conn.close()
             assert update_next_day_pct('20261030',110.0,test_db) is False
             conn=sqlite3.connect(test_db)
             after=conn.execute("SELECT date,spot_close,next_day_pct FROM v9_pro_history ORDER BY date").fetchall()
             conn.close()
-            assert after[0][0]=='2026-10-28' and after[0][2] is not None
-            assert after[1][0]=='2026-10-29' and after[1][2] is None
+            assert after[0][0]=='2026-10-27' and after[0][2] is not None
+            assert after[1][0]=='2026-10-28' and after[1][2] is not None
+            assert after[2][0]=='2026-10-29' and after[2][2]==1.0
         # Legacy V8/V9 tables must both exist before init_db; init_db creates
         # any missing counterpart, so creating V8 after the first call collides.
         with tempfile.TemporaryDirectory() as tmp:
