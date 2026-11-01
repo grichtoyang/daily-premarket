@@ -24,6 +24,11 @@ on:
 permissions:
   contents: read
 
+# Keep repeated P0 integration checks for this branch serialized.
+concurrency:
+  group: p0-data-report-margin-ratio-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   data-report-integration:
     runs-on: ubuntu-latest
