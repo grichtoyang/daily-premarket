@@ -139,3 +139,29 @@ P1 尚未開始。啟動前必須：
 1. 先對五個區塊做唯讀根因追蹤：同一 T0 的 DATA_REPORT → V9 Pro JSON → Builder → HTML 元件。
 2. 分類根因並提出最小修正方案；未經確認不改程式。
 3. 五項問題釐清後再決定 P0 收尾／P1 啟動順序；P1 尚未開始。
+
+
+## 9. 五個 Dashboard 區塊初輪根因結果（T0 2026-10-30）
+
+查核依據：
+- DATA_REPORT SHA `b25266b606408615e247cdeecd7641fc52fce26b`
+- Dashboard JSON SHA `9f031928b02f9b652e9ff31f0397224db2086cb4`
+- Builder SHA `011224e54a32ddbf52db6fc1347d2c865fa010eb`
+- React template SHA `018fcff6bd49f7f796904fed47d96784aec8fe26`
+
+| ID | 初輪查核結論 | 狀態 |
+|---|---|---|
+| DATA-UI-01 借券／券 | 借券餘額 4,651,514 張與 465.2 萬張為等值換算；融券 233,537 張換算正確。但 DATA_REPORT 有借券賣出餘額 36,178 張、增減 -1,273 張，JSON 缺少 `borrowedSell`，前端讀取不到。 | 單位換算 PASS；借券賣出欄位傳遞 FAIL |
+| DATA-UI-02 選擇權法人交易 | JSON 明確有法人日夜盤口數；前端 `Number(x[3]||0)` 遇到 `+6,624` 這類含逗號字串轉成 NaN，圖表顯示 0。 | FAIL：前端數字解析錯誤 |
+| DATA-UI-03 IV／GEX 深度 | JSON options 沒有 GEX／IV Rank／Term；Builder 也註明 DATA_REPORT 未提供。Unavailable 屬正確缺值呈現。 | 缺值呈現 PASS；補資料源／計算 NOT TESTED |
+| DATA-UI-04 三劇本路徑 | Template 明確以「情境機率未經回測校準，暫不顯示百分比」取代 chart；三種價格情境已在下方列出。不是資料缺漏。 | 防止未驗證機率 PASS；替代圖形需求待確認 |
+| DATA-UI-05 相關性熱圖 | JSON matrix／labels 為空；SQLite 3 筆、有效 filled 2；Builder 直接輸出硬編碼空矩陣，尚未執行相關係數計算。 | 空狀態 PASS；相關性計算 NOT IMPLEMENTED |
+
+### 建議最小修正順序
+1. 修正借券賣出餘額／增減由 DATA_REPORT 到 JSON 的欄位傳遞。
+2. 修正選擇權法人圖表對千分位字串的解析，補上正／負／逗號／缺值測試。
+3. 其餘三項先不造假資料、不把 unavailable 轉 0；另行定義資料源、三劇本呈現方式及相關性樣本門檻。
+
+本輪為單模型唯讀自我審查，未修改程式或執行修正測試；P0 程式修正尚未開始，P1 尚未啟動。
+- Recovery 文件更新 Commit：`2432be63f7afa6bcf4d2ba74a2cecc16630fb21d`（RECOVERY 初次更新）；`4dbd7fbe11363fb672a182d03fc1d042aec55fa7`（RECOVERY 根因追加）。
+- 本次 PROGRESS 更新 Commit：待遠端寫入後補登。
