@@ -83,6 +83,21 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
+    def test_market_index_rows_have_no_random_sparkline(self):
+        self.assertNotIn("function gf({data:e,height:n=220})", self.html)
+        self.assertNotIn("(Math.random()-0.5)*0.6", self.html)
+
+    def test_financing_gauge_uses_dynamic_range(self):
+        self.assertIn(
+            "F=Math.max(0,Math.floor((e-1000)/1000)*1000),a=F+2000,v=(e-F)/(a-F)",
+            self.html,
+        )
+        self.assertNotIn("F=7000,a=9000", self.html)
+
+    def test_futures_volume_bar_is_capped_to_available_height(self):
+        self.assertIn("Math.min(1,o/Math.max(200000,o))*20", self.html)
+        self.assertNotIn("o/200000*22", self.html)
+
     def test_inline_javascript_syntax(self):
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for React template syntax validation")
