@@ -1,0 +1,71 @@
+name: V9 UI Fixes Regression
+
+on:
+  push:
+    branches:
+      - phase2-p0-ui-fixes
+    paths:
+      - "scripts/v9_pro_builder.py"
+      - "templates/v9-pro-react-template.html"
+      - "tests/test_builder_option_tables.py"
+      - "tests/test_react_template_static.py"
+      - ".github/workflows/test-v9-ui-fixes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v9-ui-fixes-regression-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout UI fixes branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run V9 builder offline self-tests
+        run: python scripts/v9_pro_builder.py --self-test
+
+      - name: Install Acorn JavaScript parser
+        run: npm install --prefix /tmp/v9-js-parser acorn
+
+      - name: Run React template regression tests
+        env:
+          NODE_PATH: /tmp/v9-js-parser/node_modules
+        run: python -m unittest discover -s tests -p "test_react_template_static.py" -v
+
+      - name: Run DATA_REPORT parser regression tests
+        run: python -m unittest discover -s tests -p "test_builder_option_tables.py" -v
+
+      - name: Build dashboard JSON and verify borrowed securities fields
+        run: |
+          set -euo pipefail
+          python scripts/v9_pro_builder.py --data_report "data_reports/DATA_REPORT_20261030.md" --out "/tmp/v9-ui-fixes-data.json" --date "20261030"
+          python -m json.tool /tmp/v9-ui-fixes-data.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("/tmp/v9-ui-fixes-data.json").read_text(encoding="utf-8"))
+          margin = data["margin"]
+          assert margin["borrowedSell"] == 36178.0, margin
+          assert margin["borrowedSellDiff"] == -1273.0, margin
+          assert margin["borrowedSellDiffScope"] == "上櫃（上市 TWT93U 未取得）", margin
+          assert len(data["options"]["instOpt"]) >= 3
+          print("BORROWED_SELL_BALANCE=PASS", margin["borrowedSell"])
+          print("BORROWED_SELL_CHANGE_SCOPE=PASS", margin["borrowedSellDiff"], margin["borrowedSellDiffScope"])
+          print("OPTIONS_INSTITUTIONAL_TABLE=PASS")
+          PY
