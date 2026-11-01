@@ -22,6 +22,27 @@ class ReactTemplateStaticTests(unittest.TestCase):
         for binding in ("l.factor_details", "l.instOptForce", "n.top10Call", "n.top10Put"):
             self.assertIn(binding, self.html)
 
+    def test_borrowed_securities_fields_and_scope_are_rendered(self):
+        for field in ("borrowedSell", "borrowedSellDiff", "borrowedSellDiffScope"):
+            self.assertIn(field, self.html)
+        self.assertIn("借券賣出增減｜", self.html)
+
+    def test_option_institutional_chart_parses_signed_thousands(self):
+        self.assertIn("v:qn(x[3])", self.html)
+        self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
+        match = re.search(r"function qn\\(e\\)\\{[^}]+\\}", self.html)
+        self.assertIsNotNone(match, "Chart number normalizer qn must exist")
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node.js is required for chart number parsing tests")
+        script = (
+            match.group(0)
+            + ';const actual=[qn("+6,624"),qn("-4,937"),qn("0"),qn(null),qn(""),qn("not-a-number")];'
+            + 'const expected=[6624,-4937,0,null,null,null];'
+            + 'if(JSON.stringify(actual)!==JSON.stringify(expected)){console.error(actual);process.exit(1)}'
+        )
+        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_known_hardcoded_market_samples_are_absent(self):
         forbidden = (
             "-86043", "85052", "48600", "1972口", "48500", "53500", "47000",
