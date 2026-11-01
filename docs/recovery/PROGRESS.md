@@ -279,3 +279,26 @@ P1 尚未開始。啟動前必須：
 
 ### 下一步
 由使用者檢查非部署 HTML Artifact 的相關性區塊；確認有效樣本與樣本不足兩種狀態的呈現。完成畫面驗收後再決定是否結案。不得自行部署或 Merge。
+
+
+## 14. 2026-11-01 DATA-UI-05 重複提示修正與手機驗收
+
+- UI branch：`phase2-p0-ui-fixes`
+- 最新修正 Commit：`8a74e30144571413cfd2ea42bfb646500cf02214`
+- 本次僅修改 `templates/v9-pro-react-template.html`，移除樣本不足時熱圖下方重複的說明文字；保留熱圖區內唯一提示及有效矩陣時的欄位標籤。
+- GitHub Actions Run `41308547210`：Success；Regression job 全部步驟成功。
+- Artifact：`V9-UI-Fixes-Preview-20261030`，Artifact ID `13084755255`。
+- 使用者新版手機截圖驗收：樣本 `0/5` 提示只顯示一次，沒有空白矩陣／色階，說明卡片正常。樣本不足狀態手機視覺 PASS。
+
+### 最新狀態
+| 項目 | 狀態 |
+|---|---|
+| DATA-UI-05 樣本不足狀態手機畫面 | PASS |
+| 重複提示移除 | PASS |
+| CI 與非部署預覽產生 | PASS |
+| 有效樣本（>=5）熱圖實際畫面 | NOT TESTED |
+| 桌面視覺 | NOT TESTED |
+| 部署／Merge／Cherry-pick | NOT DONE |
+| DATA-UI-03／04、V8、Master | 未修改 |
+
+- 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
