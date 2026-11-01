@@ -168,3 +168,46 @@ P1 尚未開始。啟動前必須：
 
 - PROGRESS 初輪根因結果更新 Commit：`cf09ba27d1a66c404052cdf2833cdb397382ea83`。
 - 本次交接文件更新完成；最新 Recovery branch HEAD 請以 GitHub 查詢結果為準。
+
+
+## 10. 2026-11-01 DATA-UI-01／02 修正分支進度
+
+### Git 基準（最新遠端查證）
+- P0 原分支 `phase2-p0-data-quality` HEAD：`49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`（未修改）。
+- UI 修正分支 `phase2-p0-ui-fixes` HEAD：`eb861a470ff5a90faa73ae4097c3c15d227f3d10`。
+- UI 修正分支由上述 P0 HEAD 建立；compare：ahead 14、behind 0。
+- master HEAD：`0ac95b2521e7bdcb357431cc7725da4e2c26e602`（未修改）。
+- Recovery 文件分支本次更新前 HEAD：`7e5bd237ab229a5108adb13b5200707136b4bed4`。
+- 本次 compare 僅有五個變更檔案：新增 UI 專用回歸 Workflow；修改 V9 Builder、React template、兩個測試檔。未修改 V8 檔案。
+
+### 已實作項目
+1. **DATA-UI-01 借券賣出**
+   - Builder 解析 DATA_REPORT 的借券賣出餘額與增減，並傳遞至 JSON：`borrowedSell`、`borrowedSellDiff`、`borrowedSellDiffScope`。
+   - 若報告註記「借券賣出增減僅上櫃值」，JSON／Dashboard 明確標示「上櫃（上市 TWT93U 未取得）」；不得誤標成上市櫃合計。
+   - 借券賣出餘額及增減分開呈現；不把存量當成當日變化。
+
+2. **DATA-UI-02 選擇權法人交易**
+   - 新增專用數字解析函式 `v9ProOptionNetNumber`，移除千分位逗號後解析數值，保留正負號。
+   - 缺值／非數字回傳 null，圖表過濾無效點，不以 0 假裝有效資料。
+   - 保留 React 內部事件註冊函式 `qn` 原始宣告及呼叫，不改動 React 內部行為。
+
+### 測試與證據
+- UI 專用 Workflow Run `41301487409`：Success。
+- V9 Builder offline self-tests：PASS。
+- React template tests：10 tests，PASS（含 JS syntax、千分位正負數解析、缺值及 React 內部函式保護）。
+- DATA_REPORT parser tests：3 tests，PASS（含借券餘額／增減／資料範圍）。
+- Builder JSON 整合檢查：PASS。
+  - `borrowedSell=36178.0`
+  - `borrowedSellDiff=-1273.0`
+  - `borrowedSellDiffScope=上櫃（上市 TWT93U 未取得）`
+- 其餘 DATA-UI-03／04／05 未修改，維持既有缺值／未校準呈現。
+
+### 尚未驗證／尚未完成
+- 桌面／手機實際瀏覽器視覺驗收：NOT TESTED。
+- UI 修正分支尚未部署 GitHub Pages：NOT DONE。
+- 尚未 Merge／Cherry-pick 回 P0 或 master：NOT DONE；不得自行執行。
+- 本機／OpenCode 工作目錄 dirty status：NOT TESTED。
+- 以上為單模型程式碼與 CI 自我審查，非獨立多模型 Auditor。
+
+### 下一個唯一工作
+在 `phase2-p0-ui-fixes` 產生不部署的 T0 預覽 HTML，確認兩個修正區塊的資料注入與呈現；再交由使用者做桌面／手機畫面驗收。不得觸碰 P0 原分支、master、V8 或執行部署／合併。
