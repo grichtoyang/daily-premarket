@@ -26,6 +26,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         for field in ("borrowedSell", "borrowedSellDiff", "borrowedSellDiffScope"):
             self.assertIn(field, self.html)
         self.assertIn("借券賣出增減｜", self.html)
+        self.assertIn('function qn(e,n){kr(e,n),kr(e+"Capture",n)}', self.html)
 
     def test_option_institutional_chart_parses_signed_thousands(self):
         self.assertIn("v:v9ProOptionNetNumber(x[3])", self.html)
