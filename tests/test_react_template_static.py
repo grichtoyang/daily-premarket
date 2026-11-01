@@ -81,9 +81,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         )
 
     def test_kpi_sparklines_do_not_fabricate_history(self):
-        match = re.search(r"function e2\\([^)]*\\)\\{([^}]*)\\}", self.html)
-        self.assertIsNotNone(match, "KPI sparkline helper must remain identifiable")
-        self.assertEqual(match.group(1), "return[]")
+        self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
     def test_inline_javascript_syntax(self):
         node = shutil.which("node")
