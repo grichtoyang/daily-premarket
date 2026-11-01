@@ -1,8 +1,8 @@
 # DATA_REPORT_20261030
 
-- 報告日期：`2026-10-31`
+- 報告日期：`2026-11-01`
 - T0 交易日期：`2026-10-30`
-- 資料產出時間：`2026-10-31 22:52:48`
+- 資料產出時間：`2026-11-01 12:23:06`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -173,36 +173,36 @@
 |---|---|---|---|---|---|
 | WTI原油期貨 | CL=F | 104.12 | 2.12 | +2.08 | Yahoo Finance Chart API |
 | 黃金期貨 | GC=F | 3,898.90 | -132.50 | -3.29 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 77,381.15 | 182.94 | +0.24 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 77,661.14 | 462.93 | +0.60 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：二哥神話破滅？聯電兩天慘崩近13%、股民嘆「準備回60元」　不敗教主曝觀點：還是可以買
+- 事件1：「地方創生利他行動168專案」獎勵金最高68萬 國發會助青年團隊持續扎根
+  - 來源：Yahoo 台股；發布時間：2026-10-31T14:34:06Z；台北時間：2026-10-31 22:34
+  - 摘要：68萬元是國發會「地方創生利他行動168專案」的最高獎勵金，提供給地方創生團隊申請一年期的執行計畫在今年11月底截止前，國發會一起邀請更多地方創生團隊，10月31日至11月1日於華山文創園區舉辦成果發表會暨市集活動，由青年團隊交流利他倡議行
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%9C%B0%E6%96%B9%E5%89%B5%E7%94%9F%E5%88%A9%E4%BB%96%E8%A1%8C%E5%8B%95168%E5%B0%88%E6%A1%88-%E7%8D%8E%E5%8B%B5%E9%87%91%E6%9C%80%E9%AB%9868%E8%90%AC-%E5%9C%8B%E7%99%BC%E6%9C%83%E5%8A%A9%E9%9D%92%E5%B9%B4%E5%9C%98%E9%9A%8A%E6%8C%81%E7%BA%8C%E6%89%8E%E6%A0%B9-143406311.html
+- 事件2：二哥神話破滅？聯電兩天慘崩近13%、股民嘆「準備回60元」　不敗教主曝觀點：還是可以買
   - 來源：Yahoo 台股；發布時間：2026-10-31T04:25:00Z；台北時間：2026-10-31 12:25
   - 摘要：[FTNN新聞網]記者陳宣穎／綜合報導晶圓二哥聯電（2303）法說會後股價狂跌，繼29日收在跌停價115.5元，30日再跌3.46%、收在111.5元，連2天跌幅達12.89%，此情...
   - 原文連結：https://tw.stock.yahoo.com/news/%E4%BA%8C%E5%93%A5%E7%A5%9E%E8%A9%B1%E7%A0%B4%E6%BB%85-%E8%81%AF%E9%9B%BB%E5%85%A9%E5%A4%A9%E6%85%98%E5%B4%A9%E8%BF%9113-%E8%82%A1%E6%B0%91%E5%98%86-%E6%BA%96%E5%82%99%E5%9B%9E60%E5%85%83-%E4%B8%8D%E6%95%97%E6%95%99%E4%B8%BB%E6%9B%9D%E8%A7%80%E9%BB%9E-042500633.html
-- 事件2：大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「第一桶金300萬」急問致富秘訣
+- 事件3：大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「第一桶金300萬」急問致富秘訣
   - 來源：Yahoo 台股；發布時間：2026-10-30T13:45:00Z；台北時間：2026-10-30 21:45
   - 摘要：[FTNN新聞網]記者林欣愉／綜合報導一名大三學生靠著打工、兼職家教，累積近100萬元資產，目前主要投資市值型ETF「富邦台50」（006208），長期目標是存滿100張...
   - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%A7%E4%B8%89%E7%94%9F%E9%9D%A0%E6%89%93%E5%B7%A5%E5%AD%98%E8%BF%91%E7%99%BE%E8%90%AC-%E9%8E%96%E5%AE%9A006208%E6%8B%9A100%E5%BC%B5-%E8%81%BD%E9%95%B7%E8%BC%A9%E5%96%8A-%E7%AC%AC-%E6%A1%B6%E9%87%91300%E8%90%AC-134500368.html
-- 事件3：26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相
+- 事件4：26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相
   - 來源：Yahoo 台股；發布時間：2026-10-30T11:10:00Z；台北時間：2026-10-30 19:10
   - 摘要：上半年台股漲勢頻頻，近期卻屢屢震盪，投資人的心態也隨之起伏。有網友透露，上半年總資產衝到400萬，但近期因修正獲利回吐60萬，雖然仍是賺錢，感覺卻難以接受。
   - 原文連結：https://tw.stock.yahoo.com/news/26%E6%AD%B2%E7%94%B7%E7%82%92%E8%82%A1%E7%8D%B2%E5%88%A9-%E8%B3%BA400-340%E8%90%AC-%E5%BF%AB%E5%B4%A9%E6%BD%B0-%E7%B6%B2%E6%8F%AD%E7%97%9B%E8%8B%A6%E7%9C%9F%E7%9B%B8-111000895.html
-- 事件4：9歲已買0050「每天看漲跌」！ 網驚：比巴菲特更早
+- 事件5：9歲已買0050「每天看漲跌」！ 網驚：比巴菲特更早
   - 來源：Yahoo 台股；發布時間：2026-10-30T10:52:00Z；台北時間：2026-10-30 18:52
   - 摘要：近年來投資理財觀念普及，開始投資的年齡也有下降趨勢，有網友表示家中孩子雖然只有9歲，但已買了10股0050，且每天都關注動態，之後還想買台積電，引發眾人熱議。
   - 原文連結：https://tw.stock.yahoo.com/news/9%E6%AD%B2%E5%B7%B2%E8%B2%B70050-%E6%AF%8F%E5%A4%A9%E7%9C%8B%E6%BC%B2%E8%B7%8C-%E7%B6%B2%E9%A9%9A-%E6%AF%94%E5%B7%B4%E8%8F%B2%E7%89%B9%E6%9B%B4%E6%97%A9-105200516.html
-- 事件5：低軌衛星綠油油！「這2檔」一度跌停暴跌8%　國巨、群創、騰輝也殺破7%
+- 事件6：低軌衛星綠油油！「這2檔」一度跌停暴跌8%　國巨、群創、騰輝也殺破7%
   - 來源：Yahoo 台股；發布時間：2026-10-30T10:04:00Z；台北時間：2026-10-30 18:04
   - 摘要：[FTNN新聞網]記者陳献朋／綜合報導受美股科技股重跌、市場預期聯準會升息等因素影響，台股大盤今（30）明顯殺低，加權指數收45211.33點，下跌1156.20點，跌幅...
   - 原文連結：https://tw.stock.yahoo.com/news/%E4%BD%8E%E8%BB%8C%E8%A1%9B%E6%98%9F%E7%B6%A0%E6%B2%B9%E6%B2%B9-%E9%80%992%E6%AA%94-%E5%BA%A6%E8%B7%8C%E5%81%9C%E6%9A%B4%E8%B7%8C8-%E5%9C%8B%E5%B7%A8-%E7%BE%A4%E5%89%B5-100400048.html
-- 事件6：中聯停工引爆沙拉油荒 經濟部：缺口仍大 協調業者年底擴量
-  - 來源：Yahoo 台股；發布時間：2026-10-30T09:42:55Z；台北時間：2026-10-30 17:42
-  - 摘要：中聯致癌油事件停工後，對國內沙拉油供應衝擊未解。經濟部今（30）日證實，國內油品缺口仍然很大，因應食品業者用油需求，已責成台糖12月起每月再增產500噸，另協調油品進口商第四季多進口5000公噸。經濟部也呼籲地方政府及業者，讓合格檢驗的商品
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%AD%E8%81%AF%E5%81%9C%E5%B7%A5%E5%BC%95%E7%88%86%E6%B2%99%E6%8B%89%E6%B2%B9%E8%8D%92-%E7%B6%93%E6%BF%9F%E9%83%A8-%E7%BC%BA%E5%8F%A3%E4%BB%8D%E5%A4%A7-%E5%8D%94%E8%AA%BF%E6%A5%AD%E8%80%85%E5%B9%B4%E5%BA%95%E6%93%B4%E9%87%8F-094255764.html
 - 事件7：Federal Reserve Board announces approval of application by The Bank of Nova Scotia
   - 來源：Federal Reserve；發布時間：Thu, 29 Oct 2026 20:30:00 GMT；台北時間：2026-10-30 04:30
   - 摘要：Federal Reserve Board announces approval of application by The Bank of Nova Scotia
@@ -215,14 +215,14 @@
   - 來源：CNBC；發布時間：Fri, 30 Oct 2026 17:15:53 GMT；台北時間：2026-10-31 01:15
   - 摘要：The U.S. Department of the Treasury has announced new Series I bond rates through April 2027.
   - 原文連結：https://www.cnbc.com/2026/10/30/treasury-i-bond-rate-through-april-2027.html
-- 事件10：Anthropic's path to the Nasdaq just got a lot bumpier
+- 事件10：We're in our 70s. Should we pay off our 2.5% mortgage &#x2014; or put the money in a high-yield savings account?
+  - 來源：MarketWatch；發布時間：Sat, 31 Oct 2026 19:00:00 GMT；台北時間：2026-11-01 03:00
+  - 摘要：&#x201c;Let&#x2019;s say 10 years from now, when I&#x2019;m 84, we need a substantial amount of cash.&#x201d;
+  - 原文連結：https://www.marketwatch.com/story/we-are-in-our-70s-should-we-pay-off-our-2-5-mortgage-or-build-up-our-savings-5a35e9c1?mod=mw_rss_topstories
+- 事件11：Anthropic's path to the Nasdaq just got a lot bumpier
   - 來源：CNBC；發布時間：Sat, 31 Oct 2026 11:00:01 GMT；台北時間：2026-10-31 19:00
   - 摘要：Concerning projections from hyperscalers this week punished tech stocks and pushed the Nasdaq to its first three-week losing streak since March.
   - 原文連結：https://www.cnbc.com/2026/10/31/anthropic-ipo-ai-spending.html
-- 事件11：Meta outlook revised downward by S&P on cash flow and capex concerns
-  - 來源：CNBC；發布時間：Fri, 30 Oct 2026 22:42:26 GMT；台北時間：2026-10-31 06:42
-  - 摘要：Meta has been given a negative outlook by S&P Global Ratings due to the company's hefty capital expenditures and concerns about free cash flow.
-  - 原文連結：https://www.cnbc.com/2026/10/30/meta-outlook-to-revised-to-negative-by-sp-after-cash-flow-negative.html
 - 事件12：Trump called out Big Oil profits. Here’s how much their refining earnings have surged since
   - 來源：CNBC；發布時間：Sat, 31 Oct 2026 06:00:02 GMT；台北時間：2026-10-31 14:00
   - 摘要：Trump criticized Big Oil for making “too much money,” but oil majors have since reported surging refining earnings as fuel supplies tightened.
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-30 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F5 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-31 22:52:48 | 本機 |
+| 資料更新時間 | 2026-11-01 12:23:06 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -604,10 +604,10 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-30；資料時間：2026-10-31 22:52:48；時區：`Asia/Taipei`
+- 資料日期：2026-10-30；資料時間：2026-11-01 12:23:06；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 註記：同 T0 覆蓋：155 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
-- 未取得欄位 (2)：futures.gamma_wall, futures.gamma_flip
+- 註記：同 T0 覆蓋：4 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 未取得欄位 (0)：無
 - 註記：futures-price-after-hours 日期 2026-10-30 非今日 2026-11-02，視為無新節次，不採用
 - 註記：Gamma Wall/Flip 端點不可用（上游 502），標 unavailable
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
