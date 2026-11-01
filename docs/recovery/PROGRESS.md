@@ -372,3 +372,25 @@ P1 尚未開始。啟動前必須：
 | Merge／Cherry-pick／Deploy | NOT DONE |
 
 - Auditor：單模型自我審查，非獨立多模型審核。
+
+
+## 20. 2026-11-01 DATA-UI-03 第二輪資料鏈調查
+
+- 已唯讀檢查 TAIFEX source、DATA_REPORT template／實際報告、V9 Builder、Dashboard JSON 與 React 卡片。
+- 根因：options chain 目前只用履約價、Call/Put、成交量、OI；DATA_REPORT／JSON 沒有 IV Rank、Risk Reversal、期限 IV、逐履約價 Gamma／GEX 欄位。
+- 現有卡片標題「IV / GEX 深度」，實際圖表只畫 PCR、Call Vol%、Put Vol%，標題與內容不一致；GEX／IV Rank／Term unavailable 是正確缺值，不應填 0。
+- 官方 TAIFEX 有每日選擇權行情、每日 Delta、Put/Call Ratio、TAIWAN VIX；VIX 可作 30 日預期波動率歷史排名基礎，但需以「TAIWAN VIX Rank」命名，不等同單一履約價 IV Rank。
+- 期限 ATM IV 可評估由有效 Bid/Ask、到期時間、標的價格與利率／股利假設反解；GEX 可計算 gross exposure，但 OI 不提供持倉方向，signed/dealer GEX 需額外模型與驗證。Delta 不等於 Gamma。
+
+| 項目 | 狀態 |
+|---|---|
+| 缺值根因追查 | PASS |
+| 現有缺值誠實呈現 | PASS |
+| 卡片標題／內容一致性 | FAIL（已定位，待修正） |
+| TAIWAN VIX Rank 接入 | NOT TESTED |
+| 期限 ATM IV 計算 | NOT IMPLEMENTED |
+| Gross GEX 計算 | NOT IMPLEMENTED |
+| Signed／Dealer GEX | BLOCKED（方向估計方法未定） |
+| DATA-UI-03 完成 | NOT DONE |
+
+- 本輪唯讀；未改程式、資料或部署設定。Auditor 為單模型自我審查，非獨立多模型審核。
