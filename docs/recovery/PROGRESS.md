@@ -254,3 +254,28 @@ P1 尚未開始。啟動前必須：
 - 本機／OpenCode 工作目錄狀態：NOT TESTED。
 - Auditor 為單模型自我審查，非獨立多模型審核。
 - 下一步：確認是否需要桌面版視覺驗收；之後才可討論 UI fixes 回 P0 的整合方式，需另行取得使用者明確授權。
+
+
+## 13. 2026-11-01 DATA-UI-05 修正進度（最新）
+
+> 本節覆蓋前文將 DATA-UI-05 標示為 BLOCKED／NOT IMPLEMENTED 的舊狀態；歷史紀錄保留，不回溯改寫。
+
+- 工作分支：`phase2-p0-ui-fixes`
+- 最新 Commit：`4d2ccc4769f1df819601d70742312e75e388829d`
+- 變更檔案僅兩個：`scripts/v9_pro_builder.py`、`templates/v9-pro-react-template.html`。
+- 實作：缺值以 NULL 儲存；T0 日期正規化；同日重複資料跳過；僅使用完整且 eligible 的歷史樣本；排除非有限值；最低樣本數 5；計算 Pearson 矩陣；樣本不足／矩陣無效時不顯示假熱圖。
+- 舊歷史資料未全面重建；不合資格的舊資料不納入計算。
+- GitHub Actions Run `41307754019`：Success。Builder offline self-tests、React template regression、DATA_REPORT parser regression、Dashboard JSON build／欄位檢查、非部署 HTML preview 產生及上傳均成功。
+
+### 驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| DATA-UI-05 程式修正與 CI | PASS |
+| Android／桌面實際畫面 | NOT TESTED |
+| 正式部署 | NOT DONE |
+| Merge／Cherry-pick | NOT DONE |
+| DATA-UI-03／04 | 本輪未修改 |
+| V8／Master | 未修改 |
+
+### 下一步
+由使用者檢查非部署 HTML Artifact 的相關性區塊；確認有效樣本與樣本不足兩種狀態的呈現。完成畫面驗收後再決定是否結案。不得自行部署或 Merge。
