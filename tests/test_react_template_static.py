@@ -28,6 +28,11 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("借券賣出增減｜", self.html)
         self.assertIn('function qn(e,n){kr(e,n),kr(e+"Capture",n)}', self.html)
 
+    def test_borrowed_securities_table_stacks_on_mobile_without_wrapping_values(self):
+        self.assertIn('className:"borrowed-sbl-table"', self.html)
+        self.assertIn(".borrowed-sbl-table { grid-template-columns: minmax(0, 1fr); }", self.html)
+        self.assertIn(".borrowed-sbl-table > div > span:last-child { flex-shrink: 0; white-space: nowrap; }", self.html)
+
     def test_option_institutional_chart_parses_signed_thousands(self):
         self.assertIn("v:v9ProOptionNetNumber(x[3])", self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
