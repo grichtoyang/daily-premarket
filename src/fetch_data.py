@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 import argparse
+import json
 import os
 import sys
 import time
@@ -932,6 +933,38 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX),
             ("資料日期", _gm['date'] or MISSING, _gm_src)],
            ("項目", "數值", "資料來源")))
+    A("")
+    A("### 14A．GEX 整體曝險與履約價分布")
+    A("")
+    _gex_levels = _gm.get("levels") or []
+    _gex_valid = (_gm.get("gex_status") == "available" and bool(_gex_levels))
+    _gex_pos = sorted((r for r in _gex_levels if r.get("net_gex_1pct") is not None),
+                      key=lambda r: r["net_gex_1pct"], reverse=True)[:5]
+    _gex_neg = sorted((r for r in _gex_levels if r.get("net_gex_1pct") is not None),
+                      key=lambda r: r["net_gex_1pct"])[:5]
+    A(_tbl([
+        ("Net GEX（標的變動 1%）", _f2(_gm.get("net_gex_1pct")) if _gex_valid else MISSING, "TAIFEX Gamma model" if _gex_valid else "端點未提供"),
+        ("Gross GEX（標的變動 1%）", _f2(_gm.get("gross_gex_1pct")) if _gex_valid else MISSING, "TAIFEX Gamma model" if _gex_valid else "端點未提供"),
+        ("模型品質", _gm.get("quality") or MISSING, _gm.get("model") or MISSING),
+        ("履約價資料筆數", str(len(_gex_levels)) if _gex_valid else MISSING, f"資料日期：{_gm.get('date') or MISSING}"),
+        ("正 Net GEX 最大履約價", _fi(_gex_pos[0]["strike"]) if _gex_pos else MISSING, "依 Net GEX 排序"),
+        ("負 Net GEX 最低履約價", _fi(_gex_neg[0]["strike"]) if _gex_neg else MISSING, "依 Net GEX 排序")
+    ], ("項目", "數值", "資料來源")))
+    if _gex_valid:
+        A("- 正 Net GEX Top 5：" + "、".join(f"{_fi(r['strike'])}（{_f2(r['net_gex_1pct'])}）" for r in _gex_pos))
+        A("- 負 Net GEX Top 5：" + "、".join(f"{_fi(r['strike'])}（{_f2(r['net_gex_1pct'])}）" for r in _gex_neg))
+        A("")
+        A("#### GEX_LEVELS_JSON（僅衍生後逐履約價 GEX，不含原始報價）")
+        A("")
+        A("```json")
+        A(json.dumps({"date": _gm.get("date"), "underlying": _gm.get("underlying"),
+                      "model": _gm.get("model"), "quality": _gm.get("quality"),
+                      "net_gex_1pct": _gm.get("net_gex_1pct"),
+                      "gross_gex_1pct": _gm.get("gross_gex_1pct"),
+                      "levels": _gex_levels}, ensure_ascii=False, separators=(",", ":")))
+        A("```")
+    else:
+        A("- GEX 明細 unavailable；不以 Wall／Flip proxy 代替。")
     A("")
     A("### 15．Max Pain")
     A("")
