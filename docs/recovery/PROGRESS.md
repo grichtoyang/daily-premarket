@@ -339,3 +339,13 @@ P1 尚未開始。啟動前必須：
 - 使用者提供 911×1536 寬版 Dashboard 截圖；雙欄排列中的 8×8 相關性熱圖完整顯示，標籤／數值無明顯重疊，色彩與色階刻度可辨，卡片排列正常。
 - 寬版雙欄視覺 PASS；大型桌面寬度（如 1440px）NOT TESTED，不過度推論。
 - 本輪無程式／正式資料修改，無部署／合併。
+
+
+## 18. 2026-11-01 UI branch 與 P0 基底差異審查
+
+- Compare `phase2-p0-data-quality`（`49fd5b0d`）→ `phase2-p0-ui-fixes`（`98df6c78`）：ahead 31、behind 0，P0 為共同基底。
+- 僅變更 5 檔：UI 專用 Workflow、`scripts/v9_pro_builder.py`、`templates/v9-pro-react-template.html`、兩個對應測試檔。涵蓋 DATA-UI-01／02 與 DATA-UI-05，無額外檔案變更。
+- Workflow 靜態審查 PASS：只對 UI branch 執行，contents read；離線測試、JSON 驗證、非部署 HTML preview、Artifact 上傳；沒有 Pages deploy 或正式產物推送步驟。
+- P0 HEAD 維持 `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`；master HEAD 維持 `0ac95b2521e7bdcb357431cc7725da4e2c26e602`。
+- 未 Merge／Rebase／Cherry-pick／Deploy。DATA-UI-05 真實資料驗證仍 BLOCKED；1440px 視覺 NOT TESTED；本機工作目錄 NOT TESTED。
+- Auditor：單模型自我審查，非獨立多模型審核。
