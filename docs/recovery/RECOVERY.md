@@ -160,3 +160,43 @@ P0 Dashboard：
 4. 將文件 Commit／Push 到當前獲准的工作分支。
 5. 重新查詢 GitHub branch HEAD 並讀回文件，確認遠端保存成功。
 6. 不得只因為在聊天中寫了摘要，就宣稱交接點已保存。
+
+
+## 9. 2026-11-01 最新進度追加：P0 視覺驗收與五個待查區塊
+
+### 9.1 Git 狀態（本次唯讀查證）
+- Recovery 文件分支：`ops/recovery-handoff`，本次查證 HEAD：`d07f384157b9ca919019a903b1b373d9ae45fb84`。
+- P0 分支：`phase2-p0-data-quality`，本次查證 HEAD：`49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`。
+- P0 HEAD 的前一個程式修正 Commit：`80fb89e1a4959f242964c3f6d0891d2fb0677a46`；其後 `49fd5b0` 為每日 Dashboard 產物更新。
+- 本次只更新 Recovery 文件分支；未修改 P0、master、程式、Workflow、Dashboard 或 V8。
+- 本次未執行 Merge／Rebase／Force Push。
+
+### 9.2 P0 視覺驗收狀態更新
+使用者於 2026-11-01 明確確認：目前已逐頁檢查 Dashboard，所有先前指出的圖示／文字重疊均已消失。
+- 先前重疊問題：PASS（使用者實際畫面驗收）。
+- Build／Deploy：PASS（既有成功 Workflow Run 41297437934）。
+- Integration：PASS（既有成功 Workflow Run 41297437923）。
+- 17F offline self-tests：PASS（既有 Workflow log 記錄）。
+- 原始 11 張基準截圖逐張像素／內容比對：NOT TESTED；但不再作為目前重疊問題的阻塞條件，因使用者已確認現行畫面無重疊。
+
+### 9.3 使用者最新提供的五個異常區塊（新待查項目）
+注意：以下是依 2026-11-01 使用者提供的五張截圖建立的初步問題紀錄，不是已確認根因。不得僅憑截圖直接修改程式。
+
+| ID | 區塊 | 截圖觀察 | 初步調查方向 | 狀態 |
+|---|---|---|---|---|
+| DATA-UI-01 | 借券／券 | 上方變化值與下方餘額可能存在單位／倍率不一致；畫面同時出現 4,651,514 張、+465.2 萬張等數值 | 核對來源欄位原始單位、張／股換算、變化值與餘額是否使用同一口徑、前端 formatter | BLOCKED（尚未讀取該日 DATA_REPORT／JSON／Builder 對應欄位） |
+| DATA-UI-02 | 選擇權法人交易 | 圖表區顯示外資／投信／自營商／合計均為 0 日，但明細列仍有日盤與夜盤口數 | 核對「交易日數」欄位定義、資料來源 schema、日夜盤明細與圖表 series mapping；確認是否把天數誤當口數或資料欄位缺漏 | BLOCKED（尚未讀取原始輸入與 JSON） |
+| DATA-UI-03 | IV／GEX 深度 | PCR 0.61、Call/Put Vol% 有值；GEX、IV Rank、Term 顯示 unavailable | 分別追查來源可用性、計算引擎是否實作、必要輸入是否缺少；核對 PCR/Vol% 圖表單位與標籤 | BLOCKED（尚未讀取原始輸入與計算程式） |
+| DATA-UI-04 | 三劇本路徑 | Bias 20／偏空及三個價格情境有顯示；機率標示未驗證，主圖區空白 | 區分「刻意不顯示未校準機率」與「路徑主圖未渲染」；檢查 chart payload、canvas／SVG 初始化及空資料分支 | BLOCKED（尚未讀取 JSON 與前端元件） |
+| DATA-UI-05 | 相關性熱圖 | 顯示歷史日期對齊樣本不足，熱圖未計算 | 核對歷史序列是否取得、日期索引／交易日對齊、有效樣本數門檻、缺值剔除及 Builder 輸出 | BLOCKED（畫面提示支持樣本不足假說，但尚未查明上游原因） |
+
+### 9.4 五區塊根因調查順序（只讀定位，不先改碼）
+1. 固定 P0 分支與本次 Dashboard 對應的 T0／產物版本；確認截圖對應日期與實際 JSON。
+2. 讀取同一 T0 的 DATA_REPORT、V9 Pro JSON、Dashboard HTML，建立欄位追蹤鏈。
+3. 逐區塊追蹤：來源原始值 → DATA_REPORT → Builder 計算／正規化 → JSON 欄位 → 前端元件／formatter。
+4. 對每項根因分類：SOURCE_MISSING、SCHEMA_MISMATCH、CALCULATION_NOT_IMPLEMENTED、DATE_ALIGNMENT、FRONTEND_MAPPING／RENDERING、UNIT_CONVERSION。
+5. 先提交根因與最小修正方案，經使用者確認後才改動；不使用假資料補圖，不把 unavailable 強制轉成 0。
+6. 修正後執行對應單元測試、整合 Workflow、HTML／JS 語法檢查及桌面／手機視覺驗收。
+
+### 9.5 下一個唯一工作
+先完成五個區塊的唯讀資料追蹤與根因分類；本輪不啟動 P1、不修改 P0 程式、不合併分支。五項根因及修正範圍釐清後，再更新本文件並由使用者決定是否進入修正。
