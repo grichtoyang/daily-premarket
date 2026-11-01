@@ -4,7 +4,7 @@
     "skill": "daily-premarket-analysis-v9-pro",
     "date": "2026-10-30",
     "report_date": "2026-11-01",
-    "generated_at": "2026-11-01 12:23:06",
+    "generated_at": "2026-11-01 12:32:04",
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
@@ -762,14 +762,14 @@
       },
       {
         "l": "Bitcoin",
-        "v": 0.6,
-        "close": 77661.14,
+        "v": 0.62,
+        "close": 77680.51,
         "raw": [
           "Bitcoin",
           "BTC-USD",
-          "77,661.14",
-          "462.93",
-          "+0.60",
+          "77,680.51",
+          "482.30",
+          "+0.62",
           "Yahoo Finance Chart API"
         ]
       }
@@ -899,7 +899,7 @@
       },
       {
         "l": "Bitcoin",
-        "v": 0.6
+        "v": 0.62
       }
     ]
   },
@@ -1655,7 +1655,7 @@
         "target": "搭配外資現貨與期貨部位交叉觀察"
       },
       "商品": {
-        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': 2.08, 'close': 104.12, 'raw': ['WTI原油期貨', 'CL=F', '104.12', '2.12', '+2.08', 'Yahoo Finance Chart API']}, {'l': '黃金期貨', 'v': -3.29, 'close': 3898.9, 'raw': ['黃金期貨', 'GC=F', '3,898.90', '-132.50', '-3.29', 'Yahoo Finance Chart API']}, {'l': 'Bitcoin', 'v': 0.6, 'close': 77661.14, 'raw': ['Bitcoin', 'BTC-USD', '77,661.14', '462.93', '+0.60', 'Yahoo Finance Chart API']}]",
+        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': 2.08, 'close': 104.12, 'raw': ['WTI原油期貨', 'CL=F', '104.12', '2.12', '+2.08', 'Yahoo Finance Chart API']}, {'l': '黃金期貨', 'v': -3.29, 'close': 3898.9, 'raw': ['黃金期貨', 'GC=F', '3,898.90', '-132.50', '-3.29', 'Yahoo Finance Chart API']}, {'l': 'Bitcoin', 'v': 0.62, 'close': 77680.51, 'raw': ['Bitcoin', 'BTC-USD', '77,680.51', '482.30', '+0.62', 'Yahoo Finance Chart API']}]",
         "compass": "商品價格與通膨關係需搭配時間序列判讀",
         "target": "不以缺值或單日變動推定通膨方向"
       },
