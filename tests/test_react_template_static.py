@@ -52,6 +52,12 @@ class ReactTemplateStaticTests(unittest.TestCase):
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_gex_chart_canvas_expands_to_show_all_ranked_rows(self):
+        self.assertIn("height:Math.max(n,e.length*46+36)", self.html)
+        self.assertIn(".sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,16)", self.html)
+        self.assertIn("圖表顯示 Net GEX 絕對值前 16 筆", self.html)
+        self.assertIn("依曝險絕對值排序，非履約價順序", self.html)
+
     def test_option_pcr_card_shows_call_put_volume_structure(self):
         self.assertIn('function yf({callVol:e,putVol:n,height:l=200})', self.html)
         self.assertIn('title:"PCR／成交量結構"', self.html)
