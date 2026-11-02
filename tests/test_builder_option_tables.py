@@ -154,7 +154,7 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertIn("日盤淨交易 500口", cards["外資選擇權分歧"]["look"])
         self.assertIn("夜盤 -1,000口", cards["外資選擇權分歧"]["look"])
         self.assertIn("日夜方向分歧", cards["外資選擇權分歧"]["look"])
-        self.assertIn("三市場方向分歧", cards["主力三市透視"]["compass"])
+        self.assertIn("跨市場訊號分歧", cards["主力三市透視"]["compass"])
         self.assertIn("不直接相減", cards["前十大與分歧"]["look"])
         self.assertNotIn("最後防線", cards["前十大與分歧"]["target"])
 
