@@ -538,3 +538,16 @@ P1 尚未開始。啟動前必須：
 - 10/30 raw API payload 逐筆對帳：NOT TESTED（實際 response 尚未取得）。
 - TAIFEX TXO chain／Delta 歷史回查：可行路徑已由程式碼確認，實際取回 BLOCKED（本次無法直接呼叫來源 API）。
 - 下一步應使用能直接發送 HTTP GET/POST 的執行環境，按上述 endpoint 與參數擷取原始 response，保存 request URL/body、HTTP status、response date、raw JSON/HTML/Excel 及 SHA-256，再進行逐欄位重算；不需要修改正式程式或重跑 P0。
+
+
+### GEX 重建輸入契約（Worker V1.4 程式碼確認）
+- Chain 每筆必要欄位：`contract_month`、`contract_expiry_date`、`strike`、`type`、`settlement`、`open_interest`。
+- Delta 每筆必要欄位：`contract_month`、`contract_expiry_date`、`strike`、`type`、有限數值 `delta`。目前模型用 Delta 數值的有限性建立匹配鍵（strike/type）；Delta 數值本身不直接進入 Gamma 公式。
+- 標的輸入：同 T0 的 TWSE TAIEX close（Worker 使用 FMTQIK；不得用 TX futures price 代替）。
+- 到期時間：由 Chain 到期日與 T0 計算 days/365。
+- IV：以 Chain settlement 作為 Black-Scholes option price，反解 implied volatility（r=0）；不以 last trade／bid／ask IV 取代。
+- Gamma：Black-Scholes Gamma；每筆 GEX 公式為 `Gamma × OI × 50 × S² × 0.01`。
+- 符號慣例：Call 正、Put 負；Worker 明確標示這是 customer-long/dealer-short 假設，不是 TAIFEX 發布的 Dealer 實際部位。
+- Gamma Wall：逐履約價絕對 Net GEX 最大者；Gamma Flip：標的價 ±10% 區間掃描總 GEX，取第一個正負跨越並線性插值。
+- 生產品質門檻：模型成功計算筆數／正 OI、正結算價且 Chain/Delta key 匹配筆數至少 50%。
+- 因此原始重建必須保留 Chain 與 Delta 的原始完整列、日期、下載 URL／POST body、標的收盤價；只保留 GEX_LEVELS_JSON 不足以獨立重建。
