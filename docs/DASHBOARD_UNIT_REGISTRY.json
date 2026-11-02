@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "applies_to": "daily-premarket V9 Pro",
+  "metrics": {
+    "spot.close": {"source_unit": "點", "canonical_unit": "點", "display_unit": "點", "status": "defined"},
+    "spot.diff": {"source_unit": "點", "canonical_unit": "點", "display_unit": "點", "status": "defined"},
+    "spot.pct": {"source_unit": "%", "canonical_unit": "%", "display_unit": "%", "status": "defined"},
+    "spot.vol": {"source_unit": "億元", "canonical_unit": "億元", "display_unit": "億元", "status": "defined"},
+    "spot.up_down_flat": {"source_unit": "家", "canonical_unit": "家", "display_unit": "家", "status": "defined"},
+    "institutional.foreign_trust_dealer": {"source_unit": "億元", "canonical_unit": "億元", "display_unit": "億元", "status": "defined"},
+    "margin.finance_balance_change": {"source_unit": "億元", "canonical_unit": "億元", "display_unit": "億元", "status": "defined"},
+    "margin.short": {"source_unit": "張", "canonical_unit": "張", "display_unit": "張", "status": "defined"},
+    "margin.maintenance_ratio": {"source_unit": "%", "canonical_unit": "%", "display_unit": "%", "status": "defined"},
+    "securities_lending.balance_sold_change": {"source_unit": "張", "canonical_unit": "張", "display_unit": "張", "status": "defined"},
+    "markets.index_price": {"source_unit": "來源報價", "canonical_unit": "來源報價", "display_unit": "指數點", "status": "source_schema_required"},
+    "markets.yield_level": {"source_unit": "%", "canonical_unit": "%", "display_unit": "%", "status": "defined"},
+    "markets.yield_change": {"source_unit": "百分點", "canonical_unit": "百分點", "display_unit": "pp", "status": "defined"},
+    "markets.fx_quote": {"source_unit": "貨幣對報價", "canonical_unit": "貨幣對報價", "display_unit": "明確貨幣對及方向", "status": "source_schema_required"},
+    "markets.adr_price": {"source_unit": "USD/股", "canonical_unit": "USD/股", "display_unit": "USD/股", "status": "source_schema_required"},
+    "markets.commodity_price": {"source_unit": "合約／來源定義", "canonical_unit": "合約／來源定義", "display_unit": "合約／來源定義", "status": "source_schema_required"},
+    "futures.ohlc_diff_basis_night_change": {"source_unit": "點", "canonical_unit": "點", "display_unit": "點", "status": "defined"},
+    "futures.pct_basis_pct": {"source_unit": "%", "canonical_unit": "%", "display_unit": "%", "status": "defined"},
+    "futures.volume_oi_net": {"source_unit": "口", "canonical_unit": "口", "display_unit": "口", "status": "defined"},
+    "options.volume_oi_institutional_net": {"source_unit": "口", "canonical_unit": "口", "display_unit": "口", "status": "defined"},
+    "options.strikes_walls_flip_max_pain": {"source_unit": "點", "canonical_unit": "點", "display_unit": "點", "status": "defined"},
+    "options.pcr": {"source_unit": "ratio", "canonical_unit": "Put OI / Call OI", "display_unit": "倍", "status": "defined"},
+    "options.volume_share": {"source_unit": "%", "canonical_unit": "%", "display_unit": "%", "status": "defined"},
+    "options.gex.net_gross_per_strike": {"source_unit": null, "canonical_unit": null, "display_unit": null, "status": "blocked_worker_formula_and_schema_required"},
+    "synthesis.bias": {"source_unit": "分", "canonical_unit": "分", "display_unit": "分", "status": "defined"},
+    "synthesis.factor_count": {"source_unit": "項", "canonical_unit": "項", "display_unit": "項", "status": "defined"},
+    "synthesis.correlation": {"source_unit": "無量綱", "canonical_unit": "無量綱", "display_unit": "無量綱 [-1,+1]", "status": "defined"}
+  },
+  "chart_rules": {
+    "allow_adjacent_unit_note": true,
+    "mixed_units_require_per_series_labels": true,
+    "never_force_units_into_every_data_label": true,
+    "responsive_render_required": ["desktop", "mobile"],
+    "layout_status_without_render": "NOT TESTED"
+  }
+}
