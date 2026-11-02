@@ -40,13 +40,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          # Pin the build source to the exact commit that triggered this run.
+          ref: ${{ github.sha }}
 
-      - name: Checkout master dashboard source
+      - name: Checkout master dashboard source for Pages root only
         uses: actions/checkout@v4
         with:
           ref: master
           path: master-site
+
+      - name: Verify V9 Pro build template comes from triggering commit
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          actual_head="$(git rev-parse HEAD)"
+          if [ "$actual_head" != "$EXPECTED_SHA" ]; then
+            echo "Build checkout does not match triggering commit"
+            echo "expected=$EXPECTED_SHA actual=$actual_head"
+            exit 1
+          fi
+          template_path="templates/v9-pro-react-template.html"
+          test -s "$template_path"
+          tracked_template_sha="$(git rev-parse "${EXPECTED_SHA}:$template_path")"
+          worktree_template_sha="$(git hash-object "$template_path")"
+          if [ "$tracked_template_sha" != "$worktree_template_sha" ]; then
+            echo "V9 Pro template differs from the triggering commit"
+            exit 1
+          fi
+          master_head="$(git -C master-site rev-parse HEAD)"
+          master_template_sha="$(git -C master-site rev-parse "HEAD:$template_path")"
+          echo "V9_PRO_BUILD_COMMIT=$actual_head"
+          echo "V9_PRO_TEMPLATE_BLOB=$tracked_template_sha"
+          echo "MASTER_PAGES_ROOT_COMMIT=$master_head"
+          echo "MASTER_TEMPLATE_BLOB=$master_template_sha"
+          echo "Verified: V9 Pro build uses the triggering commit template; master-site is reserved for the Pages root."
 
       - uses: actions/setup-python@v5
         with:
