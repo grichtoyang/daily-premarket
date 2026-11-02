@@ -970,3 +970,18 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 1. 盤點 React template 六頁全部可見區塊，建立 42 區塊 ID、資料欄位、分析 profile 對照表。
 2. 確認並設定可用 LLM provider（Workflow 目前無可確認的模型 API secret 設定）；未設定前 AI runtime 維持 BLOCKED。
 3. 先完成三市場法人、期貨籌碼、選擇權結構、相關性、交易計畫五個核心試點，再逐步擴展。
+
+
+## 9.33 修正 P4 分析引擎方向：Master 品質作為基準（2026-11-02）
+
+- 使用者提供 Master 產出的 v9 pro Dashboard 截圖，指出 Master 解析文字尚可，而目前工作分支的解析明顯退化。此回饋成立，先前「全面重建 AI／立即導入 LLM」的方向過度擴張，已修正。
+- 已直接比較 `master` 與 `fix/three-market-correlation-history` 的 `scripts/v9_pro_builder.py`：
+  - Master SHA：`76c742ac0d0cd7ff310f587e980f963c7acd192b`
+  - 工作分支 SHA（比較當時）：`41cc7e720b24e46325914ebff7e3079773eb39ad`
+  - Master 的 `build_41_cards()` 有較多具體情境解讀（法人三市場分歧、前十大與外資部位對照、三劇本條件等）。
+  - 工作分支增加缺值防護、存量／流量區分及選擇權日夜盤拆分，但部分分析文字被改成中性摘要／限制聲明，造成分析深度退化；部分卡片仍共用 KPI 文字。
+- 修正後原則：以 Master 分析深度作為最低保留基準；保留工作分支的資料真實性、缺值防護與單位／存量流量區分；清除 Master 中可能存在的硬編碼假設、無來源數值或不當機率；逐區塊增量改善。不是推倒重寫，也不把 LLM 導入當成先決條件。
+- 已修訂 `docs/P4_EARLY_ANALYSIS_ENGINE_PLAN.md`，明定 Master 基準與漸進改善路徑。
+- 最新規格文件提交：`acf8b933c6459e2f220a12cc71c541f470808651`。
+- 目前只完成 Master／工作分支程式層比較及規格修正；尚未恢復或修改任何分析程式碼，亦未執行 Dashboard 產出驗收。
+- 下一步：盤點 42 個可見區塊的 Master／branch 分析差異，建立「保留／恢復／修正」清單；先修復五個核心區塊，再逐步擴展。維持不部署、不 merge、不修改 master。
