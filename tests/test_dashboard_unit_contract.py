@@ -23,6 +23,9 @@ class DashboardUnitContractTests(unittest.TestCase):
             self.assertIn(term, standard)
         self.assertIn("Dashboard 數字單位與圖表版面驗收", skill)
         self.assertIn("42 個可見 Dashboard 區塊", skill)
+        unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
+        self.assertIn("42 區塊", unit_map)
+        self.assertIn("履約價 GEX 分布", unit_map)
 
     def test_spot_turnover_uses_turnover_chart_not_options_volume_chart(self):
         html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
