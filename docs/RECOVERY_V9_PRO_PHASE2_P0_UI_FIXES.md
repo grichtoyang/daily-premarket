@@ -3,7 +3,7 @@
 更新日期：2026-11-02（Asia/Taipei）
 Repository：`grichtoyang/daily-premarket`
 工作分支：`phase2-p0-ui-fixes`
-更新基準 HEAD：`45378794498c7b9144f71adee216212579e159d9`
+更新基準 HEAD：`bcc07f7b3403d4adb0b11904c7d06a76ebe98ca2`（更新 Recovery 時以 branch HEAD 再確認）
 
 > 本文件是本階段的續作錨點。新對話先讀本文件，再從「下一步」接續。
 > 本文件只記錄可確認的狀態；未執行的測試不得標為 PASS。
@@ -62,11 +62,11 @@ Repository：`grichtoyang/daily-premarket`
 3. **圖表單位註記渲染尚待確認**：需檢查通用卡片元件是否實際顯示 chartNote，並確認註記位置緊鄰圖表。
 4. **現貨成交額圖表 F 區塊的 `yf` 呼叫與函式簽名需重新核對**：先前曾懷疑參數不匹配，但尚不能定論。
 5. **選擇權法人圖表單位需確認資料語義**：確認 `n.instOpt` 的欄位究竟是交易口數（口）或力道金額（億元），再決定圖表標示；不得只憑區塊名稱推斷。
-6. **GEX 單位 BLOCKED**：需依 Worker 回傳欄位與公式定義確認 `net_gex_1pct`、`gross_gex_1pct` 的量綱；未確認前保留明確未確認註記。
-7. **Desktop／Mobile 實際渲染 NOT TESTED**：需檢查圖例、數值、單位註記、文字與 icon 是否重疊、裁切或換行異常。未取得實際預覽前不得標 PASS。
-8. **GitHub Actions 測試結果 BLOCKED／未取得**：雖已新增 workflow，但尚無可確認的 run ID 與成功結果。
-9. **測試命令需檢查**：workflow 內 unittest 命令應採 `python -m unittest discover -s tests -p 'test_*.py' -v` 或逐檔 discover，避免 tests 目錄不是 package 時模組呼叫失敗。
-10. **Builder docstring 的區塊數可能仍寫 41**：若仍存在，應依使用者確認的 42 個可見區塊修正，但需先定位確認。
+6. **GEX 單位已由 Worker 生產公式推導**：`gamma × OI × 50 元／點 × underlyingPrice² × 1%`，顯示為 NT$／標的價格變動 1%；這是模型估值、不是 TAIFEX 官方 GEX。Dashboard、registry、unit map、standard、Skill 已同步。
+7. **Desktop／Mobile 實際渲染部分完成**：已產生並查看 Desktop Overview 預覽截圖，該頁未見明顯文字／圖示重疊；但其餘 5 頁 Desktop 與 Mobile 全頁仍 NOT TESTED。
+8. **GitHub Actions 測試已取得 PASS**：Unit Contract Audit run `41380785016` 成功（5 項單位契約測試＋13 項 React 靜態回歸測試）；UI Fixes Regression run `41380714631` 成功（Builder self-tests、React regression、DATA_REPORT parser regression、Dashboard JSON build、非部署 HTML preview 與 fixture artifact 均成功）。
+9. **測試命令已修正**：workflow 使用 `python -m unittest discover`，並已由成功的 Actions run 證實。
+10. **Builder 區塊數文件已對齊 42**：先前 41 的描述已修正；42 區塊表格編號完整性測試通過。
 
 ## 5. 重要欄位語義提醒
 
@@ -83,23 +83,23 @@ Repository：`grichtoyang/daily-premarket`
 | 項目 | 狀態 | 說明 |
 |---|---|---|
 | 單位標準與文件初版 | 已修改 | 文件已新增／更新，完整性仍待逐項複核 |
-| Builder 單位 Regex | NOT TESTED | 已修改，尚未完整執行測試 |
-| 42 區塊欄位對照 | NOT TESTED | 尚未完成逐區塊逐欄位核對 |
-| 圖表單位註記程式碼 | NOT TESTED | 部分已加入，需檢查實際渲染路徑 |
-| GEX 數值單位 | BLOCKED | 缺少已確認的量綱／公式契約 |
-| GitHub Actions 測試 | BLOCKED | 尚無可確認的執行結果 |
-| Desktop／Mobile 視覺驗收 | NOT TESTED | 尚未取得實際渲染驗證 |
+| Builder 單位／解析鏈 | PASS | UI Regression 的 Builder self-tests、DATA_REPORT parser regression 與 JSON build 均成功；來源報告本身並非每一列都含明確單位欄，須依資料模板契約解讀 |
+| 42 區塊對照表 | PASS（結構）／NOT TESTED（完整欄位） | 1–42 編號測試通過；實際 JSON path／來源欄位／缺值策略仍未完成全欄位矩陣 |
+| 圖表單位註記程式碼 | PASS（靜態） | 所有實際 chart 元件的相鄰 chartNote 靜態檢查通過；通用新聞列表不視為圖表；`V` 元件會在圖表下方顯示註記 |
+| GEX 數值單位 | PASS（量綱推導） | 依 Worker 公式推導為 NT$／標的價格變動 1%；非 TAIFEX 官方欄位 |
+| GitHub Actions 測試 | PASS | Unit Contract 5+13 項通過；UI Regression 全部步驟通過 |
+| Desktop／Mobile 視覺驗收 | PARTIAL | Desktop Overview 截圖已查看；其他分頁與 Mobile 未完成 |
 | 使用者最終視覺驗收 | NOT DONE | 必須由使用者確認 |
 
 ## 7. 下一步（按順序執行，不需逐項詢問）
 
-1. 先讀目前分支的測試檔、workflow、Builder、React template 與單位對照文件，確認實際內容與本 Recovery 一致。
-2. 修正 workflow 的 unittest 執行方式；檢查是否能取得 Actions run 結果。無法取得時如實標 BLOCKED。
-3. 完成 42 個區塊逐項盤點：六個分頁逐一列出區塊名稱、資料欄位、來源、單位、缺值策略、圖表註記；不得以 JSON 欄位總數代替可見區塊數。
-4. 重新核對 Builder Regex 與所有敘述文字，修正漏標、錯標、重複單位與來源單位不符。
-5. 逐一核對圖表函式定義與呼叫點，優先處理 `yf`、chartNote 渲染、選擇權法人圖表單位及綜合頁圖表。
-6. 修正後執行可行的靜態／單元測試；每項結果記錄 PASS／FAIL／BLOCKED／NOT TESTED。
-7. 在不部署、不修改其他分支的前提下，尋找可用的預覽方式；若無法取得 Desktop／Mobile 實際畫面，明確保留 NOT TESTED。
+1. 完成 42 區塊逐欄位矩陣：每個區塊逐一連到實際 JSON path、Builder parser、DATA_REPORT 欄位、單位、缺值策略與圖表註記。
+2. 已取得成功 Actions；後續若修改程式或測試，必須重新跑兩條 workflow。
+3. 完成 Desktop 六頁與 Mobile 六頁實際預覽，檢查文字、數值、圖例、單位註記、圖示重疊／裁切／換行；若 Chromium headless 不穩，改用 Actions preview artifact 的可用方式，不部署。
+4. 再核對混合單位圖表（特別是綜合頁三市場法人、期貨 OI／日夜交易及選擇權法人表）之每一序列單位與縮放因子。
+5. 將本次 GEX 公式量綱推導與資料來源說明納入最終稽核紀錄；若 Worker 公式未來變更，必須同步重新驗證單位。
+6. 目前已確認 `yf` 僅用於 Call／Put 成交量結構，現貨成交額使用 `Ol`；Regression 測試已覆蓋此區分。
+7. 保持不部署、不修改其他分支；完成以上後更新 Recovery 並請使用者作最後視覺驗收。
 8. 完成程式與文件修正後，再交由使用者做最後 Dashboard 視覺驗收。
 
 ## 8. 工作方式
