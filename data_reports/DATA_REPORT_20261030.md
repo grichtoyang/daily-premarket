@@ -1,12 +1,12 @@
 # DATA_REPORT_20261030
 
-- 報告日期：`2026-10-31`
+- 報告日期：`2026-11-02`
 - T0 交易日期：`2026-10-30`
-- 資料產出時間：`2026-10-31 12:12:26`
+- 資料產出時間：`2026-11-02 08:55:17`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
-- 排定班別：`weekend`
+- 排定班別：`manual`
 
 ---
 
@@ -117,8 +117,8 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 63,290.11 | -1,369.36 | -2.12 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 5,730.74 | -206.92 | -3.48 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 63,112.00 | -178.11 | -0.28 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 5,722.53 | -8.21 | -0.14 | Yahoo Finance Chart API |
 | 香港恆生 | ^HSI | 23,294.42 | 335.77 | +1.46 | Yahoo Finance Chart API |
 | 上海綜合 | 000001.SS | 3,599.02 | -52.42 | -1.44 | Yahoo Finance Chart API |
 | 深圳成分 | 399001.SZ | 10,833.78 | -304.42 | -2.73 | Yahoo Finance Chart API |
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,614.00 | -140.25 | -1.81 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 28,534.00 | -1,028.00 | -3.48 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 51,918.00 | -594.00 | -1.13 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,821.30 | -46.00 | -1.60 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,641.25 | 27.25 | +0.36 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 28,693.50 | 159.50 | +0.56 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,075.00 | 157.00 | +0.30 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,832.00 | 10.70 | +0.38 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.57 | 0.18 | +0.57 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.88 | -0.16 | -0.16 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.80 | -0.03 | -0.02 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,335.10 | -2.88 | -0.22 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.61 | 0.05 | +0.14 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.97 | 0.09 | +0.09 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.72 | -0.08 | -0.05 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,339.88 | 1.90 | +0.14 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -171,38 +171,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 104.12 | 2.12 | +2.08 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 3,898.90 | -132.50 | -3.29 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 77,061.31 | -713.80 | -0.92 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 102.43 | -1.69 | -1.62 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 3,904.70 | 5.80 | +0.15 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 77,976.86 | 542.11 | +0.70 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「第一桶金300萬」急問致富秘訣
-  - 來源：Yahoo 台股；發布時間：2026-10-30T13:45:00Z；台北時間：2026-10-30 21:45
-  - 摘要：[FTNN新聞網]記者林欣愉／綜合報導一名大三學生靠著打工、兼職家教，累積近100萬元資產，目前主要投資市值型ETF「富邦台50」（006208），長期目標是存滿100張...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%A7%E4%B8%89%E7%94%9F%E9%9D%A0%E6%89%93%E5%B7%A5%E5%AD%98%E8%BF%91%E7%99%BE%E8%90%AC-%E9%8E%96%E5%AE%9A006208%E6%8B%9A100%E5%BC%B5-%E8%81%BD%E9%95%B7%E8%BC%A9%E5%96%8A-%E7%AC%AC-%E6%A1%B6%E9%87%91300%E8%90%AC-134500368.html
-- 事件2：26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相
-  - 來源：Yahoo 台股；發布時間：2026-10-30T11:10:00Z；台北時間：2026-10-30 19:10
-  - 摘要：上半年台股漲勢頻頻，近期卻屢屢震盪，投資人的心態也隨之起伏。有網友透露，上半年總資產衝到400萬，但近期因修正獲利回吐60萬，雖然仍是賺錢，感覺卻難以接受。
-  - 原文連結：https://tw.stock.yahoo.com/news/26%E6%AD%B2%E7%94%B7%E7%82%92%E8%82%A1%E7%8D%B2%E5%88%A9-%E8%B3%BA400-340%E8%90%AC-%E5%BF%AB%E5%B4%A9%E6%BD%B0-%E7%B6%B2%E6%8F%AD%E7%97%9B%E8%8B%A6%E7%9C%9F%E7%9B%B8-111000895.html
-- 事件3：9歲已買0050「每天看漲跌」！ 網驚：比巴菲特更早
-  - 來源：Yahoo 台股；發布時間：2026-10-30T10:52:00Z；台北時間：2026-10-30 18:52
-  - 摘要：近年來投資理財觀念普及，開始投資的年齡也有下降趨勢，有網友表示家中孩子雖然只有9歲，但已買了10股0050，且每天都關注動態，之後還想買台積電，引發眾人熱議。
-  - 原文連結：https://tw.stock.yahoo.com/news/9%E6%AD%B2%E5%B7%B2%E8%B2%B70050-%E6%AF%8F%E5%A4%A9%E7%9C%8B%E6%BC%B2%E8%B7%8C-%E7%B6%B2%E9%A9%9A-%E6%AF%94%E5%B7%B4%E8%8F%B2%E7%89%B9%E6%9B%B4%E6%97%A9-105200516.html
-- 事件4：低軌衛星綠油油！「這2檔」一度跌停暴跌8%　國巨、群創、騰輝也殺破7%
-  - 來源：Yahoo 台股；發布時間：2026-10-30T10:04:00Z；台北時間：2026-10-30 18:04
-  - 摘要：[FTNN新聞網]記者陳献朋／綜合報導受美股科技股重跌、市場預期聯準會升息等因素影響，台股大盤今（30）明顯殺低，加權指數收45211.33點，下跌1156.20點，跌幅...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%BD%8E%E8%BB%8C%E8%A1%9B%E6%98%9F%E7%B6%A0%E6%B2%B9%E6%B2%B9-%E9%80%992%E6%AA%94-%E5%BA%A6%E8%B7%8C%E5%81%9C%E6%9A%B4%E8%B7%8C8-%E5%9C%8B%E5%B7%A8-%E7%BE%A4%E5%89%B5-100400048.html
-- 事件5：中聯停工引爆沙拉油荒 經濟部：缺口仍大 協調業者年底擴量
-  - 來源：Yahoo 台股；發布時間：2026-10-30T09:42:55Z；台北時間：2026-10-30 17:42
-  - 摘要：中聯致癌油事件停工後，對國內沙拉油供應衝擊未解。經濟部今（30）日證實，國內油品缺口仍然很大，因應食品業者用油需求，已責成台糖12月起每月再增產500噸，另協調油品進口商第四季多進口5000公噸。經濟部也呼籲地方政府及業者，讓合格檢驗的商品
-  - 原文連結：https://tw.stock.yahoo.com/news/%E4%B8%AD%E8%81%AF%E5%81%9C%E5%B7%A5%E5%BC%95%E7%88%86%E6%B2%99%E6%8B%89%E6%B2%B9%E8%8D%92-%E7%B6%93%E6%BF%9F%E9%83%A8-%E7%BC%BA%E5%8F%A3%E4%BB%8D%E5%A4%A7-%E5%8D%94%E8%AA%BF%E6%A5%AD%E8%80%85%E5%B9%B4%E5%BA%95%E6%93%B4%E9%87%8F-094255764.html
-- 事件6：PCB綠光罩頂！台燿、金像電、定穎投控、楠梓電都摜跌停　「這檔」卻連飆6根漲停
-  - 來源：Yahoo 台股；發布時間：2026-10-30T07:45:00Z；台北時間：2026-10-30 15:45
-  - 摘要：[FTNN新聞網]記者陳献朋／綜合報導由於美股四大指數週四全數收跌，台股大盤今（30）日走勢明顯疲軟，加權指數終場來到45211.33點，下跌1156.20點，跌幅2.49%...
-  - 原文連結：https://tw.stock.yahoo.com/news/pcb%E7%B6%A0%E5%85%89%E7%BD%A9%E9%A0%82-%E5%8F%B0%E7%87%BF-%E9%87%91%E5%83%8F%E9%9B%BB-%E5%AE%9A%E7%A9%8E%E6%8A%95%E6%8E%A7-%E6%A5%A0%E6%A2%93%E9%9B%BB%E9%83%BD%E6%91%9C%E8%B7%8C%E5%81%9C-074500606.html
+- 事件1：投顧點45K成多空分水嶺 三情境操盤策略曝光
+  - 來源：Yahoo 台股；發布時間：2026-11-01T23:30:00Z；台北時間：2026-11-02 07:30
+  - 摘要：美股科技股崩跌，台股11月迎來嚴峻考驗！上週五費城半導體指數狂瀉7.2%，台積電ADR重挫近6%，加上台股從歷史高點回檔近1成，45000點保衛戰一觸即發。不過，法人認為AI產業需求未變，企業獲利持續成長，短線修正反而有助評價回歸合理水準。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E6%8B%89%E8%AD%A6%E5%A0%B12-45000%E9%BB%9E%E5%AE%88%E4%B8%8D%E4%BD%8F%E6%80%8E%E9%BA%BC%E8%BE%A6-%E6%B3%95%E4%BA%BA%E6%8F%AD2%E5%A4%A7%E6%93%8D%E4%BD%9C%E5%8D%80%E9%96%93-%E5%88%A5%E5%86%8D%E7%9B%B2%E7%9B%AE%E6%90%B6%E5%8F%8D%E5%BD%88-233000908.html
+- 事件2：台達電獲利低於預期 法人砍目標價530元仍喊買進
+  - 來源：Yahoo 台股；發布時間：2026-11-01T09:30:00Z；台北時間：2026-11-01 17:30
+  - 摘要：[FTNN新聞網]記者周雅琦／綜合報導電源龍頭台達電（2308）第三季獲利低於預期，加上HVDC高壓直流電源導入進度不如預期，引發市場賣壓，法說會後股價慘遭摜跌...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%9B%AE%E6%A8%99%E5%83%B9-%E5%8F%A3%E6%B0%A3%E7%A0%8D%E6%8E%89530%E5%85%83-%E8%BF%99-%E9%9B%BB%E6%BA%90%E5%A4%A7%E5%BB%A0-%E7%8D%B2%E5%88%A9%E4%B8%8D%E5%A6%82%E9%A0%90%E6%9C%9F%E5%BC%95%E7%88%86%E8%B3%A3%E5%A3%93-093000992.html
+- 事件3：聯電奪光通訊大單 價格為傳統製程七倍
+  - 來源：Yahoo 台股；發布時間：2026-11-01T22:42:36Z；台北時間：2026-11-02 06:42
+  - 摘要：聯電光通訊重量級訂單到手，奪下全球光模組龍頭中際旭創，及騰訊創投注資的光引擎晶片業者賽麗光子積體電路（PIC）大單，初期總量上看1萬片，將在新加坡廠生產，後續可望再加單。相關產品單價是傳統CMOS製程七倍，挹注聯電獲利大躍進。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%81%AF%E9%9B%BB%E5%A5%AA%E5%85%89%E9%80%9A%E8%A8%8A%E9%87%8D%E9%87%8F%E7%B4%9A%E5%A4%A7%E5%96%AE-%E5%83%B9%E6%A0%BC%E7%82%BA%E5%82%B3%E7%B5%B1%E8%A3%BD%E7%A8%8B%E4%B8%83%E5%80%8D-%E6%8C%B9%E6%B3%A8%E7%8D%B2%E5%88%A9%E5%A4%A7%E8%BA%8D%E9%80%B2-224236053.html
+- 事件4：美股上周五慘烈⋯費半崩逾7% 台指期夜盤跌867點
+  - 來源：Yahoo 台股；發布時間：2026-11-01T22:17:00Z；台北時間：2026-11-02 06:17
+  - 摘要：美股四大指數全面重挫，費半暴跌7.2%，台指期夜盤下殺867點、台積電期貨跌87元，台股今(2)日開盤恐面臨沉重賣壓。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%9B%A4%E5%89%8D-ai%E7%A5%9E%E8%A9%B1%E7%A0%B4%E6%BB%85%E8%8B%B1%E7%89%B9%E7%88%BE%E6%9A%B4%E8%B7%8C-%E5%8F%B0%E6%8C%87%E6%9C%9F%E5%A4%9C%E7%9B%A4%E8%B7%8C867%E9%BB%9E-%E9%96%8B%E7%9B%A4%E6%81%90%E8%BF%8E%E7%A9%BA%E9%A0%AD%E6%AE%BA%E7%9B%A4-221700524.html
+- 事件5：外資10月賣超台股近兆元 狠砍0050逾72萬張
+  - 來源：Yahoo 台股；發布時間：2026-11-01T10:30:00Z；台北時間：2026-11-01 18:30
+  - 摘要：[FTNN新聞網]記者周雅琦／綜合報導台股10月初一度衝上49,968.92點高點，逼近5萬點歷史高點，隨後戲劇性反轉，一路下挫，加權指數收在45,211.83點，暴跌2728.3...
+  - 原文連結：https://tw.stock.yahoo.com/news/374%E8%90%AC%E8%82%A1%E6%9D%B1%E8%A2%AB%E5%A5%97%E4%BD%8F-%E9%80%99-%E5%85%83%E8%80%81%E7%B4%9Aetf-%E9%81%AD10%E6%9C%88%E9%81%AD%E5%A4%96%E8%B3%87%E9%87%8D%E7%A0%8D72-2%E8%90%AC%E5%BC%B5-103000625.html
+- 事件6：長鑫揮拳記憶體全趴 謝金河示警價格戰
+  - 來源：Yahoo 台股；發布時間：2026-11-01T21:51:19Z；台北時間：2026-11-02 05:51
+  - 摘要：謝金河以「長鑫揮一拳，記憶體全趴下！」為題發文指出，長鑫科技公布自行研發的4F²技術後，全球記憶體相關股票出現波動。他表示，SK海力士在3個交易日內，有2天跌幅超過10%，南韓股市再度承受下探壓力，費城半導體指數也面臨類似情況。謝金河認為，
+  - 原文連結：https://tw.stock.yahoo.com/news/%E8%A8%98%E6%86%B6%E9%AB%94%E5%85%A8%E8%B6%B4%E4%B8%8B-%E9%99%B8%E7%A7%91%E6%8A%80%E5%A4%A7%E5%BB%A0%E6%8A%80%E8%A1%93%E7%AA%81%E7%A0%B4-%E8%AC%9D%E9%87%91%E6%B2%B3%E7%A4%BA%E8%AD%A6-%E6%81%90%E6%8E%80%E5%85%A8%E7%90%83%E5%83%B9%E6%A0%BC%E6%88%B0-215119543.html
 - 事件7：Federal Reserve Board announces approval of application by The Bank of Nova Scotia
   - 來源：Federal Reserve；發布時間：Thu, 29 Oct 2026 20:30:00 GMT；台北時間：2026-10-30 04:30
   - 摘要：Federal Reserve Board announces approval of application by The Bank of Nova Scotia
@@ -215,18 +215,18 @@
   - 來源：CNBC；發布時間：Fri, 30 Oct 2026 17:15:53 GMT；台北時間：2026-10-31 01:15
   - 摘要：The U.S. Department of the Treasury has announced new Series I bond rates through April 2027.
   - 原文連結：https://www.cnbc.com/2026/10/30/treasury-i-bond-rate-through-april-2027.html
-- 事件10：Warsh wants the Fed to say less. Two officials are pushing for more transparency.
-  - 來源：MarketWatch；發布時間：Fri, 30 Oct 2026 21:23:00 GMT；台北時間：2026-10-31 05:23
-  - 摘要：More interest-rate hikes are needed to fight inflation, Fed officials say.
-  - 原文連結：https://www.marketwatch.com/story/the-fed-held-interest-rates-steady-but-these-officials-see-more-hikes-coming-soon-2098bbd8?mod=mw_rss_topstories
-- 事件11：Meta outlook revised downward by S&P on cash flow and capex concerns
-  - 來源：CNBC；發布時間：Fri, 30 Oct 2026 22:42:26 GMT；台北時間：2026-10-31 06:42
-  - 摘要：Meta has been given a negative outlook by S&P Global Ratings due to the company's hefty capital expenditures and concerns about free cash flow.
-  - 原文連結：https://www.cnbc.com/2026/10/30/meta-outlook-to-revised-to-negative-by-sp-after-cash-flow-negative.html
-- 事件12：Jim Cramer says it's time to look beyond tech. Here are 4 consumer stocks he likes
-  - 來源：CNBC；發布時間：Fri, 30 Oct 2026 22:52:04 GMT；台北時間：2026-10-31 06:52
-  - 摘要：Cramer said investors looking to diversify beyond the struggling AI trade should consider consumer staples.
-  - 原文連結：https://www.cnbc.com/2026/10/30/jim-cramer-consumer-staples-stocks.html
+- 事件10：Anthropic's path to the Nasdaq just got a lot bumpier
+  - 來源：CNBC；發布時間：Sat, 31 Oct 2026 11:00:01 GMT；台北時間：2026-10-31 19:00
+  - 摘要：Concerning projections from hyperscalers this week punished tech stocks and pushed the Nasdaq to its first three-week losing streak since March.
+  - 原文連結：https://www.cnbc.com/2026/10/31/anthropic-ipo-ai-spending.html
+- 事件11：Top Wall Street analysts are bullish on these 3 stocks for the long haul
+  - 來源：CNBC；發布時間：Sun, 01 Nov 2026 12:33:53 GMT；台北時間：2026-11-01 20:33
+  - 摘要：Investors looking beyond short-term noise and focusing on long-term returns can track top analysts to pick the right stocks, backed by strong research
+  - 原文連結：https://www.cnbc.com/2026/11/01/top-analysts-are-bullish-on-these-3-stocks-for-the-long-haul.html
+- 事件12：Trump called out Big Oil profits. Here’s how much their refining earnings have surged since
+  - 來源：CNBC；發布時間：Sat, 31 Oct 2026 06:00:02 GMT；台北時間：2026-10-31 14:00
+  - 摘要：Trump criticized Big Oil for making “too much money,” but oil majors have since reported surging refining earnings as fuel supplies tightened.
+  - 原文連結：https://www.cnbc.com/2026/10/31/trump-big-oil-refining-profits.html
 
 
 ## 三、期貨
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-30 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F5 | TAIFEX Proxy |
-| 資料更新時間 | 2026-10-31 12:12:26 | 本機 |
+| 資料更新時間 | 2026-11-02 08:55:17 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -604,8 +604,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-30；資料時間：2026-10-31 12:12:26；時區：`Asia/Taipei`
+- 資料日期：2026-10-30；資料時間：2026-11-02 08:55:17；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
+- 註記：同 T0 覆蓋：40 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
 - 未取得欄位 (2)：futures.gamma_wall, futures.gamma_flip
 - 註記：futures-price-after-hours 日期 2026-10-30 非今日 2026-11-02，視為無新節次，不採用
 - 註記：Gamma Wall/Flip 端點不可用（上游 502），標 unavailable
