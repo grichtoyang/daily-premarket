@@ -56,6 +56,11 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('殖利率水準：%；日變化：百分點（pp）。', html)
         self.assertIn('履約價／現價／Call Wall／Put Wall：點；OI：口。', html)
         self.assertIn("GEX：新台幣元（NT$）", html)
+        self.assertIn("function Fl({title:e,subtitle:n,chart:r,chartNote:chartNote", html)
+        self.assertIn('chartNote:"5 日收盤與所有關鍵水位：點。"', html)
+        self.assertIn('chartNote:"單位：億元；法人買賣超，正值買超、負值賣超。"', html)
+        self.assertIn('chartNote:"現價與 Call／Put Wall、Gamma Wall、Flip、Max Pain：點；Net GEX：NT$／標的變動 1%。"', html)
+        self.assertIn('chartNote:"漲跌幅：%；收盤價：各指數點。"', html)
 
     def test_42_block_registry_and_chart_notes_are_complete(self):
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
