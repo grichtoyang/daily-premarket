@@ -614,3 +614,16 @@ tests/test_dashboard_unit_contract.py 新增：
   - `d83903d1111e78026ec4f31fdde0ef85160d641d`（source label）
   - `75d97a5d8b8136d9d95032ee50f63d467f2f739d`（regression assertion）
 - 驗收：程式修改已提交並讀回可確認；該 commit 的 combined status 查詢目前沒有回傳 status checks，因此測試執行狀態 **NOT TESTED**，不得標為 PASS。等待 Actions 自動執行／後續手動確認。
+
+
+## 9.16 Run #95 借券端點診斷日誌補強（2026-11-02）
+
+- 使用者在 Run #95 的 Fetch daily data 步驟中搜尋 `TWT93U` 與 `tpex_margin_sbl` 均無結果。
+- 原因已由程式控制流程確認：`spot_raw.py` 的兩個解析器在 HTTP 回應成功但格式／狀態／日期／資料列／欄位不符合預期時，原先會靜默回傳 None；只有 requests 例外會由 `_get_json` 輸出 `raw fetch failed`。
+- 已補診斷：
+  - TWT93U：回應型別、stat/欄位、空資料、可解析列數、短列數及無效餘額列數。
+  - TPEX margin_sbl：回應型別、總列數、T0 日期匹配列數、可解析列數。
+- 已提交：
+  - `3b56e2206a4c0ea8edf7f4b430db6c22e9babcf2`（parser diagnostics）
+  - `a03f69ca85a7c6751c53639c667ff6b6a958d23e`（diagnostic regression assertion）
+- 驗收狀態：程式修改已提交；本次尚未有新 daily_data run，因此新診斷輸出及測試執行狀態 **NOT TESTED**。下一次手動執行 daily_data 後，直接搜尋 `TWT93U`、`TPEX margin_sbl` 即可辨別 HTTP 失敗、回應結構錯誤、日期不符或資料欄位解析失敗。
