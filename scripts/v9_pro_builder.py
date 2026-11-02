@@ -18,11 +18,49 @@ Skill: daily-premarket-analysis-v9-pro (參考 v8 pro skill 2026-10-28)
 """
 
 import pathlib, re, json, argparse, sys, glob
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import sqlite3, math, tempfile
 
 # ===== 技術指標 3層備援 (方案C) =====
-def fetch_yahoo_twii_30d():
+def _t0_iso_date(t0_date):
+    if not t0_date:
+        return None
+    return _normalize_t0_date(str(t0_date).replace('-', ''))
+
+
+def _history_record_date(record):
+    value=record.get('date')
+    if value:
+        try:
+            return datetime.strptime(str(value)[:10], '%Y-%m-%d').strftime('%Y-%m-%d')
+        except ValueError:
+            return None
+    ts=record.get('ts')
+    if ts is not None:
+        try:
+            taipei=timezone(timedelta(hours=8))
+            return datetime.fromtimestamp(float(ts), taipei).strftime('%Y-%m-%d')
+        except (TypeError, ValueError, OverflowError, OSError):
+            return None
+    return None
+
+
+def _filter_history_to_t0(records, t0_date):
+    """Keep only dated technical observations on or before the DATA_REPORT T0."""
+    t0_iso=_t0_iso_date(t0_date)
+    if not t0_iso:
+        return list(records or [])
+    filtered=[]
+    for record in records or []:
+        trade_date=_history_record_date(record)
+        if trade_date and trade_date<=t0_iso:
+            item=dict(record)
+            item['date']=trade_date
+            filtered.append(item)
+    return sorted(filtered, key=lambda item: item['date'])
+
+
+def fetch_yahoo_twii_30d(t0_date=None):
     try:
         import requests
         url = "https://query1.finance.yahoo.com/v8/finance/chart/^TWII?range=1mo&interval=1d"
