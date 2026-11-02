@@ -1397,7 +1397,7 @@ def run_17f_self_tests():
         assert "17因子共振" not in full_quality_summary
         sparse_quality_summary=build_factor_quality_summary(sparse_analyzer)
         assert f"17F有效{sparse_analyzer.factor_quality['active_count']}/17" in sparse_quality_summary
-        assert "缺失" in sparse_quality_summary
+        assert "缺值" in sparse_quality_summary or "有值停用" in sparse_quality_summary
         db_partial_text=build_history_status_text(None,{'exists':True,'rows':3,'filled':1,'mode':'db'})
         assert "SQLite已啟用" in db_partial_text and "有效歷史樣本1/3" in db_partial_text
         assert "無DB模式" not in db_partial_text
