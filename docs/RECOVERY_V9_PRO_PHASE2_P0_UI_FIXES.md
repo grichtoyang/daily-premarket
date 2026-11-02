@@ -535,3 +535,30 @@ tests/test_dashboard_unit_contract.py 新增：
 - Artifact：`github-pages`，ID `13120833006`。本 workflow 的 deploy job 未執行（本分支 deploy 條件不成立），不代表正式 Pages 已更新。
 - **重要限制**：本次為 Dashboard builder workflow，讀取既有 DATA_REPORT 並重建 Dashboard；它沒有重新執行 `src/fetch_data.py`，因此不能據此宣稱新的 DATA_REPORT 已產出正確的借券逐欄來源標籤。須待 daily-data workflow 下一次執行或可用的手動觸發，檢查新報告的三列來源欄位。
 - 本次程式／測試狀態：來源欄位拆分 PASS（CI）；新 DATA_REPORT 實際產出與欄位標籤 PASS 尚未驗證；TWT93U／TPEX 原始逐股數據核算 NOT TESTED；browser audit workflow NOT TESTED。
+
+
+## 9.13 2026-11-02 Browser Audit 修正與驗證
+
+### 發現與修正
+- 首次 Browser Audit Run `41398676067` FAIL，根因是 workflow 使用 `find -printf '%f\\\\n'`，將多個檔名以字面 `\\n` 串成單一環境變數，導致 Playwright 找不到 HTML。此為 workflow 檔名解析 bug，非 Dashboard 本身錯誤。
+- 已修正 `.github/workflows/dashboard-browser-audit.yml` 為真正換行分隔，commit `03050c048b041669bb9f086ab09ddf80c33d57ce`。
+
+### 複驗結果
+- Browser Audit Run **41400089885**：SUCCESS。
+- 實際檢查檔案：`dashboards/v9-pro-20261030.html`。
+- Desktop 1440×1000：六個分頁全部 PASS；Mobile 390×844：六個分頁全部 PASS。
+- 共 12 組分頁／裝置檢查、12 張截圖；pageErrors = 0；每頁根節點文字長度超過最低門檻；沒有水平溢位；每頁均有可見 canvas。
+- 各頁 canvas 數：總覽 14、現貨 6、重要市場 7、期貨 6、選擇權 8、綜合分析 7（Desktop／Mobile 相同）。
+- Artifact：`v9-dashboard-browser-audit`，ID `13121281035`，包含 12 張截圖與 `report.json`；已下載並讀取 report.json 確認 PASS。
+
+### 驗收狀態
+| 項目 | 狀態 | 備註 |
+|---|---|---|
+| Browser Audit workflow 檔案解析 | PASS | 已修正 double-escaped newline |
+| 六分頁 Desktop | PASS | 6/6 |
+| 六分頁 Mobile | PASS | 6/6 |
+| JavaScript page errors | PASS | 0 |
+| 水平溢位 | PASS | 12/12 無溢位 |
+| Dashboard 截圖 | PASS | 12 張已產生並封存 |
+| DATA_REPORT 借券來源標籤實際新產出 | NOT TESTED | 本輪尚未執行 daily_data workflow |
+| TWT93U／TPEX 原始資料重新核算 | NOT TESTED | 尚未取得同 T0 原始回應做逐股重算 |
