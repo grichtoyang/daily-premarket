@@ -66,8 +66,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("(n.top10Put||[]).slice(0,3)", self.html)
         self.assertIn('title:"履約價 GEX 分布"', self.html)
         self.assertIn(".sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,16)", self.html)
-        self.assertIn("圖表顯示 Net GEX 絕對值前 16 筆", self.html)
-        self.assertIn("依曝險絕對值排序，非履約價順序", self.html)
+        self.assertIn('chartNote:"GEX：新台幣元（NT$）', self.html)
+        self.assertIn('height:260}),chartNote:"GEX：新台幣元', self.html)
 
     def test_bias_card_renders_live_gex_status_and_value(self):
         self.assertIn('gexReady=l.gexStatus==="available"&&Number.isFinite(gexValue)', self.html)
