@@ -505,10 +505,11 @@ def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_histo
         top=scored[:top_n]
         if not top: return None
         avg_next=sum([s[3] for s in top])/len(top) if top else 0
-        win_rate=sum([1 for s in top if s[3]<0])/len(top) if top else 0
-        print(f"[V9-17F] Historical similarity: {len(rows)} days top{top_n} avg={avg_next:.2f}% win={win_rate:.0%}")
+        positive_rate=sum(1 for item in top if item[3]>0)/len(top) if top else 0
+        negative_rate=sum(1 for item in top if item[3]<0)/len(top) if top else 0
+        print(f"[V9-17F] Historical similarity: {len(rows)} days top{top_n} avg={avg_next:.2f}% up={positive_rate:.0%} down={negative_rate:.0%}")
         for sim,date,bias,next_pct in top[:3]: print(f"  - {date} bias={bias} next={next_pct:.2f}% sim={sim:.0f}")
-        return {'avg_next_pct':avg_next,'win_rate':win_rate,'top_days':top,'count':len(rows)}
+        return {'avg_next_pct':avg_next,'positive_rate':positive_rate,'negative_rate':negative_rate,'top_days':top,'count':len(rows)}
     except Exception as e:
         print(f"[V9-17F] Historical similarity error: {e}")
         return None
@@ -1075,7 +1076,7 @@ def build_history_status_text(historical, db_status):
     if historical:
         return (
             f"歷史相似{historical['count']}天，隔日平均"
-            f"{historical['avg_next_pct']:.1f}% 勝率{historical['win_rate']:.0%}"
+            f"{historical['avg_next_pct']:.1f}%；隔日上漲比例{historical['positive_rate']:.0%}、下跌比例{historical['negative_rate']:.0%}"
         )
     mode=db_status.get('mode','no-db')
     if not db_status.get('exists'):
@@ -1289,14 +1290,16 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'regime': analyzer.gen_bias_card()['regime'], 'factor_str': analyzer.gen_bias_card()['factor_str'],
             'look': analyzer.gen_bias_card()['look'], 'compass': analyzer.gen_bias_card()['compass'], 'target': analyzer.gen_bias_card()['target'],
             'cards': cards_41,
-            'cards_41_count': len(cards_41),
+            'cards_41_count': len(cards_41),  # Legacy alias: internal narrative card count, not visible block count.
+            'analysis_card_count': len(cards_41),
+            'visible_block_count': 42,
             'correlation': calculate_historical_correlation(as_of_date=parsed['meta']['t0_date']),
-            'levels': ([{'t':"R3 高點", 'v': int(spot['high']), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"}, {'t':"S1 低點", 'v': int(spot['low']), 'type':"S"}] + ([{'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"}] if parsed['options']['putWall'] is not None else []) + ([{'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}] if parsed['options']['flip'] is not None else [])),
+            'levels': ([{'t':"當日高點", 'v': int(spot['high']), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"}, {'t':"當日低點", 'v': int(spot['low']), 'type':"S"}] + ([{'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"}] if parsed['options']['putWall'] is not None else []) + ([{'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}] if parsed['options']['flip'] is not None else [])),
             'historical': historical,
             'db_status': db_status
         },
         'news': parsed['news'],
-        'data_source': f"DATA_REPORT {parsed['meta']['t0_date']} + Yahoo ^TWII 30d 17F + FinMind + SQLite {db_status.get('mode','no-db')}"
+        'data_source': f"DATA_REPORT {parsed['meta']['t0_date']} + technical_history={tech.get('source','none')} (T0 filtered) + SQLite {db_status.get('mode','no-db')}"
     }
     return final
 
@@ -1586,7 +1589,7 @@ def main():
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(final, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(f"[V9-17F] Wrote {out_path} size {out_path.stat().st_size} bias {final['analysis']['bias']} cards {final['analysis']['cards_41_count']} db_mode {db_status.get('mode')}")
+    print(f"[V9-17F] Wrote {out_path} size {out_path.stat().st_size} bias {final['analysis']['bias']} analysis_cards {final['analysis']['analysis_card_count']} visible_blocks {final['analysis']['visible_block_count']} db_mode {db_status.get('mode')}")
     print(f"[V9-17F] CHECK OK: 17-Factor + VIX Dynamic + RSI/MACD + SQLite真DB + 42個可見區塊全動態 + data.json only + pure React template")
     return 0
 
