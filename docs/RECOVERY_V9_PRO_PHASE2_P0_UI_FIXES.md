@@ -810,3 +810,8 @@ tests/test_dashboard_unit_contract.py 新增：
 ### 驗收
 - 程式、模板及測試檔已提交；新 Unit Contract Audit 尚待完成，NOT TESTED。
 - 10/30 歷史報告不會自動重寫；本修正供後續新報告使用。若要補 10/30 歷史數值，需另行取得該日官方 20Y 原始值，不可用目前值回填。
+
+
+- Unit Contract Audit Run **#103**（commit `a30325e`）：SUCCESS。Job log 確認 `test_treasury_yield_curve_includes_20_year`、`test_futures_trade_table_has_per_row_units` 均 PASS；本次 unit contract 共 8 tests，全部 OK。
+- Daily Premarket V9 Pro Run **#172**（commit `a30325e`）：SUCCESS；deploy skipped。這是 Dashboard build，不代表 20Y 已由 live Treasury API 實際取回並寫入新 DATA_REPORT。
+- 20Y parser／報表欄位契約：PASS；實際 FiscalData／XML 20Y 回應、來源日期及新報告值：NOT TESTED。
