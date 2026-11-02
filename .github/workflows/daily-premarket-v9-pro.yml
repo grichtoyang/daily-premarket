@@ -6,6 +6,7 @@ on:
       - master
       - phase2-p0-data-quality
       - phase2-p0-ui-fixes
+      - fix/three-market-correlation-history
     paths:
       - '.github/workflows/daily-premarket-v9-pro.yml'
       - 'scripts/v9_pro_builder.py'
@@ -106,6 +107,12 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/v9_pro_builder.py --self-test
+
+      - name: Replay real historical DATA_REPORTs for correlation accumulation
+        if: github.ref == 'refs/heads/fix/three-market-correlation-history'
+        run: |
+          set -euo pipefail
+          python scripts/v9_pro_builder.py --history-replay
 
       - name: Run Gamma fallback availability regression tests
         run: |
