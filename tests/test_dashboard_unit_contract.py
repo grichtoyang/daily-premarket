@@ -62,7 +62,7 @@ class DashboardUnitContractTests(unittest.TestCase):
         for index, card in enumerate(chart_cards, start=1):
             # News cards use the generic `chart` slot for a scrollable text list;
             # only actual chart components require a nearby unit note.
-            chart_match = re.search(r"chart:p\\(([^,{]+)", card)
+            chart_match = re.search(r"chart:p\(([^,{]+)", card)
             if chart_match and chart_match.group(1) != '"div"':
                 self.assertIn("chartNote:", card, f"Chart card {index} has no adjacent unit note")
         self.assertIn('chartNote&&p("div"', html)
