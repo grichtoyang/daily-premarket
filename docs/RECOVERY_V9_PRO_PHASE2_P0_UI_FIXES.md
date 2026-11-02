@@ -769,3 +769,13 @@ tests/test_dashboard_unit_contract.py 新增：
 - 139 筆加總 Net GEX = 1,294,327,419.0091748，與報告宣告值完全相同（差異 0）。
 - 139 筆加總 Gross GEX = 6,320,130,202.132608，與報告宣告值完全相同（差異 0）。
 - 驗收：**PASS（報告內部數學一致性）**。此項只證明產出 JSON 的公式與彙總一致；不代表已獨立取得 TAIFEX 原始 IV／OI 逐筆重算 Black-Scholes 模型，也不代表 GEX 是造市商實際持倉。外部原始輸入對帳仍 NOT TESTED。
+
+
+## 9.27 10/30 報告修正後 CI 驗收（2026-11-02）
+
+- Unit Contract Audit Run **#98**（commit `822d4eb`）：SUCCESS。從 job log 確認新增 `test_taifex_night_unavailable_summary.py` 的 3 個測試均執行且通過（結算價／OI 缺值、全欄位正常、所有欄位缺值）。
+- Unit Contract Audit Run **#99**（commit `ccff53c`）：SUCCESS。期貨交易表改為逐列單位欄的變更已通過 unit contract。
+- Unit Contract Audit Run **#100**（commit `a9c8a21`）：SUCCESS。新增期貨交易口數／金額單位契約測試後仍通過。
+- Daily Premarket V9 Pro Run **#168**（commit `1dd3786`）：SUCCESS；Run **#169**（commit `00dc48f`）：SUCCESS；Run **#170**（commit `a9c8a21`）：SUCCESS。這些是 Dashboard build／artifact workflows，不代表重新產出 10/30 DATA_REPORT。
+- V9 UI Fixes Regression Run **#130**（commit `ccff53c`）：SUCCESS；Run **#131**（commit `a9c8a21`）當時仍 in_progress，待最終狀態。
+- 上述修正仍只在 `phase2-p0-ui-fixes`；deploy jobs skipped，沒有部署或合併。
