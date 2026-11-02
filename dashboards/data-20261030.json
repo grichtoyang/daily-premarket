@@ -2908,6 +2908,8 @@
       }
     },
     "cards_41_count": 48,
+    "analysis_card_count": 48,
+    "visible_block_count": 42,
     "correlation": {
       "labels": [],
       "matrix": [],
@@ -2915,7 +2917,7 @@
     },
     "levels": [
       {
-        "t": "R3 高點",
+        "t": "當日高點",
         "v": 46139,
         "type": "R"
       },
@@ -2925,7 +2927,7 @@
         "type": "P"
       },
       {
-        "t": "S1 低點",
+        "t": "當日低點",
         "v": 44726,
         "type": "S"
       },
@@ -3035,5 +3037,5 @@
       "link": "https://www.cnbc.com/investingclub/2026/10/31/stocks-started-the-week-with-promise-but-ended-in-despair.html"
     }
   ],
-  "data_source": "DATA_REPORT 2026-10-30 + Yahoo ^TWII 30d 17F + FinMind + SQLite db"
+  "data_source": "DATA_REPORT 2026-10-30 + technical_history=yahoo (T0 filtered) + SQLite db"
 }
