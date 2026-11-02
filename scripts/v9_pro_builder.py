@@ -1557,6 +1557,14 @@ def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports"
             "rsi": tech.get("rsi"), "k": tech.get("k"), "d": tech.get("d")
         }
         print(f"[CORRELATION SEED] {report_date} eligibility fields: {corr_values}")
+        # Replace any row created earlier in this same build; the normal daily path may have
+        # stored an incomplete row before historical inputs were fully reconstructed.
+        seed_conn=init_db(db_path)
+        if not seed_conn:
+            raise RuntimeError(f"Could not open correlation seed DB for {report_date}")
+        seed_conn.execute("DELETE FROM v9_pro_history WHERE date=?", (report_date,))
+        seed_conn.commit()
+        seed_conn.close()
         if not save_today_to_db(bias,analyzer.signals,tech,report_date.replace("-",""),db_path):
             raise RuntimeError(f"Could not seed correlation history from {path}")
         print(f"[CORRELATION SEED] {report_date}: saved/verified")
