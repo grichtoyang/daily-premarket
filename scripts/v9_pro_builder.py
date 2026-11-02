@@ -687,7 +687,7 @@ def parse_data_report(report_path):
     fut_night_l=optional_get(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \| 點"); fut_night_c=optional_get(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \| 點")
     fut_night_diff=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \| 點"); fut_night_pct=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \| %")
     fut_night_vol=optional_get(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \| 口")
-    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \| %","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \| 點","0")
+    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \| 點"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \| %","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \| 點","0")
     foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \| 口"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \| 口","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \| 口","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \| 口","前十大OI")
     foreign_day_net=optional_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \| 口"); foreign_night_net=optional_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \| 口")
