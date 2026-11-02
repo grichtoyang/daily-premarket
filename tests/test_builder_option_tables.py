@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from v9_pro_builder import (parse_data_report, parse_margin_ratio_provenance, _filter_history_to_t0, V9Analyzer, build_41_cards, init_db, get_factor_win_rates_from_db, find_historical_similarity, calculate_historical_correlation)
+from v9_pro_builder import (parse_data_report, parse_margin_ratio_provenance, _filter_history_to_t0, V9Analyzer, build_41_cards, init_db, get_factor_win_rates_from_db, find_historical_similarity, calculate_historical_correlation, build_history_status_text)
 
 
 class BuilderOptionTableTests(unittest.TestCase):
@@ -154,6 +154,33 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertIn("三市場方向分歧", cards["主力三市透視"]["compass"])
         self.assertIn("不直接相減", cards["前十大與分歧"]["look"])
         self.assertNotIn("最後防線", cards["前十大與分歧"]["target"])
+
+    def test_historical_similarity_reports_directional_rates_not_win_rate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = str(Path(tmp) / "prior-only.db")
+            conn = init_db(db)
+            outcomes = [1.0, -1.0, 0.0]
+            for day, outcome in enumerate(outcomes, start=27):
+                conn.execute(
+                    "INSERT INTO v9_pro_history (date,bias,spot_pct,foreign_spot,foreign_fut,pcr,vix,next_day_pct) "
+                    "VALUES (?,?,?,?,?,?,?,?)",
+                    (f"2026-10-{day:02d}", 50, 0.5, 100.0, 1000, 0.9, 18.0, outcome)
+                )
+            conn.commit()
+            conn.close()
+            historical = find_historical_similarity(
+                {"bias": 50, "spot_pct": 0.5, "foreign": 100.0, "pcr": 0.9},
+                db,
+                as_of_date="20261030",
+            )
+            self.assertIsNotNone(historical)
+            self.assertAlmostEqual(historical["positive_rate"], 1/3)
+            self.assertAlmostEqual(historical["negative_rate"], 1/3)
+            self.assertNotIn("win_rate", historical)
+            status = build_history_status_text(historical, {"exists": True, "rows": 3, "filled": 3, "mode": "db"})
+            self.assertIn("隔日上漲比例33%", status)
+            self.assertIn("下跌比例33%", status)
+            self.assertNotIn("勝率", status)
 
     def test_historical_learning_and_correlation_exclude_future_rows(self):
         with tempfile.TemporaryDirectory() as tmp:
