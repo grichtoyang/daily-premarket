@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Compile Python sources
-        run: python -m compileall -q scripts tests
+        run: python -m compileall -q scripts src tests
       - name: Run Dashboard unit contract tests
         run: python -m unittest discover -s tests -p 'test_dashboard_unit_contract.py' -v
       - name: Run React template regression tests
