@@ -602,3 +602,15 @@ tests/test_dashboard_unit_contract.py 新增：
 2. 針對失敗端點以實際回應修復；補測 TWT93U 欄位索引、TPEX 日期欄位及非空欄位判斷。
 3. 將 TWT96U OTC 來源顯示名稱改為 `TWT96U GRETAI（上櫃）`，並補回歸測試。
 4. 再跑 daily_data，確認三欄新報告結果與來源標籤；若上游端點仍不可用，保留 unavailable 並清楚標示，不得虛構數值。
+
+
+## 9.15 TWT96U 上櫃來源標籤精確化（2026-11-02）
+
+- 依 DATA_REPORT_20261102 的實際輸出，發現 `TWSE TWT96U OTC` 容易誤解為獨立的 TWSE OTC 端點。
+- 已核對 `src/sources/spot_raw.py`：TWT96U API 的 `TWSEAvailableVolume` 對應上市，`GRETAIAvailableVolume` 對應上櫃；兩者都來自同一個 TWSE TWT96U 回應。
+- 已將來源顯示名稱改為 `TWT96U GRETAI（上櫃）`，保留上市來源名稱 `TWSE TWT96U`。
+- 已在 `tests/test_fetch_data_borrowed_sources.py` 加入精確標籤契約斷言。
+- Commits：
+  - `d83903d1111e78026ec4f31fdde0ef85160d641d`（source label）
+  - `75d97a5d8b8136d9d95032ee50f63d467f2f739d`（regression assertion）
+- 驗收：程式修改已提交並讀回可確認；該 commit 的 combined status 查詢目前沒有回傳 status checks，因此測試執行狀態 **NOT TESTED**，不得標為 PASS。等待 Actions 自動執行／後續手動確認。
