@@ -753,3 +753,41 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 因子預測力／walk-forward 不屬本次 P0 收尾範圍，不列入待辦。新增 Fetch Data／Runner／Worker 均 NOT IN SCOPE。
 
 最終狀態：P0 結案後稽核收尾完成；GEX 原始輸入重建保留 BLOCKED 限制。不得因該限制重新啟動本階段或重複既有驗收。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 27. 2026-11-02 區塊 A/B Template 與建置來源一致性收尾
+
+### 最新工作基準
+- 工作分支：`fix/three-market-correlation-history`。
+- 最新 Commit：`38162c1b84ac8f309f618a69d8e9606c82eb737c`。
+- A 三市場圖表分流：`7c00dcd5cb95e4b892d2fd73f705630afbffc2e0`；B 選擇權多空力道金額定義：`dc09cb7332f7c5290fc478cd78187a1ebeeccb33`；選擇權法人表格口數單位：`8eace1b368816ae65016c9890166aab6b48139d2`。
+- 先前大範圍 React 替換造成語法失敗（Runs `41466664463`、`41466690791`）已由 `81f146714de08f0d0de6299a49427ca490eab69d` 還原至語法通過版本，再以小範圍修改完成 A/B；歷史 FAIL 不代表目前仍 FAIL。
+
+### 建置來源查證與防呆
+- Workflow 第一個 checkout 指向觸發分支；V9 Pro Build 與 Golden Fixture 均讀取 repo root 的 `templates/v9-pro-react-template.html`。
+- `master-site` 是第二個獨立 checkout，僅用於 Pages 根目錄；新版分支輸出複製到 Pages `p0/`，不會以 Master Template 產生新版 V9 Pro HTML。
+- Commit `38162c1b84ac8f309f618a69d8e9606c82eb737c` 將第一個 checkout pin 到 `github.sha`，新增驗證：HEAD 必須等於 triggering SHA，Template worktree blob 必須等於該 commit 內的 Template blob；Master checkout 明確標示僅供 Pages root。
+- GitHub Actions Run `41475229916`：completed / success；來源驗證步驟 PASS，Golden Fixture 與正式 HTML inline JavaScript syntax check PASS，Pages artifact assembly/upload PASS。
+- Artifact `13156417750`（github-pages，1,780,599 bytes，未過期）。
+- Deploy job skipped；沒有部署到正式 Pages。
+
+### 最新驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| A 三市場圖表分流與單位 | PASS（CI／Artifact 靜態輸出） |
+| B 選擇權法人多空力道金額定義 | PASS（CI／Artifact 靜態輸出） |
+| 選擇權法人交易表格口數單位 | PASS |
+| 建置 checkout 固定觸發 Commit | PASS |
+| Template blob 與觸發 Commit 一致 | PASS（Run 41475229916） |
+| 正式 HTML inline JavaScript 語法 | PASS |
+| 10/30 Golden Fixture 語法與建置 | PASS |
+| Pages Artifact 組裝／上傳 | PASS |
+| 實際瀏覽器／手機畫面與排版 | NOT TESTED |
+| Merge／正式部署 | NOT DONE |
+
+### 下一步
+1. 使用者開啟 Artifact `13156417750` 內的 `p0/test-fixtures/v9-pro-20261030-full-day.html`，驗收區塊 A/B 的實際圖表、文字、單位及手機排版。
+2. 若畫面驗收通過，才更新本分支的 A/B 視覺驗收狀態；不得以 CI／Golden Fixture 語法通過代替使用者畫面驗收。
+3. 不執行 Merge／部署；後續範圍由使用者另行確認。
+
+- 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
