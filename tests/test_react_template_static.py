@@ -52,6 +52,13 @@ class ReactTemplateStaticTests(unittest.TestCase):
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_candlestick_volume_unit_is_not_shadowed_by_canvas_coordinate(self):
+        # The candle x-coordinate must not overwrite the unit label passed by the chart caller.
+        self.assertIn('volUnit:unitLabel="口"', self.html)
+        self.assertIn('s.fillText(`VOL ${g(o)}${unitLabel}`,S+Ee+10,A+11)', self.html)
+        self.assertNotIn('volUnit:a="口"', self.html)
+        self.assertNotIn('s.fillText(`VOL ${g(o)}${a}`,S+Ee+10,A+11)', self.html)
+
     def test_all_three_ranked_charts_expand_without_container_clipping(self):
         # Hn is shared by the futures day/night institutional chart, options top-10 chart,
         # and per-strike GEX chart. Its canvas must grow to fit every rendered row.
