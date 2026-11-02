@@ -44,6 +44,14 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn("spot.otc.up/down/flat/limit_up/limit_down", unit_map)
         self.assertIn("parse_data_report()", unit_map)
         self.assertNotIn("GEX 單位 BLOCKED", unit_map)
+        self.assertIn("2026-11-02 完整欄位語義稽核", unit_map)
+        self.assertEqual(len(re.findall(r"^\\|\\s*(?:[1-9]|[1-3][0-9]|4[0-2])\\s*\\|.*\\| PASS \\|", unit_map, re.MULTILINE)), 42)
+        self.assertIn("GEX 正負不得直接轉成 Bias 多空分數", standard)
+        self.assertIn("T0", standard)
+        self.assertIn("semantic_note", registry["metrics"]["options.gex.net_gross_per_strike"])
+        self.assertIn("history.similarity_outcomes", registry["metrics"])
+        self.assertIn("technical.indicators", registry["metrics"])
+        self.assertIn("analysis_card_count", (ROOT / "scripts" / "v9_pro_builder.py").read_text(encoding="utf-8"))
 
     def test_spot_turnover_uses_turnover_chart_not_options_volume_chart(self):
         html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
