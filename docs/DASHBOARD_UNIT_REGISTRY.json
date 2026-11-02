@@ -161,7 +161,7 @@
       "canonical_unit": "項",
       "display_unit": "項",
       "status": "defined",
-      "semantic_note": "Count only factors with validated inputs and active scoring; disabled GEX is not included in the active count."
+      "semantic_note": "Count only factors with validated inputs and active scoring. Distinguish missing_factors (raw value absent) from disabled_factors (raw value exists but no approved directional score, e.g. GEX)."
     },
     "synthesis.correlation": {
       "source_unit": "無量綱",
