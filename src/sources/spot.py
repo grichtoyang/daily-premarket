@@ -268,7 +268,7 @@ def build(t0: str) -> dict:
         available = [name for name, value in parts if value is not None]
         return " + ".join(available) if available else "端點未提供"
     sources["sbl_bal"] = _sbl_scope(
-        ("TWSE TWT96U", stw.get("tw")), ("TWSE TWT96U OTC", stw.get("otc")),
+        ("TWSE TWT96U", stw.get("tw")), ("TWT96U GRETAI（上櫃）", stw.get("otc")),
         ("TPEX margin_sbl", stp.get("bal")))
     sources["sbl_sale_bal"] = _sbl_scope(
         ("TWSE TWT93U", _tw_sale), ("TPEX margin_sbl", _tp_sale))
