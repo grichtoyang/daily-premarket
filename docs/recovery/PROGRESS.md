@@ -485,3 +485,56 @@ P1 尚未開始。啟動前必須：
 3. 最後再做因子預測力與 walk-forward，先定義樣本、時間切分、基準、交易成本及評估指標。
 4. 這些均屬 P0 結案後的獨立資料稽核／模型驗證，不重新開啟 P0。
 
+
+
+## 24. 2026-11-02 10/30 原始 API 對帳：來源盤點（第一輪）
+
+### 程式／資料基準校正
+- P0 語義結案 Commit 仍為 `a791e4f3a2a15e46cc670b163b2160651df070c3`，作為 P0 驗收證據錨點。
+- `phase2-p0-ui-fixes` 後續另有 GitHub Actions 產生的資料／Dashboard Commit `d5443eacb29b7b0824306de4d1b126b9281210b5`（2026-11-02 07:48Z），其父提交為 P0 結案 Commit；變更只涉及 `dashboards/data-20261030.json`、`data-latest.json`、HTML、manifest 等產出物，未見程式檔變更。不可把這個資料更新 Commit 誤認為新的 P0 修正。
+- 10/30 DATA_REPORT：`665ae0ce957cbda372a1d70e1f06f0eea124ba11`；T0=2026-10-30，Actions 產出時間 2026-11-01 23:51:51 Asia/Taipei。
+- 主要程式證據：`src/sources/spot_raw.py` SHA `f5d95898b327b9243ee586ad4dd528d4502d7500`；`twse.py` SHA `64964bcc0db7670d49ae3d204ffb7bf5ff647764`；`twse_proxy.py` SHA `6245e8209ce4c54ec14a24d9e9215a112b82bb68`；`spot.py` SHA `92f4f90241c91ec5f1a46570bad439ba9aa3d7f0`；`taifex.py` SHA `d741115b488e8e3c241773d6fcf82d4edda0ba38`；`taifex_official.py` SHA `2fdc4ea61f40078fc35ab3b5f2246becb7de93de`。
+- Worker 證據：`workers/twse-proxy_V1.1.js` SHA `1cb3e0a7ac6de4809fb606f73eb09e10da112a0b`；`workers/taifex-proxy_V1.4.js` SHA `f6406554393f57b71f88eaf6fdb75ee73ae2803c`。
+
+### 原始資料保存檢查
+- `.github/workflows/daily_data.yml` 只執行 `src/fetch_data.py` 並提交 `data_reports/`、`reports/`；沒有 `upload-artifact` 步驟。
+- `src/fetch_data.py` 產出正規化 Markdown DATA_REPORT；本次讀取的版本未見將每個來源 HTTP 原始 response body 寫入檔案／artifact 的流程。
+- 因此目前 Git 內的 DATA_REPORT 與 Dashboard JSON 是正規化／衍生結果，不是可直接逐筆重算的原始 API 封存。
+- 這是原始 API 稽核的證據保存缺口；不是 P0 程式缺陷，不回頭修改 P0。
+
+### 10/30 現貨來源矩陣（依程式碼與報告註記）
+| 欄位 | 來源／端點 | 日期能力（程式可證） | 10/30 原始 payload 狀態 |
+|---|---|---|---|
+| 加權指數收盤／漲跌 | twse-proxy → TWSE RWD MI_INDEX IND | Worker 帶 `date=20261030` | NOT TESTED；未封存 raw response |
+| 上市成交金額／上市漲跌家數 | twse-proxy → TWSE RWD MI_INDEX MS；備援 `twtazu_od?date=` | 帶 T0 日期 | NOT TESTED；未封存 raw response |
+| 加權 OHLC | FinMind TaiwanStockPrice，`start_date=2026-10-30` | 可指定起始日期並篩 T0 | NOT TESTED；未封存 raw response |
+| 上櫃漲跌／成交金額 | TPEX `tpex_mainborad_highlight` | 無 date query；程式只取第一列並驗證 Date | BLOCKED 待確認歷史列是否仍可取得 |
+| 三大法人現貨 | TWSE RWD BFI82U／twse-proxy `/institutional?date=` | Worker 明確註記 RWD 忽略 date、回傳最新日，並回報 actual_date | BLOCKED；目前無原始封存，端點不是可保證歷史回查 |
+| 融資融券金額口徑 | HiStock 上市／上櫃 HTML | 程式抓網頁並按 MM/DD 比對列 | NOT TESTED；需檢查頁面是否仍保留 10/30 |
+| 自建上市融資維持率 | TWSE RWD `marginTrading/MI_MARGN?date=20261030` + `afterTrading/MI_INDEX?date=20261030&type=ALLBUT0999`，另查缺價股票歷史月資料 | 明確帶 T0；程式要求 payload date 必須等於 T0 | NOT TESTED；可重取性待實際 API 回應確認 |
+| 借券餘額 | TWSE TWT96U + TPEX margin_sbl | TWSE TWT96U 無日期參數；TPEX 依回傳 Date 篩選 | BLOCKED/NOT TESTED；報告明確註記 MI_MARGN/TWT96U 無日期欄、採最新可得 |
+| 借券賣出餘額／增減 | TWSE TWT93U + TPEX margin_sbl | TWT93U 帶 ROC 日期 1151030；TPEX 依 Date 篩選 | 10/30 報告註記 TWT93U 未取得，賣出增減僅上櫃值；不能視為上市櫃完整值 |
+
+### TAIFEX／GEX 原始來源矩陣
+| 欄位 | 原始來源／路徑 | 日期能力（程式可證） | 10/30 狀態 |
+|---|---|---|---|
+| TXO 行情、履約價、Call/Put、結算價、OI | TAIFEX 網站 `/cht/3/optDailyMarketReport`，POST queryDate | Worker 支援指定歷史日期 | 有可行歷史重取路徑；尚未取得 10/30 原始 response |
+| TXO Delta | TAIFEX `/cht/3/dlOptDailyDelta` 歷史清單 + `/cht/3/optDailyDeltaExcel` | Worker 先確認日期在最近 30 交易日清單，再下載指定日期 | 10/30 位於理論回查窗口內；尚未實際驗證清單及下載 |
+| TAIFEX OpenAPI fallback | `DailyMarketReportOpt`、`DailyOptionsDelta` | Worker 明確將其視為 latest/current fallback，並要求回傳日期吻合 | 不可先假定能回查 10/30；需以實際日期清單判斷 |
+| GEX 標的收盤價 | TWSE FMTQIK | Worker 下載後按日期欄位尋找 T0 | NOT TESTED；尚未取得 10/30 raw response |
+| GEX 計算 | Settlement-implied IV → Black-Scholes Gamma；Call 正、Put 負；GEX 乘數公式見 Worker | 可用原始 chain + Delta + TAIEX close 重算 | 尚未重建；現有 139 筆 GEX_LEVELS_JSON 只是衍生輸出 |
+| OI 日變化／快照 | TAIFEX Proxy KV snapshots | `/snapshots/bundle?date=` 讀取指定日期，找不到時退回較早 snapshot | DATA_REPORT 取用 2026-10-29 snapshot；10/30 當日 snapshot 是否存在未驗證 |
+
+### 已識別的報告資料品質／來源註記
+- 10/30 DATA_REPORT 明確註記「上市 MI_MARGN / TWT96U 無日期欄，採用最新可得」；因此這兩項不可直接宣稱是 10/30 歷史原始值。
+- 10/30 DATA_REPORT 明確註記「借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)」；相關欄位不得解讀為上市櫃完整合計。
+- DATA_REPORT 的借券來源摘要列與該註記需在逐筆對帳時一起核對，避免來源標籤看似包含 TWSE，但實際僅有 TPEX 值。
+- 10/30 現貨三大法人值為外資 -1,124.7 億、投信 +236.2 億、自營商 -513.7 億；因 BFI82U proxy 會回報 actual_date，本次仍需 raw actual_date 證據才能確認值日期。
+- 10/30 GEX 139 筆的既有內部公式一致性，不代表原始 chain／Delta／標的價格已獨立重取或對帳。
+
+### 本輪執行限制與狀態
+- 已完成程式碼／端點／日期參數／資料保存方式的唯讀追查。
+- 嘗試透過目前可用的外部讀取介面直接讀取 Cloudflare Worker、TWSE、TPEX API JSON；這些 API URL 未能在本次執行環境取回有效 payload。因此沒有虛報 HTTP 狀態、raw row count 或 API 數值。
+- 10/30 raw API payload 逐筆對帳：NOT TESTED（實際 response 尚未取得）。
+- TAIFEX TXO chain／Delta 歷史回查：可行路徑已由程式碼確認，實際取回 BLOCKED（本次無法直接呼叫來源 API）。
+- 下一步應使用能直接發送 HTTP GET/POST 的執行環境，按上述 endpoint 與參數擷取原始 response，保存 request URL/body、HTTP status、response date、raw JSON/HTML/Excel 及 SHA-256，再進行逐欄位重算；不需要修改正式程式或重跑 P0。
