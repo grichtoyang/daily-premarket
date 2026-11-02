@@ -3,7 +3,7 @@
 更新日期：2026-11-02（Asia/Taipei）
 Repository：`grichtoyang/daily-premarket`
 工作分支：`phase2-p0-ui-fixes`
-更新基準 HEAD：`9b6bbeae8b34c58aff60444d2219dd389a07c176`（2026-11-02 最新分支 HEAD）
+更新基準 HEAD：`2871ed8de461dcd1345e2d2b1a6b3d41359d19c0`（2026-11-02 本次 GEX 修正與回歸檢查提交）
 
 > 本文件是本階段的續作錨點。新對話先讀本文件，再從「下一步」接續。
 > 本文件只記錄可確認的狀態；未執行的測試不得標為 PASS。
@@ -109,3 +109,45 @@ Repository：`grichtoyang/daily-premarket`
 - 不擴大需求，不改資料策略或業務邏輯，除非修正單位契約必須且有明確證據。
 - 所有 GitHub 寫入限定 `phase2-p0-ui-fixes`；不部署、不合併。
 - 最終報告分列：已完成、已驗證、BLOCKED、NOT TESTED、尚未完成。
+
+## 9. 2026-11-02 後續視覺缺陷與 GEX 修正（本節優先於舊段落）
+
+### 9.1 三個圖表裁切
+
+- 使用者最後確認僅有三個圖表顯示不完整：日夜法人交易、前十大選擇權、履約價 GEX 分布。
+- 目前分支 React Template 的共用 Canvas `Hn` 已採動態高度：`Math.max(n,e.length*46+48)`；圖表容器使用 `minHeight:180px; overflow:visible`。
+- `tests/test_react_template_static.py` 已有 `test_all_three_ranked_charts_expand_without_container_clipping`，覆蓋共用 Canvas 高度、容器、三個區塊及 GEX 前 16 筆排序。
+- 上述程式／靜態測試可在目前分支確認；本次最新 Actions 預覽尚未重新完成桌面／手機實際視覺驗收，因此不可標示為最終視覺 PASS。先前截圖可能來自舊預覽，必須用本次新 Artifact 再確認。
+
+### 9.2 Bias 卡片 GEX unavailable 根因與修正
+
+- DATA_REPORT `data_reports/DATA_REPORT_20261030.md` 的 14A 區段包含 GEX_LEVELS_JSON：日期 2026-10-30、quality=`usable`、139 筆 levels、Net GEX 1,294,327,419.009、Gross GEX 6,320,130,202.133。
+- 逐筆 Net GEX 加總與整體 Net GEX 相符；逐筆 Gross GEX 加總與整體 Gross GEX 相符。
+- Builder `scripts/v9_pro_builder.py` 已具備解析 GEX_LEVELS_JSON 並映射至 `options.netGex1pct`、`grossGex1pct`、`gexLevels`、`gexDate`、`gexStatus` 的程式。
+- 目前已提交的 `dashboards/data-20261030.json` 是舊快照（meta.generated_at=`2026-11-01 12:32:04`），而目前 DATA_REPORT 產出時間為 `2026-11-01 23:51:51`；舊 JSON 的 options 物件沒有 GEX 欄位。因此這是 DATA_REPORT 更新後 Dashboard JSON 未同步重建的資料快照問題。
+- React Bias 卡片另有硬編碼 `GEX unavailable`（pill 與 footer），即使 options 有 GEX 欄位也不會顯示。已改為讀取 `options.gexStatus` 與 `options.netGex1pct`，available 時顯示 Net GEX 十億 NT$ 簡寫，unavailable 才保留 unavailable。
+- 本次程式提交：
+  - Template 動態 GEX：`86babbadf8ed63cdadd0252ecf5ba9eaaea5a512`
+  - Bias GEX 靜態回歸測試：`1574e4a144f4ac55091759faadd9c020be745f70`
+  - Builder→Dashboard GEX 整合驗證：`2871ed8de461dcd1345e2d2b1a6b3d41359d19c0`
+- UI Regression workflow 已增加建置後驗證：GEX status/date/139 筆、Net/Gross 總額及逐筆加總。此 workflow 會以目前 DATA_REPORT 重建隔離的預覽 JSON／HTML，不直接覆寫正式 dashboard，也不部署。
+
+### 9.3 本次狀態
+
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| GEX DATA_REPORT payload | PASS（資料存在） | 139 筆、quality usable、總額與逐筆加總一致 |
+| 舊 Dashboard JSON | FAIL（已定位） | JSON generated_at 早於 DATA_REPORT 更新，options 缺 GEX 欄位 |
+| Builder GEX parser／mapping | PASS（程式碼存在） | Parser 與輸出 mapping 已檢查；新 workflow 將實際建置後再驗證 |
+| Bias 卡片硬編碼 | FIXED（程式已提交） | 兩處改為動態讀取 options GEX 欄位；CI 尚待結果 |
+| 三圖表動態高度 | PASS（程式／靜態測試存在） | 最新 Artifact 的實際渲染尚未驗收 |
+| 最新 UI Regression | NOT TESTED | 本次 commit 已觸發 push workflow；目前未取得 run/job 結果 |
+| 新預覽手機／桌面視覺 | NOT TESTED | 待取得本次 workflow Artifact 後驗收 |
+| Merge／部署 | NOT DONE | 按既定要求維持分支隔離 |
+
+### 9.4 下一步
+
+1. 查收本次 `V9 UI Fixes Regression` Actions；確認 Builder self-test、React static regression、DATA_REPORT parser regression、GEX pipeline assertions 全部 PASS。
+2. 下載本次新產生的 `V9-UI-Fixes-Preview-20261030` Artifact；確認 Bias pill 顯示實際 Net GEX，不再硬編碼 unavailable。
+3. 以新 Artifact 檢查手機／桌面三個圖表是否完整呈現；若仍裁切，根據實際 DOM／Canvas 尺寸定位，不再只調整猜測高度。
+4. 將最終 Actions 證據與視覺驗收結果更新本 Recovery；不修改 Master／V8，不 Merge、不部署。
