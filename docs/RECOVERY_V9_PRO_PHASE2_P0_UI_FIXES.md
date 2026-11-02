@@ -650,3 +650,15 @@ tests/test_dashboard_unit_contract.py 新增：
 - 成交金額顯示：上市 9,396.1 + 上櫃 1,987.7 = 11,383.8 億，但總計顯示 11,383.7 億。程式以原始精度先加總、最後各自四捨五入到 0.1 億；顯示值不必然可直接相加。此項目前屬顯示精度差異，需以未四捨五入原值才能判斷是否錯誤，NOT TESTED，暫不改成「先四捨五入再相加」以免損失精度。
 - 「未取得欄位 (0)」與期貨表格中的 unavailable 欄位存在口徑落差。摘要目前只彙總 `s["unavailable"]`、`fx["unavailable"]` 與少數快照項目；部分期貨表格缺值未加入 fx["unavailable"]。需再盤點期貨表格必填欄位及其 unavailable 收集邏輯，未修正前此摘要不能當成全報告完整性總數。
 - 10/30 報告原始 API 逐筆對帳未做；夜盤期間不重跑資料抓取，避免覆寫日盤／全日報告。
+
+
+## 9.18 11/02 DATA_REPORT 缺少現貨 OHLC 時 Dashboard 建置失敗：修正（2026-11-02）
+
+- 新增借券沿用來源標籤修正後，Daily Premarket V9 Pro Run **#157**（commit `96f63ba`）執行時，前置借券合約測試、17F self-tests、Gamma fallback tests 均成功；Dashboard builder 在解析現貨「開盤」欄位時失敗。
+- Run #157 的實際錯誤：`[NO-FALLBACK] DATA_REPORT missing 開盤`。讀取 `DATA_REPORT_20261102.md` 確認現貨開盤／最高／最低三欄為 `unavailable`，收盤值仍有資料。這是合法缺值，不應阻斷 Dashboard 建置，也絕不可用收盤價填補 OHLC。
+- 已修改 `scripts/v9_pro_builder.py`：收盤維持必要欄位；開盤、最高、最低改為 optional_get，缺值保留 None；既有一致性檢查只有在 OHLC 四值齊全時才檢查，不做推估。
+- 新增 `tests/test_builder_missing_spot_ohlc.py`，檢查三欄採 optional_get，且 None OHLC 不產生虛假一致性錯誤。
+- Commits：
+  - `6d696aab0898d346f18c29db3949579d527f7ff7`（builder accepts missing OHLC）
+  - `a82156e8ca9715f76200486108708dca0e6b6a94`（regression test）
+- 驗收：上述修改已提交；新 commit 對應的 CI 尚待完成，狀態 **NOT TESTED**。Run #157 的 Dashboard build 已確認 FAIL，原因不是借券修正，而是當日報告 OHLC 合法缺值未被 parser 容忍。
