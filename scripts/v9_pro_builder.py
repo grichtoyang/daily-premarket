@@ -747,7 +747,7 @@ def parse_data_report(report_path):
     fut_night_l=optional_get(r"### 2．台指期近月夜盤行情.*?最低價 \| ([0-9,]+) \|"); fut_night_c=optional_get(r"### 2．台指期近月夜盤行情.*?收盤價 \| ([0-9,]+) \|")
     fut_night_diff=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌點數 \| ([-\+0-9,]+) \|"); fut_night_pct=optional_get(r"### 2．台指期近月夜盤行情.*?漲跌幅 \| ([-\+0-9.]+) \|")
     fut_night_vol=optional_get(r"### 2．台指期近月夜盤行情.*?成交量 \| ([0-9,]+) \|")
-    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=get_value(r"價差百分比 \| ([-\+0-9.]+) \|","0"); night_change=get_value(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|","0")
+    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=optional_get(r"價差百分比 \| ([-\+0-9.]+) \|"); night_change=optional_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|")
     foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|","前十大OI")
     foreign_day_net=optional_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|"); foreign_night_net=optional_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|")
@@ -781,7 +781,7 @@ def parse_data_report(report_path):
     )
 
     news_events=[]
-    idx=text.find("事件1：")
+    idx=text.find("- 事件1：")
     if idx!=-1:
         substr=text[idx:idx+20000]
         lines=substr.split('\n')
@@ -797,7 +797,7 @@ def parse_data_report(report_path):
                 time_m=re.search(r"(\d{4}-\d{2}-\d{2}T[^;]+)", curr["s"])
                 if time_m: curr["time"]=time_m.group(1)
             elif line.startswith("- 摘要：") and curr: curr["d"]=line.replace("- 摘要：","").strip()
-            elif line.startswith("- 連結：") and curr: curr["link"]=line.replace("- 連結：","").strip()
+            elif (line.startswith("- 原文連結：") or line.startswith("- 連結：")) and curr: curr["link"]=re.sub(r"^- (?:原文連結|連結)：","",line).strip()
         if curr: news_events.append(curr)
 
     return {
@@ -838,11 +838,13 @@ class V9Analyzer:
         self.signals['put_wall']=options.get('putWall'); self.signals['call_wall']=options.get('callWall')
         self.signals['gamma_wall']=options.get('gammaWall'); self.signals['flip']=options.get('flip')
         self.signals['max_pain']=options.get('maxPain'); self.signals['pcr']=options.get('pcr')
-        self.signals['gex']=options.get('gex')
+        self.signals['gex']=options.get('netGex1pct')
         us_rows=p.get('usPct_full',[]) or []
         self.signals['us_dict']={x.get('l'):x.get('v') for x in us_rows if isinstance(x,dict)}
         self.signals['sox']=next((x.get('v') for x in us_rows if 'SOX' in str(x.get('l','')).upper()),None)
         self.signals['vix']=next((x.get('close') for x in us_rows if 'VIX' in str(x.get('l','')).upper()),None)
+        fx_rows=p.get('fxPct_full',[]) or []
+        self.signals['dxy_change']=next((x.get('v') for x in fx_rows if 'DXY' in str(x.get('l','')).upper()),None)
         adr_rows=p.get('adrPct_full',[]) or []
         self.signals['adr_change']=next((x.get('v') for x in adr_rows if 'TSM' in str(x.get('l','')).upper() or '台積電' in str(x.get('l',''))),None)
         yield_rows=p.get('yieldPct_full',[]) or []
@@ -890,7 +892,7 @@ class V9Analyzer:
         v=num(s.get('pcr'))
         add('pcr','PCR',v,(-0.8 if v<0.6 else -0.4 if v<0.8 else 0.0) if v is not None else None,'DATA_REPORT.options.pcr','沿用現行低 PCR 風險規則；其他區間不推定方向')
         v=num(s.get('gex'))
-        add('gex','GEX',v,(-1.0 if v<0 else 1.0 if v>0 else 0.0) if v is not None else None,'DATA_REPORT.options.gex','僅接受來源直接提供且可驗證的 GEX；不使用硬編碼值')
+        add('gex','GEX',v,None,'DATA_REPORT.options.netGex1pct','GEX 正負代表模型曝險方向，不等同市場多空方向；未建立方向化規則前不納入 Bias')
         close=num(s.get('spot_close')); wall=num(s.get('put_wall'))
         wall_score=(0.5 if close>wall else -0.5 if close<wall else 0.0) if close is not None and wall is not None and wall>0 else None
         add('put_wall','Put Wall',wall,wall_score,'DATA_REPORT.spot.close + DATA_REPORT.options.putWall','現價位於有效 Put Wall 上方／下方；僅作位置方向訊號')
@@ -1036,14 +1038,15 @@ class V9Analyzer:
         }
 
     def analyze_us_markets(self):
-        us_dict=self.signals.get('us_dict',{}); sox=0
-        for k,v in us_dict.items():
-            if 'SOX' in k: sox=v
-        valid_changes=[v for v in us_dict.values() if v is not None]
-        vix=self.signals.get('vix'); vix_text=f"VIX{vix:.1f}" if vix is not None else "VIX unavailable"
-        sox_text=f"{sox:+.2f}%" if sox is not None else "unavailable"
-        breadth='全漲' if valid_changes and all(v>0 for v in valid_changes) else ('全跌' if valid_changes and all(v<0 for v in valid_changes) else '漲跌互見/資料不足')
-        return {"look": f"SOX {sox_text} 美股{breadth} {vix_text}", "compass": f"費半{sox_text}連動台股，{vix_text}", "target": "關注費半與台積電ADR連動"}
+        us_dict=self.signals.get('us_dict',{})
+        sox=next((v for k,v in us_dict.items() if 'SOX' in k),None)
+        valid_changes=[v for k,v in us_dict.items() if 'VIX' not in k.upper() and v is not None]
+        vix=self.signals.get('vix'); dxy=self.signals.get('dxy_change')
+        vix_text=f"VIX {vix:.2f}點" if vix is not None else "VIX unavailable"
+        dxy_text=f"DXY {dxy:+.2f}%" if dxy is not None else "DXY unavailable"
+        sox_text=f"{sox:+.2f}%" if sox is not None else "SOX unavailable"
+        breadth='股票指數全漲' if valid_changes and all(v>0 for v in valid_changes) else ('股票指數全跌' if valid_changes and all(v<0 for v in valid_changes) else '股票指數漲跌互見/資料不足')
+        return {"look": f"SOX {sox_text}；{breadth}；{vix_text}；{dxy_text}", "compass": f"費半{sox_text}；{vix_text}；{dxy_text}", "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"}
 
     def analyze_news(self):
         news=self.parsed['news']
@@ -1310,7 +1313,7 @@ def run_17f_self_tests():
             'spot':{'close':125.0,'pct':1.5,'up':800,'down':300,'vol':5000,'volume_ratio':1.3},
             'inst':{'foreign':350.0,'trust':80.0,'dealer':10.0,'all':440.0},
             'tx':{'day':{'basis':30.0,'prem':0.1,'pct':1.0},'night':{'pct':0.8,'l':124.0,'h':128.0}},
-            'options':{'putWall':120.0,'callWall':130.0,'gammaWall':128.0,'flip':122.0,'maxPain':125.0,'pcr':0.9,'gex':1.2},
+            'options':{'putWall':120.0,'callWall':130.0,'gammaWall':128.0,'flip':122.0,'maxPain':125.0,'pcr':0.9,'netGex1pct':1.2},
             'futures':{'foreign_oi':60000},
             'usPct_full':[{'l':'SOX','v':3.0},{'l':'VIX','v':-1.0,'close':14.0}],
             'adrPct_full':[{'l':'TSM ADR','v':2.5}],
@@ -1323,7 +1326,7 @@ def run_17f_self_tests():
         bias,_,weights=analyzer.calculate_bias({'spot_trend':0.7})
         assert weights['spot_trend']>baseline.weights['spot_trend']
         assert len(analyzer.factor_details)==17
-        assert analyzer.factor_quality['active_count']==17
+        assert analyzer.factor_quality['active_count']==16
         assert abs(sum(weights.values())-100.0)<1e-5
         assert 0<=bias<=100
         assert analyzer.factor_quality['base_weight_total']==104
@@ -1339,7 +1342,7 @@ def run_17f_self_tests():
         assert abs(sum(sparse_weights.values())-100.0)<1e-5
         assert 0<=sparse_bias<=100
         full_quality_summary=build_factor_quality_summary(analyzer)
-        assert "17F有效17/17" in full_quality_summary
+        assert "17F有效16/17" in full_quality_summary
         assert "有效權重100.0%" in full_quality_summary
         assert "17因子共振" not in full_quality_summary
         sparse_quality_summary=build_factor_quality_summary(sparse_analyzer)
