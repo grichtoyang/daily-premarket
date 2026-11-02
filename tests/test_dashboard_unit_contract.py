@@ -67,6 +67,17 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn("JPY／每 USD", html)
         self.assertIn("KRW／每 USD", html)
 
+    def test_missing_source_values_remain_unavailable_not_zero(self):
+        builder = (ROOT / "scripts" / "v9_pro_builder.py").read_text(encoding="utf-8")
+        self.assertIn("flat=int(flat_match.group(1)) if flat_match else None", builder)
+        self.assertIn("limit_up=int(up_limit_match.group(1)) if up_limit_match else None", builder)
+        self.assertIn("otc_section=text.find(\"#### 2.2 上櫃公司\"); otc_up=otc_down=otc_flat=otc_limit_up=otc_limit_down=None", builder)
+        self.assertIn('margin_finance=get_value(r"\\| 融資餘額 \\| ([0-9,.]+) \\| 億元",None)', builder)
+        html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
+        self.assertIn('F.up,F.down,F.flat].some(P=>P==null||!Number.isFinite(P))', html)
+        self.assertIn('融資增減 unavailable', html)
+        self.assertIn('validRatio?B(l,2)+"%":"unavailable"', html)
+
     def test_42_block_registry_and_chart_notes_are_complete(self):
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
         block_numbers = [int(value) for value in re.findall(r"^\|\s*(\d+)\s*\|", unit_map, re.MULTILINE)]
