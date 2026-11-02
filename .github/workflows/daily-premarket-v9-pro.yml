@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - phase2-p0-data-quality
+      - phase2-p0-ui-fixes
     paths:
       - '.github/workflows/daily-premarket-v9-pro.yml'
       - 'scripts/v9_pro_builder.py'
@@ -153,11 +154,11 @@ jobs:
           ls -lh dashboards/
 
       - name: Commit generated dashboard history
-        if: github.ref == 'refs/heads/phase2-p0-data-quality'
+        if: github.ref == 'refs/heads/phase2-p0-data-quality' || github.ref == 'refs/heads/phase2-p0-ui-fixes'
         run: |
           set -euo pipefail
-          if [ "${GITHUB_REF_NAME}" != "phase2-p0-data-quality" ]; then
-            echo "Refusing to commit generated dashboards outside P0 branch"
+          if [ "${GITHUB_REF_NAME}" != "phase2-p0-data-quality" ] && [ "${GITHUB_REF_NAME}" != "phase2-p0-ui-fixes" ]; then
+            echo "Refusing to commit generated dashboards outside approved P0 branches"
             exit 1
           fi
           git config user.name "github-actions[bot]"
