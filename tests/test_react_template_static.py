@@ -168,9 +168,9 @@ class ReactTemplateStaticTests(unittest.TestCase):
                 suffix = ".mjs" if 'type="module"' in attrs.lower() else ".js"
                 path = Path(tmp) / f"inline_{index}{suffix}"
                 path.write_text(source, encoding="utf-8")
-                parser = "const fs=require('fs');const acorn=require('acorn');try{acorn.parse(fs.readFileSync(process.argv[1],'utf8'),{ecmaVersion:'latest',sourceType:'module'});}catch(e){console.error(e.message+' at '+(e.loc?e.loc.line+':'+e.loc.column:''));process.exit(1)}"
+                # Node's built-in parser is sufficient here; do not depend on undeclared acorn.
                 result = subprocess.run(
-                    [node, "-e", parser, str(path)],
+                    [node, "--check", str(path)],
                     capture_output=True,
                     text=True,
                     check=False,
