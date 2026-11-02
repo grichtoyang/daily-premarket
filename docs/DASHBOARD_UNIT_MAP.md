@@ -1,6 +1,6 @@
 # V9 Pro Dashboard 42 區塊單位對照表
 
-版本：1.0（第一輪修正對照；逐欄位仍須以當前資料 JSON 與來源 schema 複驗）  
+版本：1.1（2026-11-02；以最新 Builder 輸出 JSON、DATA_REPORT 與 React Template 複核）  
 依使用者指定計數：KPI 整組計 1 區塊；六頁共 42 區塊。
 
 ## 總覽（7 區塊）
@@ -10,7 +10,7 @@
 | 1 | KPI 指標群（整組計 1） | 加權收盤、外資現貨、台指日／夜盤、外資期貨、PCR、Call Wall、Bias | 點、億元、點、口、倍、點、分；各 KPI 必須各自標示 |
 | 2 | 加權 5 日走勢與關鍵水位 | 指數價格、日漲跌、漲跌幅 | 點、點、% |
 | 3 | 三大法人快照 | 外資／投信／自營／合計現貨買賣超 | 億元 |
-| 4 | 期選結構快照 | 期貨 OI、選擇權 PCR、GEX | 口、倍；GEX 單位 BLOCKED |
+| 4 | 期選結構快照 | 期貨 OI、選擇權 PCR、GEX | 口、倍；GEX 為 NT$／標的價格變動 1%，屬模型估值 |
 | 5 | 美股連動 | 指數漲跌幅、SOX 等指數價格 | %；價格依指數點數 |
 | 6 | 重大新聞 | 新聞標題、摘要、時間 | 時間須含來源時區；非數值單位 |
 | 7 | Bias／因子狀態摘要 | Bias、有效因子數、權重 | 分、項、相對權重點數／正規化權重%（依欄位定義） |
@@ -75,12 +75,16 @@
 | 41 | 相關性熱圖 | 相關係數 | 無量綱，-1 至 +1 |
 | 42 | 交易計畫 | Bias、關鍵價位、進出場／風險界線 | 分、點；價格路徑只標示條件，不虛構勝率 |
 
-## 尚待完成的欄位級核對
+## 核對範圍、結果與限制
 
-- 本表先建立 42 區塊的單位覆蓋骨架；欄位級驗收須將每個顯示欄位與實際 JSON path、Builder parser、DATA_REPORT 原文逐一對照。
-- 重要市場的匯率報價方向、商品合約單位及殖利率變化原始欄位，需由 DATA_REPORT 實際列與來源 schema 確認。
-- GEX 單位已由 Worker 生產公式與 DATA_REPORT 14A 單位欄確認為 NT$／標的價格變動 1%；仍需留意其為模型估值、非 TAIFEX 官方 GEX。
-- 手機與桌面實際渲染未完成前，所有版面重疊檢查維持 NOT TESTED。
+- 本表已逐區塊列出 1–42 的主要 Dashboard JSON path、DATA_REPORT 章節、單位及資料缺失規則；最新 2026-10-30 Builder JSON 的主要頂層路徑與欄位結構已實際比對。
+- 原始資料解析集中於 \`parse_data_report()\`；標準化欄位輸出由 \`build_final_json()\` 組裝；分析衍生卡片由 \`build_41_cards()\` 產生。React 六頁元件再將 JSON path 對應到各顯示區塊。這三層不可混稱為同一個 parser。
+- 現貨／期貨／選擇權主要欄位及重要市場陣列結構已由最新 JSON 驗證；重要市場的報價單位依 DATA_REPORT 欄位定義及來源報價方向，並非每一原始列均有獨立 unit 欄。
+- 匯率方向：USD/TWD、USD/JPY、USD/KRW 均為每 1 USD 兌本幣；DXY 為指數點。WTI 為 USD／桶、黃金為 USD／金衡盎司、Bitcoin 為 USD／BTC。殖利率水準為 %，日變化為百分點（pp）。
+- GEX 單位已由 Worker 生產公式與 DATA_REPORT 14A 明列單位確認為 NT$／標的價格變動 1%；屬 Black-Scholes 模型估值，非 TAIFEX 官方欄位。
+- 缺值策略需以實際欄位為準：Builder 保留 \`None\`／\`null\` 的欄位，React 依區塊顯示 unavailable；相關性樣本不足時顯示說明文字，不建立假矩陣。
+- 42 區塊表格的結構完整性由 \`test_42_block_registry_and_chart_notes_are_complete\` 驗證；欄位級對照仍需以新資料來源或 schema 變更時重新複核。
+- Desktop／Mobile 六頁技術渲染已在本次最新完整建置 HTML 檢查：無 JS page error、無水平溢位；版面人工視覺檢查仍以實際頁面截圖為準。
 
 ## 42 區塊資料路徑／來源對照（依目前 React Template 與 DATA_REPORT）
 
@@ -96,7 +100,7 @@
 | 6 | news[] | 一.8／二.8（依頁面新聞來源） | 保留來源、時間、時區；無來源時間不得偽造 |
 | 7 | analysis.bias/bias_score/factor_details/factor_quality/weights | 分析層計算 | Bias 分、因子數項、權重依模型定義 |
 | 8 | spot.open/high/low/close/diff/pct/vol | 一.1 | 點／%／億元；OHLC 缺值顯示 unavailable |
-| 9 | spot.up/down/flat/limit_up/limit_down 及 spot.otc_* | 一.2.1–2.2 | 家；上市與上櫃分開 |
+| 9 | spot.up/down/flat/limit_up/limit_down；spot.otc.up/down/flat/limit_up/limit_down | 一.2.1–2.2 | 家；上市與上櫃分開；上櫃欄位巢狀於 spot.otc |
 | 10 | institutional.foreign/trust/dealer/all | 一.3 | 億元 |
 | 11 | margin.finance/finance_diff/short/ratio/ratio_status/ratio_source/ratio_source_date | 一.4 | 億元／張／%；維持率須帶來源與日期 |
 | 12 | margin.sbl/borrowedSell/borrowedSellDiff/borrowedSellDiffScope/short | 一.5、一.4 | 張；圖表縮放為萬張／千張，表格保留原始張數 |
@@ -123,8 +127,8 @@
 | 33 | options.instOpt, options.instOptForce | 四.17、四.18「法人多空力道表」 | instOpt 交易淨口數＝口；instOptForce 金額力道＝億元，兩者分列 |
 | 34 | options.top10Call/top10Put | 四.18 選擇權前十大 | OI 口；快照變化亦為口 |
 | 35 | options.netGex1pct/grossGex1pct/gexLevels/gexDate/gexStatus | 四.14A GEX_LEVELS_JSON | GEX NT$／標的變動 1%；履約價點；保留模型品質／日期 |
-| 36 | institutional.*; futures.*; options.instOpt | 一.3、三.3–5、四.17 | 現貨億元；期貨／選擇權口 |
-| 37 | options.instOptForce 與期貨法人日夜金額／口數欄 | 三.5、四.18「法人多空力道表」 | 金額億元、口數口；各序列獨立標單位 |
+| 36 | institutional.*; futures.*; options.instOpt／instOptForce | 一.3、三.3–5、四.17–18 | 現貨億元；期貨 OI／淨交易與選擇權 instOpt 為口；instOptForce 為億元 |
+| 37 | options.instOptForce | 四.18「法人多空力道表」 | 本區塊各法人日／夜多空力道均為億元；不得混入 options.instOpt 交易口數 |
 | 38 | tx.day/night.*; futures.foreign_oi/foreign_day/foreign_night | 三.1–5、三.7 | 價格點、量口、占比 % |
 | 39 | spot.close; analysis.levels; options.callWall/putWall/gammaWall/flip/maxPain | 一.1、四.11–14、分析層 | 全部價格水位點 |
 | 40 | analysis.bias/bias_score/factor_details/factor_quality | 分析層計算 | 分／項；有效因子數不得把缺失因子當 0 分 |
