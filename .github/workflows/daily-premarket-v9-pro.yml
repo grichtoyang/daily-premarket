@@ -182,7 +182,7 @@ jobs:
           if data_obj.get("meta", {}).get("date") != "2026-10-30":
               raise SystemExit("Golden fixture T0 mismatch")
           data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-          html = template.replace("</head>", f"<script>window.DASHBOARD_DATA={data};</script>\\n</head>", 1)
+          html = template.replace("</head>", f"<script>window.DASHBOARD_DATA={data};</script>\n</head>", 1)
           out = pathlib.Path("dashboards/test-fixtures/v9-pro-20261030-full-day.html")
           out.write_text(html, encoding="utf-8")
           print(f"Golden fixture generated: {out} ({out.stat().st_size} bytes)")
