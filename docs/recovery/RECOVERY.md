@@ -695,3 +695,35 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 因子預測力／walk-forward：NOT STARTED。
 - 本次未修改程式、正式資料、Dashboard、Workflow、V8、Master 或 P0 baseline。
 
+
+
+## 25. 2026-11-02 接續進度：10/30 API 來源追查第一輪
+
+### 最新分支／資料 Commit 更正
+- P0 結案錨點仍為 `a791e4f3a2a15e46cc670b163b2160651df070c3`。
+- P0 結案後，`phase2-p0-ui-fixes` 有一筆 Actions 產出 Commit：`d5443eacb29b7b0824306de4d1b126b9281210b5`（父提交即 P0 結案 Commit）。此提交只更新 10/30 Dashboard 資料／呈現與 manifest，不代表 P0 程式碼有新變更。
+- 10/30 DATA_REPORT SHA：`665ae0ce957cbda372a1d70e1f06f0eea124ba11`，產出時間 2026-11-01 23:51:51。
+
+### 第一輪唯讀盤點結論
+1. `daily_data.yml` 沒有保存原始 API response 的 artifact 步驟；`src/fetch_data.py` 產出正規化報告。Git 中目前只有衍生結果，沒有可直接獨立重算的 raw response 封存。
+2. 現貨主要歷史來源可指定 T0：TWSE MI_INDEX、FinMind TAIEX、TWSE 自建維持率使用的 MI_MARGN／MI_INDEX、TWT93U（但 10/30 報告註記 TWT93U 未取得）。
+3. TWSE BFI82U proxy 程式註明 RWD 忽略 date 參數、只回最新日期並提供 actual_date；因此不能只憑 `?date=20261030` 宣稱可回查歷史。
+4. TWSE MI_MARGN、TWT96U 主報表欄位無日期，報告已註明採最新可得；不能將其直接當成 10/30 歷史 raw。
+5. TPEX highlight 沒有 date query，程式只檢查回傳第一列 Date；歷史可用性尚未實際驗證。
+6. TAIFEX Worker 支援指定歷史日期的 TXO daily market chain；Delta 歷史下載先檢查最近 30 交易日清單，再下載指定日 Excel。10/30 應優先驗證這條路徑；OpenAPI fallback 不能先假設有完整歷史資料。
+7. 10/30 DATA_REPORT 已註明 TWSE TWT93U 未取得，借券賣出增減僅上櫃值；報告來源標籤需在對帳時核實，不能當作上市櫃完整合計。
+
+### 執行結果與限制
+- 程式碼、Worker 路由、日期參數及 DATA_REPORT 來源註記盤點：PASS。
+- 原始 API response 實際擷取：BLOCKED（本次執行介面無法直接取回指定 Cloudflare Worker／TWSE／TPEX API payload）。
+- 逐筆對帳：NOT TESTED。
+- GEX 原始輸入重建：NOT TESTED；但 TAIFEX 歷史 chain／Delta 的程式路徑已確認，尚待實際請求。
+- 本次未修改正式程式、Dashboard、資料報告、Workflow、V8、Master 或 P0 baseline。
+
+### 下一個工作
+使用具備直接 HTTP GET/POST 的環境，逐一保存 10/30 原始 API request／response（含 URL、POST body、HTTP status、回傳日期、原始檔及 SHA-256），再逐欄重算。優先順序：
+1. TAIFEX TXO chain + Delta + TWSE FMTQIK（為 GEX 重建準備原始資料）。
+2. TWSE MI_INDEX、FinMind TAIEX、TWSE 自建維持率、TWT93U。
+3. BFI82U、TPEX、HiStock 等可能只有最新資料或有限歷史窗口的來源，先確認可回查性。
+4. 對 10/30 TWT96U／MI_MARGN 最新值的日期不匹配及 TWT93U 缺值，分別列出，不用當前資料替代歷史數據。
+
