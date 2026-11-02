@@ -67,7 +67,19 @@ jobs:
           assert margin["borrowedSell"] == 36178.0, margin
           assert margin["borrowedSellDiff"] == -1273.0, margin
           assert margin["borrowedSellDiffScope"] == "上櫃（上市 TWT93U 未取得）", margin
-          assert len(data["options"]["instOpt"]) >= 3
+          options = data["options"]
+          assert len(options["instOpt"]) >= 3
+          assert options["gexStatus"] == "available", options
+          assert options["gexDate"] == "2026-10-30", options["gexDate"]
+          assert len(options["gexLevels"]) == 139, len(options["gexLevels"])
+          assert abs(options["netGex1pct"] - 1294327419.0091748) < 1.0, options["netGex1pct"]
+          assert abs(options["grossGex1pct"] - 6320130202.132608) < 1.0, options["grossGex1pct"]
+          net_sum = sum(float(level["net_gex_1pct"]) for level in options["gexLevels"])
+          gross_sum = sum(float(level["gross_gex_1pct"]) for level in options["gexLevels"])
+          assert abs(net_sum - options["netGex1pct"]) < 1.0, (net_sum, options["netGex1pct"])
+          assert abs(gross_sum - options["grossGex1pct"]) < 1.0, (gross_sum, options["grossGex1pct"])
+          print("GEX_PIPELINE=PASS", options["gexStatus"], options["gexDate"], len(options["gexLevels"]))
+          print("GEX_TOTALS=PASS", round(net_sum, 2), round(gross_sum, 2))
           print("BORROWED_SELL_BALANCE=PASS", margin["borrowedSell"])
           print("BORROWED_SELL_CHANGE_SCOPE=PASS", margin["borrowedSellDiff"], margin["borrowedSellDiffScope"])
           print("OPTIONS_INSTITUTIONAL_TABLE=PASS")
