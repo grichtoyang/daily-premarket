@@ -757,9 +757,13 @@ def parse_data_report(report_path):
     foreign_day_net=optional_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|"); foreign_night_net=optional_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|")
     call_vol=must_get(r"Call 總成交量 \| ([0-9,]+) \|","Call成交"); call_oi=must_get(r"Call 總未平倉量 OI \| ([0-9,]+) \|","Call OI")
     put_vol=must_get(r"Put 總成交量 \| ([0-9,]+) \|","Put成交"); put_oi=must_get(r"Put 總未平倉量 OI \| ([0-9,]+) \|","Put OI")
-    pcr=optional_get(r"Put／Call Ratio \| ([0-9.]+) \|"); call_wall=must_get(r"Call Wall 價位 \| ([0-9,]+) \|","Call Wall")
-    put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|"); gamma_wall=must_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|","Gamma Wall")
-    gamma_flip=must_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|","Gamma Flip"); max_pain=must_get(r"Max Pain 價位 \| ([0-9,]+) \|","Max Pain")
+    pcr=optional_get(r"Put／Call Ratio \| ([0-9.]+) \|")
+    # Wall / Gamma / Max Pain 允許端點缺值；None 交由 Dashboard 顯示缺值，不以其他指標代替。
+    call_wall=optional_get(r"Call Wall 價位 \| ([0-9,]+) \|")
+    put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|")
+    gamma_wall=optional_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|")
+    gamma_flip=optional_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|")
+    max_pain=optional_get(r"Max Pain 價位 \| ([0-9,]+) \|")
     gex_payload_match=re.search(r"GEX_LEVELS_JSON.*?```json\s*(\{.*?\})\s*```", text, re.S)
     gex_payload={}
     if gex_payload_match:
