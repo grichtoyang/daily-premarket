@@ -1548,7 +1548,7 @@ def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports"
         tech=fetch_technical_indicators_with_fallback(parsed["meta"]["t0_date"])
         analyzer=V9Analyzer(parsed,tech)
         bias,_,_=analyzer.calculate_bias()
-        if not save_today_to_db(bias,analyzer.signals,tech,report_date,db_path):
+        if not save_today_to_db(bias,analyzer.signals,tech,report_date.replace("-",""),db_path):
             raise RuntimeError(f"Could not seed correlation history from {path}")
         print(f"[CORRELATION SEED] {report_date}: saved/verified")
     corr=calculate_historical_correlation(db_path,min_samples=5,lookback=lookback,as_of_date=cutoff)
