@@ -1522,6 +1522,40 @@ def run_17f_self_tests():
         return 1
 
 
+
+def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports", db_path="dashboards/v9_pro_history.db", lookback=60):
+    """Seed the build-local V9 history DB from committed dated DATA_REPORTs before dashboard generation."""
+    cutoff=_t0_iso_date(as_of_date)
+    if not cutoff:
+        raise ValueError(f"Invalid seed cutoff date: {as_of_date!r}")
+    paths=sorted(pathlib.Path(report_dir).glob("DATA_REPORT_*.md"))
+    selected=[]
+    for path in paths:
+        match=re.search(r"DATA_REPORT_(\\d{8})\\.md$",path.name)
+        if not match:
+            continue
+        report_date=_t0_iso_date(match.group(1))
+        if report_date and report_date<=cutoff:
+            selected.append((report_date,path))
+    selected=selected[-int(lookback):]
+    if not selected:
+        raise FileNotFoundError(f"No dated DATA_REPORTs found in {report_dir} up to {cutoff}")
+    for report_date,path in selected:
+        parsed=parse_data_report(path)
+        actual=_t0_iso_date(parsed.get("meta",{}).get("t0_date"))
+        if actual!=report_date:
+            raise ValueError(f"DATA_REPORT date mismatch: {path} declares {actual}")
+        tech=fetch_technical_indicators_with_fallback(parsed["meta"]["t0_date"])
+        analyzer=V9Analyzer(parsed,tech)
+        bias,_,_=analyzer.calculate_bias()
+        if not save_today_to_db(bias,analyzer.signals,tech,report_date,db_path):
+            raise RuntimeError(f"Could not seed correlation history from {path}")
+        print(f"[CORRELATION SEED] {report_date}: saved/verified")
+    corr=calculate_historical_correlation(db_path,min_samples=5,lookback=lookback,as_of_date=cutoff)
+    print(f"[CORRELATION SEED] Dashboard history: {corr['desc']}")
+    return corr
+
+
 def run_historical_correlation_replay(report_dir="data_reports", dates=None):
     """Replay real dated DATA_REPORTs into a temporary V9 DB and verify 0/5 -> 5/5 accumulation."""
     import tempfile
@@ -1592,11 +1626,17 @@ def main():
     parser.add_argument('--golden', default='templates/v9-pro-react-template.html', help="golden template path (for reference, v9 no longer injects)")
     parser.add_argument('--self-test', action='store_true', help="run fast offline 17F scoring tests and exit")
     parser.add_argument('--history-replay', action='store_true', help="replay five real historical DATA_REPORTs and verify correlation accumulation in a temporary DB")
+    parser.add_argument('--seed-correlation-history', action='store_true', help="seed build-local SQLite correlation history from dated DATA_REPORTs")
     args=parser.parse_args()
     if args.self_test:
         return run_17f_self_tests()
     if args.history_replay:
         return run_historical_correlation_replay()
+    if args.seed_correlation_history:
+        if not args.date:
+            raise ValueError('--seed-correlation-history requires --date YYYYMMDD')
+        corr=seed_correlation_history_for_dashboard(args.date)
+        return 0 if corr.get('matrix') else 2
     date_str=args.date.strip() if args.date else ""
     if date_str and (len(date_str)!=8 or not date_str.isdigit()):
         raise ValueError(f"Invalid --date {date_str!r}; expected YYYYMMDD")
