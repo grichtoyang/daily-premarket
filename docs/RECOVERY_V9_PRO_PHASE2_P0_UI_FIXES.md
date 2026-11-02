@@ -1320,3 +1320,29 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 
 - 本輪修正與驗證僅在 fix/three-market-correlation-history；Master、V8 未修改。
 - 下一步只需對 Artifact 的 10/30 全日 HTML 做使用者端開啟確認；若能正常開啟，再繼續視覺驗收五張法人三市場卡片。不得把 Node syntax PASS 說成已完成手機實際開啟驗收。
+## 9.43 區塊 A 三市場圖表分流與欄位單位明確化（2026-11-02）
+
+- 使用者回報區塊 A 圖表無法直接解讀：圖表混合現貨億元、期貨 OI 千口、日盤淨交易百口，AI 分析卻使用原始口數；下方選擇權法人表格也未明確標示單位。
+- 本輪先嘗試一次較大範圍 React 元件替換，造成 inline JavaScript syntax FAIL（Run 41466664463／41466690791）。確認根因是本輪新寫入的 React 元件程式碼語法不合法，不是 master-site checkout 覆蓋分支 Template。
+- 已將 Template 還原至先前語法通過版本（commit 81f146714de08f0d0de6299a49427ca490eab69d），Run 41467101190 SUCCESS。
+- 改採小範圍、可驗證修改：
+  1. 區塊 A 圖表拆成現貨法人買賣超（億元）、期貨外資 OI／日盤淨交易／夜盤淨交易（口）、選擇權各法人日盤／夜盤淨交易（口）三個獨立面板。
+  2. 圖表註解明確區分 OI 存量與日夜盤交易流量，並註明各市場統計口徑不可混讀。
+  3. 選擇權法人表格欄名改為「選擇權法人淨交易（口）」，日盤、夜盤及日夜合計數值加上口數單位。
+  4. 區塊 B 改標題為「選擇權法人多空力道（金額）」，註明單位億元，且不是淨交易口數或 OI。
+- 區塊 A 三圖分流提交 7c00dcd5cb95e4b892d2fd73f705630afbffc2e0（Run 41467285043 SUCCESS）；區塊 B 單位定義提交 dc09cb7332f7c5290fc478cd78187a1ebeeccb33（Run 41467319872 SUCCESS）；選擇權表格單位提交 8eace1b368816ae65016c9890166aab6b48139d2（Run 41467460354 SUCCESS）。
+- 最新 Artifact 13154730217（Run 41467460354）已下載檢查：p0/test-fixtures/v9-pro-20261030-full-day.html 321,983 bytes；4 個 executable inline scripts 全部 Node syntax PASS；HTML 內確認包含三市場分流標題與選擇權表格口數欄名。
+- Golden Fixture JSON data-20261030.json：T0 2026-10-30、analysis.cards 48。資料建置與 HTML 注入／語法檢查均成功。
+
+### 驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| 區塊 A 三市場分流程式 | PASS（CI＋Artifact 語法檢查） |
+| 現貨／期貨／選擇權單位標示 | PASS（靜態輸出核對） |
+| OI 存量與交易流量區別說明 | PASS（靜態輸出核對） |
+| 區塊 B 金額單位與口數／OI 區別 | PASS（標題及註解已修改） |
+| 10/30 全日 Golden Fixture 建置 | PASS |
+| 實際瀏覽器／手機畫面視覺驗收 | NOT TESTED |
+| Merge／Deploy | NOT DONE |
+
+- 注意：Artifact 中 p0/test-fixtures/v9-pro-20261030-full-day.html 是本輪修改後的 10/30 Golden Fixture；請以此檔做視覺驗收，不要誤開 Pages 根目錄的 master 版本或 p0/v9-pro-20261030.html（它們不是本輪 Golden Fixture）。
