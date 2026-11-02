@@ -599,3 +599,19 @@ P1 尚未開始。啟動前必須：
 - 桌面 Chromium 視覺檢查曾以舊 Artifact `41475229916` 確認版面結構；新版本桌面截圖尚未另行重拍。
 - 狀態：CI／正式 HTML／Golden Fixture PASS；新 Artifact 手機尺寸 Chromium 模擬 PASS；實體手機及使用者手機瀏覽器 NOT TESTED；正式 Pages 部署 NOT DONE。
 - 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 13. 2026-11-03 區塊 A/B 手機版排版與選擇權力道表格修正
+
+- 工作分支：`fix/three-market-correlation-history`。
+- Template Commit：`be9c27adc3bc4491cd932930d31736f053695b2e`。
+- 修改範圍僅限 `templates/v9-pro-react-template.html`，未修改資料計算引擎、資料來源、分析邏輯或其他 Dashboard 區塊。
+- A/B RWD：新增 `v9-market-ab-grid`、`v9-market-a-card` 專用 CSS；viewport <=1100px 時 A/B 改單欄上下排列，>1100px 保留原桌面版 A 佔 2 欄、B 佔 1 欄。
+- 區塊 B 表格：修正原本錯誤使用雙欄 key/value helper `ee` 呈現 7 欄資料的問題。原 helper 只讀取每列前兩格，導致畫面錯誤地只顯示法人與日多方第一欄數字。
+- 改為 7 欄原生 HTML table：法人、日多方、日空方、日淨、夜多方、夜空方、夜淨；保留三大法人合計列。表格加上橫向捲動容器，避免手機壓縮數字。
+- 區塊 B 新增定義文字：單位億元；多方／空方為來源力道分項；日淨／夜淨為來源淨額欄位；說明不是成交口數或未平倉 OI。未更動來源計算口徑。
+- 依 DATA_REPORT_20261102.md 的「法人多空力道表」確認實際 9 欄資料結構；Dashboard 顯示前 7 個分析欄位，來源與日淨－夜淨欄位不塞入主表，以免混淆。
+- CI Run `41478733638` 已完成 HTML build、JavaScript syntax validation、Pages artifact assembly/upload；Artifact `13157839737`（github-pages，1,782,342 bytes，未過期）。截至 recovery 更新時 GitHub Actions build job 的 post-checkout cleanup 仍顯示 in_progress，尚未把整個 Run 結果標成 completed。
+- 本輪尚未取得新 Artifact 的實際手機瀏覽器截圖；RWD 目前是程式／CI 層級驗證，實體手機視覺驗收 NOT TESTED。
+- 未 Merge、未部署；Master 與 V8 未修改。
+- 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
