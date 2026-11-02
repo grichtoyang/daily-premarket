@@ -30,7 +30,7 @@
 5. 匯率 `TWD=X DX-Y.NYB JPY=X KRW=X` 6. ADR `TSM UMC ASX`
 7. 商品 `CL=F GC=F BTC-USD` (期貨勿標現貨；BTC 用最新價) 8. 重大事件/新聞
 
-## 三、期貨 (7 項骨架，Phase 2 接 TAIFEX Proxy；本階段 unavailable)
+## 三、期貨 (7 項資料欄位；TAIFEX Proxy 已接入，個別欄位未取得時標示 unavailable)
 
 日盤行情（價格點、漲跌幅%、成交量口）/ 夜盤行情（價格點、漲跌幅%、成交量口）/ 法人多空 OI（口）/ 前十大 OI（口）/ 日夜盤法人交易（口）/ 期現關係（基差點、比例%）/ 日夜盤籌碼對照
 
