@@ -300,7 +300,7 @@ def _normalize_t0_date(t0_date):
     except (TypeError, ValueError):
         raise ValueError(f"Invalid T0 date {t0_date!r}; expected YYYYMMDD")
 
-def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min_samples=5, lookback=60):
+def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min_samples=5, lookback=60, as_of_date=None):
     """Build a Pearson matrix only from complete, explicitly eligible V9 history rows."""
     fields = [
         ("大盤漲跌幅", "spot_pct"),
@@ -317,11 +317,13 @@ def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min
         conn = init_db(db_path)
         if not conn:
             return {"labels": [], "matrix": [], "desc": "歷史資料庫不可用，相關性未計算"}
-        rows = conn.execute(
-            "SELECT " + ",".join(column for _, column in fields) +
-            " FROM v9_pro_history WHERE correlation_eligible=1 "
-            "ORDER BY date DESC LIMIT ?", (int(lookback),)
-        ).fetchall()
+        t0_iso=_t0_iso_date(as_of_date)
+        query=("SELECT " + ",".join(column for _, column in fields) +
+            " FROM v9_pro_history WHERE correlation_eligible=1 " +
+            ("AND date<=? " if t0_iso else "") +
+            "ORDER BY date DESC LIMIT ?")
+        params=(t0_iso,int(lookback)) if t0_iso else (int(lookback),)
+        rows = conn.execute(query,params).fetchall()
         conn.close()
         conn = None
         valid = []
@@ -444,12 +446,16 @@ def update_next_day_pct(t0_date, t0_spot_close, db_path="dashboards/v9_pro_histo
         print(f"[V9-17F] DB update_next_day error: {e}")
         return False
 
-def get_factor_win_rates_from_db(db_path="dashboards/v9_pro_history.db"):
+def get_factor_win_rates_from_db(db_path="dashboards/v9_pro_history.db", as_of_date=None):
     """Return conservative, sample-gated historical directional hit rates."""
     try:
         conn=init_db(db_path)
         if not conn: return None
-        rows=conn.execute("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 60").fetchall()
+        t0_iso=_t0_iso_date(as_of_date)
+        query=("SELECT spot_pct,foreign_spot,foreign_fut,pcr,next_day_pct FROM v9_pro_history "
+               "WHERE next_day_pct IS NOT NULL " + ("AND date<? " if t0_iso else "") +
+               "ORDER BY date DESC LIMIT 60")
+        rows=conn.execute(query,(t0_iso,) if t0_iso else ()).fetchall()
         conn.close()
         wins={k:0 for k in ('spot_trend','foreign_spot','foreign_fut','pcr')}
         totals={k:0 for k in wins}
@@ -476,11 +482,15 @@ def get_factor_win_rates_from_db(db_path="dashboards/v9_pro_history.db"):
 
 
 
-def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_history.db", top_n=3):
+def find_historical_similarity(current_signals, db_path="dashboards/v9_pro_history.db", top_n=3, as_of_date=None):
     try:
         conn=init_db(db_path)
         if not conn: return None
-        rows=conn.execute("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v9_pro_history WHERE next_day_pct IS NOT NULL ORDER BY date DESC LIMIT 30").fetchall()
+        t0_iso=_t0_iso_date(as_of_date)
+        query=("SELECT date,bias,spot_pct,foreign_spot,pcr,vix,next_day_pct FROM v9_pro_history "
+               "WHERE next_day_pct IS NOT NULL " + ("AND date<? " if t0_iso else "") +
+               "ORDER BY date DESC LIMIT 30")
+        rows=conn.execute(query,(t0_iso,) if t0_iso else ()).fetchall()
         conn.close()
         if len(rows)<3:
             print(f"[V9-17F] Historical insufficient {len(rows)}/3")
@@ -1178,11 +1188,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
 
 def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_str):
     spot=parsed['spot']; closes=tech.get('closes',[]); spot5=[]; spot5Dates=[]
-    raw_history=tech.get('raw',[]) or []
-    dated_history=[(d.get('ts'),d.get('close')) for d in raw_history if d.get('ts') and d.get('close') is not None]
+    raw_history=_filter_history_to_t0(tech.get('raw',[]) or [],parsed.get('meta',{}).get('t0_date'))
+    dated_history=[(d.get('date'),d.get('close')) for d in raw_history if d.get('date') and d.get('close') is not None]
     last5=dated_history[-5:]
     spot5=[int(round(c)) for _,c in last5]
-    spot5Dates=[datetime.fromtimestamp(ts).strftime("%m/%d") for ts,_ in last5]
+    spot5Dates=[datetime.strptime(day,'%Y-%m-%d').strftime("%m/%d") for day,_ in last5]
 
     bias, factors, weights=analyzer.bias_score, analyzer.bias_factors, analyzer.weights; cards_41=build_41_cards(analyzer, parsed, historical, db_status)
 
@@ -1213,7 +1223,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'spot5': spot5, 'spot5Dates': spot5Dates
         },
         'institutional': {'all': parsed['inst']['all'], 'foreign': parsed['inst']['foreign'], 'trust': parsed['inst']['trust'], 'dealer': parsed['inst']['dealer']},
-        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': f"{parsed['margin']['sbl']}張", 'borrowedSell': parsed['margin']['borrowed_sell'], 'borrowedSellDiff': parsed['margin']['borrowed_sell_diff'], 'borrowedSellDiffScope': parsed['margin']['borrowed_sell_diff_scope']},
+        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': (f"{int(parsed['margin']['sbl']):,}張" if parsed['margin']['sbl'] is not None else "unavailable"), 'borrowedSell': parsed['margin']['borrowed_sell'], 'borrowedSellDiff': parsed['margin']['borrowed_sell_diff'], 'borrowedSellDiffScope': parsed['margin']['borrowed_sell_diff_scope']},
         'turnover': parsed['turnover'],
         'tx': parsed['tx'],
         'futures': parsed['futures'],
@@ -1233,7 +1243,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'look': analyzer.gen_bias_card()['look'], 'compass': analyzer.gen_bias_card()['compass'], 'target': analyzer.gen_bias_card()['target'],
             'cards': cards_41,
             'cards_41_count': len(cards_41),
-            'correlation': calculate_historical_correlation(),
+            'correlation': calculate_historical_correlation(as_of_date=parsed['meta']['t0_date']),
             'levels': ([{'t':"R3 高點", 'v': int(spot['high']), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"}, {'t':"S1 低點", 'v': int(spot['low']), 'type':"S"}] + ([{'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"}] if parsed['options']['putWall'] is not None else []) + ([{'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}] if parsed['options']['flip'] is not None else [])),
             'historical': historical,
             'db_status': db_status
@@ -1508,7 +1518,7 @@ def main():
 
     real_win_rates=None
     try:
-        real_win_rates=get_factor_win_rates_from_db()
+        real_win_rates=get_factor_win_rates_from_db(as_of_date=date_str)
     except Exception as e:
         print(f"[V9-17F] SQLite optimizer unavailable; use base/dynamic weights: {e}")
     bias,factors,weights=analyzer.calculate_bias(real_win_rates)
@@ -1518,7 +1528,7 @@ def main():
     try:
         save_today_to_db(bias, analyzer.signals, tech, date_str)
         analyzer.signals['bias']=bias
-        historical=find_historical_similarity(analyzer.signals)
+        historical=find_historical_similarity(analyzer.signals, as_of_date=date_str)
         if historical and historical['avg_next_pct']<-1.0:
             print(f"[V9-17F] Historical bearish observation avg {historical['avg_next_pct']:.2f}%")
     except Exception as e:
