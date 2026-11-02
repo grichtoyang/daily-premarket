@@ -33,6 +33,12 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn(".borrowed-sbl-table { grid-template-columns: minmax(0, 1fr); }", self.html)
         self.assertIn(".borrowed-sbl-table > div > span:last-child { flex-shrink: 0; white-space: nowrap; }", self.html)
 
+    def test_option_force_table_normalizes_amounts_and_signed_net_values(self):
+        self.assertIn('cellIndex===3||cellIndex===6', self.html)
+        self.assertIn('numeric.toFixed(2)', self.html)
+        self.assertIn('numeric>0?"+":""', self.html)
+        self.assertIn('Number(String(cell).replace(/,/g,""))', self.html)
+
     def test_option_institutional_chart_parses_signed_thousands(self):
         # The chart must render both session fields, not just the daytime field.
         self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"口"}', self.html)
