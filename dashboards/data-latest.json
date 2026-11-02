@@ -37,18 +37,18 @@
       "limit_down": 7
     },
     "spot5": [
+      46041,
       46096,
       47036,
       46368,
-      45212,
-      45080
+      45212
     ],
     "spot5Dates": [
+      "10/22",
       "10/27",
       "10/28",
       "10/29",
-      "10/30",
-      "11/02"
+      "10/30"
     ]
   },
   "institutional": {
@@ -68,7 +68,7 @@
     "ratio_source_date": "2026-10-30",
     "ratio_is_t0": true,
     "sbl": 4651514.0,
-    "borrow": "4651514.0張",
+    "borrow": "4,651,514張",
     "borrowedSell": 36178.0,
     "borrowedSellDiff": -1273.0,
     "borrowedSellDiffScope": "上櫃（上市 TWT93U 未取得）"
@@ -2164,12 +2164,12 @@
     ]
   },
   "technical": {
-    "rsi": 32.3,
+    "rsi": 32.85,
     "macd": null,
     "macd_signal": null,
     "macd_hist": null,
-    "k": 21.73,
-    "d": 20.88,
+    "k": 20.98,
+    "d": 20.46,
     "source": "yahoo",
     "valid": true,
     "closes": [
@@ -2190,8 +2190,7 @@
       46096.23046875,
       47035.578125,
       46368.328125,
-      45211.828125,
-      45079.8984375
+      45211.828125
     ],
     "highs": [
       48491.62109375,
@@ -2211,8 +2210,7 @@
       46585.44921875,
       47060.4609375,
       47015.44921875,
-      46139.7890625,
-      45156.171875
+      46139.7890625
     ],
     "lows": [
       48205.80859375,
@@ -2232,8 +2230,7 @@
       45676.671875,
       46402.7890625,
       46055.0703125,
-      44726.26171875,
-      44399.1015625
+      44726.26171875
     ]
   },
   "analysis": {
@@ -2404,11 +2401,11 @@
       {
         "key": "gex",
         "name": "GEX",
-        "raw_value": null,
+        "raw_value": 1294327419.0091748,
         "score": null,
         "status": "disabled",
-        "reason": "僅接受來源直接提供且可驗證的 GEX；不使用硬編碼值",
-        "source": "DATA_REPORT.options.gex",
+        "reason": "GEX 正負代表模型曝險方向，不等同市場多空方向；未建立方向化規則前不納入 Bias",
+        "source": "DATA_REPORT.options.netGex1pct",
         "base_weight": 7,
         "adaptive_weight": 7,
         "effective_weight": 0.0,
@@ -2495,7 +2492,7 @@
       {
         "key": "rsi",
         "name": "RSI",
-        "raw_value": 32.3,
+        "raw_value": 32.85,
         "score": 0.0,
         "status": "active",
         "reason": "RSI14 超買超賣分級；缺值不以中性代替",
@@ -2603,7 +2600,7 @@
         "target": "依Bias20分操作，空頭策略，45000.0為關鍵，SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析"
       },
       "大盤全景": {
-        "look": "加權45211.83點 -2.49% 漲跌92上941下，RSI 32.30 MACD unavailable",
+        "look": "加權45211.83點 -2.49% 漲跌92上941下，RSI 32.85 MACD unavailable",
         "compass": "Bias20分，92上941下全面普跌",
         "target": "觀察 Put Wall 45000.00 支撐"
       },
@@ -2623,9 +2620,9 @@
         "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
       },
       "美股連動": {
-        "look": "SOX -7.20% 美股漲跌互見/資料不足 VIX19.4",
-        "compass": "費半-7.20%連動台股，VIX19.4",
-        "target": "關注費半與台積電ADR連動"
+        "look": "SOX -7.20%；股票指數全跌；VIX 19.42點；DXY -0.16%",
+        "compass": "費半-7.20%；VIX 19.42點；DXY -0.16%",
+        "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "關鍵水位": {
         "look": "現價45211.83；Put Wall 45000.0；Flip 44049.22；Regime 空頭",
@@ -2750,8 +2747,8 @@
         "target": "Put Wall 45000.0；依有效價位及價格確認風險"
       },
       "行事曆": {
-        "look": "重大新聞11則，首則「地方創生利他行動168專案」獎勵金最高68萬 國發會助青年",
-        "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
+        "look": "重大新聞12則，首則目標價一口氣砍掉530元！這「電源大廠」獲利不如預期引爆賣壓",
+        "compass": "12則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       },
       "法人籌碼": {
@@ -2795,7 +2792,7 @@
         "target": "夜盤低44052.0為支撐"
       },
       "資金流向": {
-        "look": "加權45211.83點 -2.49% 漲跌92上941下，RSI 32.30 MACD unavailable",
+        "look": "加權45211.83點 -2.49% 漲跌92上941下，RSI 32.85 MACD unavailable",
         "compass": "Bias20分，92上941下全面普跌",
         "target": "觀察 Put Wall 45000.00 支撐"
       },
@@ -2805,9 +2802,9 @@
         "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
       },
       "VIX & DXY": {
-        "look": "SOX -7.20% 美股漲跌互見/資料不足 VIX19.4",
-        "compass": "費半-7.20%連動台股，VIX19.4",
-        "target": "關注費半與台積電ADR連動"
+        "look": "SOX -7.20%；股票指數全跌；VIX 19.42點；DXY -0.16%",
+        "compass": "費半-7.20%；VIX 19.42點；DXY -0.16%",
+        "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "相關性熱圖": {
         "look": "SOX與台股相關性：未計算（缺少日期對齊的歷史序列）",
@@ -2850,7 +2847,7 @@
         "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
       },
       "GEX": {
-        "look": "GEX unavailable；Put Wall 45000.0",
+        "look": "GEX 1294327419.0091748；Put Wall 45000.0",
         "compass": "GEX 缺值時停用該因子，不推定正負 Gamma 狀態",
         "target": "取得可驗證 GEX 數據後再判讀 Gamma regime"
       },
@@ -2875,9 +2872,9 @@
         "target": "外資選擇權為空方"
       },
       "美股指數": {
-        "look": "SOX -7.20% 美股漲跌互見/資料不足 VIX19.4",
-        "compass": "費半-7.20%連動台股，VIX19.4",
-        "target": "關注費半與台積電ADR連動"
+        "look": "SOX -7.20%；股票指數全跌；VIX 19.42點；DXY -0.16%",
+        "compass": "費半-7.20%；VIX 19.42點；DXY -0.16%",
+        "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "亞洲指數": {
         "look": "亞洲市場資料：[{'l': '日經225', 'v': -2.12, 'close': 63290.11, 'raw': ['日經225', '^N225', '63,290.11', '-1,369.36', '-2.12', 'Yahoo Finance Chart API']}, {'l': '韓國KOSPI', 'v': -3.48, 'close': 5730.74, 'raw': ['韓國KOSPI', '^KS11', '5,730.74', '-206.92', '-3.48', 'Yahoo Finance Chart API']}, {'l': '香港恆生', 'v': 1.46, 'close': 23294.42, 'raw': ['香港恆生', '^HSI', '23,294.42', '335.77', '+1.46', 'Yahoo Finance Chart API']}, {'l': '上海綜合', 'v': -1.44, 'close': 3599.02, 'raw': ['上海綜合', '000001.SS', '3,599.02', '-52.42', '-1.44', 'Yahoo Finance Chart API']}, {'l': '深圳成分', 'v': -2.73, 'close': 10833.78, 'raw': ['深圳成分', '399001.SZ', '10,833.78', '-304.42', '-2.73', 'Yahoo Finance Chart API']}]",
@@ -2905,8 +2902,8 @@
         "target": "不以缺值或單日變動推定通膨方向"
       },
       "重大經濟數據": {
-        "look": "重大新聞11則，首則「地方創生利他行動168專案」獎勵金最高68萬 國發會助青年",
-        "compass": "11則新聞，聚焦Yahoo 台股；發布時間：2026-1",
+        "look": "重大新聞12則，首則目標價一口氣砍掉530元！這「電源大廠」獲利不如預期引爆賣壓",
+        "compass": "12則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       }
     },
@@ -2954,81 +2951,88 @@
   },
   "news": [
     {
+      "t": "目標價一口氣砍掉530元！這「電源大廠」獲利不如預期引爆賣壓　 今年EPS下修至36.57元",
+      "s": "Yahoo 台股；發布時間：2026-11-01T09:30:00Z；台北時間：2026-11-01 17:30",
+      "d": "[FTNN新聞網]記者周雅琦／綜合報導電源龍頭台達電（2308）第三季獲利低於預期，加上HVDC高壓直流電源導入進度不如預期，引發市場賣壓，法說會後股價慘遭摜跌...",
+      "time": "2026-11-01T09:30:00Z；台北時間：2026-11-01 17:30",
+      "link": "https://tw.stock.yahoo.com/news/%E7%9B%AE%E6%A8%99%E5%83%B9-%E5%8F%A3%E6%B0%A3%E7%A0%8D%E6%8E%89530%E5%85%83-%E8%BF%99-%E9%9B%BB%E6%BA%90%E5%A4%A7%E5%BB%A0-%E7%8D%B2%E5%88%A9%E4%B8%8D%E5%A6%82%E9%A0%90%E6%9C%9F%E5%BC%95%E7%88%86%E8%B3%A3%E5%A3%93-093000992.html"
+    },
+    {
       "t": "「地方創生利他行動168專案」獎勵金最高68萬 國發會助青年團隊持續扎根",
       "s": "Yahoo 台股；發布時間：2026-10-31T14:34:06Z；台北時間：2026-10-31 22:34",
       "d": "68萬元是國發會「地方創生利他行動168專案」的最高獎勵金，提供給地方創生團隊申請一年期的執行計畫在今年11月底截止前，國發會一起邀請更多地方創生團隊，10月31日至11月1日於華山文創園區舉辦成果發表會暨市集活動，由青年團隊交流利他倡議行",
       "time": "2026-10-31T14:34:06Z；台北時間：2026-10-31 22:34",
-      "link": ""
+      "link": "https://tw.stock.yahoo.com/news/%E5%9C%B0%E6%96%B9%E5%89%B5%E7%94%9F%E5%88%A9%E4%BB%96%E8%A1%8C%E5%8B%95168%E5%B0%88%E6%A1%88-%E7%8D%8E%E5%8B%B5%E9%87%91%E6%9C%80%E9%AB%9868%E8%90%AC-%E5%9C%8B%E7%99%BC%E6%9C%83%E5%8A%A9%E9%9D%92%E5%B9%B4%E5%9C%98%E9%9A%8A%E6%8C%81%E7%BA%8C%E6%89%8E%E6%A0%B9-143406311.html"
     },
     {
       "t": "二哥神話破滅？聯電兩天慘崩近13%、股民嘆「準備回60元」　不敗教主曝觀點：還是可以買",
       "s": "Yahoo 台股；發布時間：2026-10-31T04:25:00Z；台北時間：2026-10-31 12:25",
       "d": "[FTNN新聞網]記者陳宣穎／綜合報導晶圓二哥聯電（2303）法說會後股價狂跌，繼29日收在跌停價115.5元，30日再跌3.46%、收在111.5元，連2天跌幅達12.89%，此情...",
       "time": "2026-10-31T04:25:00Z；台北時間：2026-10-31 12:25",
-      "link": ""
+      "link": "https://tw.stock.yahoo.com/news/%E4%BA%8C%E5%93%A5%E7%A5%9E%E8%A9%B1%E7%A0%B4%E6%BB%85-%E8%81%AF%E9%9B%BB%E5%85%A9%E5%A4%A9%E6%85%98%E5%B4%A9%E8%BF%9113-%E8%82%A1%E6%B0%91%E5%98%86-%E6%BA%96%E5%82%99%E5%9B%9E60%E5%85%83-%E4%B8%8D%E6%95%97%E6%95%99%E4%B8%BB%E6%9B%9D%E8%A7%80%E9%BB%9E-042500633.html"
     },
     {
       "t": "大三生靠打工存近百萬！鎖定006208拚100張　聽長輩喊「第一桶金300萬」急問致富秘訣",
       "s": "Yahoo 台股；發布時間：2026-10-30T13:45:00Z；台北時間：2026-10-30 21:45",
       "d": "[FTNN新聞網]記者林欣愉／綜合報導一名大三學生靠著打工、兼職家教，累積近100萬元資產，目前主要投資市值型ETF「富邦台50」（006208），長期目標是存滿100張...",
       "time": "2026-10-30T13:45:00Z；台北時間：2026-10-30 21:45",
-      "link": ""
+      "link": "https://tw.stock.yahoo.com/news/%E5%A4%A7%E4%B8%89%E7%94%9F%E9%9D%A0%E6%89%93%E5%B7%A5%E5%AD%98%E8%BF%91%E7%99%BE%E8%90%AC-%E9%8E%96%E5%AE%9A006208%E6%8B%9A100%E5%BC%B5-%E8%81%BD%E9%95%B7%E8%BC%A9%E5%96%8A-%E7%AC%AC-%E6%A1%B6%E9%87%91300%E8%90%AC-134500368.html"
     },
     {
       "t": "26歲男炒股獲利！「賺400⭢340萬」快崩潰 網揭痛苦真相",
       "s": "Yahoo 台股；發布時間：2026-10-30T11:10:00Z；台北時間：2026-10-30 19:10",
       "d": "上半年台股漲勢頻頻，近期卻屢屢震盪，投資人的心態也隨之起伏。有網友透露，上半年總資產衝到400萬，但近期因修正獲利回吐60萬，雖然仍是賺錢，感覺卻難以接受。",
       "time": "2026-10-30T11:10:00Z；台北時間：2026-10-30 19:10",
-      "link": ""
+      "link": "https://tw.stock.yahoo.com/news/26%E6%AD%B2%E7%94%B7%E7%82%92%E8%82%A1%E7%8D%B2%E5%88%A9-%E8%B3%BA400-340%E8%90%AC-%E5%BF%AB%E5%B4%A9%E6%BD%B0-%E7%B6%B2%E6%8F%AD%E7%97%9B%E8%8B%A6%E7%9C%9F%E7%9B%B8-111000895.html"
     },
     {
       "t": "9歲已買0050「每天看漲跌」！ 網驚：比巴菲特更早",
       "s": "Yahoo 台股；發布時間：2026-10-30T10:52:00Z；台北時間：2026-10-30 18:52",
       "d": "近年來投資理財觀念普及，開始投資的年齡也有下降趨勢，有網友表示家中孩子雖然只有9歲，但已買了10股0050，且每天都關注動態，之後還想買台積電，引發眾人熱議。",
       "time": "2026-10-30T10:52:00Z；台北時間：2026-10-30 18:52",
-      "link": ""
+      "link": "https://tw.stock.yahoo.com/news/9%E6%AD%B2%E5%B7%B2%E8%B2%B70050-%E6%AF%8F%E5%A4%A9%E7%9C%8B%E6%BC%B2%E8%B7%8C-%E7%B6%B2%E9%A9%9A-%E6%AF%94%E5%B7%B4%E8%8F%B2%E7%89%B9%E6%9B%B4%E6%97%A9-105200516.html"
     },
     {
       "t": "Federal Reserve Board announces approval of application by The Bank of Nova Scotia",
       "s": "Federal Reserve；發布時間：Thu, 29 Oct 2026 20:30:00 GMT；台北時間：2026-10-30 04:30",
       "d": "Federal Reserve Board announces approval of application by The Bank of Nova Scotia",
       "time": "",
-      "link": ""
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/orders20261029a.htm"
     },
     {
       "t": "Federal Reserve issues FOMC statement",
       "s": "Federal Reserve；發布時間：Wed, 28 Oct 2026 18:00:00 GMT；台北時間：2026-10-29 02:00",
       "d": "Federal Reserve issues FOMC statement",
       "time": "",
-      "link": ""
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261028a.htm"
     },
     {
       "t": "Treasury Department announces new Series I bond rate of 5.51% for the next six months",
       "s": "CNBC；發布時間：Fri, 30 Oct 2026 17:15:53 GMT；台北時間：2026-10-31 01:15",
       "d": "The U.S. Department of the Treasury has announced new Series I bond rates through April 2027.",
       "time": "",
-      "link": ""
+      "link": "https://www.cnbc.com/2026/10/30/treasury-i-bond-rate-through-april-2027.html"
     },
     {
       "t": "We're in our 70s. Should we pay off our 2.5% mortgage &#x2014; or put the money in a high-yield savings account?",
       "s": "MarketWatch；發布時間：Sat, 31 Oct 2026 19:00:00 GMT；台北時間：2026-11-01 03:00",
       "d": "&#x201c;Let&#x2019;s say 10 years from now, when I&#x2019;m 84, we need a substantial amount of cash.&#x201d;",
       "time": "",
-      "link": ""
+      "link": "https://www.marketwatch.com/story/we-are-in-our-70s-should-we-pay-off-our-2-5-mortgage-or-build-up-our-savings-5a35e9c1?mod=mw_rss_topstories"
     },
     {
       "t": "Top Wall Street analysts are bullish on these 3 stocks for the long haul",
       "s": "CNBC；發布時間：Sun, 01 Nov 2026 12:33:53 GMT；台北時間：2026-11-01 20:33",
       "d": "Investors looking beyond short-term noise and focusing on long-term returns can track top analysts to pick the right stocks, backed by strong research",
       "time": "",
-      "link": ""
+      "link": "https://www.cnbc.com/2026/11/01/top-analysts-are-bullish-on-these-3-stocks-for-the-long-haul.html"
     },
     {
       "t": "Stocks started the week with promise but ended in despair. Our take on the big reversal",
       "s": "CNBC；發布時間：Sat, 31 Oct 2026 15:37:11 GMT；台北時間：2026-10-31 23:37",
       "d": "Big Tech earnings reignited AI spending fears, sending investors into defensive stocks.",
       "time": "",
-      "link": ""
+      "link": "https://www.cnbc.com/investingclub/2026/10/31/stocks-started-the-week-with-promise-but-ended-in-despair.html"
     }
   ],
   "data_source": "DATA_REPORT 2026-10-30 + Yahoo ^TWII 30d 17F + FinMind + SQLite db"
