@@ -52,8 +52,17 @@ class ReactTemplateStaticTests(unittest.TestCase):
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_gex_chart_canvas_expands_to_show_all_ranked_rows(self):
-        self.assertIn("height:Math.max(n,e.length*46+36)", self.html)
+    def test_all_three_ranked_charts_expand_without_container_clipping(self):
+        # Hn is shared by the futures day/night institutional chart, options top-10 chart,
+        # and per-strike GEX chart. Its canvas must grow to fit every rendered row.
+        self.assertIn("height:Math.max(n,e.length*46+48)", self.html)
+        self.assertIn('style:{minHeight:"180px",overflow:"visible"}', self.html)
+        self.assertIn('title:"日夜法人交易"', self.html)
+        self.assertIn('height:220}),chartNote:"未平倉量與日／夜盤淨交易均為口數，統計意義不同。', self.html)
+        self.assertIn('title:"前十大選擇權"', self.html)
+        self.assertIn("(n.top10Call||[]).slice(0,3)", self.html)
+        self.assertIn("(n.top10Put||[]).slice(0,3)", self.html)
+        self.assertIn('title:"履約價 GEX 分布"', self.html)
         self.assertIn(".sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,16)", self.html)
         self.assertIn("圖表顯示 Net GEX 絕對值前 16 筆", self.html)
         self.assertIn("依曝險絕對值排序，非履約價順序", self.html)
