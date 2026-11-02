@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-11-02`
 - T0 交易日期：`2026-10-30`
-- 資料產出時間：`2026-11-02 08:55:17`
+- 資料產出時間：`2026-11-02 09:19:59`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -117,8 +117,8 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 63,112.00 | -178.11 | -0.28 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 5,722.53 | -8.21 | -0.14 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 63,120.12 | -169.99 | -0.27 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 5,745.41 | 14.67 | +0.26 | Yahoo Finance Chart API |
 | 香港恆生 | ^HSI | 23,294.42 | 335.77 | +1.46 | Yahoo Finance Chart API |
 | 上海綜合 | 000001.SS | 3,599.02 | -52.42 | -1.44 | Yahoo Finance Chart API |
 | 深圳成分 | 399001.SZ | 10,833.78 | -304.42 | -2.73 | Yahoo Finance Chart API |
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,641.25 | 27.25 | +0.36 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 28,693.50 | 159.50 | +0.56 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,075.00 | 157.00 | +0.30 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,832.00 | 10.70 | +0.38 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,638.25 | 24.25 | +0.32 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 28,718.75 | 184.75 | +0.65 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,047.00 | 129.00 | +0.25 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,831.30 | 10.00 | +0.35 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.61 | 0.05 | +0.14 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 101.97 | 0.09 | +0.09 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 157.72 | -0.08 | -0.05 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,339.88 | 1.90 | +0.14 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.60 | 0.04 | +0.12 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 101.93 | 0.05 | +0.05 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 157.83 | 0.02 | +0.02 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,337.98 | 0.00 | +0.00 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -171,9 +171,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 102.43 | -1.69 | -1.62 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 3,904.70 | 5.80 | +0.15 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 77,976.86 | 542.11 | +0.70 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 101.90 | -2.22 | -2.13 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 3,918.30 | 19.40 | +0.50 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 78,281.36 | 846.61 | +1.09 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-10-30 | TAIFEX Proxy |
 | 到期月份／到期日 | 202610F5 | TAIFEX Proxy |
-| 資料更新時間 | 2026-11-02 08:55:17 | 本機 |
+| 資料更新時間 | 2026-11-02 09:19:59 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -604,7 +604,7 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-10-30；資料時間：2026-11-02 08:55:17；時區：`Asia/Taipei`
+- 資料日期：2026-10-30；資料時間：2026-11-02 09:19:59；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 註記：同 T0 覆蓋：40 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
 - 未取得欄位 (2)：futures.gamma_wall, futures.gamma_flip
