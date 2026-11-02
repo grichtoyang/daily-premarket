@@ -1127,6 +1127,33 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         return '盤整／訊號混合', '未同時符合上述單日漲跌幅、外資現貨與 OI PCR 條件'
 
     regime_label, regime_d = regime_desc()
+    opt_inst_rows=parsed.get('options',{}).get('instOpt') or []
+    opt_foreign_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='外資'),None)
+    def signed_table_value(row,index):
+        if not row or len(row)<=index: return None
+        try:
+            value=float(str(row[index]).replace(',','').replace('+','').strip())
+            return value if math.isfinite(value) else None
+        except (TypeError,ValueError): return None
+    option_foreign_day=signed_table_value(opt_foreign_row,3)
+    option_foreign_night=signed_table_value(opt_foreign_row,6)
+    option_day_dir=direction(option_foreign_day); option_night_dir=direction(option_foreign_night)
+    if option_foreign_day is not None and option_foreign_night is not None:
+        option_session_text=("日夜同向" if option_foreign_day*option_foreign_night>0 else "日夜方向分歧" if option_foreign_day*option_foreign_night<0 else "至少一盤中性")
+    else:
+        option_session_text="日夜資料不足"
+    three_market_values=[foreign,foreign_day,option_foreign_day]
+    if all(value is not None for value in three_market_values):
+        three_market_text=("三市場一致偏多" if all(value>0 for value in three_market_values) else "三市場一致偏空" if all(value<0 for value in three_market_values) else "三市場方向分歧／含中性")
+    else:
+        three_market_text="三市場資料不足，不能判定一致性"
+    spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
+    if all(value is not None for value in spot_inst_values) and all(float(value)>0 for value in spot_inst_values):
+        spot_inst_text="三法人現貨同向買超"
+    elif all(value is not None for value in spot_inst_values) and all(float(value)<0 for value in spot_inst_values):
+        spot_inst_text="三法人現貨同向賣超"
+    else:
+        spot_inst_text="現貨三法人方向分歧／資料不足"
     hist_str=build_history_status_text(historical,db_status)
     factor_quality_summary=build_factor_quality_summary(analyzer)
 
@@ -1164,7 +1191,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '選擇權牆': {"look": options_look, "compass": options_compass, "target": options_target},
         '美股連動': us_card,
         '關鍵水位': {"look": f"現價{close}；Put Wall {put_wall_text}；Flip {flip_text}；Regime {regime_label}", "compass": f"只採用當日有效關鍵位；缺失價位不補硬編碼水位", "target": f"依有效 Put Wall {put_wall_text} 與 Flip {flip_text} 觀察，缺值時不設定價位目標"},
-        '盤前核心判斷': {"look": f"7軸中趨勢、結構、價差皆偏弱，僅籌碼投信撐盤，Bias{bias}分{regime_label}，{factor_str[:60]}", "compass": f"雷達面積縮小至偏空區，{regime_label}格局，{regime_d}", "target": f"等待籌碼與情緒收斂，{regime_label}維持{'空方' if bias<35 else '多方'}思維"},
+        '盤前核心判斷': {"look": f"有效因子 {len(active_details)}/17；正向 {positive_count} 項、負向 {negative_count} 項；Bias {bias} 分／{regime_label}；{factor_str[:60]}", "compass": f"依當日有效因子與資料覆蓋判斷：{regime_d}", "target": f"依 {regime_label} 與有效關鍵價位執行；未確認前不預設方向"},
         '三劇本': {"look": f"情境分析：Bias {bias}分、{regime_label}；未建立經回測校準的機率模型，不提供悲觀／中性／樂觀機率", "compass": "情境路徑僅作條件推演，不代表統計機率", "target": f"觀察有效關鍵價位 {put_wall_text}；未確認突破／跌破前不啟動劇本"},
         '多空條件檢查表': {"look": f"17F有效{len(active_details)}/17；正向{positive_count}項、負向{negative_count}項、缺失{disabled_count}項；資料覆蓋{analyzer.factor_quality['base_weight_coverage_pct']}%", "compass": f"有效因子權重已正規化；信心等級 {analyzer.factor_quality['confidence']}；不以缺失因子推定方向", "target": f"Bias {bias}；資料可信度 {analyzer.factor_quality['confidence']}；依有效因子與價格條件決策"},
         '開盤前必核': {"look": kpi_look, "compass": kpi_compass, "target": kpi_target},
@@ -1172,11 +1199,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         'AI結論': bias_card,
         '交易計畫': bias_card,
         '行事曆': news_card,
-        '法人籌碼': {"look": f"外資現貨{foreign}億 期貨{foreign_fut} 投信{parsed['inst']['trust']}億 自營{parsed['inst']['dealer']}億", "compass": f"外資空 vs 投信多對作，分歧加劇，{regime_label}", "target": f"觀察外資是否續賣，{put_wall}為關鍵"},
-        '主力三市透視': {"look": f"三市籌碼透視：現貨外資{foreign if foreign is not None else 'unavailable'}億元；期貨外資日盤淨交易{foreign_day}口 選擇權外資分歧", "compass": f"主力三市{'一致偏空' if foreign is not None and foreign<0 and int(foreign_day)<0 else '資料不足或分歧'}", "target": "關注主力一致性"},
-        '三市一致性': {"look": f"期現選方向：現貨法人{foreign}億元；期貨外資日盤淨交易{foreign_day}口；選擇權分歧，一致性低", "compass": f"三市一致性檢核，{regime_label}", "target": "等待一致性收斂"},
-        '期現選方向對照': {"look": f"現貨法人{foreign}億元；期貨外資日盤淨交易{foreign_day}口；OI PCR {pcr}倍", "compass": f"期現選對照，{regime_label}", "target": f"{put_wall}為關鍵"},
-        '籌碼三市矩陣': {"look": f"籌碼矩陣：外資{foreign}億元；投信{parsed['inst']['trust']}億元；自營{parsed['inst']['dealer']}億元", "compass": "三法人矩陣分歧", "target": "觀察投信撐盤力道"},
+        '法人籌碼': {"look": f"外資現貨 {display(foreign)}億元（{direction(foreign)}）；期貨淨 OI {display(foreign_fut,0)}口；投信 {display(parsed['inst'].get('trust'))}億元；自營商 {display(parsed['inst'].get('dealer'))}億元", "compass": f"現貨外資 {direction(foreign)}、投信 {direction(parsed['inst'].get('trust'))}；依實際數值呈現，不預設對作", "target": f"觀察外資現貨後續變化；Put Wall {put_wall_text}僅為價位參考"},
+        '主力三市透視': {"look": f"三市場外資方向：現貨 {direction(foreign)}；期貨日盤淨交易 {direction(foreign_day)}；選擇權日盤淨交易 {option_day_dir}", "compass": three_market_text, "target": "三市場需同時觀察存量與流量；方向分歧時不宣稱主力一致"},
+        '三市一致性': {"look": f"期現選外資方向：現貨 {direction(foreign)}；期貨日盤 {direction(foreign_day)}；選擇權日盤 {option_day_dir}、夜盤 {option_night_dir}", "compass": three_market_text, "target": "若三市場方向分歧，等待訊號收斂；不將單一市場部位視為整體方向"},
+        '期現選方向對照': {"look": f"現貨外資 {display(foreign)}億元；期貨日盤淨交易 {display(foreign_day,0)}口；選擇權日盤淨交易 {display(option_foreign_day,0)}口；OI PCR {pcr_text}倍", "compass": three_market_text, "target": f"Put Wall {put_wall_text}為價位參考；PCR 僅為 OI 比值"},
+        '籌碼三市矩陣': {"look": f"現貨法人買賣超：外資 {display(spot_inst_values[0])}億元；投信 {display(spot_inst_values[1])}億元；自營 {display(spot_inst_values[2])}億元", "compass": spot_inst_text, "target": "比較三法人買賣超方向與金額，不預設投信必然撐盤"},
         '主力意圖解碼': {"look": f"主力部位：外資期貨淨 OI {foreign_fut if foreign_fut is not None else 'unavailable'}口；投信現貨 {parsed['inst']['trust']} 億元", "compass": "僅呈現法人部位，不將單一市場部位解讀為控盤", "target": "搭配現貨、期貨、選擇權三市場方向與變化判斷"},
         '夜盤劇本': {"look": f"夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '台指夜盤劇本': {"look": f"台指夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
@@ -1187,15 +1214,15 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '台指期 日盤': {"look": f"台指日盤收{parsed['tx']['day']['c']}點；高{parsed['tx']['day']['h']}點；低{parsed['tx']['day']['l']}點；量{parsed['tx']['day']['vol']}口", "compass": f"日盤{parsed['tx']['day']['pct']}% 基差{parsed['tx']['day']['basis']}", "target": f"日盤低{parsed['tx']['day']['l']}為支撐"},
         '台指期 夜盤': {"look": f"台指夜盤收{parsed['tx']['night']['c']}點；高{parsed['tx']['night']['h']}點；低{parsed['tx']['night']['l']}點；量{parsed['tx']['night']['vol']}口", "compass": f"夜盤{parsed['tx']['night']['pct']}% 變化{parsed['tx']['night']['change']}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '期貨籌碼深度圖': {"look": futures_look, "compass": futures_compass, "target": futures_target},
-        '外資期貨': {"look": f"外資期貨淨 OI {foreign_fut if foreign_fut is not None else 'unavailable'}口；日盤淨交易{foreign_day}口；夜盤淨交易{parsed['futures']['foreign_night']}口", "compass": f"外資期空{'創高' if foreign_fut is not None and foreign_fut<-80000 else '資料不足' if foreign_fut is None else '偏空'}", "target": f"外資期{foreign_fut if foreign_fut is not None else 'unavailable'}為觀察指標"},
+        '外資期貨': {"look": f"外資期貨淨 OI {display(foreign_fut,0)}口；日盤淨交易 {display(foreign_day,0)}口；夜盤淨交易 {display(parsed['futures'].get('foreign_night'),0)}口", "compass": f"外資期貨淨 OI {direction(foreign_fut)}" + ("（低於 -80,000 口觀察門檻）" if foreign_fut is not None and foreign_fut<-80000 else ""), "target": "淨 OI 為部位存量，日／夜盤淨交易為流量；分開觀察變化"},
         '前十大與分歧': {"look": top10_look, "compass": top10_compass, "target": top10_target},
         '前十大與分歧bar': {"look": top10_look, "compass": top10_compass, "target": top10_target},
         'OI結構': {"look": options_look, "compass": options_compass, "target": options_target},
-        'GEX': {"look": f"GEX {gex_text}；Put Wall {put_wall_text}", "compass": "GEX 缺值時停用該因子，不推定正負 Gamma 狀態", "target": "取得可驗證 GEX 數據後再判讀 Gamma regime"},
+        'GEX': {"look": f"Net GEX {display(gex)} NT$／標的價格變動 1%；Gross GEX {display(parsed.get('options',{}).get('grossGex1pct'))}；Put Wall {put_wall_text}", "compass": "GEX 是 Gamma 模型曝險估值；正負不直接等同多空方向，須結合 Gamma regime 與價格位置解讀", "target": "以 Net／Gross GEX、資料日期及模型品質觀察曝險結構，不單獨產生方向訊號"},
         'IV Skew': {"look": "IV Rank、Risk Reversal：DATA_REPORT 未提供", "compass": "IV Skew 未取得可驗證數據，不判定 Put／Call 溢價方向", "target": "取得 IV 曲面與期限序列後再分析"},
         'Term': {"look": "期限結構：DATA_REPORT 未提供", "compass": "缺少各到期月份 IV，無法判定 Term Structure", "target": "取得各到期月份 IV 後再分析"},
         'PCR 0.74→0.57': {"look": f"當日 PCR {pcr_text}；未提供連續歷史序列時不繪製趨勢", "compass": f"PCR {pcr_text}；不以單日數值直接推定散戶恐慌", "target": "PCR 缺值或缺少歷史序列時不產生趨勢與反向訊號"},
-        '外資選擇權分歧': {"look": f"外資選擇權日淨分歧，PCR{pcr}", "compass": "外資選擇權偏空", "target": "外資選擇權為空方"},
+        '外資選擇權分歧': {"look": f"外資選擇權日盤淨交易 {display(option_foreign_day,0)}口（{option_day_dir}）；夜盤 {display(option_foreign_night,0)}口（{option_night_dir}）；{option_session_text}", "compass": f"外資選擇權日盤 {option_day_dir}、夜盤 {option_night_dir}；日夜盤方向分開呈現", "target": "選擇權日夜淨交易是流量口數，不等同 OI 存量或單邊方向保證"},
         '美股指數': us_card,
         '亞洲指數': {"look": f"亞洲市場資料：{parsed['asiaPct_full']}", "compass": "僅呈現有來源的市場數值，不推定同步連動", "target": "依各市場實際變動分別觀察"},
         '美股期貨': {"look": f"美股期貨資料：{parsed['futPct_full']}", "compass": "僅呈現 DATA_REPORT 有效數值", "target": "資料缺值時不推定夜盤方向"},
