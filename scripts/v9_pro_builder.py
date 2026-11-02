@@ -646,11 +646,11 @@ def parse_data_report(report_path):
     spot_vol_raw=must_get(r"成交金額 \| ([0-9,.]+) \| 億元","成交金額")
 
     up=int(must_get(r"\| 上漲家數 \| ([0-9]+) \|","上漲家數")); down=int(must_get(r"\| 下跌家數 \| ([0-9]+) \|","下跌家數"))
-    flat_match=re.search(r"\| 平盤家數 \| ([0-9]+) \|", text); flat=int(flat_match.group(1)) if flat_match else 0
+    flat_match=re.search(r"\| 平盤家數 \| ([0-9]+) \|", text); flat=int(flat_match.group(1)) if flat_match else None
     up_limit_match=re.search(r"\| 漲停家數 \| ([0-9]+) \|", text); down_limit_match=re.search(r"\| 跌停家數 \| ([0-9]+) \|", text)
-    limit_up=int(up_limit_match.group(1)) if up_limit_match else 0; limit_down=int(down_limit_match.group(1)) if down_limit_match else 0
+    limit_up=int(up_limit_match.group(1)) if up_limit_match else None; limit_down=int(down_limit_match.group(1)) if down_limit_match else None
 
-    otc_section=text.find("#### 2.2 上櫃公司"); otc_up=otc_down=otc_flat=otc_limit_up=otc_limit_down=0
+    otc_section=text.find("#### 2.2 上櫃公司"); otc_up=otc_down=otc_flat=otc_limit_up=otc_limit_down=None
     if otc_section!=-1:
         otc_sub=text[otc_section:otc_section+3000]
         m=re.search(r"\| 上漲家數 \| ([0-9]+) \|", otc_sub); 
