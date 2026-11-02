@@ -441,3 +441,35 @@ tests/test_dashboard_unit_contract.py 新增：
 - 最新 Dashboard HTML：p0/v9-pro-20261030.html（317,862 bytes）。
 - 同版 JSON：p0/data-20261030.json（91,941 bytes）。
 - 下載交付使用者的獨立 HTML 檔以本次對話提供的下載連結為準；它是 Run 41393233928 的 artifact 原檔，不是重新拼裝或手動改寫版本。
+
+
+## 9.10 六頁瀏覽器自動驗收工作流（2026-11-02）
+
+### A. 已新增的自動化
+- 新增 `.github/workflows/dashboard-browser-audit.yml`，限定 `phase2-p0-ui-fixes` 分支，支援 push 與 workflow_dispatch；不部署、不修改 Master／V8。
+- 新增 `tests/browser_dashboard_audit.mjs`，使用 Playwright + Chromium：
+  - Desktop 1440×1000 與 Mobile 390×844。
+  - 逐一點擊總覽、現貨、重要市場、期貨、選擇權、綜合分析六頁。
+  - 每頁檢查主內容非空、至少一個可見 Canvas、document/body 不得水平溢位。
+  - 收集 pageerror；輸出 12 張截圖及 report.json 作為 Actions artifact。
+- Workflow 會自動挑選 dashboards/ 中最新日期版 `v9-pro-*.html`，不再固定寫死 2026-10-30。
+
+### B. 本次提交
+- Browser audit script：commit `217b4d2de4da7528bed6af86a236d8c59519ad92`。
+- 初版 workflow：commit `5a317fe9c500e52a9ecf12f73b35d476cfe7d28f`。
+- 動態選取最新 Dashboard HTML：commit `d0ef8ed3a31d4aadf34e7d09f9cff0f5dcd127a0`。
+- 分支：`phase2-p0-ui-fixes`。
+
+### C. 驗收狀態（務必區分）
+| 項目 | 狀態 | 說明 |
+|---|---|---|
+| Playwright 測試程式已提交 | PASS | GitHub fetch_file 已讀回確認 |
+| Actions workflow 已提交 | PASS | GitHub fetch_file 已讀回確認 |
+| 六頁 × Desktop/Mobile 實際 Chromium 執行 | NOT TESTED | 本次工具環境未提供 workflow dispatch／run listing；不得宣稱 CI 已執行 |
+| 12 張新截圖與 report.json | NOT GENERATED | 等待 workflow 真正執行成功 |
+| 使用者視覺驗收 | NOT DONE | 仍待使用者確認 |
+
+### D. 執行注意事項
+- Workflow 自動由分支 push 觸發；若未觸發，可在 GitHub Actions 手動執行「V9 Dashboard Browser Audit」。
+- 若失敗，優先查看 artifact 中的 report.json、Actions log 與頁面截圖；不得因 workflow 檔存在就視為瀏覽器驗收通過。
+- 目前 workflow 使用最新日期版 HTML；未來每日新 Dashboard 提交到該分支時，會納入相同瀏覽器檢查。
