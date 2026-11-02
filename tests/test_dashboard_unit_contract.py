@@ -16,10 +16,10 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn(r"融資餘額 \| ([0-9,.]+) \| 億元", builder)
         self.assertIn(r"融券餘額 \| ([0-9,]+) \| 張", builder)
         self.assertIn(r"借券餘額 \| ([0-9,]+) \| 張", builder)
-        self.assertIn(r"開盤價 \\| ([0-9,]+) \\|", builder)
-        self.assertIn(r"台指期與加權指數價差 \\| ([-\\+0-9.]+) \\|", builder)
-        self.assertIn(r"Call 總成交量 \\| ([0-9,]+) \\|", builder)
-        self.assertIn(r"Put／Call Ratio \\| ([0-9.]+) \\|", builder)
+        self.assertIn(r"開盤價 \| ([0-9,]+) \|", builder)
+        self.assertIn(r"台指期與加權指數價差 \| ([-\\+0-9.]+) \|", builder)
+        self.assertIn(r"Call 總成交量 \| ([0-9,]+) \|", builder)
+        self.assertIn(r"Put／Call Ratio \| ([0-9.]+) \|", builder)
 
     def test_unit_standard_and_skill_are_present(self):
         standard = (ROOT / "docs" / "DASHBOARD_UNIT_STANDARD.md").read_text(encoding="utf-8")
