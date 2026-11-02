@@ -443,7 +443,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     SRC_INST = _src.get("institutional", "TWSE BFI82U")
     SRC_MG = _src.get("margin", "HiStock")
     SRC_MR = _src.get("margin_ratio", "Blave（同 T0）→ 人工輸入（同 T0）→ unavailable")
-    SRC_SBL = _src.get("sbl", "TWSE/TPEX")
+    SRC_SBL_BAL = _src.get("sbl_bal", "端點未提供")
+    SRC_SBL_SALE_BAL = _src.get("sbl_sale_bal", "端點未提供")
+    SRC_SBL_SALE_CHG = _src.get("sbl_sale_chg", "端點未提供")
 
     L: list[str] = []
     A = L.append
@@ -511,11 +513,11 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 5. 借券資料")
     A("")
-    A("**資料來源：** 上市 `TWSE OpenAPI TWT96U` (可借餘額)、上櫃 `TPEX OpenAPI tpex_margin_sbl`")
+    A("**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWT93U 與上櫃 tpex_margin_sbl，缺值市場不納入加總。")
     A("")
-    A(_tbl([("借券餘額", _fi(sb["bal"]), "張", SRC_SBL),
-            ("借券賣出餘額", _fi(sb["sale_bal"]), "張", SRC_SBL),
-            ("借券賣出增減", _fi(sb["sale_chg"]), "張", SRC_SBL)], ("項目", "數值", "單位", "資料來源")))
+    A(_tbl([("借券餘額", _fi(sb["bal"]), "張", SRC_SBL_BAL),
+            ("借券賣出餘額", _fi(sb["sale_bal"]), "張", SRC_SBL_SALE_BAL),
+            ("借券賣出增減", _fi(sb["sale_chg"]), "張", SRC_SBL_SALE_CHG)], ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 6. 市場成交結構")
     A("")
