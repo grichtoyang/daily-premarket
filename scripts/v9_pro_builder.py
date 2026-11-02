@@ -1155,6 +1155,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     else:
         option_session_text='日夜資料不足'
     # 三市場解析：分開現貨金額、期貨/選擇權交易流量與 OI 存量，避免跨口徑直接比較。
+    spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
     three_market_values=[foreign,foreign_day,option_foreign_day]
     if all(value is not None for value in three_market_values):
         three_market_text=('三市場一致偏多' if all(value>0 for value in three_market_values) else '三市場一致偏空' if all(value<0 for value in three_market_values) else '三市場方向分歧')
