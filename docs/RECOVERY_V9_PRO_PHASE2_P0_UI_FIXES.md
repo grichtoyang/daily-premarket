@@ -627,3 +627,26 @@ tests/test_dashboard_unit_contract.py 新增：
   - `3b56e2206a4c0ea8edf7f4b430db6c22e9babcf2`（parser diagnostics）
   - `a03f69ca85a7c6751c53639c667ff6b6a958d23e`（diagnostic regression assertion）
 - 驗收狀態：程式修改已提交；本次尚未有新 daily_data run，因此新診斷輸出及測試執行狀態 **NOT TESTED**。下一次手動執行 daily_data 後，直接搜尋 `TWT93U`、`TPEX margin_sbl` 即可辨別 HTTP 失敗、回應結構錯誤、日期不符或資料欄位解析失敗。
+
+
+## 9.17 10/30 DATA_REPORT 借券來源沿用標籤錯置：根因定位與修正（2026-11-02）
+
+### A. 根因定位（由實際報告與程式碼交叉確認）
+- 10/30 報告的借券區塊表格仍標示 `TWSE TWT93U + TPEX margin_sbl`，但同報告來源摘要已標示借券餘額使用 `TWSE OpenAPI TWT96U` + `TPEX OpenAPI tpex_margin_sbl`；另註記明確寫「借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)」。
+- 現行 `spot.py` 的語義已明確分流：借券餘額由 TWT96U TWSE + TWT96U GRETAI + TPEX margin_sbl；借券賣出餘額／增減由 TWT93U + TPEX margin_sbl，來源標籤依各市場實際非 None 值組成。
+- 根因在 `fetch_data.merge_same_t0()`：當新抓取欄位為 unavailable、沿用前版舊數值時，會將來源欄位也直接改回舊來源（原程式第 374-375 行）。因此報告表格可能顯示舊來源，掩蓋本次實際來源；這也解釋為何同一報告的總來源摘要與表格來源標籤不同。
+- 10/30 報告借券賣出增減 -1,273 張雖有值，但同報告明確註記 TWT93U 未取得，故不能解讀為上市櫃合計；它是上櫃來源的值或同 T0 沿用值，需以本次標籤修正後的未來報告明確區分。未重新抓取歷史原始 API，逐筆數值仍 NOT TESTED。
+
+### B. 已提交修正
+- `src/fetch_data.py`：當新值為 unavailable、由同 T0 舊報告填補時，來源格改顯示 `沿用前版（原來源：...）`，不再偽裝成本次即時來源。
+- 新增 `tests/test_fetch_data_same_t0_source.py`：以同 T0 舊有 -1,273、新抓取 unavailable 且新來源只有 TPEX 的 fixture，驗證數值沿用時來源標籤會清楚標示沿用前版。
+- Commits：
+  - `23e74f9c088b7f04f395f12eb5616e765be95b5f`（merge source attribution fix）
+  - `96f63baa6c3736a82928d9f7ada59325446e9c2b`（regression test）
+- Unit Contract Audit Run **#94**（commit 23e74f9）已完成 **SUCCESS**。
+- V9 UI Fixes Regression Run **#126**（commit 23e74f9）仍 in_progress；新測試 commit 96f63ba 觸發 Daily Premarket V9 Pro Run **#157**，截至本記錄仍 in_progress。不得提前宣稱新測試 PASS。
+
+### C. 其他 10/30 報告稽核
+- 成交金額顯示：上市 9,396.1 + 上櫃 1,987.7 = 11,383.8 億，但總計顯示 11,383.7 億。程式以原始精度先加總、最後各自四捨五入到 0.1 億；顯示值不必然可直接相加。此項目前屬顯示精度差異，需以未四捨五入原值才能判斷是否錯誤，NOT TESTED，暫不改成「先四捨五入再相加」以免損失精度。
+- 「未取得欄位 (0)」與期貨表格中的 unavailable 欄位存在口徑落差。摘要目前只彙總 `s["unavailable"]`、`fx["unavailable"]` 與少數快照項目；部分期貨表格缺值未加入 fx["unavailable"]。需再盤點期貨表格必填欄位及其 unavailable 收集邏輯，未修正前此摘要不能當成全報告完整性總數。
+- 10/30 報告原始 API 逐筆對帳未做；夜盤期間不重跑資料抓取，避免覆寫日盤／全日報告。
