@@ -713,3 +713,28 @@ tests/test_dashboard_unit_contract.py 新增：
 - 結論：#95 的 20261102 是因為手動觸發時空白 T0 代表自動解析，而 workflow 仍明確傳入當日 `--date`；執行時點又已過 13:45 日盤收盤，因此自動判定 T0=當日。不是 GitHub 把空白輸入自動填成日期，也不是報告日期錯置。
 - 重要邊界：目前自動判定使用 Python 開始執行時的牆鐘，不是按下 Run workflow 的精確時間；若在 13:45 前觸發但工作排隊到 13:45 後才執行，T0/session 可能依執行時點而非點擊時點判定。#95 並未遇到此邊界。
 - 本項為原因調查與規格確認，未修改 workflow 或日期邏輯。
+
+
+## 9.24 10/30 DATA_REPORT 完整性欄位摘要漏列夜盤缺值：已修正（2026-11-02）
+
+### 實際矛盾
+- `DATA_REPORT_20261030.md` 夜盤行情列明確顯示「結算價 unavailable」「未平倉量 unavailable」（報告第 265–266 行），但選擇權章節的資料完整性摘要卻顯示「未取得欄位 (0)：無」（第 629 行）。
+- 根因：`src/sources/taifex.py` 的 `unavailable` 清單只在部分選擇權 Gamma／快照路徑維護；夜盤行情欄位雖為 None 並在表格顯示 unavailable，卻沒有加入 `fx["unavailable"]`。因此 `src/fetch_data.py` 彙總的 `_all_unav` 漏掉夜盤欄位。
+- 這是資料完整性摘要程式缺陷，不是 10/30 夜盤資料真的齊全。
+
+### 已提交修正
+- 新增純函式 `_missing_night_fields(night)`，逐欄檢查夜盤 open/high/low/close/change/pct/vol/settle/oi，將缺值以 `futures.night.<field>` 加入 unavailable 清單。
+- 在 TAIFEX data builder 完成夜盤欄位解析後呼叫該函式，確保表格與完整性摘要一致；不補 0、不推估。
+- 新增 `tests/test_taifex_night_unavailable_summary.py`，覆蓋：
+  1. 僅結算價與 OI 缺值時，準確列出兩欄；
+  2. 全部有值時回傳空清單；
+  3. 夜盤所有欄位缺值時逐欄列出。
+
+### Commits
+- `1e2b0282749c49598ab52e613b0697df5e993c30`（missing night fields in completeness list）
+- `d86d331852315b83f7b35e6faf3eb652b4f60359`（pure helper）
+- `1dd378631afd979b266864d2de113985959f50fc`（regression tests）
+
+### 驗收
+- 程式與測試檔已提交並可由 GitHub 讀回；新測試及 CI 尚待執行，狀態 NOT TESTED。
+- 10/30 舊報告是歷史產物，不會因程式修正自動重寫；新產生的 DATA_REPORT 才會使用修正後摘要。
