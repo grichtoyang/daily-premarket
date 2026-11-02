@@ -3,7 +3,7 @@
 更新日期：2026-11-02（Asia/Taipei）
 Repository：`grichtoyang/daily-premarket`
 工作分支：`phase2-p0-ui-fixes`
-更新基準 HEAD：`2871ed8de461dcd1345e2d2b1a6b3d41359d19c0`（2026-11-02 本次 GEX 修正與回歸檢查提交）
+更新基準 HEAD：`c2ec5fc12ff91750c7e91ff46e2ad3d1c64ade94`（2026-11-02 最新 GEX 顯示單位測試提交；Recovery 由本次文件 Commit 接續）
 
 > 本文件是本階段的續作錨點。新對話先讀本文件，再從「下一步」接續。
 > 本文件只記錄可確認的狀態；未執行的測試不得標為 PASS。
@@ -151,3 +151,10 @@ Repository：`grichtoyang/daily-premarket`
 2. 下載本次新產生的 `V9-UI-Fixes-Preview-20261030` Artifact；確認 Bias pill 顯示實際 Net GEX，不再硬編碼 unavailable。
 3. 以新 Artifact 檢查手機／桌面三個圖表是否完整呈現；若仍裁切，根據實際 DOM／Canvas 尺寸定位，不再只調整猜測高度。
 4. 將最終 Actions 證據與視覺驗收結果更新本 Recovery；不修改 Master／V8，不 Merge、不部署。
+### 9.5 Template 完整性複驗與顯示單位調整
+
+- Template 已重建為單一完整 HTML 文件，檢查結果：242,532 字元、僅 1 個 `<!DOCTYPE html>`；Canvas 動態高度與 Bias GEX 動態欄位均存在。
+- Bias GEX 值改用台灣常用億元單位顯示，例如本次 DATA_REPORT 的 Net GEX 約 `+12.94 億 NT$`；避免顯示過長的 1,294,327,419 數字或不直觀的 B 單位。
+- Template 完整性修復提交：`bd5b0c10ba0af2085b7b15a47c394770115c02ad`。
+- GEX 顯示單位回歸測試提交：`c2ec5fc12ff91750c7e91ff46e2ad3d1c64ade94`。
+- 以上只完成程式與靜態結構檢查；仍待 Actions 執行結果與最新 Artifact 的實際渲染驗收。
