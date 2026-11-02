@@ -264,6 +264,16 @@ def build(t0: str) -> dict:
     _tp_schg = stp["sale_chg"] / 1000 if stp["sale_chg"] is not None else None
     _schg = _add(_tw_schg, _tp_schg)
     sbl = {"bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg}
+    def _sbl_scope(*parts):
+        available = [name for name, value in parts if value is not None]
+        return " + ".join(available) if available else "端點未提供"
+    sources["sbl_bal"] = _sbl_scope(
+        ("TWSE TWT96U", stw.get("tw")), ("TWSE TWT96U OTC", stw.get("otc")),
+        ("TPEX margin_sbl", stp.get("bal")))
+    sources["sbl_sale_bal"] = _sbl_scope(
+        ("TWSE TWT93U", _tw_sale), ("TPEX margin_sbl", _tp_sale))
+    sources["sbl_sale_chg"] = _sbl_scope(
+        ("TWSE TWT93U", _tw_schg), ("TPEX margin_sbl", _tp_schg))
     if sbl_bal is None:
         notes.append("借券餘額未取得")
         unavailable.append("sbl.bal")
@@ -273,7 +283,6 @@ def build(t0: str) -> dict:
         unavailable.append("sbl.sale_chg")
     if tw_sbl["sale_bal"] is None and stp["sale_bal"] is not None:
         notes.append("借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)")
-    sources["sbl"] = "TWSE TWT93U + TPEX margin_sbl"
 
     # ---- 成交結構 (億元) ----
     listed_yi = listed_turnover_yuan / 1e8 if listed_turnover_yuan else None
