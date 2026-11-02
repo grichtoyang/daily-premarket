@@ -129,9 +129,12 @@ class BuilderOptionTableTests(unittest.TestCase):
     def test_three_market_cards_use_actual_option_day_night_flow(self):
         parsed = {
             "meta": {"data_quality_warnings": []},
-            "spot": {"close": 100.0, "pct": -1.5, "up": 100, "down": 800, "vol": 1000},
+            "spot": {"close": 100.0, "open": 101.0, "high": 102.0, "low": 98.0, "diff": -1.5, "pct": -1.5, "up": 100, "down": 800, "flat": 50, "vol": 1000},
             "inst": {"foreign": -300.0, "trust": 50.0, "dealer": -10.0, "all": -260.0},
-            "tx": {"day": {"basis": 10.0, "prem": 0.1}, "night": {"pct": -1.2, "l": 90.0, "h": 100.0, "c": 95.0, "change": -5.0, "vol": 500}},
+            "tx": {
+                "day": {"o": 101.0, "h": 103.0, "l": 99.0, "c": 100.0, "diff": -1.0, "pct": -0.1, "vol": 1000, "basis": 10.0, "prem": 0.1},
+                "night": {"o": 99.0, "h": 100.0, "l": 90.0, "c": 95.0, "diff": -5.0, "pct": -1.2, "vol": 500, "change": -5.0},
+            },
             "futures": {"top10": 10000, "foreign_day": -2000, "foreign_night": 1000, "foreign_oi": -90000},
             "options": {
                 "pcr": 0.6, "putWall": 90.0, "callWall": 110.0, "gammaWall": 95.0, "flip": 92.0, "maxPain": 100.0,
