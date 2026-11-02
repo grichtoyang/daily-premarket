@@ -35,8 +35,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_option_institutional_chart_parses_signed_thousands(self):
         # The chart must render both session fields, not just the daytime field.
-        self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"日"}', self.html)
-        self.assertIn('{l:String(x[0])+"夜",v:v9ProOptionNetNumber(x[6]),extra:"夜"}', self.html)
+        self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"口"}', self.html)
+        self.assertIn('{l:String(x[0])+"夜",v:v9ProOptionNetNumber(x[6]),extra:"口"}', self.html)
         self.assertIn('height:390}),chartNote:"法人日盤／夜盤淨交易：口；依來源表格定義。"', self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
         match = re.search(r"function v9ProOptionNetNumber\(e\)\{[^}]+\}", self.html)
