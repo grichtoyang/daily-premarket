@@ -161,7 +161,7 @@
 | 4 | 期貨 OI、PCR、GEX | PASS | OI 是部位存量；PCR 固定 Put OI ÷ Call OI；GEX 是模型估值且不作方向性 Bias 因子 |
 | 5 | 美股連動 | PASS | SOX 缺值顯示 unavailable；VIX 波動率不納入股票指數廣度；DXY 分開呈現 |
 | 6 | 重大新聞 | PASS | 修正第一則事件被跳過；保留 12 則樣本、發布時間及原文連結欄位 |
-| 7 | Bias／因子摘要 | PASS | 有效因子數、方向數與正規化權重依實際 active factors；GEX 有值仍因非方向指標而不納入 Bias |
+| 7 | Bias／因子摘要 | PASS | 有效因子數、方向數與正規化權重依實際 active factors；GEX 有值仍因非方向指標而不納入 Bias；factor_quality.disabled_factors 與 missing_factors 分開 |
 | 8 | 加權 OHLC、漲跌與成交金額 | PASS | OHLC 價格與漲跌點數分離；close 由 twse-proxy、O/H/L 由 FinMind，皆依 T0；來源分別保留 |
 | 9 | 上市／上櫃漲跌家數 | PASS | 上市與上櫃欄位路徑分開；上漲、下跌、平盤、漲跌停單位均為家 |
 | 10 | 三大法人現貨 | PASS | 外資、投信、自營商及合計均以億元顯示；不把不同市場口數混入 |
