@@ -60,7 +60,10 @@ class DashboardUnitContractTests(unittest.TestCase):
         chart_cards = [card.split("}),p(V,{title:", 1)[0] for card in cards]
         self.assertGreater(len(chart_cards), 0)
         for index, card in enumerate(chart_cards, start=1):
-            if "chart:" in card:
+            # News cards use the generic `chart` slot for a scrollable text list;
+            # only actual chart components require a nearby unit note.
+            chart_match = re.search(r"chart:p\\(([^,{]+)", card)
+            if chart_match and chart_match.group(1) != '"div"':
                 self.assertIn("chartNote:", card, f"Chart card {index} has no adjacent unit note")
         self.assertIn('chartNote&&p("div"', html)
 
