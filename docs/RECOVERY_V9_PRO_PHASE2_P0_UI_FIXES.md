@@ -3,7 +3,7 @@
 更新日期：2026-11-02（Asia/Taipei）
 Repository：`grichtoyang/daily-premarket`
 工作分支：`phase2-p0-ui-fixes`
-更新基準 HEAD：`c2ec5fc12ff91750c7e91ff46e2ad3d1c64ade94`（2026-11-02 最新 GEX 顯示單位測試提交；Recovery 由本次文件 Commit 接續）
+更新基準 HEAD：`8034ee36ed51c84e13a79c2753f74e8a6b5ac49e`（2026-11-02 最新 Recovery 提交）
 
 > 本文件是本階段的續作錨點。新對話先讀本文件，再從「下一步」接續。
 > 本文件只記錄可確認的狀態；未執行的測試不得標為 PASS。
@@ -252,7 +252,7 @@ Repository：`grichtoyang/daily-premarket`
 ### D. 最新 GitHub Actions 結果
 | Workflow | Run ID | Commit | 結果 |
 |---|---:|---|---|
-| V9 Pro Unit Contract Audit | 41390676026 | 65c560f642a0bc6fd5e59b3709200870f9d7e1a7 | PASS |
+| V9 Pro Unit Contract Audit | 41390676026 | 8ec4fb28a28c113a418ead43bad3d631cd11a6c4 | PASS |
 | V9 UI Fixes Regression | 41390676167 | 8ec4fb28a28c113a418ead43bad3d631cd11a6c4 | PASS |
 | Daily Premarket V9 Pro | 41390676168 | 8ec4fb28a28c113a418ead43bad3d631cd11a6c4 | Build PASS；Deploy SKIPPED |
 
