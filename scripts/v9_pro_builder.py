@@ -1090,8 +1090,22 @@ def build_history_status_text(historical, db_status):
 def build_41_cards(analyzer, parsed, historical, db_status):
     bias=analyzer.bias_score; regime=analyzer.gen_bias_card()['regime']; factors=analyzer.bias_factors; s=analyzer.signals; weights=analyzer.weights
     factor_str=" ".join([f"{n}{v:+d}" for n,v in factors[:6]])
-    close=s.get('spot_close',0); put_wall=s.get('put_wall'); call_wall=s.get('call_wall')
+    close=s.get('spot_close'); put_wall=s.get('put_wall'); call_wall=s.get('call_wall')
     pcr=s.get('pcr'); foreign=s.get('foreign'); foreign_fut=s.get('foreign_futures')
+    def display(value, digits=2):
+        if value is None:
+            return "unavailable"
+        try:
+            number=float(value)
+            return f"{number:,.{digits}f}" if math.isfinite(number) else "unavailable"
+        except (TypeError,ValueError):
+            return "unavailable"
+    def direction(value):
+        try:
+            number=float(value)
+            return "偏多" if number>0 else "偏空" if number<0 else "中性"
+        except (TypeError,ValueError):
+            return "資料不足"
     pcr_text=f"{pcr:.2f}" if pcr is not None else "unavailable"
     put_wall_text=str(put_wall) if put_wall is not None else "unavailable"
     call_wall_text=str(call_wall) if call_wall is not None else "unavailable"
@@ -1106,9 +1120,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         pct=s.get('spot_pct'); foreign_value=s.get('foreign'); pcr_value=s.get('pcr')
         if pct is None or foreign_value is None or pcr_value is None:
             return '資料不足', '趨勢、法人或 PCR 缺值；不推定市場 regime'
-        if pct<-1 and foreign_value<-200 and pcr_value<0.8: return '空頭', '跌破月線+外資賣+PCR偏低，空頭regime'
-        elif pct>1 and foreign_value>200 and pcr_value>1.0: return '多頭', '站上月線+外資買+PCR偏高，多頭regime'
-        else: return '盤整', '區間震盪，等待方向'
+        if pct<-1 and foreign_value<-200 and pcr_value<0.8:
+            return '空方壓力', '單日跌幅低於 -1%、外資現貨賣超逾 200 億元、OI PCR 低於 0.8；未使用月線條件'
+        if pct>1 and foreign_value>200 and pcr_value>1.0:
+            return '多方條件', '單日漲幅高於 +1%、外資現貨買超逾 200 億元、OI PCR 高於 1.0；未使用月線條件'
+        return '盤整／訊號混合', '未同時符合上述單日漲跌幅、外資現貨與 OI PCR 條件'
 
     regime_label, regime_d = regime_desc()
     hist_str=build_history_status_text(historical,db_status)
@@ -1116,21 +1132,22 @@ def build_41_cards(analyzer, parsed, historical, db_status):
 
     bias_card=analyzer.gen_bias_card(); spot_card=analyzer.analyze_spot(); us_card=analyzer.analyze_us_markets(); news_card=analyzer.analyze_news()
 
-    futures_look=f"台指基差{s.get('tx_basis',0)}點 夜盤{s.get('tx_night_pct',0)}% 低{s.get('tx_night_low',0)} 外資期{foreign_fut}"
-    futures_compass=f"夜盤{s.get('tx_night_pct',0)}%續弱，基差{s.get('tx_basis',0)}，{regime_label}regime"
-    futures_target=f"夜盤{s.get('tx_night_low',0)}為支撐"
+    basis_text=display(s.get('tx_basis')); night_pct_text=display(s.get('tx_night_pct')); night_low_text=display(s.get('tx_night_low'))
+    futures_look=f"台指基差{basis_text}點；夜盤{night_pct_text}%；夜低{night_low_text}點；外資期貨淨 OI {display(foreign_fut,0)}口"
+    futures_compass=f"夜盤漲跌幅 {night_pct_text}%；基差 {basis_text}點；{regime_label}"
+    futures_target=f"夜盤低點 {night_low_text}點（觀察價位，非保證支撐）"
 
     options_look=f"PCR {pcr_text}；GEX 依有效來源資料；Put Wall {put_wall_text}"
     options_compass=(f"PCR{pcr_text}偏低，Put Wall {put_wall_text}為觀察位" if pcr is not None and pcr<0.6 and put_wall is not None else f"選擇權資料 PCR {pcr_text}、Put Wall {put_wall_text}；缺值不推定方向")
     options_target=(f"Put Wall {put_wall}守住觀察震盪，跌破再確認" if pcr is not None and pcr<0.6 and put_wall is not None else f"PCR／Put Wall 有效資料不足時不設定區間目標")
 
-    kpi_look=f"KPI 8宮格：加權{close}點 {s.get('spot_pct',0)}% 外資{foreign}億元 Bias{bias}分 {regime_label} {hist_str}"
+    kpi_look=f"KPI 8宮格：加權{display(close)}點；漲跌幅{display(s.get('spot_pct'))}%；外資{display(foreign)}億元；Bias{bias}分；{regime_label}；{hist_str}"
     kpi_compass=f"{bias}分{regime_label}；{factor_quality_summary}；費半有效權重{weights.get('us_sox',0):.2f}%；{hist_str}"
     kpi_target=f"依Bias{bias}分操作，{regime_label}策略，{put_wall}為關鍵，{hist_str}"
 
-    top10=parsed['futures']['top10']; foreign_day=parsed['futures']['foreign_day']
-    top10_look=f"前十大+{top10}口偏多但外資{foreign_day}口大空，對作{abs(int(top10)-int(foreign_day))}口，分歧加劇" if int(top10)>8000 and int(foreign_day)<0 else f"前十大{top10}口多單未大減，外資{foreign_day}口空單續抱"
-    top10_compass=f"投信與外資對作，行情易大震盪"; top10_target=f"前十大{top10}口為多方最後防線"
+    top10=parsed['futures'].get('top10'); foreign_day=parsed['futures'].get('foreign_day')
+    top10_look=f"前十大多空淨 OI {display(top10,0)}口；外資日盤淨交易 {display(foreign_day,0)}口；OI 為存量、日盤淨交易為流量，不直接相減"
+    top10_compass=f"前十大淨 OI {direction(top10)}；外資日盤淨交易 {direction(foreign_day)}；分開觀察存量與流量"; top10_target="追蹤前十大多空淨 OI 及其變化；淨 OI 不等同價格支撐／壓力"
 
     # 42個可見區塊映射 (依Skill定義)
     cards={
