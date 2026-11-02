@@ -14,6 +14,13 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertNotIn('sources["sbl"] =', source)
         self.assertIn('("TWT96U GRETAI（上櫃）", stw.get("otc"))', source)
 
+    def test_raw_borrowed_parsers_emit_diagnostics_when_unavailable(self):
+        source = (ROOT / "src/sources/spot_raw.py").read_text(encoding="utf-8")
+        self.assertIn("[WARN] TWT93U", source)
+        self.assertIn("[INFO] TWT93U parsed rows=", source)
+        self.assertIn("[WARN] TPEX margin_sbl", source)
+        self.assertIn("[INFO] TPEX margin_sbl parsed rows=", source)
+
     def test_report_uses_field_specific_source_labels(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('SRC_SBL_BAL = _src.get("sbl_bal"', source)
