@@ -33,9 +33,16 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
+      - name: Resolve latest committed Dashboard HTML
+        run: |
+          set -euo pipefail
+          HTML="$(find dashboards -maxdepth 1 -type f -name 'v9-pro-*.html' ! -name 'v9-pro-latest.html' -printf '%f\\n' | sort -r | head -n1)"
+          test -n "${HTML}"
+          echo "DASHBOARD_HTML=dashboards/${HTML}" >> "${GITHUB_ENV}"
+          echo "Auditing dashboards/${HTML}"
+
       - name: Run six-tab Desktop and Mobile browser audit
         env:
-          DASHBOARD_HTML: dashboards/v9-pro-20261030.html
           AUDIT_OUT: artifacts/dashboard-browser-audit
         run: node tests/browser_dashboard_audit.mjs
 
