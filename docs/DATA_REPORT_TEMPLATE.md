@@ -19,11 +19,11 @@
 1. 台股大盤行情 — 加權/開/高/低/收/漲跌/漲跌幅/成交金額 (開高低目前 unavailable，MI_INDEX 無此欄)
 2. 市場漲跌家數 — 2.1 上市 (twse-proxy) / 2.2 上櫃 (TPEX)，上漲/下跌/平盤/漲停/跌停
 3. 三大法人現貨買賣超 — 外資/投信/自營商/合計 (億元)
-4. 融資融券 — 餘額/增減 (張) + 維持率 (unavailable)
-5. 借券資料 — 餘額/賣出餘額 (股) + 賣出增減 (unavailable)
+4. 融資融券 — 融資餘額/增減 (億元)；融券餘額 (張) + 維持率（%／unavailable 時明確標示）
+5. 借券資料 — 借券餘額/借券賣出餘額/賣出增減 (張；若來源為股須明確換算並註明口徑)
 6. 市場成交結構 — 上市/上櫃/合計 (億元；上櫃百萬元→億元)
 
-## 二、重要市場 (8 節，API 優先、失敗 unavailable 不推估，保留 data_source/retrieved_at/timezone)
+## 二、重要市場 (8 節，API 優先、失敗 unavailable 不推估，保留 data_source/retrieved_at/timezone；殖利率水準用 %、日變化用百分點；匯率標示貨幣對與報價方向；商品價格依來源合約單位)
 
 1. 美股指數 `^GSPC ^IXIC ^NDX ^DJI ^SOX ^VIX` 2. 亞洲 `^N225 ^KS11 ^HSI 000001.SS 399001.SZ`
 3. 美股期貨 `ES=F NQ=F YM=F RTY=F` 4. 美債 `2 Yr 10 Yr 30 Yr` (FiscalData 主、Yahoo 備)
@@ -32,12 +32,12 @@
 
 ## 三、期貨 (7 項骨架，Phase 2 接 TAIFEX Proxy；本階段 unavailable)
 
-日盤行情 / 夜盤行情 / 法人多空 OI / 前十大 OI / 日夜盤法人交易 / 期現關係 / 日夜盤籌碼對照
+日盤行情（價格點、漲跌幅%、成交量口）/ 夜盤行情（價格點、漲跌幅%、成交量口）/ 法人多空 OI（口）/ 前十大 OI（口）/ 日夜盤法人交易（口）/ 期現關係（基差點、比例%）/ 日夜盤籌碼對照
 
 ## 四、選擇權 (18 項骨架)
 
-日期到期 / Call 總量 / Put 總量 / C/P 比例 / 外資部位 / 自營部位 / Call 集中 / Put 集中 /
-Call 增減集中 / Put 增減集中 / Call Wall / Put Wall / Gamma Wall / Gamma Flip / Max Pain /
+日期到期 / Call 總量（口）/ Put 總量（口）/ OI PCR（Put OI ÷ Call OI，倍）/ 外資部位 / 自營部位 / Call 集中 / Put 集中 /
+Call 增減集中 / Put 增減集中 / Call Wall（點）/ Put Wall（點）/ Gamma Wall（點）/ Gamma Flip（點）/ Max Pain（點） /
 選擇權法人日夜盤交易 (options-institutional 日＋夜盤多空淨) / 選擇權前十大 (Call/Put OI＋快照變化) /
 外資自營完整版 (Call/Put 日夜買賣淨＋日淨總量＋日夜增減) / 法人多空力道表 (金額億；日夜多空力道＋淨) /
 大戶流向 (期貨/Call/Put 淨變化全日) / 六、期現選矩陣加期選組合判讀欄
