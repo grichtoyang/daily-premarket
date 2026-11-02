@@ -1281,3 +1281,42 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 
 - Master 未修改；未 merge、未部署。
 - 下一步應先完成分支五卡片實際渲染／手機排版驗收；Master A/B 僅能在取得同輸入、可成功產出的 Master 環境後再執行，不應為此擴張本輪範圍。
+## 9.42 11/02 HTML 無法開啟根因修正與 10/30 全日 Golden Fixture（2026-11-02）
+
+### 根因與修正
+- 從 GitHub Actions Artifact 13143001372 取出 11/02 HTML，與同一 Artifact 的舊版 10/30 HTML 比較。
+- 11/02 主程式 inline JavaScript 在 Node syntax check 失敗：SyntaxError: Invalid destructuring assignment target；舊版 10/30 HTML 的主程式通過。
+- 根因定位在 templates/v9-pro-react-template.html 的法人三市場區塊 A／區塊 B 交界：區塊 A 外層 p(div, ...) 容器少關閉一層，造成後續區塊 B 的 props object 被解析成非法語法。
+- 修正只補回缺少的容器閉合，不改分析邏輯、資料欄位或圖表內容。
+- 修正提交：11f8feebc42ca52ff4c732afa084d3206f756bed。
+
+### 防止回歸與全日測試
+- 新增 tests/validate_react_html_js.py，逐一抽取 HTML 中可執行的 inline JavaScript，使用 Node --check 驗證語法；JSON script block 不當作 JavaScript 執行。
+- 新增 Workflow 隔離 Golden Fixture 建置：固定使用 data_reports/DATA_REPORT_20261030.md，以 T0=20261030 重新產生 JSON 與全日 HTML；同時檢查當次正式建置 HTML 與 Golden Fixture HTML。
+- Golden Fixture HTML 輸出至 dashboards/test-fixtures/v9-pro-20261030-full-day.html，不覆蓋正式 Dashboard alias，也不部署。
+- Workflow 修正提交：3d3a7dc2fbce5d208896b5682c8a27aae9ed53c1；換行格式整理提交：7020ef36a1d99e15b5d938518b5d17ead614d884。
+
+### 最新驗證
+- Run 41459471455（HEAD 7020ef36a1d99e15b5d938518b5d17ead614d884）：Build SUCCESS；Deploy SKIPPED。
+- 該 Run 的 Build 20261030 full-day golden fixture and validate HTML JavaScript 步驟 SUCCESS；當次建置 HTML 與 10/30 Golden Fixture HTML 的 inline JavaScript syntax check 均通過。
+- Artifact：13147129875（github-pages）。
+- 從該 Artifact 下載後再次獨立檢查：
+  - p0/test-fixtures/v9-pro-20261030-full-day.html：321,246 bytes；4 個可執行 inline scripts 全部 Node syntax PASS。
+  - p0/v9-pro-20261102.html：296,711 bytes；4 個可執行 inline scripts 全部 Node syntax PASS。
+  - Golden Fixture JSON：T0=2026-10-30、產出時間 2026-11-01 23:51:51；analysis.cards=48；GEX status=available、日期 2026-10-30、levels=139。
+  - 10/30 資料內容核對：加權收盤 45,211.83、跌幅 -2.49%；期貨日盤收 45,301、夜盤收 44,433；期貨外資日盤淨交易 -1,780 口、夜盤 +1,365 口；選擇權 PCR 0.61、Put Wall 45,000。
+  - 五張法人三市場分析卡均有輸出，且數值依 10/30 報告變動，不是沿用 11/02 數字。
+
+### 驗收狀態
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| 11/02 HTML 主程式語法根因 | PASS（已定位） | 舊版與新版 artifact 對照；缺少區塊 A 外層容器閉合 |
+| Template 修正 | PASS | Commit 11f8feeb |
+| HTML inline JavaScript 語法回歸檢查 | PASS | Run 41459471455；兩份輸出均 4 scripts PASS |
+| 10/30 全日 Golden Fixture 建置 | PASS | Run 41459471455；T0、JSON、HTML 已核對 |
+| 10/30 五張法人三市場卡片輸出 | PASS（資料輸出層） | Golden Fixture JSON 48 cards，五張卡片均有獨立內容 |
+| Chromium／實際瀏覽器畫面與手機開啟 | NOT TESTED | 本輪完成語法與資料驗證，尚未取得瀏覽器畫面驗收 |
+| Merge／Deploy | NOT DONE | Deploy SKIPPED；未 merge、未部署 |
+
+- 本輪修正與驗證僅在 fix/three-market-correlation-history；Master、V8 未修改。
+- 下一步只需對 Artifact 的 10/30 全日 HTML 做使用者端開啟確認；若能正常開啟，再繼續視覺驗收五張法人三市場卡片。不得把 Node syntax PASS 說成已完成手機實際開啟驗收。
