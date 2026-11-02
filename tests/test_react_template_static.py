@@ -71,6 +71,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('gexReady=l.gexStatus==="available"&&Number.isFinite(gexValue)', self.html)
         self.assertIn('gexLabel=gexReady?', self.html)
         self.assertIn('toFixed(2)', self.html)
+        self.assertIn("gexValue/1e8", self.html)
+        self.assertIn("億 NT$", self.html)
         self.assertIn('{label:gexLabel,color:gexColor', self.html)
         self.assertIn('gexLabel," · MaxPain "', self.html)
         self.assertNotIn('label:"GEX unavailable"', self.html)
