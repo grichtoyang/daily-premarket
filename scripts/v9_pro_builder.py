@@ -738,6 +738,7 @@ def build_option_force_analysis(force_rows, volume_rows=None):
         f"{night_bull[0]}（{fmt(night_bull[1], True)} 億元）提供最大多方抵銷" if night_bull
         else "夜盤沒有法人呈現正淨額抵銷"
     )
+    day_delta = day_total["day_minus_night"]
     look = (
         f"日盤：{day_lead}；{day_offset}；三大法人淨額 {fmt(day_total['day_net'], True)} 億元。"
         f"夜盤：{night_lead}；{night_offset}；三大法人淨額 {fmt(day_total['night_net'], True)} 億元。"
@@ -778,7 +779,6 @@ def build_option_force_analysis(force_rows, volume_rows=None):
     def imbalance_text(value):
         return f"{value:+.1f}%" if value is not None else "unavailable"
 
-    day_delta = day_total["day_minus_night"]
     direction_text = (
         "日、夜盤淨額均偏空" if day_total["day_net"] < 0 and day_total["night_net"] < 0
         else "日、夜盤淨額均偏多" if day_total["day_net"] > 0 and day_total["night_net"] > 0
