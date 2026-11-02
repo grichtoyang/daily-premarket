@@ -1127,6 +1127,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         return '盤整／訊號混合', '未同時符合上述單日漲跌幅、外資現貨與 OI PCR 條件'
 
     regime_label, regime_d = regime_desc()
+    top10=parsed['futures'].get('top10'); foreign_day=parsed['futures'].get('foreign_day')
     opt_inst_rows=parsed.get('options',{}).get('instOpt') or []
     opt_foreign_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='外資'),None)
     def signed_table_value(row,index):
@@ -1154,33 +1155,6 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         spot_inst_text='三法人現貨同向賣超'
     else:
         spot_inst_text='現貨三法人方向分歧／資料不足'
-    opt_inst_rows=parsed.get('options',{}).get('instOpt') or []
-    opt_foreign_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='外資'),None)
-    def signed_table_value(row,index):
-        if not row or len(row)<=index: return None
-        try:
-            value=float(str(row[index]).replace(',','').replace('+','').strip())
-            return value if math.isfinite(value) else None
-        except (TypeError,ValueError): return None
-    option_foreign_day=signed_table_value(opt_foreign_row,3)
-    option_foreign_night=signed_table_value(opt_foreign_row,6)
-    option_day_dir=direction(option_foreign_day); option_night_dir=direction(option_foreign_night)
-    if option_foreign_day is not None and option_foreign_night is not None:
-        option_session_text=("日夜同向" if option_foreign_day*option_foreign_night>0 else "日夜方向分歧" if option_foreign_day*option_foreign_night<0 else "至少一盤中性")
-    else:
-        option_session_text="日夜資料不足"
-    three_market_values=[foreign,foreign_day,option_foreign_day]
-    if all(value is not None for value in three_market_values):
-        three_market_text=("三市場一致偏多" if all(value>0 for value in three_market_values) else "三市場一致偏空" if all(value<0 for value in three_market_values) else "三市場方向分歧／含中性")
-    else:
-        three_market_text="三市場資料不足，不能判定一致性"
-    spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
-    if all(value is not None for value in spot_inst_values) and all(float(value)>0 for value in spot_inst_values):
-        spot_inst_text="三法人現貨同向買超"
-    elif all(value is not None for value in spot_inst_values) and all(float(value)<0 for value in spot_inst_values):
-        spot_inst_text="三法人現貨同向賣超"
-    else:
-        spot_inst_text="現貨三法人方向分歧／資料不足"
     hist_str=build_history_status_text(historical,db_status)
     factor_quality_summary=build_factor_quality_summary(analyzer)
 
@@ -1199,7 +1173,6 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     kpi_compass=f"{bias}分{regime_label}；{factor_quality_summary}；費半有效權重{weights.get('us_sox',0):.2f}%；{hist_str}"
     kpi_target=f"依Bias{bias}分操作，{regime_label}策略，{put_wall}為關鍵，{hist_str}"
 
-    top10=parsed['futures'].get('top10'); foreign_day=parsed['futures'].get('foreign_day')
     top10_look=f"前十大多空淨 OI {display(top10,0)}口；外資日盤淨交易 {display(foreign_day,0)}口；OI 為存量、日盤淨交易為流量，不直接相減"
     top10_compass=f"前十大淨 OI {direction(top10)}；外資日盤淨交易 {direction(foreign_day)}；分開觀察存量與流量"; top10_target="追蹤前十大多空淨 OI 及其變化；淨 OI 不等同價格支撐／壓力"
 
