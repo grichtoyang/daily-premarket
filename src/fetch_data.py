@@ -812,21 +812,23 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 4．Call／Put 比例與變化")
     A("")
     _pch = taifex_official.putcall_history()
-    _pc_rows = [("Call／Put 成交量比例", _f2(_ot['vol_ratio']), SRC_FX),
-                ("Call／Put 未平倉量比例", _f2(_ot['oi_ratio']), SRC_FX),
-                ("Put／Call Ratio", _f2(_ot['pc_ratio']), SRC_FX)]
+    _pc_rows = [
+        ("Call／Put 成交量比例", _f2(_ot['vol_ratio']), "倍", SRC_FX),
+        ("Call／Put 未平倉量比例", _f2(_ot['oi_ratio']), "倍", SRC_FX),
+        ("Put／Call Ratio", _f2(_ot['pc_ratio']), "倍", SRC_FX),
+    ]
     _pch_rows = _pch.get("rows") or []
     _pch_src = "TAIFEX Proxy" if _pch.get("via") == "proxy" else SRC_FX_OFF
     if len(_pch_rows) >= 2:
         _a, _b = _pch_rows[-2], _pch_rows[-1]
-        _pc_rows += [(f"Call／Put 比例變化 (量比 {_a['date']}→{_b['date']})",
-                      _f2(_diff2(_b['vol_ratio'], _a['vol_ratio'])), _pch_src),
-                     (f"與前一交易日比較 (OI 比 {_a['date']}→{_b['date']})",
-                      _f2(_diff2(_b['oi_ratio'], _a['oi_ratio'])), _pch_src)]
+        _pc_rows += [(f"Call／Put 成交量比例變化 ({_a['date']}→{_b['date']})",
+                      _f2(_diff2(_b['vol_ratio'], _a['vol_ratio'])), "百分點（pp）", _pch_src),
+                     (f"Call／Put OI 比例變化 ({_a['date']}→{_b['date']})",
+                      _f2(_diff2(_b['oi_ratio'], _a['oi_ratio'])), "百分點（pp）", _pch_src)]
     else:
-        _pc_rows += [("Call／Put 比例變化", MISSING, "端點未提供"),
-                     ("與前一交易日比較", MISSING, "端點未提供")]
-    A(_tbl(_pc_rows, ("項目", "數值", "資料來源")))
+        _pc_rows += [("Call／Put 成交量比例變化", MISSING, "百分點（pp）", "端點未提供"),
+                     ("Call／Put OI 比例變化", MISSING, "百分點（pp）", "端點未提供")]
+    A(_tbl(_pc_rows, ("項目", "數值", "單位", "資料來源")))
     A(f"**資料來源：** 比例 `TAIFEX Proxy chain`；變化 `{_pch_src} PutCallRatio`")
     A("")
     A("### 5．外資 Call／Put 部位")
