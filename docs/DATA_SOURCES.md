@@ -10,8 +10,8 @@
 | 2.1 上市漲跌 | `twse-proxy` advance_decline (股票欄) | `TWSE OpenAPI twtazu_od?date=` | ✅ (注意：twtazu_od 會忽略 date，回最新) |
 | 2.2 上櫃漲跌 | `TPEX OpenAPI tpex_mainborad_highlight` (注意拼字) | 無 (缺值 unavailable) | ✅ (忽略 date，須驗 Date==T0) |
 | 3. 三大法人 | `TWSE RWD BFI82U?date=` (金額→億元；外資兩列加總；注意會忽略 date，回最新→註記) | 無 | ✅ |
-| 4. 融資融券 | `HiStock` 上市 `three.aspx?m=mg` + 上櫃 `&no=TWOI` (融資餘額/增減億元、融券張)；上市櫃合計維持率以 `iStock`「上市櫃整體維持率」為主，必須驗證資料日期精確等於 T0；`WantGoo API / StockIntelli SSR` 的計算範圍尚未證實為上市櫃合計，只作交叉參考，不得替代上市櫃合計；iStock 無精確 T0 時才以前份 DATA_REPORT 明確標示遞補 (民間估算，官方無每日序列) | 官方逐股加總 (僅張數) | ⚠️ 需 Actions 實測驗證 |
-| 5. 借券 | 上市 `TWT96U` (可借餘額) + 上櫃 `tpex_margin_sbl` (賣出餘額/前日→增減)；原值股數→張 (÷1000)；上市賣出無機器接口 (TWT93U 僅 HTML) | 上櫃值+註記 | ✅ (上市賣出缺) |
+| 4. 融資融券 | `HiStock` 上市 `three.aspx?m=mg` + 上櫃 `&no=TWOI` (融資餘額/增減億元、融券張)；大盤維持率採 `TWSE` 上市逐檔自建估算，必須標示上市範圍、T0、價格日期覆蓋數及最近有效價檔數；`Blave` 僅同 T0 交叉驗證，不作主要來源；此值不得標成上市櫃合計。官方無每日整體維持率序列。 | 官方逐股加總 (僅張數) | ⚠️ 估算口徑需揭露 |
+| 5. 借券 | 必須拆開三種欄位：①上市借券餘額（尚未返還的借入證券存量）與借券賣出餘額（已賣出尚未回補存量）不可混稱；②上市 `TWT93U` 官方表同時含融券欄與借券賣出欄，借券賣出欄位為前日餘額／當日賣出／當日還券／當日調整／當日餘額，原值股數→張 (÷1000)；③上櫃 `tpex_margin_sbl` 為上櫃借券賣出餘額及前日變化。每個輸出欄位須分別標示上市／上櫃是否取得；若上市 TWT93U 未取得，借券賣出增減只能標「上櫃」不可將來源欄泛寫成上市+上櫃。`TWT96U` 不得在未確認 endpoint 欄位定義前當成 TWT93U 替代來源。 | 上櫃值+註記 | ⚠️ 需分市場標示來源範圍 |
 | 6. 成交結構 | 上市 proxy market_statistics 總計 (元) / 備援 `FMTQIK` (依 Date 取列)；上櫃 highlight DailyTradingValue (百萬元→億元) | FinMind Trading_money 交叉 | ✅ |
 
 ## 二、重要市場 (Yahoo Finance Chart API，API 優先、爬蟲備援 Phase 2)
