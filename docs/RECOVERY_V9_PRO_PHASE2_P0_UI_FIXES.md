@@ -3,7 +3,7 @@
 更新日期：2026-11-02（Asia/Taipei）
 Repository：`grichtoyang/daily-premarket`
 工作分支：`phase2-p0-ui-fixes`
-更新基準 HEAD：`bcc07f7b3403d4adb0b11904c7d06a76ebe98ca2`（更新 Recovery 時以 branch HEAD 再確認）
+更新基準 HEAD：`9b6bbeae8b34c58aff60444d2219dd389a07c176`（2026-11-02 最新分支 HEAD）
 
 > 本文件是本階段的續作錨點。新對話先讀本文件，再從「下一步」接續。
 > 本文件只記錄可確認的狀態；未執行的測試不得標為 PASS。
@@ -57,16 +57,16 @@ Repository：`grichtoyang/daily-premarket`
 
 ## 4. 目前已知的主要風險／待查項目
 
-1. **42 區塊逐欄位覆蓋尚未完成**：需逐頁逐區塊核對資料來源欄位、Builder 解析單位、Dashboard 顯示單位與缺值呈現。
-2. **Builder Regex 尚待完整複核**：確認期貨／選擇權所有數值欄位確實驗證單位後綴，沒有漏欄、重複後綴或錯誤擷取。
-3. **圖表單位註記渲染尚待確認**：需檢查通用卡片元件是否實際顯示 chartNote，並確認註記位置緊鄰圖表。
-4. **現貨成交額圖表 F 區塊的 `yf` 呼叫與函式簽名需重新核對**：先前曾懷疑參數不匹配，但尚不能定論。
-5. **選擇權法人圖表單位需確認資料語義**：確認 `n.instOpt` 的欄位究竟是交易口數（口）或力道金額（億元），再決定圖表標示；不得只憑區塊名稱推斷。
-6. **GEX 單位已由 Worker 生產公式推導**：`gamma × OI × 50 元／點 × underlyingPrice² × 1%`，顯示為 NT$／標的價格變動 1%；這是模型估值、不是 TAIFEX 官方 GEX。Dashboard、registry、unit map、standard、Skill 已同步。
-7. **Desktop／Mobile 實際渲染部分完成**：已產生並查看 Desktop Overview 預覽截圖，該頁未見明顯文字／圖示重疊；但其餘 5 頁 Desktop 與 Mobile 全頁仍 NOT TESTED。
-8. **GitHub Actions 測試已取得 PASS**：Unit Contract Audit run `41380785016` 成功（5 項單位契約測試＋13 項 React 靜態回歸測試）；UI Fixes Regression run `41380714631` 成功（Builder self-tests、React regression、DATA_REPORT parser regression、Dashboard JSON build、非部署 HTML preview 與 fixture artifact 均成功）。
-9. **測試命令已修正**：workflow 使用 `python -m unittest discover`，並已由成功的 Actions run 證實。
-10. **Builder 區塊數文件已對齊 42**：先前 41 的描述已修正；42 區塊表格編號完整性測試通過。
+1. **42 區塊資料路徑對照已補齊**：Unit Map 新增每區塊 Dashboard JSON path、DATA_REPORT 章節與單位／缺值備註；尚有少數分析衍生卡片需以使用者最終視覺驗收為準。
+2. **來源單位契約邊界已釐清**：現貨欄位 regex 明確驗證單位後綴；期貨／選擇權 DATA_REPORT 表格部分採章節／表頭 schema 定義單位，原始列未逐列提供單位欄，因此不能宣稱每列 regex 驗證單位後綴。
+3. **圖表單位註記渲染已驗證**：React 卡片元件在圖表正下方顯示 chartNote；Desktop／Mobile 六頁預覽均已產生並檢查。
+4. **現貨成交額圖表 F 區塊已確認**：使用 `Ol` 金額比較圖，單位億元；`yf` 僅用於 Call／Put 成交量結構，靜態測試覆蓋。
+5. **選擇權法人混合單位已確認**：`options.instOpt` 為日／夜盤交易淨口數（口）；`options.instOptForce` 為法人多空力道金額（億元），Unit Map 分開標示。
+6. **GEX 單位已核實並同步**：`gamma × OI × 50 元／點 × underlyingPrice² × 1%`，單位 NT$／標的價格變動 1%；DATA_REPORT 14A 明列，屬 Black-Scholes 模型估值、不是 TAIFEX 官方 GEX。Dashboard、registry、unit map、standard、Skill 已同步。
+7. **Desktop／Mobile 實際渲染已完成技術檢查**：最新非部署 HTML Preview 在 Chromium headless 以 1440px Desktop、390px Mobile 檢查六個分頁；12 次切頁均無 JavaScript page error，document/body 寬度均等於 viewport，無水平溢位。已查看六頁縮圖總覽，未見明顯文字／圖示重疊或單位註記擠壓；仍須使用者最終視覺驗收。
+8. **GitHub Actions 最新測試已取得 PASS**：Unit Contract Audit run `41382694778` 成功（6 項單位契約測試＋13 項 React 靜態回歸測試）；UI Fixes Regression run `41382694851` 成功（Builder self-tests、React regression、DATA_REPORT parser regression、Dashboard JSON build、借券欄位驗證、非部署 HTML preview 與 fixture artifact 均成功）。
+9. **缺值顯示邏輯已修正**：市場廣度缺值不再預設為 0；融資／融券／借券缺值保留 null；圖表及文字顯示 unavailable，維持率缺值不再呈現空量條或假方向箭頭。
+10. **借券賣出資料鏈已驗證**：最新 Builder 預覽 JSON 含 borrowedSell=36,178 張、borrowedSellDiff=-1,273 張及範圍註記「上櫃（上市 TWT93U 未取得）」；較舊的已提交 JSON 快照缺少這些欄位，最新產出已補正。\n11. **Builder 區塊數文件已對齊 42**：先前 41 的描述已修正；42 區塊表格編號完整性測試通過。
 
 ## 5. 重要欄位語義提醒
 
@@ -83,12 +83,12 @@ Repository：`grichtoyang/daily-premarket`
 | 項目 | 狀態 | 說明 |
 |---|---|---|
 | 單位標準與文件初版 | 已修改 | 文件已新增／更新，完整性仍待逐項複核 |
-| Builder 單位／解析鏈 | PASS | UI Regression 的 Builder self-tests、DATA_REPORT parser regression 與 JSON build 均成功；來源報告本身並非每一列都含明確單位欄，須依資料模板契約解讀 |
-| 42 區塊對照表 | PASS（結構）／NOT TESTED（完整欄位） | 1–42 編號測試通過；實際 JSON path／來源欄位／缺值策略仍未完成全欄位矩陣 |
-| 圖表單位註記程式碼 | PASS（靜態） | 所有實際 chart 元件的相鄰 chartNote 靜態檢查通過；通用新聞列表不視為圖表；`V` 元件會在圖表下方顯示註記 |
-| GEX 數值單位 | PASS（量綱推導） | 依 Worker 公式推導為 NT$／標的價格變動 1%；非 TAIFEX 官方欄位 |
+| Builder 單位／解析鏈 | PASS（主要欄位）／限制已註明 | UI Regression 的 Builder self-tests、DATA_REPORT parser regression、JSON build 與借券欄位驗證成功；期貨／選擇權部分單位依章節 schema，不是每列後綴 regex |
+| 42 區塊對照表 | PASS（結構與主要 JSON path） | 1–42 區塊已補 JSON path、DATA_REPORT 來源章節、單位與缺值說明；少數分析衍生卡片依分析層欄位集合對應 |
+| 圖表單位註記程式碼 | PASS（靜態＋實際渲染） | 所有實際 chart 元件相鄰 chartNote 靜態檢查通過；`V` 元件在圖表下方顯示註記，六頁桌面／手機預覽已實際檢查 |
+| GEX 數值單位 | PASS（公式＋DATA_REPORT 14A） | Worker 公式量綱與 DATA_REPORT 單位欄一致：NT$／標的價格變動 1%；非 TAIFEX 官方欄位 |
 | GitHub Actions 測試 | PASS | Unit Contract 5+13 項通過；UI Regression 全部步驟通過 |
-| Desktop／Mobile 視覺驗收 | PARTIAL | Desktop Overview 截圖已查看；其他分頁與 Mobile 未完成 |
+| Desktop／Mobile 技術渲染 | PASS（12 個頁面狀態） | 六分頁 × Desktop 1440px／Mobile 390px；無 JS page error、無水平溢位；未見明顯標籤重疊 |
 | 使用者最終視覺驗收 | NOT DONE | 必須由使用者確認 |
 
 ## 7. 下一步（按順序執行，不需逐項詢問）
