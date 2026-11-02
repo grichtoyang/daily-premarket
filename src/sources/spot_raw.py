@@ -123,16 +123,24 @@ def twse_twt93u_sbl(roc: str) -> dict:
     url = f"https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date={roc}"
     j = _get_json(url)
     out = {"sale_bal": None, "sale_chg": None, "prev_bal": None, "date_ok": False}
-    if not isinstance(j, dict) or j.get("stat") != "OK":
+    if not isinstance(j, dict):
+        print(f"[WARN] TWT93U invalid response type: {type(j).__name__}")
+        return out
+    if j.get("stat") != "OK":
+        print(f"[WARN] TWT93U stat not OK: {j.get('stat')!r}; fields={list(j)[:12]}")
         return out
     data = j.get("data") or []
     if not data:
+        print(f"[WARN] TWT93U has no data rows for {roc}")
         return out
     total_prev = 0.0
     total_bal = 0.0
     n = 0
+    short_rows = 0
+    invalid_rows = 0
     for row in data:
-        if len(row) < 12:
+        if not isinstance(row, (list, tuple)) or len(row) < 12:
+            short_rows += 1
             continue
         prev = _num(row[7])   # 前日餘額 (借券)
         bal = _num(row[11])   # 當日餘額 (借券)
@@ -140,13 +148,18 @@ def twse_twt93u_sbl(roc: str) -> dict:
             total_prev += prev
             total_bal += bal
             n += 1
+        else:
+            invalid_rows += 1
     if n:
+        print(f"[INFO] TWT93U parsed rows={n}/{len(data)} short_rows={short_rows} invalid_rows={invalid_rows} date={roc}")
         out = {
             "sale_bal": total_bal,
             "sale_chg": total_bal - total_prev,
             "prev_bal": total_prev,
             "date_ok": True,
         }
+    else:
+        print(f"[WARN] TWT93U no parseable balance rows: total={len(data)} short_rows={short_rows} invalid_rows={invalid_rows}")
     return out
 
 # ---------- 上市成交 ----------
@@ -198,12 +211,17 @@ def tpex_sbl(roc: str) -> dict:
     out = {"bal": None, "sale_bal": None, "sale_chg": None, "date_ok": False}
     j = _get_json(f"{TPEX_API}/tpex_margin_sbl")
     if not isinstance(j, list):
+        print(f"[WARN] TPEX margin_sbl invalid response type: {type(j).__name__}")
         return out
-    bal = sale = sale_prev = 0.0
+    matched = 0
     n = 0
+    bal = sale = sale_prev = 0.0
     for row in j:
-        if str(row.get("Date", "")) != roc:
+        if not isinstance(row, dict):
             continue
+        if str(row.get("Date", "")).strip() != roc:
+            continue
+        matched += 1
         b = _num(row.get("SecuritiesBorrowingBalanceOfTheMarketDay"))
         if b is None:
             continue
@@ -212,5 +230,8 @@ def tpex_sbl(roc: str) -> dict:
         sale += _num(row.get("SaleBalanceOfTheMarketDay")) or 0.0
         sale_prev += _num(row.get("SaleBalancePreviousDay")) or 0.0
     if n:
+        print(f"[INFO] TPEX margin_sbl parsed rows={n}/{matched} matched_date_rows={matched} total_rows={len(j)} date={roc}")
         out = {"bal": bal, "sale_bal": sale, "sale_chg": sale - sale_prev, "date_ok": True}
+    else:
+        print(f"[WARN] TPEX margin_sbl no usable rows: date={roc} total_rows={len(j)} matched_date_rows={matched}")
     return out
