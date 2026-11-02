@@ -1196,12 +1196,15 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         "若外資現貨賣超收斂、期貨日盤流量轉弱或翻空、選擇權日盤淨流量仍偏空，才視為賣壓延續；"
         "若期貨與選擇權流量轉同向且現貨賣超收斂，再確認分歧是否收斂。未收斂前不追單。"
     )
-    if all(value is not None for value in spot_inst_values) and all(float(value)>0 for value in spot_inst_values):
-        spot_inst_text='三法人現貨同向買超'
-    elif all(value is not None for value in spot_inst_values) and all(float(value)<0 for value in spot_inst_values):
-        spot_inst_text='三法人現貨同向賣超'
+    if all(value is not None for value in spot_inst_values):
+        if all(float(value)>0 for value in spot_inst_values):
+            spot_inst_text='三法人現貨同向買超'
+        elif all(float(value)<0 for value in spot_inst_values):
+            spot_inst_text='三法人現貨同向賣超'
+        else:
+            spot_inst_text='現貨三法人方向分歧'
     else:
-        spot_inst_text='現貨三法人方向分歧／資料不足'
+        spot_inst_text='現貨三法人資料不足，不能完整判定方向'
     hist_str=build_history_status_text(historical,db_status)
     factor_quality_summary=build_factor_quality_summary(analyzer)
 
@@ -1268,7 +1271,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
             "target": "觀察投信現貨買超能否延續，以及外資現貨賣壓是否收斂；選擇權法人日盤流量若持續與現貨方向相反，視為籌碼分歧而非直接抵銷。"
         },
         '主力意圖解碼': {
-            "look": f"現貨外資 {signed_text(foreign,'億元',1)}；期貨外資淨 OI {display(foreign_fut,0)}口；期貨日盤淨交易 {signed_text(foreign_day,'口')}；選擇權外資日盤 {signed_text(option_foreign_day,'口')}。",
+            "look": f"現貨外資 {signed_text(foreign,'億元',1)}；期貨外資淨 OI {display(foreign_fut,0)}口（{ '可疑快照，不採用' if futures_oi_all_zero else '需與交易流量分開解讀' }）；期貨日盤淨交易 {signed_text(foreign_day,'口')}；選擇權外資日盤 {signed_text(option_foreign_day,'口')}。",
             "compass": f"目前可確認的是跨市場部位／流量分歧，不足以證明主力控盤意圖。{futures_oi_status}；不得以 OI 全零推定外資沒有部位。",
             "target": "後續需同時追蹤外資期貨淨 OI 的有效變化、期貨日盤淨交易，以及選擇權日盤流量；三者連續同向才提高意圖判讀可信度。"
         },
