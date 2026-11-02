@@ -675,3 +675,14 @@ tests/test_dashboard_unit_contract.py 新增：
   - `7aa13aacb082abfed7c33659a721228d21ec8891`（regression assertions）
 - Unit Contract Audit Run **#96**（commit 209efae）已 **SUCCESS**；V9 UI Fixes Regression Run **#128** 與 Daily Premarket V9 Pro Run **#162** 當時仍在執行／排隊，尚未驗證最終 builder 結果。
 - 本次僅修正解析器對合法 unavailable 的容忍，不修改 DATA_REPORT 數值、不以其他數據補值、不部署。
+
+
+## 9.20 缺值容忍的第二層：不產生不存在的現貨樞紐價（2026-11-02）
+
+- Run #162（commit `209efae`）已能通過 DATA_REPORT parser，並完成 17F 分析；接著在 `build_final_json()` 產生支撐壓力位時，因 `spot.high/low` 為 None 而發生 `TypeError`。
+- 已修正 `scripts/v9_pro_builder.py`：僅在 high、low、close 三值齊全時才產生當日高點／P 樞紐／當日低點；缺值時省略這三個衍生價位。Put Wall／Gamma Flip 仍各自依實際數值獨立顯示。
+- 新增回歸斷言，確保 OHLC 缺值時不計算樞紐位。
+- Commits：
+  - `0af34d23991ccf3ed6bd39b28ca7e5797d27ea0d`（safe key-level generation）
+  - `46f26b020f9e7d62defab6728323d68459d54fec`（regression assertion）
+- Run #162 實際驗證：DATA_REPORT parse PASS、17F self-tests PASS、技術指標及歷史分析執行完成；最終 JSON 仍因 OHLC 衍生價位 None 而 FAIL。修正後的新 builder run 尚未完成，NOT TESTED。
