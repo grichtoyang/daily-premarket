@@ -50,7 +50,9 @@ class DashboardUnitContractTests(unittest.TestCase):
     def test_chart_notes_and_unit_contracts(self):
         html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
         self.assertIn("chartNote:chartNote", html)
-        self.assertIn('volUnit:a="口"', html)
+        self.assertIn('volUnit:unitLabel="口"', html)
+        self.assertIn('s.fillText(`VOL ${g(o)}${unitLabel}`,S+Ee+10,A+11)', html)
+        self.assertNotIn('s.fillText(`VOL ${g(o)}${a}`,S+Ee+10,A+11)', html)
         self.assertIn('volUnit:"億元"', html)
         self.assertIn('changeUnit:o.key==="yields"?"pp":"%"', html)
         self.assertIn('殖利率水準：%；日變化：百分點（pp）。', html)
