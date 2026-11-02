@@ -61,6 +61,11 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('chartNote:"單位：億元；法人買賣超，正值買超、負值賣超。"', html)
         self.assertIn('chartNote:"現價與 Call／Put Wall、Gamma Wall、Flip、Max Pain：點；Net GEX：NT$／標的變動 1%。"', html)
         self.assertIn('chartNote:"漲跌幅：%；收盤價：各指數點。"', html)
+        self.assertIn("USD/TWD、USD/JPY、USD/KRW 報價為每美元兌本幣；DXY 為指數點。", html)
+        self.assertIn("WTI：USD／桶；黃金：USD／金衡盎司；Bitcoin：USD／BTC。", html)
+        self.assertIn("TWD／每 USD", html)
+        self.assertIn("JPY／每 USD", html)
+        self.assertIn("KRW／每 USD", html)
 
     def test_42_block_registry_and_chart_notes_are_complete(self):
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
