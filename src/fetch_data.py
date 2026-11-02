@@ -562,6 +562,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A(_tbl([("美國 2 年期殖利率", "2 Yr", _f2(y["2Y"]["yield"]), _f2(y["2Y"]["chg"]), y["2Y"]["source"]),
             ("美國 10 年期殖利率", "10 Yr", _f2(y["10Y"]["yield"]), _f2(y["10Y"]["chg"]), y["10Y"]["source"]),
+            ("美國 20 年期殖利率", "20 Yr", _f2(y["20Y"]["yield"]), _f2(y["20Y"]["chg"]), y["20Y"]["source"]),
             ("美國 30 年期殖利率", "30 Yr", _f2(y["30Y"]["yield"]), _f2(y["30Y"]["chg"]), y["30Y"]["source"])],
            ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料來源")))
     A("")
