@@ -12,6 +12,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('sources["sbl_sale_bal"]', source)
         self.assertIn('sources["sbl_sale_chg"]', source)
         self.assertNotIn('sources["sbl"] =', source)
+        self.assertIn('("TWT96U GRETAI（上櫃）", stw.get("otc"))', source)
 
     def test_report_uses_field_specific_source_labels(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
