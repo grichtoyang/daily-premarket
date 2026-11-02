@@ -79,7 +79,13 @@ def fetch_yahoo_twii_30d(t0_date=None):
         valid = []
         for i in range(len(closes)):
             if closes[i] is not None:
-                valid.append({'close': float(closes[i]), 'high': float(highs[i]) if highs[i] is not None else None, 'low': float(lows[i]) if lows[i] is not None else None, 'ts': timestamps[i] if i < len(timestamps) else None})
+                ts=timestamps[i] if i < len(timestamps) else None
+                record={'close': float(closes[i]), 'high': float(highs[i]) if highs[i] is not None else None, 'low': float(lows[i]) if lows[i] is not None else None, 'ts': ts}
+                trade_date=_history_record_date(record)
+                if trade_date:
+                    record['date']=trade_date
+                valid.append(record)
+        valid=_filter_history_to_t0(valid,t0_date)
         if len(valid) < 14:
             print(f"[V9-17F] Yahoo insufficient {len(valid)}/14")
             return None
@@ -89,11 +95,12 @@ def fetch_yahoo_twii_30d(t0_date=None):
         print(f"[V9-17F] Yahoo exception: {e}")
         return None
 
-def fetch_finmind_twii_14d():
+def fetch_finmind_twii_14d(t0_date=None):
     try:
         import requests
-        end = datetime.now().strftime('%Y-%m-%d')
-        start = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+        end = _t0_iso_date(t0_date) or datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d')
+        end_dt=datetime.strptime(end,'%Y-%m-%d')
+        start = (end_dt - timedelta(days=30)).strftime('%Y-%m-%d')
         url = f"https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TAIEX&start_date={start}&end_date={end}"
         resp = requests.get(url, timeout=10)
         if resp.status_code != 200:
@@ -104,26 +111,31 @@ def fetch_finmind_twii_14d():
             print(f"[V9-17F] FinMind insufficient {len(data)}/14")
             return None
         valid = []
-        for d in data[-30:]:
+        for d in data:
             try:
-                valid.append({'close': float(d['close']), 'high': float(d['max']) if d.get('max') not in (None,'') else None, 'low': float(d['min']) if d.get('min') not in (None,'') else None, 'ts': None})
-            except:
+                valid.append({'date': str(d.get('date',''))[:10], 'close': float(d['close']), 'high': float(d['max']) if d.get('max') not in (None,'') else None, 'low': float(d['min']) if d.get('min') not in (None,'') else None, 'ts': None})
+            except (TypeError, ValueError, KeyError):
                 continue
-        print(f"[V9-17F] FinMind fetched {len(valid)} days")
+        valid=_filter_history_to_t0(valid,t0_date)[-30:]
+        print(f"[V9-17F] FinMind fetched {len(valid)} days through T0={_t0_iso_date(t0_date) or 'latest'}")
         return valid if len(valid)>=14 else None
     except Exception as e:
         print(f"[V9-17F] FinMind exception: {e}")
         return None
 
-def fetch_db_history_14d():
+def fetch_db_history_14d(t0_date=None):
     try:
         for p in [pathlib.Path("dashboards/v9_pro_history.db"), pathlib.Path("/tmp/dashboards/v9_pro_history.db")]:
             if p.exists():
                 conn = sqlite3.connect(str(p))
-                rows = conn.execute("SELECT spot_close FROM v9_pro_history ORDER BY date DESC LIMIT 30").fetchall()
+                t0_iso=_t0_iso_date(t0_date)
+                if t0_iso:
+                    rows = conn.execute("SELECT date,spot_close FROM v9_pro_history WHERE date<=? ORDER BY date DESC LIMIT 30",(t0_iso,)).fetchall()
+                else:
+                    rows = conn.execute("SELECT date,spot_close FROM v9_pro_history ORDER BY date DESC LIMIT 30").fetchall()
                 conn.close()
                 if len(rows) >=14:
-                    valid = [{'close': float(r[0]), 'high': None, 'low': None, 'ts': None} for r in reversed(rows)]
+                    valid = [{'date': r[0], 'close': float(r[1]), 'high': None, 'low': None, 'ts': None} for r in reversed(rows)]
                     print(f"[V9-17F] DB fallback {len(valid)} days from {p}")
                     return valid
         print("[V9-17F] V9 DB not found for fallback")
@@ -179,16 +191,16 @@ def calc_kd(highs,lows,closes,period=9):
         return round(k,2), round(d,2)
     except: return None,None
 
-def fetch_technical_indicators_with_fallback():
+def fetch_technical_indicators_with_fallback(t0_date=None):
     print("[V9-17F] Fetching technical indicators 3-layer fallback...")
     data=None; source="none"
-    data=fetch_yahoo_twii_30d()
+    data=fetch_yahoo_twii_30d(t0_date)
     if data: source="yahoo"
     else:
-        data=fetch_finmind_twii_14d()
+        data=fetch_finmind_twii_14d(t0_date)
         if data: source="finmind"
         else:
-            data=fetch_db_history_14d()
+            data=fetch_db_history_14d(t0_date)
             if data: source="db"
     if not data:
         print("[V9-17F] All 3 layers failed, RSI/MACD weight 0% -> 15 factors")
@@ -1484,7 +1496,7 @@ def main():
     for warning in data_warnings:
         print(f"[V9-17F] DATA_REPORT WARNING: {warning}")
 
-    tech=fetch_technical_indicators_with_fallback()
+    tech=fetch_technical_indicators_with_fallback(parsed['meta']['t0_date'])
 
     # SQLite flow: all history attribution follows the requested T0 report date.
     try: update_next_day_pct(date_str, parsed['spot']['close'])
