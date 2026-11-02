@@ -938,6 +938,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     _gex_levels = _gm.get("levels") or []
     _gex_valid = (_gm.get("gex_status") == "available" and bool(_gex_levels))
+    # Worker dimensional contract: gamma × OI × 50 NT$/point × underlying² × 1% = NT$ exposure per 1% move.
     _gex_pos = sorted((r for r in _gex_levels if r.get("net_gex_1pct") is not None),
                       key=lambda r: r["net_gex_1pct"], reverse=True)[:5]
     _gex_neg = sorted((r for r in _gex_levels if r.get("net_gex_1pct") is not None),
