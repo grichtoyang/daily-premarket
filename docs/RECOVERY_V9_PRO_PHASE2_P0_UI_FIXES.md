@@ -686,3 +686,19 @@ tests/test_dashboard_unit_contract.py 新增：
   - `0af34d23991ccf3ed6bd39b28ca7e5797d27ea0d`（safe key-level generation）
   - `46f26b020f9e7d62defab6728323d68459d54fec`（regression assertion）
 - Run #162 實際驗證：DATA_REPORT parse PASS、17F self-tests PASS、技術指標及歷史分析執行完成；最終 JSON 仍因 OHLC 衍生價位 None 而 FAIL。修正後的新 builder run 尚未完成，NOT TESTED。
+
+
+## 9.21 最新 CI 驗收結果（2026-11-02）
+
+- Daily Premarket V9 Pro Run **#165**（commit `46f26b0`）：**SUCCESS**。借券來源合約測試、17F offline self-tests、Gamma fallback regression、Dashboard JSON build、React Golden Master data injection、Pages entrypoint、dashboard history commit、Pages artifact upload 全部成功；deploy job 按 workflow 設定為 skipped，未部署。
+- V9 UI Fixes Regression Run **#129**（commit `0af34d2`）：**SUCCESS**。包含 builder offline self-tests、React template regression、DATA_REPORT parser regression、Dashboard JSON、non-deploy HTML preview 與 correlation fixture。
+- V9 Pro Unit Contract Audit Run **#97**（commit `0af34d2`）：**SUCCESS**。
+- 因此，OHLC 合法缺值、Gamma Wall／Flip 合法缺值及缺 OHLC 時省略樞紐價的修正已通過 CI build／regression。Dashboard 產物成功建置，但 deploy skipped，沒有推送正式部署。
+
+## 9.22 釐清 10/30 借券來源標籤錯誤的實際根因（更正 9.17）
+
+- 更正 9.17：10/30 報告本身標記「同 T0 覆蓋」且註明當時無既有報告，故不能將 10/30 表格來源錯誤歸因於同 T0 merge 沿用舊來源格。
+- 10/30 報告的全域來源摘要仍使用舊的單一 `sbl` 來源鍵（`TWSE TWT93U + TPEX margin_sbl`），同一來源被套用到借券餘額、借券賣出餘額及增減三列；這與當時實際欄位來源分流不一致。報告本身又註記 TWT93U 未取得，足以證明至少「借券賣出增減」的上市來源標籤錯誤。
+- 正確根因是舊版「三個借券欄位共用一個來源標籤」，不是 10/30 報告的 merge carry-forward。該問題已由 9.12／9.12.1 的欄位來源分流修正；新報告會分別使用 `sbl_bal`、`sbl_sale_bal`、`sbl_sale_chg`。
+- 9.17 修正的 merge source attribution 是另一個獨立防護：當未來同 T0 重跑時，若新值 unavailable 而沿用舊值，來源標籤需明示「沿用前版」，避免被誤認為本次新取得。該修正仍保留，不應視為 10/30 問題的原始根因。
+- 10/30 原始 API 逐筆資料尚未取得，不能對 4,651,514 張、36,178 張、-1,273 張做逐筆重算；該三筆數值仍 NOT TESTED。
