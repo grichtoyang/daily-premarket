@@ -1732,6 +1732,8 @@ def main():
         historical=None
 
     final=build_final_json(parsed, tech, analyzer, historical, db_status, date_str)
+    corr_check=final.get('analysis',{}).get('correlation',{})
+    print(f"[CORRELATION DASHBOARD OUTPUT] {corr_check.get('desc')} labels={len(corr_check.get('labels',[]))} matrix_rows={len(corr_check.get('matrix',[]))}")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(final, ensure_ascii=False, indent=2), encoding='utf-8')
