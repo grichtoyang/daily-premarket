@@ -551,3 +551,18 @@ P1 尚未開始。啟動前必須：
 - Gamma Wall：逐履約價絕對 Net GEX 最大者；Gamma Flip：標的價 ±10% 區間掃描總 GEX，取第一個正負跨越並線性插值。
 - 生產品質門檻：模型成功計算筆數／正 OI、正結算價且 Chain/Delta key 匹配筆數至少 50%。
 - 因此原始重建必須保留 Chain 與 Delta 的原始完整列、日期、下載 URL／POST body、標的收盤價；只保留 GEX_LEVELS_JSON 不足以獨立重建。
+
+
+## 26. 2026-11-02 最終收尾決策
+
+本節優先於第23～25節的舊待辦；舊紀錄保留作歷史，不再照舊執行。
+
+- 使用者確認：10/30 TAIFEX／TWSE／TPEX 逐筆比對已多次驗收，沿用既有結果，不重跑、不再總驗收。
+- 不新增 Raw API Audit Runner、Fetch Data 機制或 Worker；直接使用現有 DATA_REPORT 與既有驗收紀錄。
+- P0 維持 PASS／CLOSED；不修改 P0 baseline、Master、V8、正式 Dashboard 或資料鏈；不 Merge／Rebase／Force Push／部署。
+- 10/30 DATA_REPORT（SHA 665ae0ce957cbda372a1d70e1f06f0eea124ba11）含 139 筆衍生 GEX_LEVELS_JSON；underlying=45,211.83；Net GEX=1,294,327,419.01；Gross GEX=6,320,130,202.13；quality=usable。
+- 沿用既有 139 筆內部一致性驗收：Net=Call+Put、Gross=abs(Call)+abs(Put)，差異為 0；不重算。
+- GEX_LEVELS_JSON 不含原始 Chain、完整 Delta payload 與原始報價，故不能獨立重建原始 IV／Gamma。狀態 BLOCKED，原因為 DATA_REPORT 不含原始輸入；本階段不建抓取工具，將限制記錄後收尾。
+- 因子預測力／walk-forward 不屬本次 P0 收尾範圍，不列入待辦。新增 Fetch Data／Runner／Worker 均 NOT IN SCOPE。
+
+結案定義：P0 結案後稽核收尾完成；GEX 原始輸入重建保留 BLOCKED 限制。Auditor 為單模型自我審查，非獨立多模型審核。
