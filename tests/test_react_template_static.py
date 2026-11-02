@@ -37,7 +37,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         # The chart must render both session fields, not just the daytime field.
         self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"日"}', self.html)
         self.assertIn('{l:String(x[0])+"夜",v:v9ProOptionNetNumber(x[6]),extra:"夜"}', self.html)
-        self.assertIn('height:390}),table:p("div",{className:"text-[10px] mono space-y-1"', self.html)
+        self.assertIn('height:390}),chartNote:"法人日盤／夜盤淨交易：口；依來源表格定義。"', self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
         match = re.search(r"function v9ProOptionNetNumber\(e\)\{[^}]+\}", self.html)
         self.assertIsNotNone(match, "Chart number normalizer v9ProOptionNetNumber must exist")
@@ -62,7 +62,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('Call OI', self.html)
         self.assertIn('Put OI', self.html)
         self.assertIn('PCR 是 Put／Call 比值；成交量反映當日交易活躍度，OI 反映未平倉部位', self.html)
-        self.assertIn('PCR ${B(n.pcr,2)}；成交量與 OI 分開觀察', self.html)
+        self.assertIn('OI PCR ${B(n.pcr,2)}倍；成交量與 OI 分開觀察', self.html)
         self.assertNotIn('title:"Call/Put Vol OI PCR"', self.html)
         self.assertNotIn('label:`上市 ${g(e)}億', self.html)
         self.assertNotIn('label:`上櫃 ${g(n)}億', self.html)
@@ -141,7 +141,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
     def test_market_index_renderer_exists_without_fabricated_sparkline(self):
-        self.assertIn("function gf({data:e,height:n=220})", self.html)
+        self.assertIn('function gf({data:e,height:n=220,changeUnit:unit="%"})', self.html)
         self.assertIn('走勢(無資料)', self.html)
         self.assertIn('F+f/2,k+t/2+1', self.html)
         self.assertNotIn("(Math.random()-0.5)*0.6", self.html)
