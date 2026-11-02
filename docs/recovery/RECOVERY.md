@@ -807,3 +807,28 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 桌面 Chromium 視覺檢查曾以舊 Artifact `41475229916` 確認版面結構；新版本桌面截圖尚未另行重拍。
 - 狀態：CI／正式 HTML／Golden Fixture PASS；新 Artifact 手機尺寸 Chromium 模擬 PASS；實體手機及使用者手機瀏覽器 NOT TESTED；正式 Pages 部署 NOT DONE。
 - 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 28. 2026-11-03 區塊 A/B RWD 與選擇權法人多空力道表修正
+
+### 修改
+- 工作分支：`fix/three-market-correlation-history`；Template Commit：`be9c27adc3bc4491cd932930d31736f053695b2e`。
+- 手機／窄版 RWD：A/B 主 grid 在 viewport <=1100px 強制單欄；區塊 A 跨滿整列；桌面 >1100px 保留原本 A 2/3、B 1/3 配置。
+- 區塊 B 表格原先錯誤呼叫雙欄 helper `ee`，而資料列實際為 7 個顯示欄位，導致只顯示每列前兩欄。已改成真正 7 欄表格，完整顯示法人、日多方、日空方、日淨、夜多方、夜空方、夜淨，包含三大法人合計列。
+- 表格新增橫向捲動，手機不壓縮欄位；新增單位及欄位定義文字，明確區分來源力道分項／淨額、交易口數與 OI。
+- 修改僅涉及 Template 呈現，不更動資料來源與計算引擎。
+- DATA_REPORT_20261102.md 原始法人力道表有 9 欄；Dashboard 顯示前 7 個核心分析欄位。來源欄與日淨－夜淨欄位不混入主表。
+
+### CI 與驗收
+- Commit：`be9c27adc3bc4491cd932930d31736f053695b2e`。
+- Run `41478733638`：HTML build、JS syntax validation、Pages artifact assembly/upload 步驟成功；Artifact `13157839737`（github-pages，1,782,342 bytes，未過期）。
+- 截至更新時 build job post-checkout cleanup 尚顯示 in_progress；不能將整個 Run 宣告 completed。
+- 實際新 Artifact 手機畫面驗收：NOT TESTED；RWD 程式規則已加入，但須以新 Artifact 開啟後確認手機 A/B 是否上下排列、表格是否能橫向捲動。
+- Merge／部署：NOT DONE；Master、V8 未修改。
+- Auditor：單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 取得 Artifact `13157839737` 的 `p0/v9-pro-latest.html`。
+2. 在手機實際開啟，確認 A/B 上下排列；區塊 B 表格七欄完整且可水平捲動。
+3. 若畫面通過，更新手機視覺驗收為 PASS；若不通過，只修正 RWD CSS，不動資料邏輯。
+4. 不 Merge、不部署，除非使用者另行明確授權。
