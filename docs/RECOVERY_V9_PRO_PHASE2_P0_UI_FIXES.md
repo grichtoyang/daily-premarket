@@ -1224,3 +1224,24 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 
 - Master 未修改；未 merge、未部署。
 - 下一步：補五卡片情境 fixture 測試，並執行 Master 同 DATA_REPORT 對照；再處理瀏覽器視覺驗收。
+
+
+## 9.40 法人三市場情境分類回歸測試（2026-11-02）
+
+- Commit f62d839：抽出 classify_three_market、classify_futures_oi、classify_option_sessions 三個純分類函式，供正式卡片邏輯與測試共用，避免測試只驗證獨立的假邏輯。
+- Commit 13c7478：新增 tests/test_three_market_scenarios.py，涵蓋三市場同向偏多、同向偏空、方向分歧、零值、缺值；期貨 OI 全零、部分缺值、有效存量；選擇權日夜同向、反向、中性、缺值，共 12 個情境。
+- Commit b5eee0b：將上述測試加入 GitHub Actions。
+- Run 41446616296：目前已確認三市場 scenario regression tests PASS、現貨分類測試 PASS、17F offline self-tests PASS、history replay PASS、Gamma fallback tests PASS、DATA_REPORT build PASS、HTML injection PASS、Pages artifact assembly/upload PASS；整個 job 當時仍在收尾，Run 最終結論尚未取得。
+- 最新測試步驟的直接證據：Run 41446616296 job steps 中 Run three-market scenario regression tests = success。
+
+### 驗收狀態
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| 三市場分類情境 12 項 | PASS | Run 41446616296 對應測試 step success |
+| 現貨法人方向分類 6 項 | PASS | 同一 Run 對應測試 step success |
+| 17F 離線自測 | PASS | 同一 Run 對應測試 step success |
+| 完整 Build／Artifact 組裝 | PASS | 同一 Run 對應步驟 success |
+| Workflow 最終結論 | NOT YET CONFIRMED | 擷取時 job 仍在收尾 |
+| 五張卡片端到端 fixture（直接呼叫 build_41_cards） | NOT TESTED | 本輪測試的是正式 builder 共用的分類邏輯函式 |
+| Master 同資料對照 | NOT TESTED | 下一步 |
+| 手機畫面 | NOT TESTED | 尚未進行瀏覽器／實機檢查 |
