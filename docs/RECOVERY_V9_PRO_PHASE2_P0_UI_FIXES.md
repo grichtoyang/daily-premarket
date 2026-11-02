@@ -1125,3 +1125,37 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 - 為法人三市場分類邏輯補上小型離線單元測試（完整混合、全多、全空、缺一法人、零值）。
 - 以同一 DATA_REPORT 產生 Master 與分支輸出對照，按事實正確、交叉推理、操作條件、缺值誠實度評分。
 - 完成以上驗收前，不擴展到其他分析區塊。
+
+
+## 9.37 法人三市場方向分類測試與 CI 修正（2026-11-02）
+
+### 修正與測試
+- 將現貨三法人方向分類抽出為純函式 `classify_spot_institutions(values)`，避免資料缺漏被當成方向分歧。
+- 新增 `tests/test_spot_institution_classification.py`，覆蓋 6 種情境：
+  1. 三法人全正值 → 同向買超。
+  2. 三法人全負值 → 同向賣超。
+  3. 正負混合 → 方向分歧。
+  4. 含零值 → 方向分歧，不誤判全買/全賣。
+  5. 任一法人缺值 → 資料不足。
+  6. 欄位數量不符 → 資料不足。
+- 初次抽取函式時兩次 CI 發現縮排錯誤（Run `41441383251`、`41441495441` 均 FAIL）；已依 log 修正，未隱瞞失敗紀錄。
+- 將上述單元測試加入 `.github/workflows/daily-premarket-v9-pro.yml`，使其成為正式 CI 步驟。
+
+### 最新驗證
+- Commit `6b075964468d5a81ab40012563cd7bc03f01b693`：17F self-test 與完整 Build PASS。
+- Commit `4a1c6fd0f1f112637dd11d0d31c999d4d45241bb`：新增分類測試 CI 步驟後，分類單元測試 PASS，17F self-test 與完整 Build PASS；Run `41441669814`，deploy SKIPPED。
+- Master 未修改，未 merge，未部署。
+
+### 狀態
+| 項目 | 狀態 |
+|---|---|
+| 六種現貨法人分類情境 | PASS |
+| 分類測試納入 CI | PASS |
+| 17F offline self-test | PASS |
+| 分支 Build | PASS |
+| Master 同 DATA_REPORT 對照 | NOT TESTED |
+| 瀏覽器視覺與文字重疊 | NOT TESTED |
+| 全區塊 95% 分析品質 | NOT VERIFIED |
+
+### 下一步
+- 進行法人三市場試點的 Master / 分支同資料比較；先確認 Master 端相同輸入與輸出可重現，再按數字事實、跨市場推理、判斷條件、操作可執行性及缺值誠實度逐項比較。
