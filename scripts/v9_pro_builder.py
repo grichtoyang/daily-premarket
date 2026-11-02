@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-V9 Pro Builder - 17因子 + VIX動態 + RSI/MACD + SQLite真DB + 41張全動態 + 6頁 + 機構級圖表
+V9 Pro Builder - 17因子 + VIX動態 + RSI/MACD + SQLite真DB + 42個可見區塊全動態 + 6頁 + 機構級圖表
 基於 daily-premarket-analysis-v8 (2026-10-28最新版) 升級到 daily-premarket-analysis-v9-pro
 母版改成純 React + window.DASHBOARD_DATA，無範例數據，Python 只產 data.json，符合 Output Path Rule: dashboards/ 唯一
 
@@ -1069,7 +1069,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     top10_look=f"前十大+{top10}口偏多但外資{foreign_day}口大空，對作{abs(int(top10)-int(foreign_day))}口，分歧加劇" if int(top10)>8000 and int(foreign_day)<0 else f"前十大{top10}口多單未大減，外資{foreign_day}口空單續抱"
     top10_compass=f"投信與外資對作，行情易大震盪"; top10_target=f"前十大{top10}口為多方最後防線"
 
-    # 41張映射 (依Skill定義)
+    # 42個可見區塊映射 (依Skill定義)
     cards={
         'DATA_REPORT 一致性檢查': {
             "look": f"DATA_REPORT 一致性檢查：{len(parsed['meta'].get('data_quality_warnings',[]))} 項警告",
@@ -1480,7 +1480,7 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(final, ensure_ascii=False, indent=2), encoding='utf-8')
     print(f"[V9-17F] Wrote {out_path} size {out_path.stat().st_size} bias {final['analysis']['bias']} cards {final['analysis']['cards_41_count']} db_mode {db_status.get('mode')}")
-    print(f"[V9-17F] CHECK OK: 17-Factor + VIX Dynamic + RSI/MACD + SQLite真DB + 41張全動態 + data.json only + pure React template")
+    print(f"[V9-17F] CHECK OK: 17-Factor + VIX Dynamic + RSI/MACD + SQLite真DB + 42個可見區塊全動態 + data.json only + pure React template")
     return 0
 
 if __name__=="__main__":
