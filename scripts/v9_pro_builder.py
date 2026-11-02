@@ -650,7 +650,7 @@ def build_option_force_analysis(force_rows, volume_rows=None):
         "look": "選擇權法人多空力道金額資料不足或欄位不完整，暫停法人方向判讀。",
         "compass": "目前無法確認日盤、夜盤多空力道及法人主導者；不可用缺值代替零值。",
         "target": "先確認 TAIFEX Proxy 原始欄位、資料日期及七欄表格完整性，再恢復方向分析。",
-        "method": "多方契約金額＝買 Call＋賣 Put；空方契約金額＝賣 Call＋買 Put。這是方向分類代理值，不等同淨權利金現金流或未平倉 OI。"
+        "method": "多方契約金額＝買 Call＋賣 Put；空方契約金額＝賣 Call＋買 Put。這是方向分類代理值，不等同淨權利金現金流或未平倉 OI；來源「日淨－夜淨」是兩個時段淨額相減，不是日對日變化或持倉變化。"
     }
     if not isinstance(force_rows, list):
         return unavailable
