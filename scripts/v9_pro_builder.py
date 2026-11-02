@@ -1177,7 +1177,19 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     opt_dealer_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='自營商'),None)
     option_trust_day=signed_table_value(opt_trust_row,3)
     option_dealer_day=signed_table_value(opt_dealer_row,3)
-    def signed_text(value, unit, digits=0):
+    def classify_spot_institutions(values):
+    """Classify three spot-institution net flows without treating missing data as disagreement."""
+    if len(values) != 3 or any(value is None for value in values):
+        return "現貨三法人資料不足，不能完整判定方向"
+    numeric = [float(value) for value in values]
+    if all(value > 0 for value in numeric):
+        return "三法人現貨同向買超"
+    if all(value < 0 for value in numeric):
+        return "三法人現貨同向賣超"
+    return "現貨三法人方向分歧"
+
+
+def signed_text(value, unit, digits=0):
         return "資料不足" if value is None else f"{value:+,.{digits}f}{unit}"
     three_market_look=(
         f"現貨外資 {signed_text(foreign,'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、"
@@ -1196,15 +1208,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         "若外資現貨賣超收斂、期貨日盤流量轉弱或翻空、選擇權日盤淨流量仍偏空，才視為賣壓延續；"
         "若期貨與選擇權流量轉同向且現貨賣超收斂，再確認分歧是否收斂。未收斂前不追單。"
     )
-    if all(value is not None for value in spot_inst_values):
-        if all(float(value)>0 for value in spot_inst_values):
-            spot_inst_text='三法人現貨同向買超'
-        elif all(float(value)<0 for value in spot_inst_values):
-            spot_inst_text='三法人現貨同向賣超'
-        else:
-            spot_inst_text='現貨三法人方向分歧'
-    else:
-        spot_inst_text='現貨三法人資料不足，不能完整判定方向'
+    spot_inst_text=classify_spot_institutions(spot_inst_values)
     hist_str=build_history_status_text(historical,db_status)
     factor_quality_summary=build_factor_quality_summary(analyzer)
 
