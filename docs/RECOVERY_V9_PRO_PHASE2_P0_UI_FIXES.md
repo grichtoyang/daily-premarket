@@ -51,7 +51,7 @@ Repository：`grichtoyang/daily-premarket`
 | 相關係數 | 無單位，範圍 -1 至 +1 |
 | 匯率 | 必須標示貨幣對與報價方向 |
 | ADR | USD／股；漲跌幅為 % |
-| GEX | 單位尚未確認，不得推測或硬標 |
+| GEX | NT$／標的價格變動 1%；Black-Scholes 模型估值，非 TAIFEX 官方欄位 |
 
 需分清楚：來源原始單位、Builder 標準化後單位、Dashboard 顯示單位。不得依數值大小猜測單位。
 
@@ -75,7 +75,7 @@ Repository：`grichtoyang/daily-premarket`
 - PCR 卡片需分開呈現 OI PCR 與 Call／Put 成交量結構。不可把成交量占比當成 PCR。
 - 殖利率水準與日變化使用不同單位（% 與 pp）。
 - 混合單位圖表需對每個序列分別標示，不能用單一含糊註記涵蓋。
-- GEX 的履約價可標點，但 GEX 數值單位仍未確認。
+- GEX 履約價標點；GEX 數值單位為 NT$／標的價格變動 1%，模型品質及資料日期需另列。
 - 不得把情境權重或未校準數值包裝成統計機率。
 
 ## 6. 驗收狀態
@@ -159,7 +159,7 @@ Repository：`grichtoyang/daily-premarket`
 - GEX 顯示單位回歸測試提交：`c2ec5fc12ff91750c7e91ff46e2ad3d1c64ade94`。
 - 以上只完成程式與靜態結構檢查；仍待 Actions 執行結果與最新 Artifact 的實際渲染驗收。
 
-## 9.6 2026-11-02 最終修正與回歸驗收（本節優先）
+## 9.6 2026-11-02 最終修正與回歸驗收（歷史狀態；目前以 9.7 為準）
 
 ### 修正內容
 - GitHub Actions 首次執行失敗並非圖表 runtime error，而是新增靜態測試與實際模板不一致：
@@ -209,3 +209,84 @@ Repository：`grichtoyang/daily-premarket`
 | 六頁全部完整視覺驗收 | NOT TESTED |
 | 舊 committed JSON snapshot 更新 | NOT DONE |
 | Merge／部署／正式頁面更新 | NOT DONE（遵守不 merge、不部署） |
+
+
+## 9.7 2026-11-02 舊快照重建、K 線單位標籤缺陷修正與全頁複驗（目前最新）
+
+### A. 舊 JSON／HTML 快照已重新建置
+- 已修改 .github/workflows/daily-premarket-v9-pro.yml：
+  - 增加 phase2-p0-ui-fixes push 分支允許清單。
+  - 生成 dashboard 歷史檔的 commit guard 只允許 phase2-p0-data-quality 與 phase2-p0-ui-fixes。
+  - deploy job 條件未放寬；本分支建置後 deploy 仍為 skipped，不會部署。
+- 最新成功完整建置 Workflow：Run ID 41390676168，Commit SHA 8ec4fb28a28c113a418ead43bad3d631cd11a6c4；build job PASS，deploy job SKIPPED。
+- Builder 使用最新 DATA_REPORT_20261030.md（產出時間 2026-11-01 23:51:51）重新產生：
+  - dashboards/data-20261030.json
+  - dashboards/data-latest.json
+  - dashboards/v9-pro-20261030.html
+  - dashboards/v9-pro-latest.html
+  - dashboards/index.html
+  - dashboards/manifest.json
+- 新 JSON 的 meta.generated_at 已更新為 2026-11-01 23:51:51；options.gexStatus=available、gexDate=2026-10-30、gexLevels=139。
+- Net GEX = 1,294,327,419.0091748 NT$；Gross GEX = 6,320,130,202.132608 NT$；兩組逐履約價加總與總額完全一致。
+- 借券欄位同時已生成：borrowedSell=36,178 張、borrowedSellDiff=-1,273 張、scope 為 上櫃（上市 TWT93U 未取得）。
+- 最新 HTML 的資料注入存在，且 GEX 動態欄位可用；程式碼中仍保留 unavailable fallback 字串是正常條件分支，實際渲染不顯示 unavailable。
+
+### B. 新發現並修正：K 線成交量單位變數遮蔽
+- 最新完整建置 HTML 的實際畫面發現，期貨／現貨 K 線圖成交量標籤錯誤，例如手機顯示 VOL 73,987149.4、桌面顯示 VOL 73,987301.5，未顯示應有的「口」。
+- 根因：Canvas 元件 Pt 的 props 將 volUnit 別名為 a，但繪圖 callback 又宣告局部變數 a=d*0.45 作為 K 線 x 座標，覆蓋了外層單位標籤。成交量標籤因此拼接 Canvas 座標，而不是單位。
+- 修正：props 改用 volUnit:unitLabel="口"，繪圖時使用 unitLabel；座標變數維持獨立。
+- 新增回歸測試：
+  - tests/test_react_template_static.py：test_candlestick_volume_unit_is_not_shadowed_by_canvas_coordinate
+  - tests/test_dashboard_unit_contract.py：增加相同契約斷言。
+- 最新模板已由完整建置 Workflow 重建進 HTML；Desktop／Mobile 截圖已確認期貨日盤成交量標籤顯示 VOL 73,987 口，不再出現 301.5／149.4 座標數字。夜盤亦正確顯示口數單位。
+
+### C. 42 區塊單位對照表修訂
+- docs/DASHBOARD_UNIT_MAP.md 更新至 1.1：
+  - 修正區塊 9 上櫃欄位路徑為 spot.otc.up/down/flat/limit_up/limit_down，不再使用錯誤的 spot.otc_*。
+  - 修正區塊 36、37 對選擇權法人交易口數與法人多空力道金額的欄位／單位界線。
+  - GEX 單位不再標 BLOCKED；統一為 NT$／標的價格變動 1%。
+  - 明確區分 parse_data_report()、build_final_json()、build_41_cards() 三層資料處理責任。
+  - 明列市場匯率報價方向、商品報價單位、殖利率 % 與 pp、缺值與相關性樣本不足的顯示策略。
+- tests/test_dashboard_unit_contract.py 增加對區塊 9 正確 JSON path、Parser 層級及 GEX 單位狀態的文件回歸斷言。
+
+### D. 最新 GitHub Actions 結果
+| Workflow | Run ID | Commit | 結果 |
+|---|---:|---|---|
+| V9 Pro Unit Contract Audit | 41390676026 | 65c560f642a0bc6fd5e59b3709200870f9d7e1a7 | PASS |
+| V9 UI Fixes Regression | 41390676167 | 8ec4fb28a28c113a418ead43bad3d631cd11a6c4 | PASS |
+| Daily Premarket V9 Pro | 41390676168 | 8ec4fb28a28c113a418ead43bad3d631cd11a6c4 | Build PASS；Deploy SKIPPED |
+
+- 另有相同最新模板修正後的 Unit Contract run 41390259701 PASS、UI Regression run 41390259678 PASS、完整 Build run 41390259700 PASS；最新一輪 413906* 已包含 42 區塊文件修正並再次通過。
+- 先前 41390201664 失敗原因為舊單位測試仍期待舊變數別名 volUnit:a；已同步更新兩份測試，後續 41390259701 與 41390676026 均 PASS。
+
+### E. 最新完整 HTML 技術渲染驗證
+- 使用最新完整 Pages Artifact 的 p0/v9-pro-20261030.html，Chromium headless 實際載入。
+- Desktop 1440px 六頁均已切頁檢查；各頁主內容非空、畫布數量符合預期、document/body scrollWidth 均為 1440px。
+- Mobile 390px 六頁均已檢查；各頁主內容非空、document/body scrollWidth 均為 390px。六頁 Canvas 數量與 Desktop 相同：
+  - 總覽 14
+  - 現貨 6
+  - 重要市場 7
+  - 期貨 6
+  - 選擇權 8
+  - 綜合分析 7
+- 指定三張圖表最新完整建置版實際高度：期貨日夜法人圖表正常；選擇權前十大圖表依資料列展開；GEX 前 16 筆 Canvas 高度 784px，未裁切。
+- GEX Overview Bias 顯示 GEX +12.94億 NT$；選擇權 GEX 區塊顯示 139 筆及正確總額。
+- K 線成交量標籤 Desktop／Mobile 均顯示正確單位，不再輸出 Canvas 寬度座標。
+- 已檢查的頁面無水平溢位；Browser pageerror 未觀察到 JavaScript runtime error。
+- 本節為技術渲染驗證，不代替使用者最終人工視覺驗收。
+
+### F. 目前狀態
+| 項目 | 狀態 |
+|---|---|
+| 舊 JSON 快照重建 | PASS |
+| 最新 HTML／latest alias／index／manifest | PASS（分支已提交） |
+| GEX 資料 139 筆、總額、逐筆加總 | PASS |
+| 借券賣出餘額與增減欄位 | PASS |
+| 三張指定圖表高度與裁切 | PASS |
+| K 線成交量單位標籤變數遮蔽 | FIXED + PASS（回歸測試、Desktop／Mobile 實際畫面） |
+| 42 區塊結構及主要路徑 | PASS（文件與測試） |
+| 六頁 Desktop／Mobile 技術渲染 | PASS（12 個分頁狀態） |
+| 六頁每一個欄位逐欄人工語義審查 | NOT TESTED（單位矩陣及自動契約已覆蓋主要欄位；仍需針對新資料來源變更持續審核） |
+| 使用者最終視覺驗收 | NOT DONE |
+| Merge／正式部署 | NOT DONE（deploy job 已明確 SKIPPED；未修改 Master／V8） |
+
