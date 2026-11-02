@@ -80,7 +80,8 @@ class DashboardUnitContractTests(unittest.TestCase):
 
     def test_42_block_registry_and_chart_notes_are_complete(self):
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
-        block_numbers = [int(value) for value in re.findall(r"^\|\s*(\d+)\s*\|", unit_map, re.MULTILINE)]
+        block_table = unit_map.split("## 42 區塊資料路徑／來源對照", 1)[0]
+        block_numbers = [int(value) for value in re.findall(r"^\|\s*(\d+)\s*\|", block_table, re.MULTILINE)]
         self.assertEqual(block_numbers, list(range(1, 43)))
 
         html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
