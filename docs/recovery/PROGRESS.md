@@ -628,3 +628,48 @@ P1 尚未開始。啟動前必須：
 - CI Run `41478733638` 已確認 completed / success，HEAD `be9c27adc3bc4491cd932930d31736f053695b2e`。
 - A/B 本輪手機驗收：PASS。正式部署／合併：仍未執行，除非使用者另行明確授權。
 - Auditor：單模型依程式差異、CI 狀態及使用者截圖自我審查，非獨立多模型審核。
+
+
+## 15. 2026-11-03 區塊 B 選擇權法人多空力道動態分析升級
+
+### 程式盤點發現
+- 原始資料：DATA_REPORT 的「法人多空力道表」包含外資／投信／自營商／三大法人合計，日盤與夜盤多方金額、空方金額、淨額及日淨－夜淨差。
+- 上游欄位：TAIFEX Proxy 的 long_amount／short_amount 來自買方／賣方契約金額欄位；src/fetch_data.py 的方向分類公式為：
+  - 多方契約金額＝買 Call 契約金額＋賣 Put 契約金額。
+  - 空方契約金額＝賣 Call 契約金額＋買 Put 契約金額。
+  - 上游單位千元，除以 100,000 轉成億元。
+- 這是按買賣方向與 Call／Put 分類的契約金額代理值，不是淨權利金現金流，也不是 OI／實際持倉；不得直接稱為資金流入或真實持倉。
+- 原本 Builder 只解析並傳遞 instOptForce，Template 區塊 B 的 look／compass／target 為固定寫死通用句，未依當日數據改變。這是本輪真正的分析缺陷。
+- 本區塊沒有呼叫 LLM；本輪新增的是可測試、可重現的規則式動態判讀，不應宣稱為即時生成式 AI 推理。
+
+### 本輪修改
+- scripts/v9_pro_builder.py：新增 build_option_force_analysis()，驗證必要法人列、欄位完整性、淨額＝多方－空方、日淨－夜淨及三法人合計；對缺值不補零、對不一致資料停止方向判讀。
+- 新增日盤／夜盤主導空方與多方抵銷者分析；計算淨額佔多空雙邊契約金額合計比例；明確解釋日淨－夜淨是兩時段差，不是日對日變化。
+- 將 B 區金額淨額與 A 區法人淨交易口數逐法人、逐時段交叉比較；分為同向、背離、中性，不用一種量綱覆蓋另一種量綱。
+- 最終 JSON options.instOptForceAnalysis 已接入；Template 不再使用固定通用句，改讀 Builder 動態結果。
+- B 區副標題／圖表備註補上多空金額分類公式及代理指標限制；圖表、七欄表格與計算引擎均保留。
+- 新增 tests/test_builder_option_force_analysis.py；Workflow 加入專屬分析契約測試及既有選擇權表格回歸測試。既有一項過時測試字串（測試期待「三市場方向分歧」、程式實際輸出「跨市場訊號分歧」）已只修正測試期待，未改動原分析功能。
+
+### 11/02 T0 範例數據判讀
+- 日盤合計：多方 21.57 億、空方 22.58 億、淨額 -1.01 億；淨額／雙邊金額合計約 -2.29%。
+- 夜盤合計：多方 7.70 億、空方 8.29 億、淨額 -0.60 億；淨額／雙邊金額合計約 -3.75%。
+- 日盤主要空方為投信 -3.01 億，自營商 +1.82 億提供最大多方抵銷；夜盤主要空方為自營商 -0.54 億，投信為 0。
+- 日淨－夜淨合計差 -0.41 億；明確說明為日盤淨額減夜盤淨額，不代表日對日變化。
+- A 區口數交叉比較：4 組同向、1 組背離、1 組中性；唯一背離為外資日盤金額 +0.18 億、淨交易 -167 口。此背離被納入判斷及後續觀察條件。
+- 上述比例依 DATA_REPORT 已四捨五入至小數二位的顯示金額估算；不是使用未四捨五入 raw payload 重算。
+
+### CI／Artifact
+- 最新程式 HEAD：07696e52086101692311f60d020e47c7972150d7。
+- GitHub Actions Run 41481675963；截至本紀錄更新時 build job 24 個成功步驟、0 failed，仍在 post-checkout cleanup，整體 Run 尚未回報 completed。
+- 專屬 options-force contract tests：PASS；既有 option table regression tests：PASS；17F offline self-tests：PASS；Dashboard JSON build：PASS；正式 HTML 與 10/30 Golden Fixture JavaScript syntax check：PASS；Pages Artifact upload：PASS。
+- Artifact 13159728345（github-pages，1,785,704 bytes，未過期）。
+- 已下載 Artifact，檢查 p0/data-20261102.json 的 options.instOptForceAnalysis 結果與 p0/v9-pro-latest.html 注入內容一致；預期分析字串、金額口數背離、時段差及公式備註均存在。
+- 實際 Chromium 瀏覽器渲染：NOT TESTED（此執行環境對 file://／localhost 回報 ERR_BLOCKED_BY_ADMINISTRATOR；headless CLI 渲染逾時）。需由使用者開啟 Artifact 新 HTML 提供手機畫面驗收。
+- Endpoint 級別的每個 options day/night API response date 未保留在法人力道表中；本輪沿用 DATA_REPORT T0／來源標籤，未修改來源擷取流程。Endpoint 級別日期獨立對帳：NOT TESTED。
+- Merge／部署：NOT DONE；V8、Master 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 確認 Run 41481675963 最終 completed／success。
+2. 使用者下載 Artifact 13159728345 的 p0/v9-pro-latest.html，檢查 B 區三段動態分析文字、公式說明、七欄表格及手機版是否重疊／裁切。
+3. 根據實際手機畫面複驗文字可讀性；視覺驗收前 B 區分析升級不可結案。
+4. 不 merge、不部署，除非使用者另行明確授權。
