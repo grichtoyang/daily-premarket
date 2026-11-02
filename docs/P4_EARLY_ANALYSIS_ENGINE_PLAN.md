@@ -7,7 +7,7 @@ Repository：`grichtoyang/daily-premarket`
 
 ## 1. 目標與驗收原則
 
-目標：使 Dashboard 各可見區塊的分析文字達到「至少 95% 接近專業 AI 逐區塊解讀」的品質目標。95% 是品質目標，不得在沒有逐區塊案例評分前宣稱達標。
+目標：以 Master 既有分析文字品質作為最低保留基準，在不退化的前提下逐區塊改善，追求至少 95% 接近專業 AI 逐區塊解讀。不得因追求新架構而推倒 Master 已有分析邏輯；95% 是品質目標，未逐區塊評分前不得宣稱達標。
 
 每個區塊分析須做到：
 1. 數據解讀：引用該區塊實際有效數據、單位、日期與資料來源。
@@ -82,12 +82,12 @@ Repository：`grichtoyang/daily-premarket`
 5. 最後才整合 42 個區塊，保留既有 Dashboard 六頁、圖表、資料鏈與版面。
 6. 不重跑已 PASS 的 P0 項目；只做分析引擎相關的局部測試及必要整合測試。不部署、不 merge、不修改正式分支，除非使用者另行授權。
 
-## 7. 目前已確認的技術現況
+## 7. Master 與工作分支的分析品質差異（2026-11-02）\n\n- 已直接比較 Master 與工作分支的 `build_41_cards()`。Master 版本雖有部分硬編碼門檻／假設需清理，但有較多具體情境解讀，例如法人三市場分歧、前十大與外資部位對照、三劇本條件、17F 因子解讀等。\n- 工作分支在資料缺值保護、OI 存量與日夜盤流量區分、選擇權日夜盤拆分等方面增加了保護，但同時把多處分析文字改成中性摘要或限制聲明，且 KPI／開盤前必核／AI 5 面向仍共用相同內容。結果是避免部分錯誤推論，卻明顯降低了分析深度。\n- 正確方向不是整套推倒重寫或立即強制導入 LLM，而是以 Master 的分析深度為基準，保留工作分支的資料真實性／缺值防護，再逐區塊修正其硬編碼與錯誤推論。
 
 - `scripts/v9_pro_builder.py` 的 `build_41_cards()` 目前建立分析卡片。
 - 不同卡片存在共用文字，例如「KPI 8宮格」、「開盤前必核」、「AI 5面向」共用同一組 look／compass／target；部分期貨／選擇權卡亦共用 futures／options 摘要。
 - `V9Analyzer` 已有 17F 因子分數、權重、貢獻及資料覆蓋資訊；應保留作為量化輸入，不應拿來代替區塊推理。
-- 目前 `.github/workflows/daily-premarket-v9-pro.yml` 未發現 LLM provider API secret 注入或模型呼叫設定。故「Actions 中真正執行 LLM 分析」尚未具備可確認的憑證／provider 設定；不得假設可直接呼叫 ChatGPT。需在實作時採 provider adapter，並於設定完成前將 AI runtime 標為 BLOCKED。
+- 目前 `.github/workflows/daily-premarket-v9-pro.yml` 未發現 LLM provider API secret 注入或模型呼叫設定。這只代表尚未具備可確認的 Actions LLM 執行條件，不代表必須先導入 LLM 才能改善品質；先修復既有分析邏輯。
 - 目前資料輸出 schema 有既有 `analysis.cards`，優先相容現有 UI，不先重做前端。
 
 ## 8. 狀態
