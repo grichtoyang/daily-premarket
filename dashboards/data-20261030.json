@@ -2530,12 +2530,15 @@
       "score_status": "calculated",
       "optimizer": "base_dynamic",
       "missing_factors": [
-        "gex",
         "yield",
         "volume",
         "ma_bias",
         "macd"
-      ]
+      ],
+      "disabled_factors": [
+        "gex"
+      ],
+      "inactive_count": 5
     },
     "regime": "偏空",
     "factor_str": "現貨趨勢-6 外資現貨-7 外資期貨-5 投信+2 夜盤-5 美股費半-7",
@@ -2596,7 +2599,7 @@
       },
       "KPI 8宮格": {
         "look": "KPI 8宮格：加權45,211.83點；漲跌幅-2.49%；外資-1,124.70億元；Bias20分；空方壓力；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
-        "compass": "20分空方壓力；17F有效12/17；正向2、負向7、中性3、缺失5；有效權重100.0%；信心medium；費半有效權重14.46%；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
+        "compass": "20分空方壓力；17F有效12/17；正向2、負向7、中性3、缺值4、有值停用1；有效權重100.0%；信心medium；費半有效權重14.46%；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
         "target": "依Bias20分操作，空方壓力策略，45000.0為關鍵，SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析"
       },
       "大盤全景": {
@@ -2646,12 +2649,12 @@
       },
       "開盤前必核": {
         "look": "KPI 8宮格：加權45,211.83點；漲跌幅-2.49%；外資-1,124.70億元；Bias20分；空方壓力；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
-        "compass": "20分空方壓力；17F有效12/17；正向2、負向7、中性3、缺失5；有效權重100.0%；信心medium；費半有效權重14.46%；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
+        "compass": "20分空方壓力；17F有效12/17；正向2、負向7、中性3、缺值4、有值停用1；有效權重100.0%；信心medium；費半有效權重14.46%；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
         "target": "依Bias20分操作，空方壓力策略，45000.0為關鍵，SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析"
       },
       "AI 5面向": {
         "look": "KPI 8宮格：加權45,211.83點；漲跌幅-2.49%；外資-1,124.70億元；Bias20分；空方壓力；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
-        "compass": "20分空方壓力；17F有效12/17；正向2、負向7、中性3、缺失5；有效權重100.0%；信心medium；費半有效權重14.46%；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
+        "compass": "20分空方壓力；17F有效12/17；正向2、負向7、中性3、缺值4、有值停用1；有效權重100.0%；信心medium；費半有效權重14.46%；SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析",
         "target": "依Bias20分操作，空方壓力策略，45000.0為關鍵，SQLite已啟用；有效歷史樣本2/3（DB共3筆），未啟用歷史相似分析"
       },
       "AI結論": {
@@ -3037,5 +3040,5 @@
       "link": "https://www.cnbc.com/investingclub/2026/10/31/stocks-started-the-week-with-promise-but-ended-in-despair.html"
     }
   ],
-  "data_source": "DATA_REPORT 2026-10-30 + technical_history=yahoo (T0 filtered) + SQLite db"
+  "data_source": "DATA_REPORT 2026-10-30 + technical_history=yahoo (T0 filtered) + historical_learning=SQLite db"
 }
