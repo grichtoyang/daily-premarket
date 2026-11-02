@@ -290,3 +290,94 @@ Repository：`grichtoyang/daily-premarket`
 | 使用者最終視覺驗收 | NOT DONE |
 | Merge／正式部署 | NOT DONE（deploy job 已明確 SKIPPED；未修改 Master／V8） |
 
+## 9.8 2026-11-02 完整 42 區塊欄位語義稽核（目前最新）
+
+### A. 稽核交付文件
+- docs/DASHBOARD_UNIT_MAP.md：升級至 1.2，新增 42 區塊逐項語義稽核矩陣、缺陷清單與模型限制。
+- docs/DASHBOARD_UNIT_STANDARD.md：升級至 1.1，新增正負號、存量／流量、GEX 模型假設、T0 as-of 與歷史相似結果語義。
+- docs/DASHBOARD_UNIT_REGISTRY.json：升級至 1.2，補充 GEX、OI／flow、歷史相似結果、技術指標來源與時間邊界。
+- docs/DATA_REPORT_TEMPLATE.md：修正現貨 OHLC 來源註記；收盤／漲跌／成交金額由 twse-proxy，開高低由 FinMind TAIEX，分別保留來源。
+- 42 區塊表格為程式契約與樣本資料的語義核對結果；不代表上游供應商原始資料正確性或交易策略預測力已通過獨立驗證。
+
+### B. 已修正的欄位／分析語義缺陷
+1. **T0 look-ahead leakage**：
+   - Yahoo 歷史 K 線以 Asia/Taipei 日期過濾至 DATA_REPORT T0。
+   - FinMind 查詢 end_date 改為 T0，並再次過濾日期。
+   - SQLite 技術資料只讀 date <= T0。
+   - RSI、MACD、KD、SMA 與 spot5 使用同一份 T0 截斷序列。
+   - 歷史因子學習與相似樣本只讀 date < T0；相關性只讀 date <= T0。
+2. **GEX 欄位路徑與方向性**：
+   - 分析器原先讀取不存在的 options.gex；改讀 options.netGex1pct。
+   - GEX 數值仍顯示於卡片，但因 OI-based Black-Scholes GEX 的 Call／Put 正負是模型假設，且不是已知造市商實際庫存，正負不等於市場多空方向；因此暫不納入 Bias。
+3. **美股廣度與來源缺值**：
+   - VIX 排除於股票指數全漲／全跌統計。
+   - SOX 缺值不再預設為 0。
+   - DXY 獨立顯示，不混入股票指數廣度。
+4. **Regime 敘述**：
+   - 原程式依單日漲跌幅、外資現貨與 OI PCR 判斷，文字卻稱跌破／站上月線；已改為列出實際判斷條件。
+5. **存量／流量量綱**：
+   - 前十大淨 OI 是部位存量，外資日盤淨交易是區間流量；取消兩者直接相減與「對作差額」敘述。
+   - 現貨、期貨、選擇權三市場一致性只比較方向，不比較不同量綱絕對值。
+6. **固定多空文字**：
+   - 現貨三法人、外資選擇權日夜盤、三市場一致性及外資期貨描述改依實際數值產生。
+   - 資料缺漏時顯示資料不足，不補造中性或方向。
+7. **歷史相似分析**：
+   - 原 win_rate 實際計算隔日負報酬比例，非策略勝率。
+   - 改為 positive_rate／negative_rate，卡片顯示隔日上漲比例及下跌比例。
+8. **新聞解析**：
+   - 修正從事件 1 標記開始解析，避免第一則新聞被跳過。
+   - 支援「原文連結」欄位，保留新聞時間與 URL。
+9. **技術水位命名**：
+   - 當日最高／最低不再錯標 R3／S1；改為當日高點／當日低點。
+10. **缺值與來源描述**：
+   - 基差比例與夜盤變化缺值改保留 None/null，不再預設 0。
+   - JSON data_source 改輸出實際技術歷史來源。
+   - 內部分析卡數量新增 analysis_card_count；42 個可見區塊另以 visible_block_count 表示；舊 cards_41_count 僅保留相容性。
+
+### C. 回歸測試新增
+tests/test_builder_option_tables.py 新增：
+- 第一則新聞、12 則新聞數量、原文連結與時間。
+- T0 截斷測試：未來日期不得進入歷史序列。
+- 缺少基差比例／夜盤變化時保留 None。
+- GEX 有值但不應被當成方向性 Bias 因子。
+- VIX 不得混入股票指數廣度；SOX unavailable 不得默認 0；DXY 獨立。
+- 三市場方向及選擇權日夜盤方向依真實 flow 產生。
+- 前十大 OI 與外資日盤 flow 不直接相減。
+- 歷史學習、相似樣本與相關性排除 T0 之後資料。
+- 歷史相似結果顯示上漲／下跌比例，不再標勝率。
+
+tests/test_dashboard_unit_contract.py 新增：
+- 42 區塊稽核矩陣數量與狀態。
+- GEX、歷史結果、技術指標語義註冊表契約。
+- T0 與 GEX 非方向性規則文件契約。
+
+.github/workflows/unit-contract-audit.yml 已納入 test_builder_option_tables.py。
+
+### D. 最新 GitHub Actions（2026-11-02）
+- V9 Pro Unit Contract Audit Run 41392957198：PASS（Commit 9db471be1a18086d3e472ffc228ab463a4abb489）。
+- V9 UI Fixes Regression Run 41392957155：PENDING（查詢時尚未完成）。
+- Daily Premarket V9 Pro Run 41392957245：IN_PROGRESS（查詢時尚未完成）。
+- 先前 commit 86fdc41f99b001d4989cdbb378137ee009b825b6 的 Unit Contract、UI Regression 與 Daily Premarket Build 均 PASS；其中新增的語義測試已包含在該輪 UI Regression。
+- Commit 2f272eacaf1a2017ef61709c69979d63b1a75f5e 的 Unit Contract 曾因測試 regex 過度跳脫而 FAIL；已修正 regex，commit 9db471be1a18086d3e472ffc228ab463a4abb489 的 Unit Contract 已 PASS。
+
+### E. 仍需明確保留的限制
+- **上游資料真實性：NOT TESTED**。已驗證欄位、日期、單位與可檢查的算術關係；未逐筆向每一個供應商原始 API 獨立對帳。
+- **策略預測力：NOT TESTED**。PCR、RSI、外資 OI 等因子門檻屬既定啟發式規則；須累積無前視偏誤樣本並進行 walk-forward 回測，才能評估有效性。
+- **GEX 造市商真實庫存：NOT TESTED／不可由現有 OI 推定**。本模組僅是 OI-based Black-Scholes 模型曝險估值。
+- **最終 42 區塊使用者視覺驗收：NOT DONE**。
+- **Merge／正式部署：NOT DONE**。未修改 Master／V8，未合併及部署。
+
+### F. 本階段驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| 42 區塊欄位／單位／正負號／存量流量語義矩陣 | PASS（文件與程式契約） |
+| T0 技術資料及歷史資料防前視 | PASS（新增回歸測試；待最新 UI／Build 結果） |
+| GEX 非方向性與資料路徑 | PASS（新增回歸測試） |
+| 新聞、缺值、法人／三市場敘述 | PASS（新增回歸測試） |
+| Unit Contract Audit 最新 commit | PASS |
+| UI Regression 最新 commit | PENDING（最後查詢時） |
+| Daily Premarket V9 Pro 最新 commit | IN_PROGRESS（最後查詢時） |
+| 上游 API 每筆原始資料獨立對帳 | NOT TESTED |
+| 因子策略預測力／walk-forward 回測 | NOT TESTED |
+| 使用者最終視覺驗收 | NOT DONE |
+| Merge／正式部署 | NOT DONE |
