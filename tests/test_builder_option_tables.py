@@ -1,12 +1,14 @@
 from pathlib import Path
 import sys
 import unittest
+import tempfile
+from datetime import datetime, timedelta, timezone
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from v9_pro_builder import parse_data_report, parse_margin_ratio_provenance
+from v9_pro_builder import (parse_data_report, parse_margin_ratio_provenance, _filter_history_to_t0, V9Analyzer, build_41_cards, init_db, get_factor_win_rates_from_db, find_historical_similarity, calculate_historical_correlation)
 
 
 class BuilderOptionTableTests(unittest.TestCase):
@@ -54,6 +56,119 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertEqual(margin["status"], "previous_report_fallback")
         self.assertEqual(margin["source_date"], "2026-10-29")
         self.assertFalse(margin["is_t0"])
+
+
+    def test_news_parser_keeps_first_event_and_original_links(self):
+        parsed = parse_data_report(ROOT / "data_reports" / "DATA_REPORT_20261030.md")
+        self.assertEqual(len(parsed["news"]), 12)
+        self.assertIn("目標價一口氣砍掉530元", parsed["news"][0]["t"])
+        self.assertTrue(parsed["news"][0]["link"].startswith("https://"))
+        self.assertTrue(parsed["news"][0]["time"].startswith("2026-11-01T"))
+
+    def test_t0_filter_excludes_future_yahoo_and_dated_history(self):
+        taipei = timezone(timedelta(hours=8))
+        future_ts = datetime(2026, 11, 2, 8, 0, tzinfo=taipei).timestamp()
+        rows = [
+            {"date": "2026-10-29", "close": 100.0},
+            {"date": "2026-10-30", "close": 101.0},
+            {"ts": future_ts, "close": 999.0},
+        ]
+        filtered = _filter_history_to_t0(rows, "20261030")
+        self.assertEqual([row["date"] for row in filtered], ["2026-10-29", "2026-10-30"])
+        self.assertEqual([row["close"] for row in filtered], [100.0, 101.0])
+
+    def test_missing_basis_and_night_change_remain_null(self):
+        source = (ROOT / "data_reports" / "DATA_REPORT_20261030.md").read_text(encoding="utf-8")
+        source = "\n".join(
+            line for line in source.splitlines()
+            if "價差百分比" not in line and "夜盤價格相對日盤收盤的變化" not in line
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "DATA_REPORT_20261030.md"
+            report.write_text(source, encoding="utf-8")
+            parsed = parse_data_report(report)
+        self.assertIsNone(parsed["tx"]["day"]["prem"])
+        self.assertIsNone(parsed["tx"]["night"]["change"])
+
+    def test_gex_value_is_available_but_not_misclassified_as_directional_bias(self):
+        parsed = {
+            "spot": {"close": 100.0, "pct": 0.2, "up": 500, "down": 400, "vol": 1000},
+            "inst": {"foreign": 100.0, "trust": 20.0, "dealer": -10.0, "all": 110.0},
+            "tx": {"day": {"basis": 10.0, "prem": 0.1}, "night": {"pct": 0.2, "l": 99.0, "h": 102.0}},
+            "options": {"putWall": 95.0, "callWall": 110.0, "gammaWall": 100.0, "flip": 98.0, "maxPain": 102.0, "pcr": 0.9, "netGex1pct": 123456.0},
+            "futures": {"foreign_oi": 1000},
+            "usPct_full": [{"l": "S&P 500", "v": 1.0, "close": 5000.0}],
+            "fxPct_full": [],
+            "adrPct_full": [],
+            "yieldPct_full": [],
+        }
+        analyzer = V9Analyzer(parsed, {"rsi": 55.0, "macd_hist": 1.0, "closes": [float(80+i) for i in range(25)]})
+        analyzer.calculate_bias()
+        gex = next(item for item in analyzer.factor_details if item["key"] == "gex")
+        self.assertEqual(gex["status"], "disabled")
+        self.assertEqual(gex["raw_value"], 123456.0)
+        self.assertIn("不等同市場多空方向", gex["reason"])
+
+    def test_us_stock_breadth_excludes_vix_and_dxy_is_separate(self):
+        parsed = {
+            "spot": {}, "inst": {}, "tx": {"day": {}, "night": {}}, "options": {}, "futures": {},
+            "usPct_full": [
+                {"l": "S&P 500", "v": 1.2, "close": 5000.0},
+                {"l": "VIX", "v": 15.0, "close": 18.0},
+            ],
+            "fxPct_full": [{"l": "DXY美元指數", "v": -0.3}],
+            "adrPct_full": [], "yieldPct_full": [],
+        }
+        analyzer = V9Analyzer(parsed, {})
+        card = analyzer.analyze_us_markets()
+        self.assertIn("股票指數全漲", card["look"])
+        self.assertIn("DXY -0.30%", card["look"])
+        self.assertNotIn("SOX +0.00%", card["look"])
+        self.assertIn("SOX unavailable", card["look"])
+
+    def test_three_market_cards_use_actual_option_day_night_flow(self):
+        parsed = {
+            "meta": {"data_quality_warnings": []},
+            "spot": {"close": 100.0, "pct": -1.5, "up": 100, "down": 800, "vol": 1000},
+            "inst": {"foreign": -300.0, "trust": 50.0, "dealer": -10.0, "all": -260.0},
+            "tx": {"day": {"basis": 10.0, "prem": 0.1}, "night": {"pct": -1.2, "l": 90.0, "h": 100.0, "c": 95.0, "change": -5.0, "vol": 500}},
+            "futures": {"top10": 10000, "foreign_day": -2000, "foreign_night": 1000, "foreign_oi": -90000},
+            "options": {
+                "pcr": 0.6, "putWall": 90.0, "callWall": 110.0, "gammaWall": 95.0, "flip": 92.0, "maxPain": 100.0,
+                "netGex1pct": 100000.0, "grossGex1pct": 200000.0,
+                "instOpt": [["外資", "1000", "500", "+500", "100", "1100", "-1000"]],
+            },
+            "usPct_full": [{"l": "S&P 500", "v": -1.0, "close": 5000.0}],
+            "fxPct_full": [], "adrPct_full": [], "yieldPct_full": [],
+            "asiaPct_full": [], "futPct_full": [], "commPct_full": [], "news": [],
+        }
+        analyzer = V9Analyzer(parsed, {"rsi": 40.0, "macd_hist": -1.0, "closes": [float(80+i) for i in range(25)]})
+        analyzer.calculate_bias()
+        cards = build_41_cards(analyzer, parsed, None, {"exists": False, "rows": 0, "filled": 0, "mode": "no-db"})
+        self.assertIn("日盤淨交易 500口", cards["外資選擇權分歧"]["look"])
+        self.assertIn("夜盤 -1,000口", cards["外資選擇權分歧"]["look"])
+        self.assertIn("日夜方向分歧", cards["外資選擇權分歧"]["look"])
+        self.assertIn("三市場方向分歧", cards["主力三市透視"]["compass"])
+        self.assertIn("不直接相減", cards["前十大與分歧"]["look"])
+        self.assertNotIn("最後防線", cards["前十大與分歧"]["target"])
+
+    def test_historical_learning_and_correlation_exclude_future_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = str(Path(tmp) / "future-only.db")
+            conn = init_db(db)
+            for day in range(1, 9):
+                conn.execute(
+                    "INSERT INTO v9_pro_history (date,bias,spot_pct,foreign_spot,foreign_fut,pcr,vix,rsi,k,d,next_day_pct,correlation_eligible) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (f"2026-11-{day:02d}", 50, day, day*10, day*100, 0.5+day/100, 15+day, 30+day, 20+day, 25+day, 1.0, 1)
+                )
+            conn.commit()
+            conn.close()
+            self.assertIsNone(get_factor_win_rates_from_db(db, as_of_date="20261030"))
+            self.assertIsNone(find_historical_similarity({}, db, as_of_date="20261030"))
+            correlation = calculate_historical_correlation(db, as_of_date="20261030")
+            self.assertEqual(correlation["matrix"], [])
+            self.assertIn("0/5", correlation["desc"])
 
 
 if __name__ == "__main__":
