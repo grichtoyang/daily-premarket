@@ -1521,6 +1521,55 @@ def run_17f_self_tests():
         traceback.print_exc()
         return 1
 
+
+def run_historical_correlation_replay(report_dir="data_reports", dates=None):
+    """Replay real dated DATA_REPORTs into a temporary V9 DB and verify 0/5 -> 5/5 accumulation."""
+    import tempfile
+    dates = dates or ["20261027", "20261028", "20261029", "20261030", "20261102"]
+    with tempfile.TemporaryDirectory(prefix="v9-correlation-replay-") as tmp:
+        db_path=str(pathlib.Path(tmp)/"v9_pro_history.db")
+        print("[CORRELATION REPLAY] Temporary DB only; production history is untouched.")
+        for date in dates:
+            report_path=pathlib.Path(report_dir)/f"DATA_REPORT_{date}.md"
+            if not report_path.is_file():
+                raise FileNotFoundError(f"Historical DATA_REPORT missing: {report_path}")
+            parsed=parse_data_report(report_path)
+            report_date=str(parsed.get("meta",{}).get("t0_date") or "").replace("-","")
+            if report_date!=date:
+                raise ValueError(f"Report date mismatch: requested {date}, report T0={report_date}")
+            tech=fetch_technical_indicators_with_fallback(parsed["meta"]["t0_date"])
+            analyzer=V9Analyzer(parsed,tech)
+            bias,_,_=analyzer.calculate_bias()
+            if not save_today_to_db(bias,analyzer.signals,tech,date,db_path):
+                raise RuntimeError(f"Could not save historical sample {date}")
+            conn=sqlite3.connect(db_path)
+            row=conn.execute(
+                "SELECT correlation_eligible FROM v9_pro_history WHERE date=?",
+                (datetime.strptime(date,"%Y%m%d").strftime("%Y-%m-%d"),)
+            ).fetchone()
+            eligible_count=conn.execute(
+                "SELECT COUNT(*) FROM v9_pro_history WHERE correlation_eligible=1"
+            ).fetchone()[0]
+            conn.close()
+            corr=calculate_historical_correlation(db_path,min_samples=5,as_of_date=date)
+            print(f"[CORRELATION REPLAY] {date}: eligible={row[0] if row else 'missing'}; cumulative={eligible_count}/5; {corr['desc']}")
+        conn=sqlite3.connect(db_path)
+        final_count=conn.execute(
+            "SELECT COUNT(*) FROM v9_pro_history WHERE correlation_eligible=1"
+        ).fetchone()[0]
+        dates_saved=conn.execute(
+            "SELECT date FROM v9_pro_history WHERE correlation_eligible=1 ORDER BY date"
+        ).fetchall()
+        conn.close()
+        final=calculate_historical_correlation(db_path,min_samples=5,as_of_date=dates[-1])
+        if final_count<5 or not final.get("matrix") or len(final.get("labels",[]))<2:
+            raise AssertionError(
+                f"Historical correlation replay failed: {final_count}/5 eligible samples; {final.get('desc')}"
+            )
+        print(f"[CORRELATION REPLAY] PASS: {final_count}/5 real dated reports; dates={[x[0] for x in dates_saved]}; matrix={len(final['labels'])}x{len(final['labels'])}")
+    return 0
+
+
 def main():
     parser=argparse.ArgumentParser(description="V9 Pro Builder 17F + SQLite + 41 cards + data.json only - Skill daily-premarket-analysis-v9-pro")
     parser.add_argument('--data_report', default=None, help="path to DATA_REPORT md")
@@ -1528,9 +1577,12 @@ def main():
     parser.add_argument('--date', default=None, help="YYYYMMDD")
     parser.add_argument('--golden', default='templates/v9-pro-react-template.html', help="golden template path (for reference, v9 no longer injects)")
     parser.add_argument('--self-test', action='store_true', help="run fast offline 17F scoring tests and exit")
+    parser.add_argument('--history-replay', action='store_true', help="replay five real historical DATA_REPORTs and verify correlation accumulation in a temporary DB")
     args=parser.parse_args()
     if args.self_test:
         return run_17f_self_tests()
+    if args.history_replay:
+        return run_historical_correlation_replay()
     date_str=args.date.strip() if args.date else ""
     if date_str and (len(date_str)!=8 or not date_str.isdigit()):
         raise ValueError(f"Invalid --date {date_str!r}; expected YYYYMMDD")
