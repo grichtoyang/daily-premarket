@@ -1551,8 +1551,11 @@ def run_historical_correlation_replay(report_dir="data_reports", dates=None):
                 "SELECT COUNT(*) FROM v9_pro_history WHERE correlation_eligible=1"
             ).fetchone()[0]
             conn.close()
+            expected_count=dates.index(date)+1
+            if not row or row[0]!=1 or eligible_count!=expected_count:
+                raise AssertionError(f"Historical sample accumulation mismatch on {date}: eligible={row[0] if row else 'missing'}, cumulative={eligible_count}, expected={expected_count}")
             corr=calculate_historical_correlation(db_path,min_samples=5,as_of_date=date)
-            print(f"[CORRELATION REPLAY] {date}: eligible={row[0] if row else 'missing'}; cumulative={eligible_count}/5; {corr['desc']}")
+            print(f"[CORRELATION REPLAY] {date}: eligible={row[0]}; cumulative={eligible_count}/5; {corr['desc']}")
         conn=sqlite3.connect(db_path)
         final_count=conn.execute(
             "SELECT COUNT(*) FROM v9_pro_history WHERE correlation_eligible=1"
@@ -1562,11 +1565,22 @@ def run_historical_correlation_replay(report_dir="data_reports", dates=None):
         ).fetchall()
         conn.close()
         final=calculate_historical_correlation(db_path,min_samples=5,as_of_date=dates[-1])
-        if final_count<5 or not final.get("matrix") or len(final.get("labels",[]))<2:
+        matrix=final.get("matrix") or []
+        if final_count!=5 or not matrix or len(final.get("labels",[]))<2:
             raise AssertionError(
                 f"Historical correlation replay failed: {final_count}/5 eligible samples; {final.get('desc')}"
             )
-        print(f"[CORRELATION REPLAY] PASS: {final_count}/5 real dated reports; dates={[x[0] for x in dates_saved]}; matrix={len(final['labels'])}x{len(final['labels'])}")
+        if len(matrix)!=len(final["labels"]) or any(len(row)!=len(final["labels"]) for row in matrix):
+            raise AssertionError("Correlation matrix dimensions do not match labels")
+        if any(value is None or not math.isfinite(float(value)) for row in matrix for value in row):
+            raise AssertionError("Correlation matrix contains null or non-finite values")
+        for i in range(len(matrix)):
+            if abs(matrix[i][i]-1.0)>1e-4:
+                raise AssertionError(f"Correlation diagonal is not 1.0 at index {i}")
+            for j in range(len(matrix)):
+                if abs(matrix[i][j]-matrix[j][i])>1e-4:
+                    raise AssertionError(f"Correlation matrix is not symmetric at ({i},{j})")
+        print(f"[CORRELATION REPLAY] PASS: {final_count}/5 real dated reports; dates={[x[0] for x in dates_saved]}; finite symmetric matrix={len(final['labels'])}x{len(final['labels'])}")
     return 0
 
 
