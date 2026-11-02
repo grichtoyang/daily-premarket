@@ -1531,7 +1531,7 @@ def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports"
     paths=sorted(pathlib.Path(report_dir).glob("DATA_REPORT_*.md"))
     selected=[]
     for path in paths:
-        match=re.search(r"DATA_REPORT_(\\d{8})\\.md$",path.name)
+        match=re.search(r"DATA_REPORT_(\d{8})\.md$",path.name)
         if not match:
             continue
         report_date=_t0_iso_date(match.group(1))
