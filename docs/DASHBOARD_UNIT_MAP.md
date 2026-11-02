@@ -59,7 +59,7 @@
 | 30 | Call OI 分布 Top10 | 履約價、OI、佔比 | 點、口、% |
 | 31 | Put OI 分布 Top10 | 履約價、OI、佔比 | 點、口、% |
 | 32 | Call Wall／Put Wall／Gamma／Flip／Max Pain | 各關鍵價位 | 點 |
-| 33 | 選擇權法人交易 | 日／夜多空淨交易及力道 | 口或億元，必須依來源表格分列，不得混用 |
+| 33 | 選擇權法人交易 | `options.instOpt` 日／夜盤多空淨交易；`options.instOptForce` 法人多空力道表 | 交易口數：口；力道金額：億元。前者依 DATA_REPORT 第 17 節，後者依「法人多空力道表」；兩組數值不可混用 |
 | 34 | 前十大選擇權 | Call／Put OI 與快照變化 | 口 |
 | 35 | 履約價 GEX 分布 | Net／Gross GEX、逐履約價曝險 | NT$／標的價格變動 1%；履約價為點。依 Worker 公式量綱推導，非 TAIFEX 官方欄位 |
 
@@ -79,5 +79,5 @@
 
 - 本表先建立 42 區塊的單位覆蓋骨架；欄位級驗收須將每個顯示欄位與實際 JSON path、Builder parser、DATA_REPORT 原文逐一對照。
 - 重要市場的匯率報價方向、商品合約單位及殖利率變化原始欄位，需由 DATA_REPORT 實際列與來源 schema 確認。
-- GEX 單位依 Worker 生產公式推導為 NT$／標的價格變動 1%；仍需留意其為模型估值、非 TAIFEX 官方 GEX。
+- GEX 單位已由 Worker 生產公式與 DATA_REPORT 14A 單位欄確認為 NT$／標的價格變動 1%；仍需留意其為模型估值、非 TAIFEX 官方 GEX。
 - 手機與桌面實際渲染未完成前，所有版面重疊檢查維持 NOT TESTED。
