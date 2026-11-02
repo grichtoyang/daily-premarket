@@ -1,4 +1,15 @@
+import sys
+import types
 import unittest
+
+try:
+    import requests  # noqa: F401
+except ImportError:
+    class _Timeout(Exception):
+        pass
+    _requests_stub = types.ModuleType("requests")
+    _requests_stub.exceptions = types.SimpleNamespace(Timeout=_Timeout)
+    sys.modules["requests"] = _requests_stub
 
 from src.sources.taifex import _missing_night_fields
 
