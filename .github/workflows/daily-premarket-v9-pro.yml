@@ -108,6 +108,11 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -p "test_spot_institution_classification.py" -v
 
+      - name: Run three-market scenario regression tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p "test_three_market_scenarios.py" -v
+
       - name: Run 17F offline self-tests
         run: |
           set -euo pipefail
