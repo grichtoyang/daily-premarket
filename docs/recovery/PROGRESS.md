@@ -566,3 +566,20 @@ P1 尚未開始。啟動前必須：
 - 因子預測力／walk-forward 不屬本次 P0 收尾範圍，不列入待辦。新增 Fetch Data／Runner／Worker 均 NOT IN SCOPE。
 
 結案定義：P0 結案後稽核收尾完成；GEX 原始輸入重建保留 BLOCKED 限制。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 11. 2026-11-02 法人三市場區塊 A/B Template 與建置來源一致性驗收
+
+- 工作分支：`fix/three-market-correlation-history`。
+- 最新程式／Workflow Commit：`38162c1b84ac8f309f618a69d8e9606c82eb737c`（`fix(ci): pin V9 Pro build to triggering branch template`）。
+- 區塊 A：現貨法人（億元）、期貨 OI／日夜盤交易流量（口）、選擇權法人日夜盤交易流量（口）拆分獨立圖表；明確區分 OI 存量與交易流量。
+- 區塊 B：選擇權法人多空力道標示金額單位（億元），並明確說明非淨交易口數或 OI。
+- 選擇權法人表格：標示淨交易口數及日盤／夜盤單位。
+- 建置來源防呆：第一個 checkout 固定使用觸發本次 workflow 的 `github.sha`；新增來源驗證，確認工作目錄 HEAD 與觸發 SHA 一致，且 Template worktree blob SHA 與該 Commit 內的 Template blob SHA 相同。
+- Master checkout 改名為「Checkout master dashboard source for Pages root only」；只用於 Pages 根目錄，V9 Pro 新版產物仍放在 `p0/`。
+- GitHub Actions Run `41475229916`：completed / success；build job 成功，Deploy 依分支保護條件 skipped（未部署）。
+- Run Artifact `13156417750`（`github-pages`，1,780,599 bytes，未過期）。
+- 本次新增來源驗證步驟 PASS；10/30 Golden Fixture 與正式建置 HTML inline JavaScript syntax check PASS；Pages artifact 組裝與上傳 PASS。
+- Master、V8、P0 baseline 未修改；未 Merge／Rebase／Force Push／部署。
+- 實際瀏覽器／手機視覺驗收：NOT TESTED；Golden Fixture 語法通過不等於畫面驗收。
+- 本輪 Auditor 為單模型自我審查，非獨立多模型審核。
