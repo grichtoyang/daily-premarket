@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from v9_pro_builder import (parse_data_report, parse_margin_ratio_provenance, _filter_history_to_t0, V9Analyzer, build_41_cards, init_db, get_factor_win_rates_from_db, find_historical_similarity, calculate_historical_correlation, build_history_status_text)
+from v9_pro_builder import (parse_data_report, parse_margin_ratio_provenance, _filter_history_to_t0, V9Analyzer, build_41_cards, init_db, get_factor_win_rates_from_db, find_historical_similarity, calculate_historical_correlation, build_history_status_text, build_factor_quality_summary)
 
 
 class BuilderOptionTableTests(unittest.TestCase):
@@ -108,6 +108,9 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertEqual(gex["status"], "disabled")
         self.assertEqual(gex["raw_value"], 123456.0)
         self.assertIn("不等同市場多空方向", gex["reason"])
+        self.assertIn("gex", analyzer.factor_quality["disabled_factors"])
+        self.assertNotIn("gex", analyzer.factor_quality["missing_factors"])
+        self.assertIn("有值停用1", build_factor_quality_summary(analyzer))
 
     def test_us_stock_breadth_excludes_vix_and_dxy_is_separate(self):
         parsed = {
