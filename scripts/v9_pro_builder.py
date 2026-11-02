@@ -1110,6 +1110,46 @@ def classify_spot_institutions(values):
     return "現貨三法人方向分歧"
 
 
+def classify_three_market(values):
+    """Classify spot/futures/options direction only when all three flows are valid."""
+    if len(values) != 3 or any(value is None for value in values):
+        return "三市場資料不完整，不能判定一致性"
+    nums = [float(value) for value in values]
+    if all(value > 0 for value in nums):
+        return "三市場一致偏多"
+    if all(value < 0 for value in nums):
+        return "三市場一致偏空"
+    return "三市場方向分歧"
+
+
+def classify_futures_oi(values):
+    """Assess whether the three institutional futures OI snapshot is usable."""
+    if len(values) != 3:
+        return "期貨淨 OI 欄位不完整，不能判定快照可信度", False
+    nums = []
+    for value in values:
+        try:
+            number = float(value)
+            nums.append(number if math.isfinite(number) else None)
+        except (TypeError, ValueError):
+            nums.append(None)
+    if all(value == 0 for value in nums):
+        return "三法人淨 OI 全為 0，視為可疑快照，不納入方向判斷", True
+    if any(value is None for value in nums):
+        return "期貨淨 OI 有缺值，僅採可用欄位", False
+    return "期貨淨 OI 可讀取；仍與日盤交易流量分開解讀", False
+
+
+def classify_option_sessions(day, night):
+    if day is None or night is None:
+        return "日夜資料不足"
+    if day * night > 0:
+        return "日夜同向"
+    if day * night < 0:
+        return "日夜方向分歧"
+    return "至少一盤中性"
+
+
 def build_41_cards(analyzer, parsed, historical, db_status):
     bias=analyzer.bias_score; regime=analyzer.gen_bias_card()['regime']; factors=analyzer.bias_factors; s=analyzer.signals; weights=analyzer.weights
     factor_str=" ".join([f"{n}{v:+d}" for n,v in factors[:6]])
@@ -1162,29 +1202,13 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     option_foreign_day=signed_table_value(opt_foreign_row,3)
     option_foreign_night=signed_table_value(opt_foreign_row,6)
     option_day_dir=direction(option_foreign_day); option_night_dir=direction(option_foreign_night)
-    if option_foreign_day is not None and option_foreign_night is not None:
-        option_session_text=('日夜同向' if option_foreign_day*option_foreign_night>0 else '日夜方向分歧' if option_foreign_day*option_foreign_night<0 else '至少一盤中性')
-    else:
-        option_session_text='日夜資料不足'
+    option_session_text=classify_option_sessions(option_foreign_day, option_foreign_night)
     # 三市場解析：分開現貨金額、期貨/選擇權交易流量與 OI 存量，避免跨口徑直接比較。
     spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
     three_market_values=[foreign,foreign_day,option_foreign_day]
-    if all(value is not None for value in three_market_values):
-        three_market_text=('三市場一致偏多' if all(value>0 for value in three_market_values) else '三市場一致偏空' if all(value<0 for value in three_market_values) else '三市場方向分歧')
-    else:
-        three_market_text='三市場資料不完整，不能判定一致性'
+    three_market_text=classify_three_market(three_market_values)
     futures_oi_values=[parsed.get('futures',{}).get(key) for key in ('foreign_oi','trust_oi','dealer_oi')]
-    futures_oi_numbers=[]
-    for value in futures_oi_values:
-        try:
-            number=float(value)
-            futures_oi_numbers.append(number if math.isfinite(number) else None)
-        except (TypeError,ValueError):
-            futures_oi_numbers.append(None)
-    futures_oi_all_zero=(len(futures_oi_numbers)==3 and all(value is not None and value==0 for value in futures_oi_numbers))
-    futures_oi_status=("三法人淨 OI 全為 0，視為可疑快照，不納入方向判斷" if futures_oi_all_zero else
-                       "期貨淨 OI 有缺值，僅採可用欄位" if any(value is None for value in futures_oi_numbers) else
-                       "期貨淨 OI 可讀取；仍與日盤交易流量分開解讀")
+    futures_oi_status, futures_oi_all_zero=classify_futures_oi(futures_oi_values)
     opt_trust_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='投信'),None)
     opt_dealer_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='自營商'),None)
     option_trust_day=signed_table_value(opt_trust_row,3)
