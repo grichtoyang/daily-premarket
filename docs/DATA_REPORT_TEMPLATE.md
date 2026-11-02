@@ -26,7 +26,7 @@
 ## 二、重要市場 (8 節，API 優先、失敗 unavailable 不推估，保留 data_source/retrieved_at/timezone；殖利率水準用 %、日變化用百分點；匯率標示貨幣對與報價方向；商品價格依來源合約單位)
 
 1. 美股指數 `^GSPC ^IXIC ^NDX ^DJI ^SOX ^VIX` 2. 亞洲 `^N225 ^KS11 ^HSI 000001.SS 399001.SZ`
-3. 美股期貨 `ES=F NQ=F YM=F RTY=F` 4. 美債 `2 Yr 10 Yr 30 Yr` (FiscalData 主、Yahoo 備)
+3. 美股期貨 `ES=F NQ=F YM=F RTY=F` 4. 美債 `2 Yr 10 Yr 20 Yr 30 Yr` (FiscalData 主；2Y/20Y Treasury XML 備、10Y/30Y Yahoo 備)
 5. 匯率 `TWD=X DX-Y.NYB JPY=X KRW=X` 6. ADR `TSM UMC ASX`
 7. 商品 `CL=F GC=F BTC-USD` (期貨勿標現貨；BTC 用最新價) 8. 重大事件/新聞
 
