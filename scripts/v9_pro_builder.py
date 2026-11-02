@@ -1196,7 +1196,6 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         "若外資現貨賣超收斂、期貨日盤流量轉弱或翻空、選擇權日盤淨流量仍偏空，才視為賣壓延續；"
         "若期貨與選擇權流量轉同向且現貨賣超收斂，再確認分歧是否收斂。未收斂前不追單。"
     )
-    spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
     if all(value is not None for value in spot_inst_values) and all(float(value)>0 for value in spot_inst_values):
         spot_inst_text='三法人現貨同向買超'
     elif all(value is not None for value in spot_inst_values) and all(float(value)<0 for value in spot_inst_values):
@@ -1248,11 +1247,31 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '交易計畫': bias_card,
         '行事曆': news_card,
         '法人籌碼': {"look": f"外資現貨 {display(foreign)}億元（{direction(foreign)}）；期貨淨 OI {display(foreign_fut,0)}口；投信 {display(parsed['inst'].get('trust'))}億元；自營商 {display(parsed['inst'].get('dealer'))}億元", "compass": f"現貨外資 {direction(foreign)}、投信 {direction(parsed['inst'].get('trust'))}；依實際數值呈現，不預設對作", "target": f"觀察外資現貨後續變化；Put Wall {put_wall_text}僅為價位參考"},
-        '主力三市透視': {"look": three_market_look, "compass": three_market_compass, "target": three_market_target},
-        '三市一致性': {"look": three_market_look, "compass": three_market_compass, "target": three_market_target},
-        '期現選方向對照': {"look": three_market_look + f"；OI PCR {pcr_text}倍", "compass": three_market_compass, "target": three_market_target + f" Put Wall {put_wall_text}僅作獨立價位觀察；PCR 是 OI 比值，不代表交易流量。"},
-        '籌碼三市矩陣': {"look": three_market_look, "compass": three_market_compass, "target": three_market_target},
-        '主力意圖解碼': {"look": three_market_look + f"；期貨 OI {display(foreign_fut,0)}口", "compass": three_market_compass, "target": three_market_target},
+        '主力三市透視': {
+            "look": three_market_look,
+            "compass": f"外資現貨{direction(foreign)}、期貨日盤流量{direction(foreign_day)}、選擇權日盤流量{option_day_dir}；{three_market_text}。{futures_oi_status}。",
+            "target": "先以現貨賣超是否收斂作方向確認，再觀察期貨與選擇權流量能否同向；三者未收斂前不把單一市場訊號當成整體主力方向。"
+        },
+        '三市一致性': {
+            "look": f"外資：現貨{direction(foreign)}；期貨日盤{direction(foreign_day)}；選擇權日盤{option_day_dir}、夜盤{option_night_dir}。",
+            "compass": f"外資跨市場一致性：{three_market_text}。期貨與選擇權均為交易流量；期貨 OI 另列為存量，{futures_oi_status}。",
+            "target": "只有現貨、期貨與選擇權方向轉為同向，且期貨 OI 快照恢復可信，才提高方向一致性的判斷權重；否則維持分歧狀態。"
+        },
+        '期現選方向對照': {
+            "look": f"現貨外資 {signed_text(foreign,'億元',1)}；期貨日盤 {signed_text(foreign_day,'口')}；選擇權日盤 {signed_text(option_foreign_day,'口')}、夜盤 {signed_text(option_foreign_night,'口')}；OI PCR {pcr_text}倍。",
+            "compass": f"期貨日盤流量與選擇權日盤流量{('同為偏多' if foreign_day is not None and option_foreign_day is not None and foreign_day>0 and option_foreign_day>0 else '同為偏空' if foreign_day is not None and option_foreign_day is not None and foreign_day<0 and option_foreign_day<0 else '方向不同或至少一項中性')}；PCR 是未平倉量比值，不能替代交易流量。",
+            "target": f"Put Wall {put_wall_text}僅作獨立價位觀察；下一交易日檢查期貨與選擇權流量是否延續，並確認現貨外資賣超有無收斂。"
+        },
+        '籌碼三市矩陣': {
+            "look": f"現貨（億元）：外資 {signed_text(spot_inst_values[0],'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、自營商 {signed_text(spot_inst_values[2],'億元',1)}；選擇權日盤（口）：外資 {signed_text(option_foreign_day,'口')}、投信 {signed_text(option_trust_day,'口')}、自營商 {signed_text(option_dealer_day,'口')}。",
+            "compass": f"現貨三法人：{spot_inst_text}；選擇權三法人日盤：外資{direction(option_foreign_day)}、投信{direction(option_trust_day)}、自營商{direction(option_dealer_day)}。兩市場口徑不同，僅比較各自方向。",
+            "target": "觀察投信現貨買超能否延續，以及外資現貨賣壓是否收斂；選擇權法人日盤流量若持續與現貨方向相反，視為籌碼分歧而非直接抵銷。"
+        },
+        '主力意圖解碼': {
+            "look": f"現貨外資 {signed_text(foreign,'億元',1)}；期貨外資淨 OI {display(foreign_fut,0)}口；期貨日盤淨交易 {signed_text(foreign_day,'口')}；選擇權外資日盤 {signed_text(option_foreign_day,'口')}。",
+            "compass": f"目前可確認的是跨市場部位／流量分歧，不足以證明主力控盤意圖。{futures_oi_status}；不得以 OI 全零推定外資沒有部位。",
+            "target": "後續需同時追蹤外資期貨淨 OI 的有效變化、期貨日盤淨交易，以及選擇權日盤流量；三者連續同向才提高意圖判讀可信度。"
+        },
         '夜盤劇本': {"look": f"夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '台指夜盤劇本': {"look": f"台指夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '資金流向': spot_card,
