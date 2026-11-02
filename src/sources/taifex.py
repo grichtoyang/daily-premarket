@@ -26,6 +26,12 @@ FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional
             "options-institutional-after-hours", "options-after-hours",
             "options-day-call-put"]
 INST_ZH = {"foreign": "外資", "investment_trust": "投信", "dealer": "自營商"}
+
+def _missing_night_fields(night: dict) -> list[str]:
+    """Return report-visible night-session fields that have no value."""
+    fields = ("open", "high", "low", "close", "change", "pct", "vol", "settle", "oi")
+    return [f"futures.night.{field}" for field in fields if night.get(field) is None]
+
 # F1（2026-10-19）：快照 bundle memoize。build() 與 snap_top10_change() 取的是同一份
 # T-1 快照（報表多處引用），同一進程內重複請求同一 (proxy, date) 只快取成功結果；
 # 失敗仍每次重抓（不把一次上游故障釘成永久 unavailable）。
@@ -441,9 +447,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
 
     # 完整性清單必須涵蓋報告表格實際顯示 unavailable 的夜盤欄位。
     # 夜盤 OHLC 與 after-hours 結算價／OI 是不同端點欄位，逐欄列入，不以 0 代替。
-    for _field in ("open", "high", "low", "close", "change", "pct", "vol", "settle", "oi"):
-        if night.get(_field) is None:
-            unav.append(f"futures.night.{_field}")
+    unav.extend(_missing_night_fields(night))
 
     # ---------- 期貨 3：法人 OI + 變化 ----------
     oi = _by_inst(_rows(P["futures-institutional-oi"]))
