@@ -666,14 +666,14 @@ def parse_data_report(report_path):
 
     foreign_inst=optional_get(r"\| 外資 \| ([-\+0-9,.]+) \| 億元"); trust_inst=optional_get(r"\| 投信 \| ([-\+0-9,.]+) \| 億元")
     dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9,.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9,.]+) \| 億元","三大法人")
-    margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元","0"); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元","0")
-    margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張","0")
+    margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元",None); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元",None)
+    margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張",None)
     margin_provenance=parse_margin_ratio_provenance(text, t0_date)
     margin_ratio=margin_provenance["ratio"]
     margin_ratio_source=margin_provenance["source_detail"] or ""
     margin_ratio_source_date=margin_provenance["source_date"]
     margin_ratio_status=margin_provenance["status"]
-    sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張","0")
+    sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張",None)
     sbl_sold_balance=get_value(r"\| 借券賣出餘額 \| ([0-9,]+) \| 張",None)
     sbl_sold_change=get_value(r"\| 借券賣出增減 \| ([-\\+0-9,]+) \| 張",None)
     sbl_sold_change_scope=("上櫃（上市 TWT93U 未取得）" if re.search(r"借券賣出增減僅上櫃值",text) else "範圍未註明")
