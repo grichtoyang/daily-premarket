@@ -41,6 +41,9 @@ class DashboardUnitContractTests(unittest.TestCase):
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
         self.assertIn("42 區塊", unit_map)
         self.assertIn("履約價 GEX 分布", unit_map)
+        self.assertIn("spot.otc.up/down/flat/limit_up/limit_down", unit_map)
+        self.assertIn("parse_data_report()", unit_map)
+        self.assertNotIn("GEX 單位 BLOCKED", unit_map)
 
     def test_spot_turnover_uses_turnover_chart_not_options_volume_chart(self):
         html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
