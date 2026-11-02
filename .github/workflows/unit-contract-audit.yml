@@ -6,6 +6,7 @@ on:
       - phase2-p0-ui-fixes
     paths:
       - 'scripts/v9_pro_builder.py'
+      - 'src/fetch_data.py'
       - 'templates/v9-pro-react-template.html'
       - 'docs/DASHBOARD_UNIT_*.md'
       - 'docs/DATA_REPORT_TEMPLATE.md'
