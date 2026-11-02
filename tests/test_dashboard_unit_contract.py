@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import re
 import unittest
 
 
@@ -48,6 +49,20 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('changeUnit:o.key==="yields"?"pp":"%"', html)
         self.assertIn('殖利率水準：%；日變化：百分點（pp）。', html)
         self.assertIn('履約價／現價／Call Wall／Put Wall：點；OI：口。', html)
+
+    def test_42_block_registry_and_chart_notes_are_complete(self):
+        unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
+        block_numbers = [int(value) for value in re.findall(r"^\\|\\s*(\\d+)\\s*\\|", unit_map, re.MULTILINE)]
+        self.assertEqual(block_numbers, list(range(1, 43)))
+
+        html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
+        cards = html.split("p(V,{title:")[1:]
+        chart_cards = [card.split("}),p(V,{title:", 1)[0] for card in cards]
+        self.assertGreater(len(chart_cards), 0)
+        for index, card in enumerate(chart_cards, start=1):
+            if "chart:" in card:
+                self.assertIn("chartNote:", card, f"Chart card {index} has no adjacent unit note")
+        self.assertIn('chartNote&&p("div"', html)
 
 
 if __name__ == "__main__":
