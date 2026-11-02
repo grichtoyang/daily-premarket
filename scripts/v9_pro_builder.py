@@ -1523,7 +1523,7 @@ def run_17f_self_tests():
 
 
 
-def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports", db_path="dashboards/v9_pro_history.db", lookback=60):
+def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports", db_path="dashboards/v9_pro_history.db", lookback=5):
     """Seed the build-local V9 history DB from committed dated DATA_REPORTs before dashboard generation."""
     cutoff=_t0_iso_date(as_of_date)
     if not cutoff:
