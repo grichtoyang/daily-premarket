@@ -1189,7 +1189,7 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     opt_dealer_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='自營商'),None)
     option_trust_day=signed_table_value(opt_trust_row,3)
     option_dealer_day=signed_table_value(opt_dealer_row,3)
-def signed_text(value, unit, digits=0):
+    def signed_text(value, unit, digits=0):
         return "資料不足" if value is None else f"{value:+,.{digits}f}{unit}"
     three_market_look=(
         f"現貨外資 {signed_text(foreign,'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、"
