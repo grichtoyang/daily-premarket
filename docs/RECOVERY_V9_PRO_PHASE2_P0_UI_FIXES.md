@@ -400,3 +400,44 @@ tests/test_dashboard_unit_contract.py 新增：
   - analysis_card_count=48 是內部分析敘述卡數；visible_block_count=42 是使用者定義的可見 Dashboard 區塊數；cards_41_count 僅為相容舊版的 alias。
 - 最新 artifact 的本輪實際瀏覽器截圖驗收：NOT TESTED（目前執行環境阻擋 localhost／file 頁面導航）；最新 CI 的靜態、Builder、資料解析與 HTML 預覽測試均 PASS。此前版本的六頁 Desktop／Mobile 技術渲染紀錄仍保留於 9.7。
 - 最新 Recovery 文件更新後，分支 head 會再前進一個文件提交；上述程式驗證均對應 8d08df0504d378c2d3f2592802062e83bd37c8fa。
+## 9.9 最終欄位語義抽樣複核與交付（2026-11-02）
+
+### A. 最新 CI 狀態確認
+- V9 UI Fixes Regression Run **41393233879**：completed / success，job regression PASS。
+- V9 Pro Unit Contract Audit Run **41393233848**：completed / success。
+- Daily Premarket V9 Pro Run **41393233928**：completed / success；Build PASS，Deploy SKIPPED（本分支不正式部署）。
+- 三者對應 commit：8d08df0504d378c2d3f2592802062e83bd37c8fa。
+
+### B. 最新 artifact 實際資料複核
+- 由 Run 41393233928 的 github-pages artifact（ID 13117683797）下載並解壓，實際複核 p0/data-20261030.json 與 p0/v9-pro-20261030.html。
+- HTML：317,862 bytes；JSON：91,941 bytes；T0=2026-10-30；報告產出時間 2026-11-01 23:51:51（Asia/Taipei）。
+- 42 個可見區塊；內部 analysis cards 為 48，兩者用途不同，不能將 48 當成可見區塊數。
+- 技術歷史來源 Yahoo；18 筆收盤序列；spot5 最後日期 10/30，沒有 T0 之後日期。
+- MACD／MACD signal／hist 為 null，因可用歷史序列不足；相應 MACD 因子列入 missing，不以 0 代替。RSI=32.85、K=20.98、D=20.46。
+- PCR：Put OI 59,945 ÷ Call OI 98,551 = 0.6083，顯示 0.61，符合定義。
+- GEX：139 個履約價；Net GEX 1,294,327,419.009 NT$／1%；Gross GEX 6,320,130,202.133 NT$／1%。逐履約價 Net 加總與總值差約 0.0000012 NT$（浮點加總誤差）；Gross 加總差 0。
+- 法人現貨：外資 -1,124.7 億、投信 +236.2 億、自營商 -513.7 億，合計 -1,402.2 億，算術一致。
+- 成交金額：上市 9,396.1 億 + 上櫃 1,987.7 億 = 11,383.8 億；顯示總額 11,383.7 億，差 0.1 億，屬各欄位先四捨五入後再顯示造成的精度差。這不是精確相等；若後續需要嚴格對帳，應以未四捨五入原始值計算總額，再統一顯示精度。
+- 新聞 12 則；第一則新聞有標題、發布時間與原文 URL。
+- 因子品質：active 12/17；missing 為 yield、volume、ma_bias、macd；disabled 僅 gex；有效權重正規化總和 100%。GEX 有數值但不參與方向評分，未被誤列為缺值。
+- 融資維持率顯示 171.75%，狀態 estimated_t0；來源說明上市自建估算 1,238 檔，4 檔使用最近有效收盤價，並有 Blave 同 T0 交叉驗證。此為估算口徑，不宣稱全市場逐檔當日價格完整。
+- 借券賣出 36,178 張、增減 -1,273 張，明確註記上櫃範圍；上市 TWT93U 未取得，不冒稱全市場。
+
+### C. 最終驗收分類
+| 項目 | 狀態 | 說明 |
+|---|---|---|
+| 42 區塊欄位／單位／來源／正負號文件矩陣 | PASS | 文件及自動契約測試通過 |
+| Builder／JSON 主要欄位與公式 | PASS | 最新 artifact 實值抽樣複核 |
+| T0 防前視邊界 | PASS | 日期序列截至 2026-10-30 |
+| GEX、PCR、法人合計、新聞、因子狀態 | PASS | 最新 JSON 實值核對 |
+| 成交金額分項與合計 | PASS with rounding note | 顯示值差 0.1 億；需保留原始精度才能精確核對 |
+| 上游供應商逐筆原始 API 對帳 | NOT TESTED | 本次未逐筆對外部供應商原始端做獨立對帳 |
+| 因子預測力／walk-forward | NOT TESTED | 語義正確不等於策略有預測力 |
+| 最新 artifact 的實際瀏覽器六頁 Desktop／Mobile 完整人工視覺驗收 | NOT TESTED | 最新 artifact 已核對檔案與 JSON；本次未完成可靠的瀏覽器互動全頁複驗 |
+| 使用者最後視覺確認 | NOT DONE | 需由使用者開啟最新 HTML 確認 |
+| Merge／正式部署 | NOT DONE | Deploy SKIPPED；未碰 Master／V8 |
+
+### D. 交付檔
+- 最新 Dashboard HTML：p0/v9-pro-20261030.html（317,862 bytes）。
+- 同版 JSON：p0/data-20261030.json（91,941 bytes）。
+- 下載交付使用者的獨立 HTML 檔以本次對話提供的下載連結為準；它是 Run 41393233928 的 artifact 原檔，不是重新拼裝或手動改寫版本。
