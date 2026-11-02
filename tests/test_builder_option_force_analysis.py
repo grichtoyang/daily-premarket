@@ -61,7 +61,7 @@ class OptionForceAnalysisTests(unittest.TestCase):
     def test_day_minus_night_is_not_mislabeled_as_day_over_day_change(self):
         analysis = build_option_force_analysis(self.force_rows, self.volume_rows)
         self.assertAlmostEqual(analysis["day_minus_night"], -0.41, places=2)
-        self.assertIn("日淨－夜淨", analysis["method"] if "日淨－夜淨" in analysis["method"] else "日淨－夜淨欄位由來源提供")
+        self.assertIn("日淨－夜淨」是兩個時段淨額相減", analysis["method"])
 
 
 if __name__ == "__main__":
