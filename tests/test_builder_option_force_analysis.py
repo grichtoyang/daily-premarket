@@ -42,7 +42,10 @@ class OptionForceAnalysisTests(unittest.TestCase):
         self.assertEqual(analysis["status"], "available")
         self.assertEqual(len(analysis["volume_divergences"]), 1)
         self.assertIn("外資日盤", analysis["volume_divergences"][0])
-        self.assertIn("方向背離", analysis["compass"])
+        self.assertIn("4 組同向、1 組背離、1 組中性", analysis["compass"])
+        self.assertIn("來源日淨－夜淨差 -0.41 億元", analysis["look"])
+        self.assertEqual(len(analysis["volume_concordant"]), 4)
+        self.assertEqual(len(analysis["volume_neutral"]), 1)
 
     def test_missing_values_are_not_silently_converted_to_zero(self):
         rows = [list(row) for row in self.force_rows]
