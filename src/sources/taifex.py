@@ -439,6 +439,12 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         else:
             notes.append("夜盤開高低收未取得 (proxy 與官方皆無)，僅成交量/OI/結算價")
 
+    # 完整性清單必須涵蓋報告表格實際顯示 unavailable 的夜盤欄位。
+    # 夜盤 OHLC 與 after-hours 結算價／OI 是不同端點欄位，逐欄列入，不以 0 代替。
+    for _field in ("open", "high", "low", "close", "change", "pct", "vol", "settle", "oi"):
+        if night.get(_field) is None:
+            unav.append(f"futures.night.{_field}")
+
     # ---------- 期貨 3：法人 OI + 變化 ----------
     oi = _by_inst(_rows(P["futures-institutional-oi"]))
     hist = (_get("futures-institutional-oi-history", t0) or {}).get("data") or []
