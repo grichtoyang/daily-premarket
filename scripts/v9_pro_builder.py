@@ -1270,24 +1270,69 @@ def build_41_cards(analyzer, parsed, historical, db_status):
             )
         },
         '三市一致性': {
-            "look": f"外資：現貨{direction(foreign)}；期貨日盤{direction(foreign_day)}；選擇權日盤{option_day_dir}、夜盤{option_night_dir}。",
-            "compass": f"外資跨市場一致性：{three_market_text}。期貨與選擇權均為交易流量；期貨 OI 另列為存量，{futures_oi_status}。",
-            "target": "只有現貨、期貨與選擇權方向轉為同向，且期貨 OI 快照恢復可信，才提高方向一致性的判斷權重；否則維持分歧狀態。"
+            "look": (
+                f"外資跨市場方向檢查：現貨 {signed_text(foreign,'億元',1)}；期貨日盤淨交易 {signed_text(foreign_day,'口')}；"
+                f"選擇權日盤 {signed_text(option_foreign_day,'口')}、夜盤 {signed_text(option_foreign_night,'口')}。"
+                f"期貨 OI {display(foreign_fut,0)}口；{futures_oi_status}"
+            ),
+            "compass": (
+                f"一致性判定：現貨{direction(foreign)}、期貨流量{direction(foreign_day)}、選擇權日盤流量{direction(option_foreign_day)}。"
+                f"{three_market_text}。目前不是三市場同向訊號；且期貨 OI {('無效，不能用來確認存量方向' if futures_oi_all_zero else '仍須與前期有效快照比較，單一存量值不代表新增買賣') }。"
+            ),
+            "target": (
+                "升級為偏多共識：外資現貨由賣轉買或賣超顯著收斂，且期貨與選擇權日盤流量連續同向偏多；"
+                "升級為偏空共識：現貨賣超延續，且期貨與選擇權流量同步偏空。"
+                "任一市場缺值或期貨 OI 快照異常時，標記為『共識未成立』，不以缺值補方向。"
+            )
         },
         '期現選方向對照': {
-            "look": f"現貨外資 {signed_text(foreign,'億元',1)}；期貨日盤 {signed_text(foreign_day,'口')}；選擇權日盤 {signed_text(option_foreign_day,'口')}、夜盤 {signed_text(option_foreign_night,'口')}；OI PCR {pcr_text}倍。",
-            "compass": f"期貨日盤流量與選擇權日盤流量{('同為偏多' if foreign_day is not None and option_foreign_day is not None and foreign_day>0 and option_foreign_day>0 else '同為偏空' if foreign_day is not None and option_foreign_day is not None and foreign_day<0 and option_foreign_day<0 else '方向不同或至少一項中性')}；PCR 是未平倉量比值，不能替代交易流量。",
-            "target": f"Put Wall {put_wall_text}僅作獨立價位觀察；下一交易日檢查期貨與選擇權流量是否延續，並確認現貨外資賣超有無收斂。"
+            "look": (
+                f"方向對照（不同單位不可加總）：現貨外資 {signed_text(foreign,'億元',1)}；"
+                f"期貨日盤淨交易 {signed_text(foreign_day,'口')}；選擇權外資日盤 {signed_text(option_foreign_day,'口')}、"
+                f"夜盤 {signed_text(option_foreign_night,'口')}；PCR（OI 比值）{pcr_text}倍；Put Wall {put_wall_text}。"
+            ),
+            "compass": (
+                f"期貨流量與選擇權日盤流量：{('同向偏多' if foreign_day is not None and option_foreign_day is not None and foreign_day>0 and option_foreign_day>0 else '同向偏空' if foreign_day is not None and option_foreign_day is not None and foreign_day<0 and option_foreign_day<0 else '未形成同向訊號')}。"
+                f"PCR 反映 Put／Call 未平倉量相對結構，不等於當日買賣方向；Put Wall 是履約價集中區，不是保證支撐。"
+                f"因此現有數據若流量背離，應判為訊號衝突，而非用 PCR 抵銷交易流量。"
+            ),
+            "target": (
+                f"若期貨與選擇權流量連續同向，才列為短線方向候選；仍須等現貨外資賣壓收斂／買超確認。"
+                f"價格接近 Put Wall {put_wall_text}時，觀察是否止跌並重新站回，不因觸及價位直接進場；跌破且反彈無法收復，才提高下行風險評估。"
+            )
         },
         '籌碼三市矩陣': {
-            "look": f"現貨（億元）：外資 {signed_text(spot_inst_values[0],'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、自營商 {signed_text(spot_inst_values[2],'億元',1)}；選擇權日盤（口）：外資 {signed_text(option_foreign_day,'口')}、投信 {signed_text(option_trust_day,'口')}、自營商 {signed_text(option_dealer_day,'口')}。",
-            "compass": f"現貨三法人：{spot_inst_text}；選擇權三法人日盤：外資{direction(option_foreign_day)}、投信{direction(option_trust_day)}、自營商{direction(option_dealer_day)}。兩市場口徑不同，僅比較各自方向。",
-            "target": "觀察投信現貨買超能否延續，以及外資現貨賣壓是否收斂；選擇權法人日盤流量若持續與現貨方向相反，視為籌碼分歧而非直接抵銷。"
+            "look": (
+                f"現貨法人淨買賣（億元）：外資 {signed_text(spot_inst_values[0],'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、自營商 {signed_text(spot_inst_values[2],'億元',1)}。"
+                f"選擇權日盤淨交易（口）：外資 {signed_text(option_foreign_day,'口')}、投信 {signed_text(option_trust_day,'口')}、自營商 {signed_text(option_dealer_day,'口')}。"
+            ),
+            "compass": (
+                f"現貨三法人：{spot_inst_text}。選擇權三法人流量：外資{direction(option_foreign_day)}、投信{direction(option_trust_day)}、自營商{direction(option_dealer_day)}。"
+                f"交叉觀察：投信現貨{direction(spot_inst_values[1])}但選擇權{direction(option_trust_day)}；"
+                f"自營商現貨{direction(spot_inst_values[2])}但選擇權{direction(option_dealer_day)}。"
+                f"這是不同市場的方向配置差異，口數與億元不可相加，也不能直接視為避險等值。"
+            ),
+            "target": (
+                "下一交易日逐法人追蹤：投信現貨買超是否延續、選擇權賣方／買方流量是否反轉；"
+                "自營商若現貨與選擇權持續反向，先視為跨市場配置或避險可能性，未取得部位方向與 Delta 前不判定淨曝險。"
+                "外資現貨賣壓若擴大且選擇權流量同步偏空，才提高整體籌碼偏空權重。"
+            )
         },
         '主力意圖解碼': {
-            "look": f"現貨外資 {signed_text(foreign,'億元',1)}；期貨外資淨 OI {display(foreign_fut,0)}口（{ '可疑快照，不採用' if futures_oi_all_zero else '需與交易流量分開解讀' }）；期貨日盤淨交易 {signed_text(foreign_day,'口')}；選擇權外資日盤 {signed_text(option_foreign_day,'口')}。",
-            "compass": f"目前可確認的是跨市場部位／流量分歧，不足以證明主力控盤意圖。{futures_oi_status}；不得以 OI 全零推定外資沒有部位。",
-            "target": "後續需同時追蹤外資期貨淨 OI 的有效變化、期貨日盤淨交易，以及選擇權日盤流量；三者連續同向才提高意圖判讀可信度。"
+            "look": (
+                f"可觀察證據：外資現貨 {signed_text(foreign,'億元',1)}；期貨日盤淨交易 {signed_text(foreign_day,'口')}；"
+                f"期貨淨 OI {display(foreign_fut,0)}口（{'可疑快照，不採用' if futures_oi_all_zero else '存量，須與前期比較'}）；"
+                f"選擇權日盤 {signed_text(option_foreign_day,'口')}、夜盤 {signed_text(option_foreign_night,'口')}。"
+            ),
+            "compass": (
+                f"證據支持的描述：外資在現貨、期貨流量、選擇權流量之間呈現方向分歧。{futures_oi_status}。"
+                "目前沒有足夠資料判斷選擇權交易是買方主動、賣方承接或避險組合，也沒有足夠證據推定主力正在控盤、誘多或出貨。"
+            ),
+            "target": (
+                "意圖判讀的最低追加證據：期貨有效 OI 的連續變化、選擇權逐履約價買賣權 OI 與主動買賣流、"
+                "以及現貨法人連續日買賣超。若三類證據連續同向，才提高方向性意圖的可信度；"
+                "在資料未齊前只報告『流量分歧／意圖未明』，不採取主力意圖型交易。"
+            )
         },
         '夜盤劇本': {"look": f"夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '台指夜盤劇本': {"look": f"台指夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
