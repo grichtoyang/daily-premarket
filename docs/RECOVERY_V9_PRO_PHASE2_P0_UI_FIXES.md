@@ -838,3 +838,7 @@ tests/test_dashboard_unit_contract.py 新增：
 
 ### 10/30 歷史值核對
 - 10/30 報告歷史變化值 +9.95、-1.87 是百分點差值（非百分比變動率）；本次修正只補單位語義，不改動數值或公式。
+
+
+- Unit Contract Audit Run **#106**（commit `72ee9c4`）：SUCCESS。Job log 確認新增 `test_option_ratio_changes_use_percentage_points` PASS；本次 Dashboard unit contract 共 9 tests，全部 OK。
+- V9 UI Fixes Regression Run **#136**（commit `72ee9c4`）當時 queued；Daily Premarket V9 Pro Run **#173** in_progress，待最終狀態。這兩個 workflow 不會重跑歷史 DATA_REPORT 抓取。
