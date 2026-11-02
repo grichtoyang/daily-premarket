@@ -13,6 +13,10 @@ class MissingSpotOhlcTests(unittest.TestCase):
         self.assertIn('spot_open=optional_get(r"開盤', source)
         self.assertIn('spot_high=optional_get(r"最高', source)
         self.assertIn('spot_low=optional_get(r"最低', source)
+        self.assertIn('gamma_wall=optional_get(r"Gamma Wall', source)
+        self.assertIn('gamma_flip=optional_get(r"Gamma Flip', source)
+        self.assertIn('call_wall=optional_get(r"Call Wall', source)
+        self.assertIn('max_pain=optional_get(r"Max Pain', source)
         warnings = validate_data_report_consistency(
             {"open": None, "high": None, "low": None, "close": "44920.14"},
             {"foreign": None, "trust": None, "dealer": "0", "all": None},
