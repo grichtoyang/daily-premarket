@@ -961,7 +961,9 @@ class V9Analyzer:
             'confidence':quality,'bias_reliable':quality in ('high','medium'),
             'score_status':'calculated' if active_count else 'no_valid_factors_neutral_fallback',
             'optimizer':'sqlite' if real_win_rates else 'base_dynamic',
-            'missing_factors':[x['key'] for x in self.factor_details if x['status']!='active']
+            'missing_factors':[x['key'] for x in self.factor_details if x['status']!='active' and x.get('raw_value') is None],
+            'disabled_factors':[x['key'] for x in self.factor_details if x['status']!='active' and x.get('raw_value') is not None],
+            'inactive_count':sum(1 for x in self.factor_details if x['status']!='active')
         }
         for item in self.factor_details:
             item['base_weight']=base_weights[item['key']]
@@ -1061,12 +1063,13 @@ def build_factor_quality_summary(analyzer):
     negative=sum(1 for item in active if (item.get('score') or 0)<0)
     neutral=len(active)-positive-negative
     total=analyzer.factor_quality.get('total_factors',len(details))
-    missing=total-len(active)
+    missing=len(analyzer.factor_quality.get('missing_factors',[]))
+    disabled=len(analyzer.factor_quality.get('disabled_factors',[]))
     confidence=analyzer.factor_quality.get('confidence','unknown')
     effective_total=sum(analyzer.weights.values())
     return (
         f"17F有效{len(active)}/{total}；正向{positive}、負向{negative}、"
-        f"中性{neutral}、缺失{missing}；有效權重{effective_total:.1f}%；"
+        f"中性{neutral}、缺值{missing}、有值停用{disabled}；有效權重{effective_total:.1f}%；"
         f"信心{confidence}"
     )
 
@@ -1299,7 +1302,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'db_status': db_status
         },
         'news': parsed['news'],
-        'data_source': f"DATA_REPORT {parsed['meta']['t0_date']} + technical_history={tech.get('source','none')} (T0 filtered) + SQLite {db_status.get('mode','no-db')}"
+        'data_source': f"DATA_REPORT {parsed['meta']['t0_date']} + technical_history={tech.get('source','none')} (T0 filtered) + historical_learning=SQLite {db_status.get('mode','no-db')}"
     }
     return final
 
