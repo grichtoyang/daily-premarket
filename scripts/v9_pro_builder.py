@@ -1256,8 +1256,18 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '法人籌碼': {"look": f"外資現貨 {display(foreign)}億元（{direction(foreign)}）；期貨淨 OI {display(foreign_fut,0)}口；投信 {display(parsed['inst'].get('trust'))}億元；自營商 {display(parsed['inst'].get('dealer'))}億元", "compass": f"現貨外資 {direction(foreign)}、投信 {direction(parsed['inst'].get('trust'))}；依實際數值呈現，不預設對作", "target": f"觀察外資現貨後續變化；Put Wall {put_wall_text}僅為價位參考"},
         '主力三市透視': {
             "look": three_market_look,
-            "compass": f"外資現貨{direction(foreign)}、期貨日盤流量{direction(foreign_day)}、選擇權日盤流量{option_day_dir}；{three_market_text}。{futures_oi_status}。",
-            "target": "先以現貨賣超是否收斂作方向確認，再觀察期貨與選擇權流量能否同向；三者未收斂前不把單一市場訊號當成整體主力方向。"
+            "compass": (
+                f"結論：跨市場訊號分歧，暫不構成單邊方向共識。現貨外資{direction(foreign)}"
+                f"（{signed_text(foreign,'億元',1)}），期貨日盤淨交易{direction(foreign_day)}"
+                f"（{signed_text(foreign_day,'口')}），選擇權外資日盤{direction(option_foreign_day)}"
+                f"（{signed_text(option_foreign_day,'口')}）；期貨流量偏多但現貨與選擇權偏空，不能把期貨單一買盤解讀為全面翻多。"
+                f"{futures_oi_status}"
+            ),
+            "target": (
+                "操作：目前以觀望／降低追價為主，不因期貨單日淨買超追多。偏多確認條件：外資現貨賣超明顯收斂或轉買，"
+                "且選擇權外資日盤流量轉正、期貨日盤淨買超延續；偏空確認條件：現貨賣超延續，且期貨流量轉負或選擇權賣壓延續。"
+                "若三市場仍互相背離，維持分歧判讀，等待下一交易日數據確認；期貨 OI 可疑時不得作為確認條件。"
+            )
         },
         '三市一致性': {
             "look": f"外資：現貨{direction(foreign)}；期貨日盤{direction(foreign_day)}；選擇權日盤{option_day_dir}、夜盤{option_night_dir}。",
