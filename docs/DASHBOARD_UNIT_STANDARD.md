@@ -38,7 +38,7 @@
 | 選擇權 | 履約價、Call/Put Wall、Gamma Wall、Flip、Max Pain | 點 | 價位標示「點」 |
 | 選擇權 | PCR | 倍（ratio） | 固定定義：Put OI ÷ Call OI；不得用成交量占比替代 |
 | 選擇權 | Call／Put 成交量占比 | % | 兩者合計應為 100%（資料完整時） |
-| GEX | net_gex_1pct、gross_gex_1pct、逐履約價 GEX | 待 Worker 公式／回傳 schema 確認 | 未確認前標 BLOCKED，不得猜測單位 |
+| GEX | net_gex_1pct、gross_gex_1pct、逐履約價 GEX | NT$／標的價格變動 1% | Worker 生產公式為 gamma × OI × 50 元／點 × 標的指數點數² × 1%；DATA_REPORT 14A 明列此單位。屬 Black-Scholes 模型估值，非 TAIFEX 官方 GEX |
 | 綜合 | Bias | 分 | 不標 % |
 | 綜合 | 因子數量 | 項 | 不標家或口 |
 | 綜合 | 相關係數 | 無量綱 | 範圍 -1 至 +1，不標 % |
@@ -61,7 +61,7 @@
 - 每個欄位須定義來源、來源單位、標準單位、顯示單位、精度、正負號意義及衍生公式。
 - 任何單位轉換須有測試覆蓋，至少驗證轉換方向、倍率、負值及 unavailable。
 - DATA_REPORT 解析器須驗證單位字串；只擷取數字而忽略單位的欄位不得標記為來源單位驗證 PASS。
-- GEX 在公式與 Worker schema 未核實前維持 BLOCKED。
+- GEX 單位依 Worker 生產公式與 DATA_REPORT 14A 確認為 NT$／標的價格變動 1%；模型品質與覆蓋狀態仍須另行呈現，不得稱為 TAIFEX 官方數據。
 
 ## 5. 驗收狀態
 
