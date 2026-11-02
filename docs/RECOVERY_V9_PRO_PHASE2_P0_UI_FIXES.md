@@ -815,3 +815,6 @@ tests/test_dashboard_unit_contract.py 新增：
 - Unit Contract Audit Run **#103**（commit `a30325e`）：SUCCESS。Job log 確認 `test_treasury_yield_curve_includes_20_year`、`test_futures_trade_table_has_per_row_units` 均 PASS；本次 unit contract 共 8 tests，全部 OK。
 - Daily Premarket V9 Pro Run **#172**（commit `a30325e`）：SUCCESS；deploy skipped。這是 Dashboard build，不代表 20Y 已由 live Treasury API 實際取回並寫入新 DATA_REPORT。
 - 20Y parser／報表欄位契約：PASS；實際 FiscalData／XML 20Y 回應、來源日期及新報告值：NOT TESTED。
+
+
+- 補充歷史資料查證：美國財政部 2026-10-30 Daily Treasury Par Yield Curve 的 20Y 值為 **5.34%**；前一交易日 10/29 為 5.35%，日變化 **-0.01 個百分點**。此值由美國財政部官方 2026-10 月 Daily Treasury Rates 頁面查得（官方來源：`home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=202610&type=daily_treasury_yield_curve`）。因此 10/30 DATA_REPORT 缺少 20Y 是欄位遺漏，不是官方沒有公布。歷史報告尚未手動改寫，保留原始自動產物；後續新報告由修正後程式自動納入。
