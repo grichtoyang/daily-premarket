@@ -352,11 +352,13 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                     # 新列是 fallback（前值遞補）而舊列不是 → 舊值較新，整列優先舊值
                     _fb = ("遞補" in new_last) and ("遞補" not in old_last)
                     _touched = False
+                    _carried_forward = False
                     for j in range(1, len(new_cells)):
                         if new_cells[j] == MISSING and old[j] not in (MISSING, ""):
                             new_cells[j] = old[j]
                             filled += 1
                             _touched = True
+                            _carried_forward = True
                         elif _fb and old[j] not in (MISSING, "") and new_cells[j] != old[j]:
                             new_cells[j] = old[j]
                             filled += 1
@@ -371,8 +373,12 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                                 and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
                                 and new_cells[j] != old[j]):
                             overwritten += 1  # 取新值（new_cells 原樣保留），僅計數供註記
-                    if _touched and old_last not in (MISSING, "") and new_cells[-1] != old_last:
-                        new_cells[-1] = old_last  # 來源格隨值沿用
+                    if _carried_forward and old_last not in (MISSING, ""):
+                        # 缺值沿用舊值時，來源不可偽裝成這次成功抓取的來源。
+                        new_cells[-1] = (old_last if old_last.startswith("沿用前版")
+                                         else f"沿用前版（原來源：{old_last}）")
+                    elif _touched and old_last not in (MISSING, "") and new_cells[-1] != old_last:
+                        new_cells[-1] = old_last  # 同 T0 凍結值的來源格隨值沿用
                     if new_cells != cells:
                         out_lines.append("| " + " | ".join(new_cells) + " |")
                         continue
