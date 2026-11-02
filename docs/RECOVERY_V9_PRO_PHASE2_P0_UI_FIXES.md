@@ -818,3 +818,23 @@ tests/test_dashboard_unit_contract.py 新增：
 
 
 - 補充歷史資料查證：美國財政部 2026-10-30 Daily Treasury Par Yield Curve 的 20Y 值為 **5.34%**；前一交易日 10/29 為 5.35%，日變化 **-0.01 個百分點**。此值由美國財政部官方 2026-10 月 Daily Treasury Rates 頁面查得（官方來源：`home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=202610&type=daily_treasury_yield_curve`）。因此 10/30 DATA_REPORT 缺少 20Y 是欄位遺漏，不是官方沒有公布。歷史報告尚未手動改寫，保留原始自動產物；後續新報告由修正後程式自動納入。
+
+
+## 9.29 10/30 選擇權比例變化單位不明確：修正（2026-11-02）
+
+### 發現
+- 10/30 報告 Call／Put 比例與變化表中，Call／Put 成交量比、OI 比、PCR 是比值（倍）；但兩個歷史變化值 9.95 與 -1.87 來自 TAIFEX `PutCallRatio` 歷史欄位 `PutCallVolumeRatio%`／`PutCallOIRatio%`，其差值量綱是百分點，而非倍或百分比變化。
+- 原表沒有單位欄，將比值與百分點差值混列，語義不完整。
+
+### 修正
+- `src/fetch_data.py`：Call／Put 成交量比、OI 比、PCR 各標「倍」；歷史成交量比變化與 OI 比變化各標「百分點（pp）」；表格新增單位欄。
+- `docs/DASHBOARD_UNIT_STANDARD.md`：明訂 TAIFEX 歷史比例欄位的日變化用百分點，不得標成 % 或倍。
+- `tests/test_dashboard_unit_contract.py`：新增 ratio 與 percentage-point 分離的契約測試。
+- Commits：
+  - `d09a5140e6491f44f7e79e56ead64c4a0de99182`（ratio table unit fix）
+  - `c6081bfcefcf95976b88039cfedb64c2d8cf219c`（unit standard）
+  - `29936a7a1daf7bd433bfedf532782811e217e1cc`（regression test）
+- 驗收：程式、標準與測試已提交；最新 Unit Contract Audit 待執行，NOT TESTED。舊 10/30 DATA_REPORT 不自動改寫。
+
+### 10/30 歷史值核對
+- 10/30 報告歷史變化值 +9.95、-1.87 是百分點差值（非百分比變動率）；本次修正只補單位語義，不改動數值或公式。
