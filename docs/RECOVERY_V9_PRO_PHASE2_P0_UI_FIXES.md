@@ -702,3 +702,14 @@ tests/test_dashboard_unit_contract.py 新增：
 - 正確根因是舊版「三個借券欄位共用一個來源標籤」，不是 10/30 報告的 merge carry-forward。該問題已由 9.12／9.12.1 的欄位來源分流修正；新報告會分別使用 `sbl_bal`、`sbl_sale_bal`、`sbl_sale_chg`。
 - 9.17 修正的 merge source attribution 是另一個獨立防護：當未來同 T0 重跑時，若新值 unavailable 而沿用舊值，來源標籤需明示「沿用前版」，避免被誤認為本次新取得。該修正仍保留，不應視為 10/30 問題的原始根因。
 - 10/30 原始 API 逐筆資料尚未取得，不能對 4,651,514 張、36,178 張、-1,273 張做逐筆重算；該三筆數值仍 NOT TESTED。
+
+
+## 9.23 daily-data #95 為何輸出 20261102（手動觸發、t0 留白）— 根因確認（2026-11-02）
+
+- 檢查 `.github/workflows/daily_data.yml`：手動觸發不會因 `inputs.t0` 空白而省略報告日期。workflow 一律先以 `TZ=Asia/Taipei date +%F` 設定 `TODAY`，再執行 `src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}"`。因此報告日期固定採執行當天台灣日期。
+- 檢查 `src/fetch_data.py`：`report_date = args.date.strip() or today.isoformat()`；輸出檔名則由 `t0` 產生：`DATA_REPORT_{t0}`。空白 T0 會呼叫 `src.t0.resolve()` 自動判定。
+- 檢查 `src/t0.py`：平日 13:45（含）後且當日為交易日，resolve 回傳當日 T0、session=日盤；13:45 前則回前一交易日、全日。
+- #95 實際報告 metadata：報告日期 2026-11-02、T0 2026-11-02、產出時間 2026-11-02 14:35:26、session=日盤、排定班別=manual。與上述程式規則完全一致。
+- 結論：#95 的 20261102 是因為手動觸發時空白 T0 代表自動解析，而 workflow 仍明確傳入當日 `--date`；執行時點又已過 13:45 日盤收盤，因此自動判定 T0=當日。不是 GitHub 把空白輸入自動填成日期，也不是報告日期錯置。
+- 重要邊界：目前自動判定使用 Python 開始執行時的牆鐘，不是按下 Run workflow 的精確時間；若在 13:45 前觸發但工作排隊到 13:45 後才執行，T0/session 可能依執行時點而非點擊時點判定。#95 並未遇到此邊界。
+- 本項為原因調查與規格確認，未修改 workflow 或日期邏輯。
