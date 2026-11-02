@@ -741,6 +741,8 @@ def build_option_force_analysis(force_rows, volume_rows=None):
     look = (
         f"日盤：{day_lead}；{day_offset}；三大法人淨額 {fmt(day_total['day_net'], True)} 億元。"
         f"夜盤：{night_lead}；{night_offset}；三大法人淨額 {fmt(day_total['night_net'], True)} 億元。"
+        f"來源日淨－夜淨差 {fmt(day_delta, True)} 億元（日盤淨額較夜盤低 {fmt(abs(day_delta))} 億元；"
+        "此為兩個時段數值相減，不代表日對日變化）。"
     )
 
     # Compare the amount-based directional proxy with the independent net-volume
@@ -751,6 +753,8 @@ def build_option_force_analysis(force_rows, volume_rows=None):
             if isinstance(row, (list, tuple)) and len(row) >= 7:
                 volume_by_name[str(row[0]).strip()] = row
     divergences = []
+    concordant = []
+    neutral = []
     volume_complete = all(name in volume_by_name for name in names)
     if volume_complete:
         for name in names:
@@ -766,6 +770,10 @@ def build_option_force_analysis(force_rows, volume_rows=None):
                     divergences.append(
                         f"{name}{session}金額 {fmt(amount_net, True)} 億元、口數 {volume_net:+,.0f} 口方向背離"
                     )
+                elif amount_net == 0 or volume_net == 0:
+                    neutral.append(f"{name}{session}")
+                else:
+                    concordant.append(f"{name}{session}")
 
     def imbalance_text(value):
         return f"{value:+.1f}%" if value is not None else "unavailable"
@@ -776,15 +784,16 @@ def build_option_force_analysis(force_rows, volume_rows=None):
         else "日、夜盤淨額均偏多" if day_total["day_net"] > 0 and day_total["night_net"] > 0
         else "日、夜盤淨額方向不同或至少一盤接近平衡"
     )
-    compare_text = (
-        "；口數對照：" + "；".join(divergences)
-        if divergences else
-        ("；口數對照未發現金額與口數反向項目" if volume_complete else "；口數對照資料不足，未作一致性推論")
-    )
+    if volume_complete:
+        volume_summary = f"口數對照：{len(concordant)} 組同向、{len(divergences)} 組背離、{len(neutral)} 組中性"
+        if divergences:
+            volume_summary += "；" + "；".join(divergences)
+    else:
+        volume_summary = "口數對照資料不完整，未作方向一致性推論"
     compass = (
         f"{direction_text}，但淨額／多空雙邊金額合計，日盤 {imbalance_text(day_imbalance)}、"
-        f"夜盤 {imbalance_text(night_imbalance)}，顯示淨差相對雙邊交易金額有限，不宜解讀為強烈單邊。"
-        f"{compare_text}"
+        f"夜盤 {imbalance_text(night_imbalance)}，顯示淨差相對雙邊交易金額有限，不宜解讀為強烈單邊；"
+        f"{volume_summary}。"
     )
     target = (
         "後續優先追蹤金額與口數背離是否收斂，以及主要空方法人是否延續；"
@@ -808,6 +817,8 @@ def build_option_force_analysis(force_rows, volume_rows=None):
         "night_imbalance_pct": round(night_imbalance, 2) if night_imbalance is not None else None,
         "day_minus_night": day_delta,
         "volume_divergences": divergences,
+        "volume_concordant": concordant,
+        "volume_neutral": neutral,
         "checks": {"force_rows": len(required_names), "volume_rows_complete": volume_complete, "warnings": warnings}
     }
 
