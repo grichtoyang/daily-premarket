@@ -759,3 +759,13 @@ tests/test_dashboard_unit_contract.py 新增：
 ### 驗收
 - 修改與測試已提交；Unit Contract Audit CI 待執行，狀態 NOT TESTED。
 - 舊的 10/30 DATA_REPORT 不會自動重寫；需未來重新產出該 T0 報告才會呈現修正後表格。未在夜盤中重跑 10/30 歷史抓取。
+
+
+## 9.26 10/30 GEX_LEVELS_JSON 數值內部一致性複核（2026-11-02）
+
+- 從 `DATA_REPORT_20261030.md` 的 GEX_LEVELS_JSON 直接解析 139 個履約價紀錄。
+- 資料日期：2026-10-30；模型品質：usable；履約價範圍 41,400–51,600。
+- 逐筆驗證 139 筆：每個履約價 `Net GEX = Call GEX + Put GEX`；`Gross GEX = |Call GEX| + |Put GEX|`。公式不一致筆數 **0**。
+- 139 筆加總 Net GEX = 1,294,327,419.0091748，與報告宣告值完全相同（差異 0）。
+- 139 筆加總 Gross GEX = 6,320,130,202.132608，與報告宣告值完全相同（差異 0）。
+- 驗收：**PASS（報告內部數學一致性）**。此項只證明產出 JSON 的公式與彙總一致；不代表已獨立取得 TAIFEX 原始 IV／OI 逐筆重算 Black-Scholes 模型，也不代表 GEX 是造市商實際持倉。外部原始輸入對帳仍 NOT TESTED。
