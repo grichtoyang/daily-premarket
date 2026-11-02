@@ -1257,6 +1257,19 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
     markets={'us': parsed['usPct_full'], 'asia': parsed['asiaPct_full'], 'usFut': parsed['futPct_full'], 'yields': parsed['yieldPct_full'], 'fx': parsed['fxPct_full'], 'adr': parsed['adrPct_full'], 'commodities': parsed['commPct_full']}
     marketPct={'usPct': parsed['usPct_simple'], 'asiaPct': parsed['asiaPct_simple'], 'futPct': parsed['futPct_simple'], 'yieldPct': parsed['yieldPct_simple'], 'fxPct': parsed['fxPct_simple'], 'adrPct': parsed['adrPct_simple'], 'commPct': parsed['commPct_simple']}
 
+    # 支撐壓力位只在所需原始欄位齊全時產生；OHLC 缺值時不推算 P 樞紐。
+    key_levels=[]
+    if all(spot.get(k) is not None for k in ('high','low','close')):
+        key_levels=[
+            {'t':"當日高點", 'v': int(spot['high']), 'type':"R"},
+            {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"},
+            {'t':"當日低點", 'v': int(spot['low']), 'type':"S"},
+        ]
+    if parsed['options']['putWall'] is not None:
+        key_levels.append({'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"})
+    if parsed['options']['flip'] is not None:
+        key_levels.append({'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"})
+
     final={
         'meta': {
             'version': 'v9-pro-17F',
@@ -1304,7 +1317,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'analysis_card_count': len(cards_41),
             'visible_block_count': 42,
             'correlation': calculate_historical_correlation(as_of_date=parsed['meta']['t0_date']),
-            'levels': ([{'t':"當日高點", 'v': int(spot['high']), 'type':"R"}, {'t':"P 樞紐", 'v': int((spot['high']+spot['low']+spot['close'])/3), 'type':"P"}, {'t':"當日低點", 'v': int(spot['low']), 'type':"S"}] + ([{'t':f"Put Wall {int(parsed['options']['putWall'])//1000}K", 'v': int(parsed['options']['putWall']), 'type':"W"}] if parsed['options']['putWall'] is not None else []) + ([{'t':f"Flip {int(parsed['options']['flip'])//1000}K", 'v': int(parsed['options']['flip']), 'type':"F"}] if parsed['options']['flip'] is not None else [])),
+            'levels': key_levels,
             'historical': historical,
             'db_status': db_status
         },
