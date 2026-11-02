@@ -662,3 +662,16 @@ tests/test_dashboard_unit_contract.py 新增：
   - `6d696aab0898d346f18c29db3949579d527f7ff7`（builder accepts missing OHLC）
   - `a82156e8ca9715f76200486108708dca0e6b6a94`（regression test）
 - 驗收：上述修改已提交；新 commit 對應的 CI 尚待完成，狀態 **NOT TESTED**。Run #157 的 Dashboard build 已確認 FAIL，原因不是借券修正，而是當日報告 OHLC 合法缺值未被 parser 容忍。
+
+
+## 9.19 Dashboard 缺值容忍補強：Gamma Wall／Flip 等欄位（2026-11-02）
+
+- Run #160（commit `6d696aa`）在 OHLC parser 修正後繼續往下執行，下一個實際錯誤是 `[NO-FALLBACK] DATA_REPORT missing Gamma Wall`。
+- 已讀取 `DATA_REPORT_20261102.md`，確認 Gamma Wall、Gamma Flip、GEX 等欄位明確為 `unavailable`，不是報告格式遺失。
+- 因此同步修正 `scripts/v9_pro_builder.py`：Call Wall、Put Wall、Gamma Wall、Gamma Flip、Max Pain 全部改採 optional_get；缺值傳 None，不互相代填、不阻斷整份 Dashboard 建置。
+- 擴充 `tests/test_builder_missing_spot_ohlc.py`，斷言上述 key-level parser 均為 optional。
+- Commits：
+  - `209efae90ae3bc4cc0af4d692402021449ed31cc`（optional option key levels）
+  - `7aa13aacb082abfed7c33659a721228d21ec8891`（regression assertions）
+- Unit Contract Audit Run **#96**（commit 209efae）已 **SUCCESS**；V9 UI Fixes Regression Run **#128** 與 Daily Premarket V9 Pro Run **#162** 當時仍在執行／排隊，尚未驗證最終 builder 結果。
+- 本次僅修正解析器對合法 unavailable 的容忍，不修改 DATA_REPORT 數值、不以其他數據補值、不部署。
