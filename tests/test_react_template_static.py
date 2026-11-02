@@ -67,6 +67,14 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("圖表顯示 Net GEX 絕對值前 16 筆", self.html)
         self.assertIn("依曝險絕對值排序，非履約價順序", self.html)
 
+    def test_bias_card_renders_live_gex_status_and_value(self):
+        self.assertIn('gexReady=l.gexStatus==="available"&&Number.isFinite(gexValue)', self.html)
+        self.assertIn('gexLabel=gexReady?', self.html)
+        self.assertIn('toFixed(2)', self.html)
+        self.assertIn('{label:gexLabel,color:gexColor', self.html)
+        self.assertIn('gexLabel," · MaxPain "', self.html)
+        self.assertNotIn('label:"GEX unavailable"', self.html)
+        self.assertNotIn('" · GEX unavailable · MaxPain "', self.html)
     def test_option_pcr_card_shows_call_put_volume_structure(self):
         self.assertIn('function yf({callVol:e,putVol:n,height:l=200})', self.html)
         self.assertIn('title:"PCR／成交量結構"', self.html)
