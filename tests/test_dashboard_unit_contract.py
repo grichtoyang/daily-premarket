@@ -35,6 +35,14 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('("外資日盤多單交易量", _fi(', fetch_data)
         self.assertIn('"口", SRC_FX)', fetch_data)
 
+    def test_treasury_yield_curve_includes_20_year(self):
+        treasury = (ROOT / "src" / "sources" / "treasury.py").read_text(encoding="utf-8")
+        fetch_data = (ROOT / "src" / "fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('("20Y", ("20 Yr", "20yr", "bc_20year"))', treasury)
+        self.assertIn('_xml_yield("BC_20YEAR")', treasury)
+        self.assertIn('y["20Y"]["yield"]', fetch_data)
+        self.assertIn('("美國 20 年期殖利率", "20 Yr"', fetch_data)
+
     def test_unit_standard_and_skill_are_present(self):
         standard = (ROOT / "docs" / "DASHBOARD_UNIT_STANDARD.md").read_text(encoding="utf-8")
         skill = (ROOT / "skills" / "daily-premarket-analysis-v9-pro-skill.md").read_text(encoding="utf-8")
