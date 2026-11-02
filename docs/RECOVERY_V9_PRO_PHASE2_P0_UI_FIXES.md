@@ -779,3 +779,6 @@ tests/test_dashboard_unit_contract.py 新增：
 - Daily Premarket V9 Pro Run **#168**（commit `1dd3786`）：SUCCESS；Run **#169**（commit `00dc48f`）：SUCCESS；Run **#170**（commit `a9c8a21`）：SUCCESS。這些是 Dashboard build／artifact workflows，不代表重新產出 10/30 DATA_REPORT。
 - V9 UI Fixes Regression Run **#130**（commit `ccff53c`）：SUCCESS；Run **#131**（commit `a9c8a21`）當時仍 in_progress，待最終狀態。
 - 上述修正仍只在 `phase2-p0-ui-fixes`；deploy jobs skipped，沒有部署或合併。
+
+
+- V9 UI Fixes Regression Run **#131**（commit `a9c8a21`）：SUCCESS。期貨交易表逐列單位修正及其契約測試後，整體 UI／資料回歸流程通過。
