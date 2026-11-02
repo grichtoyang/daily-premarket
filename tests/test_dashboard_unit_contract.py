@@ -19,6 +19,8 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn(r"借券餘額 \| ([0-9,]+) \| 張", builder)
         self.assertIn('fut_day_o=must_get(r"### 1．台指期近月日盤行情.*?開盤價', builder)
         self.assertIn('basis=optional_get(r"台指期與加權指數價差', builder)
+        worker = (ROOT / "workers" / "taifex-proxy_V1.4.js").read_text(encoding="utf-8")
+        self.assertIn("gamma *\n      oi *\n      50 *\n      underlyingPrice *\n      underlyingPrice *\n      0.01", worker)
         self.assertIn('call_vol=must_get(r"Call 總成交量', builder)
         self.assertIn('pcr=optional_get(r"Put／Call Ratio', builder)
 
@@ -31,7 +33,8 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn("42 個可見 Dashboard 區塊", skill)
         registry = json.loads((ROOT / "docs" / "DASHBOARD_UNIT_REGISTRY.json").read_text(encoding="utf-8"))
         self.assertEqual(registry["metrics"]["options.pcr"]["display_unit"], "倍")
-        self.assertTrue(registry["metrics"]["options.gex.net_gross_per_strike"]["status"].startswith("blocked"))
+        self.assertEqual(registry["metrics"]["options.gex.net_gross_per_strike"]["display_unit"], "NT$／標的價格變動 1%")
+        self.assertEqual(registry["metrics"]["options.gex.net_gross_per_strike"]["status"], "defined_by_worker_formula")
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
         self.assertIn("42 區塊", unit_map)
         self.assertIn("履約價 GEX 分布", unit_map)
@@ -49,6 +52,7 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('changeUnit:o.key==="yields"?"pp":"%"', html)
         self.assertIn('殖利率水準：%；日變化：百分點（pp）。', html)
         self.assertIn('履約價／現價／Call Wall／Put Wall：點；OI：口。', html)
+        self.assertIn("GEX：新台幣元（NT$）", html)
 
     def test_42_block_registry_and_chart_notes_are_complete(self):
         unit_map = (ROOT / "docs" / "DASHBOARD_UNIT_MAP.md").read_text(encoding="utf-8")
