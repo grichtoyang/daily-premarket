@@ -865,3 +865,48 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 不得每完成一個小項就中斷要求使用者逐項指揮；應先完成全盤清查、集中修正、完整回歸後再交付。
 - 除非使用者另行明確授權，不得修改 V8、Master 或其他未授權分支，不得 merge、部署或覆蓋正式版本。
 - 本要求適用於後續所有 V9 Pro 區塊，不因 A/B 本輪已結案而降低標準。
+
+
+## 31. 2026-11-03 區塊 B 選擇權法人多空力道動態分析升級
+
+### 問題根因
+- DATA_REPORT 原本已提供完整七欄金額表，含日／夜多方、空方、淨額及來源日淨－夜淨差。
+- Builder 原本僅解析並輸出 instOptForce，沒有建立區塊 B 專屬分析邏輯；React Template 的 look／compass／target 是固定寫死的通用句，因此即使數據改變，分析也不會跟著更新。
+- 本輪未接入 LLM。新增的是 deterministic／rule-based data interpretation；不可稱為即時生成式 AI 分析。
+- TAIFEX 金額資料定義：上游 long_amount／short_amount 是買方／賣方契約金額。src/fetch_data.py 方向分類：多方＝買 Call＋賣 Put；空方＝賣 Call＋買 Put；上游千元 ÷ 100,000 = 億元。這是方向分類代理指標，不等於淨權利金現金流或 OI／實際持倉。
+
+### 修改範圍
+- scripts/v9_pro_builder.py 新增 build_option_force_analysis()：
+  - 檢查外資／投信／自營商／三大法人合計列及七欄數值。
+  - 驗證多方－空方＝淨額、日淨－夜淨、三法人淨額加總；允許兩位小數獨立四捨五入造成的有限差異；發現超出容差則停止方向結論。
+  - 缺值保持 unavailable，不得視為 0。
+  - 輸出日／夜盤主要空方、最大多方抵銷者、合計淨額、淨額相對雙邊金額比例。
+  - 將日淨－夜淨解釋為兩個時段淨額相減，不宣稱日對日變化。
+  - 與 A 區口數逐法人逐時段對照，分類同向／背離／中性；背離不得互相覆蓋。
+- Dashboard JSON 增加 options.instOptForceAnalysis；Template 區塊 B 改讀動態分析結果，不再使用固定通用句。
+- B 區副標題及圖表備註補上公式與「契約金額代理值」限制；未改變資料來源、資料計算引擎、圖表及七欄表格。
+- 新增 tests/test_builder_option_force_analysis.py；Workflow 加入該測試及既有 option table regression。原測試中一條舊用語斷言與現行程式文案不一致，僅修正測試期待值。
+
+### 11/02 T0 樣本驗算
+- 日盤多方 21.57 億、空方 22.58 億、淨額 -1.01 億；淨額／多空雙邊金額合計 -2.29%。
+- 夜盤多方 7.70 億、空方 8.29 億、淨額 -0.60 億；淨額／多空雙邊金額合計 -3.75%。
+- 日盤主空方投信 -3.01 億，最大多方抵銷自營商 +1.82 億；夜盤主空方自營商 -0.54 億，投信 0。
+- 日淨－夜淨合計差 -0.41 億，為日盤淨額減夜盤淨額，不代表日對日變化。
+- A 區淨交易口數對照：4 組同向、1 組背離、1 組中性；外資日盤金額 +0.18 億與口數 -167 口背離。已寫入 compass／target。
+- 百分比是根據 DATA_REPORT 顯示到小數二位的金額估算，非 raw payload 未四捨五入值重算。
+
+### CI／產物
+- HEAD：07696e52086101692311f60d020e47c7972150d7。
+- Run 41481675963；build job 24 個成功步驟、0 failed，最後 post-checkout cleanup 尚未回報完成。
+- Options-force analysis contract tests：PASS；option table regression：PASS；17F self-tests：PASS；Dashboard JSON build：PASS；正式 HTML／Golden Fixture JS syntax：PASS；Artifact upload：PASS。
+- Artifact 13159728345（github-pages，1,785,704 bytes，未過期）。
+- 已下載 Artifact 並檢查 p0/data-20261102.json 的 options.instOptForceAnalysis，及 p0/v9-pro-latest.html 的注入文字；分析、背離與公式字串均存在。
+- Chromium 實際渲染：NOT TESTED（執行環境 file://／localhost 被管理政策阻擋，headless CLI 逾時）；需使用者實際手機截圖驗收。
+- 每個 options day/night API response 的 endpoint-level date 未保留於此法人力道表；本輪沿用 DATA_REPORT T0／來源標籤，未修改來源擷取流程。Endpoint 級日期獨立對帳：NOT TESTED。
+- Merge／部署：NOT DONE；V8／Master 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 等待 Run 41481675963 回報 completed／success。
+2. 使用者下載 github-pages Artifact 13159728345，開啟 p0/v9-pro-latest.html。
+3. 檢查 B 區動態分析、公式備註、七欄表格、手機排版及文字裁切；未完成使用者實際畫面驗收前不得結案。
+4. 不 merge／部署，除非另行取得使用者明確授權。
