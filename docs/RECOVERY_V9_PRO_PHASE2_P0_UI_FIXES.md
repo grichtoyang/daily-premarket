@@ -562,3 +562,43 @@ tests/test_dashboard_unit_contract.py 新增：
 | Dashboard 截圖 | PASS | 12 張已產生並封存 |
 | DATA_REPORT 借券來源標籤實際新產出 | NOT TESTED | 本輪尚未執行 daily_data workflow |
 | TWT93U／TPEX 原始資料重新核算 | NOT TESTED | 尚未取得同 T0 原始回應做逐股重算 |
+
+
+## 9.14 2026-11-02 daily_data 手動執行與新報告實測
+
+### A. 執行證據
+- 使用者提供 GitHub Actions 截圖：Workflow `daily-data` Run **#95**，手動觸發，分支 `phase2-p0-ui-fixes`，執行 commit 短 SHA `9c40f2b`，狀態 **Success**，總耗時 3m42s；Job `fetch` 成功。
+- 已由 GitHub `fetch_file` 讀取分支新產物 `data_reports/DATA_REPORT_20261102.md`。
+- 新報告標示：T0 `2026-11-02`、產出時間 `2026-11-02 14:35:26`（Asia/Taipei）、產出者 `actions`、排定班別 `manual`。因此已確認本次不只是 Dashboard 重建，而是 daily_data 的 Fetch job 真正執行並產生新 DATA_REPORT。
+
+### B. 借券三欄實測
+| 欄位 | 本次新報告 | 驗收 |
+|---|---|---|
+| 借券餘額 | 2,525,241 張；來源標示 `TWSE TWT96U + TWSE TWT96U OTC` | 數值及來源標籤已產出；標籤的 OTC 命名仍可改善，應明確對應 TWT96U 的 GRETAIAvailableVolume（上櫃） |
+| 借券賣出餘額 | unavailable；來源「端點未提供」 | FAIL（資料未取得） |
+| 借券賣出增減 | unavailable；來源「端點未提供」 | FAIL（資料未取得） |
+
+### C. 程式鏈初步定位
+- `spot.py` 對借券賣出餘額／增減分別嘗試上市 TWSE TWT93U 與上櫃 TPEX `tpex_margin_sbl`；僅將非 None 的市場資料納入加總及來源標籤。
+- `spot_raw.py` 中 TWT93U 請求使用 TWSE 網站 `exchangeReport/TWT93U?response=json&date=...`；TPEX 請求使用 `/openapi/v1/tpex_margin_sbl`，並以 ROC T0 日期篩選。
+- 本次報告兩欄皆為 unavailable，表示該次資料鏈沒有回傳可用的上市或上櫃值；目前沒有原始 API response／Actions log 可判定是 HTTP/端點失敗、資料日期不符或欄位解析失敗。不得直接判定是程式加總錯誤，也不得把 unavailable 說成零。
+- 借券餘額來源中的 `TWSE TWT96U OTC` 實際對應同一 TWT96U 回應欄位 `GRETAIAvailableVolume`，建議將顯示名稱改為 `TWT96U GRETAI（上櫃）`，避免讓人誤以為它是另一個 TWSE OTC API。
+
+### D. 本輪狀態
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| daily_data Run #95 | PASS | 使用者截圖顯示 Success、fetch job 綠勾 |
+| Fetch job 產出新 DATA_REPORT | PASS | GitHub 讀回 DATA_REPORT_20261102.md；Actions 產出時間與 T0 明確 |
+| 三欄來源標籤分流程式 | PASS | spot.py / fetch_data.py 已讀回確認 |
+| 借券餘額 TWT96U 數值 | PASS（產出層） | 有非空值；原始逐股／欄位加總尚未獨立對帳 |
+| 借券賣出餘額 | FAIL | 本次上市、上櫃均無可用值 |
+| 借券賣出增減 | FAIL | 本次上市、上櫃均無可用值 |
+| TWT93U／TPEX 原始回應及逐筆重算 | NOT TESTED | 本次尚未取得原始回應及對應 Actions log |
+| GEX、Gamma Wall／Flip | FAIL（本次資料產出） | DATA_REPORT_20261102 明確為 unavailable |
+| 合併／部署 | NOT DONE | 仍只在 phase2-p0-ui-fixes；Master／V8 不動 |
+
+### E. 後續工作順序
+1. 先取得 Run #95 的 fetch job log（確認 TWT93U 與 TPEX API 的實際錯誤／回傳筆數），不要先改解析器猜原因。
+2. 針對失敗端點以實際回應修復；補測 TWT93U 欄位索引、TPEX 日期欄位及非空欄位判斷。
+3. 將 TWT96U OTC 來源顯示名稱改為 `TWT96U GRETAI（上櫃）`，並補回歸測試。
+4. 再跑 daily_data，確認三欄新報告結果與來源標籤；若上游端點仍不可用，保留 unavailable 並清楚標示，不得虛構數值。
