@@ -1633,7 +1633,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'pcr': parsed['options']['pcr'], 'callWall': parsed['options']['callWall'], 'putWall': parsed['options']['putWall'], 'gammaWall': parsed['options']['gammaWall'], 'flip': parsed['options']['flip'], 'maxPain': parsed['options']['maxPain'],
             'netGex1pct': parsed['options']['netGex1pct'], 'grossGex1pct': parsed['options']['grossGex1pct'], 'gexLevels': parsed['options']['gexLevels'], 'gexDate': parsed['options']['gexDate'], 'gexStatus': parsed['options']['gexStatus'],
             'callOiDist': parsed['options']['callOiDist'], 'putOiDist': parsed['options']['putOiDist'], 'instOpt': parsed['options']['instOpt'],
-            'instOptForce': parsed['options']['instOptForce'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put']
+            'instOptForce': parsed['options']['instOptForce'], 'instOptForceAnalysis': parsed['options']['instOptForceAnalysis'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put']
         },
         'markets': markets, 'marketPct': marketPct,
         'technical': {'rsi': tech.get('rsi'), 'macd': tech.get('macd'), 'macd_signal': tech.get('macd_signal'), 'macd_hist': tech.get('macd_hist'), 'k': tech.get('k'), 'd': tech.get('d'), 'source': tech.get('source'), 'valid': tech.get('valid'), 'closes': tech.get('closes',[])[-30:], 'highs': tech.get('highs',[])[-30:], 'lows': tech.get('lows',[])[-30:]},
