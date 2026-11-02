@@ -10,7 +10,7 @@
     "no_sample_data": true,
     "factors": "17F; active=12/17",
     "db_mode": "db",
-    "db_rows": 3,
+    "db_rows": 4,
     "output_path_rule": "dashboards/ 唯一",
     "data_quality_warning_count": 0,
     "data_quality_warnings": []
@@ -1703,7 +1703,7 @@
     },
     "db_status": {
       "exists": true,
-      "rows": 3,
+      "rows": 4,
       "filled": 3,
       "mode": "db",
       "path": "dashboards/v9_pro_history.db"
