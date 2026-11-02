@@ -701,8 +701,11 @@ def parse_data_report(report_path):
     yieldPct_simple=[{'l':x['l'],'v':x['v']} for x in yield_arr]; yieldPct_full=yield_arr
     fxPct_simple, fxPct_full=build_arr_simple(fx_rows); adrPct_simple, adrPct_full=build_arr_simple(adr_rows); commPct_simple, commPct_full=build_arr_simple(comm_rows)
 
-    spot_close=must_get(r"加權指數 \| ([0-9,.]+) \| 點","加權收盤"); spot_open=must_get(r"開盤 \| ([0-9,.]+) \| 點","開盤")
-    spot_high=must_get(r"最高 \| ([0-9,.]+) \| 點","最高"); spot_low=must_get(r"最低 \| ([0-9,.]+) \| 點","最低")
+    # 現貨收盤是核心指數值；OHLC 開高低允許來源缺值，保留 None，不以收盤價代填。
+    spot_close=must_get(r"加權指數 \| ([0-9,.]+) \| 點","加權收盤")
+    spot_open=optional_get(r"開盤 \| ([0-9,.]+) \| 點")
+    spot_high=optional_get(r"最高 \| ([0-9,.]+) \| 點")
+    spot_low=optional_get(r"最低 \| ([0-9,.]+) \| 點")
     spot_diff=must_get(r"漲跌點數 \| ([-\+0-9,.]+) \| 點","漲跌點"); spot_pct=optional_get(r"漲跌幅 \| ([-\+0-9,.]+) \| %")
     spot_vol_raw=must_get(r"成交金額 \| ([0-9,.]+) \| 億元","成交金額")
 
