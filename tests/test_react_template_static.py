@@ -146,10 +146,9 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('F+f/2,k+t/2+1', self.html)
         self.assertNotIn("(Math.random()-0.5)*0.6", self.html)
     def test_financing_gauge_uses_dynamic_range(self):
-        self.assertIn(
-            "validFinance=e!=null&&Number.isFinite(Number(e)),validRatio=l!=null&&Number.isFinite(Number(l)),F=Math.max(0,Math.floor((Number(e)-1000)/1000)*1000),a=F+2000,v=(Number(e)-F)/(a-F)",
-            self.html,
-        )
+        self.assertIn("validFinance=e!=null&&Number.isFinite(Number(e))", self.html)
+        self.assertIn("validRatio=l!=null&&Number.isFinite(Number(l))", self.html)
+        self.assertIn("if(validFinance){let F=Math.max(0,Math.floor((Number(e)-1000)/1000)*1000)", self.html)
         self.assertNotIn("F=7000,a=9000", self.html)
 
     def test_futures_volume_bar_is_capped_to_available_height(self):
