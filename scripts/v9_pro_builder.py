@@ -1098,6 +1098,18 @@ def build_history_status_text(historical, db_status):
     return f"SQLite已啟用；{filled}筆歷史樣本可用，但本次未取得相似分析結果"
 
 
+def classify_spot_institutions(values):
+    """Classify three spot-institution net flows without treating missing data as disagreement."""
+    if len(values) != 3 or any(value is None for value in values):
+        return "現貨三法人資料不足，不能完整判定方向"
+    numeric = [float(value) for value in values]
+    if all(value > 0 for value in numeric):
+        return "三法人現貨同向買超"
+    if all(value < 0 for value in numeric):
+        return "三法人現貨同向賣超"
+    return "現貨三法人方向分歧"
+
+
 def build_41_cards(analyzer, parsed, historical, db_status):
     bias=analyzer.bias_score; regime=analyzer.gen_bias_card()['regime']; factors=analyzer.bias_factors; s=analyzer.signals; weights=analyzer.weights
     factor_str=" ".join([f"{n}{v:+d}" for n,v in factors[:6]])
@@ -1177,18 +1189,6 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     opt_dealer_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='自營商'),None)
     option_trust_day=signed_table_value(opt_trust_row,3)
     option_dealer_day=signed_table_value(opt_dealer_row,3)
-    def classify_spot_institutions(values):
-    """Classify three spot-institution net flows without treating missing data as disagreement."""
-    if len(values) != 3 or any(value is None for value in values):
-        return "現貨三法人資料不足，不能完整判定方向"
-    numeric = [float(value) for value in values]
-    if all(value > 0 for value in numeric):
-        return "三法人現貨同向買超"
-    if all(value < 0 for value in numeric):
-        return "三法人現貨同向賣超"
-    return "現貨三法人方向分歧"
-
-
 def signed_text(value, unit, digits=0):
         return "資料不足" if value is None else f"{value:+,.{digits}f}{unit}"
     three_market_look=(
