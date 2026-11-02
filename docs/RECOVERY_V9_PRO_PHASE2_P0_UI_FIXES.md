@@ -158,3 +158,54 @@ Repository：`grichtoyang/daily-premarket`
 - Template 完整性修復提交：`bd5b0c10ba0af2085b7b15a47c394770115c02ad`。
 - GEX 顯示單位回歸測試提交：`c2ec5fc12ff91750c7e91ff46e2ad3d1c64ade94`。
 - 以上只完成程式與靜態結構檢查；仍待 Actions 執行結果與最新 Artifact 的實際渲染驗收。
+
+## 9.6 2026-11-02 最終修正與回歸驗收（本節優先）
+
+### 修正內容
+- GitHub Actions 首次執行失敗並非圖表 runtime error，而是新增靜態測試與實際模板不一致：
+  - 測試錯誤要求 style:{minHeight:"180px",overflow:"visible"}。
+  - 實際共用卡片元件 V 使用 style:{minHeight:"180px"}；卡片高度由內容自然撐開。
+  - 測試另錯誤要求模板中存在兩句不存在的 GEX 圖表說明文字。
+- 已修正 tests/test_react_template_static.py：改驗證真實存在的卡片容器、Canvas 動態高度 Math.max(n,e.length*46+48)、GEX 圖表真實單位註記與高度設定，不再檢查不存在的文字。
+- 最新測試修正提交：8506e5f9dbe8e891124937b9d63ad009788e3c00。
+
+### GitHub Actions 最終結果
+| Workflow | Run ID | 結果 | 關鍵步驟 |
+|---|---:|---|---|
+| V9 Pro Unit Contract Audit | 41386619948 | PASS | Python compile、Dashboard unit contract、React template regression |
+| V9 UI Fixes Regression | 41386620098 | PASS | Builder self-test、React regression、DATA_REPORT parser regression、JSON build、borrowed securities assertions、GEX pipeline assertions、non-deploy HTML preview、fixture artifact |
+
+- UI Regression Artifact：V9-UI-Fixes-Preview-20261030，Artifact ID 13114794682。
+- Build 後 GEX 驗證：status available、date 2026-10-30、139 levels；Net GEX 約 1,294,327,419.01 NT$；Gross GEX 約 6,320,130,202.13 NT$；逐筆加總與總額相符。
+- 先前失敗 run 已定位為靜態測試契約錯誤；最後修正後兩條 workflow 均 PASS。
+
+### 預覽實際渲染檢查
+- 從本次 Actions Artifact 下載 HTML，使用 Chromium headless 實際載入。
+- Desktop 1440px：
+  - 期貨頁「日夜法人交易」圖表可完整顯示。
+  - 選擇權頁「前十大選擇權」及「履約價 GEX 分布」圖表可完整顯示；GEX 前 16 筆圖表高度 784px，卡片高度 1149px，無垂直裁切。
+  - GEX 數值顯示 Net 1,294,327,419 NT$ / 1%、Gross 6,320,130,202 NT$ / 1%；不再顯示 unavailable。
+- Mobile 390px：
+  - 期貨頁「日夜法人交易」與選擇權頁兩張目標圖表均完整呈現；GEX 前 16 筆 Canvas 高度 784px，卡片高度 1276px，無垂直裁切。
+  - 390px viewport 的主內容寬度與 viewport 相同，未發現水平溢位。
+  - Overview Bias 卡片顯示 GEX +12.94億 NT$，不再顯示 GEX unavailable。
+- 本次 Chromium 檢查的已載入頁面未發生 JavaScript page error。
+- 視覺驗收範圍限本次三張目標圖表及 Overview GEX Bias；未宣稱六頁全部完成全量人工視覺驗收，其他頁仍可由使用者最後確認。
+
+### 仍需保留的限制
+- 分支內舊快照 dashboards/data-20261030.json 仍是較早產出的版本（generated_at=2026-11-01 12:32:04），缺少 GEX 欄位；本次 Actions 以最新 DATA_REPORT 建立的隔離預覽 JSON／HTML 已正確，但未覆寫正式快照。
+- 正式 dashboard build workflow 目前只在 master 與 phase2-p0-data-quality 的 push／schedule 執行；本階段明確不 merge、不部署、不改其他分支，因此不能宣稱目前正式發布頁面已更新。
+- 目前已完成的是修正後分支程式、測試與隔離預覽；正式頁面更新需依使用者後續批准的正常 build／發布流程進行。
+
+### 最終狀態
+| 項目 | 狀態 |
+|---|---|
+| 三張指定圖表動態高度／卡片容器 | PASS（程式、CI、Desktop／Mobile 實際渲染） |
+| Bias GEX 動態顯示 | PASS（Builder JSON、CI、Desktop／Mobile 預覽） |
+| GEX 139 筆資料與總額驗證 | PASS |
+| Unit Contract Audit | PASS |
+| UI Fixes Regression | PASS |
+| 本次指定區塊 JavaScript runtime | PASS（無 page error） |
+| 六頁全部完整視覺驗收 | NOT TESTED |
+| 舊 committed JSON snapshot 更新 | NOT DONE |
+| Merge／部署／正式頁面更新 | NOT DONE（遵守不 merge、不部署） |
