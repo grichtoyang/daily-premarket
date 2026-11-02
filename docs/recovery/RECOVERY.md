@@ -727,3 +727,14 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 3. BFI82U、TPEX、HiStock 等可能只有最新資料或有限歷史窗口的來源，先確認可回查性。
 4. 對 10/30 TWT96U／MI_MARGN 最新值的日期不匹配及 TWT93U 缺值，分別列出，不用當前資料替代歷史數據。
 
+
+
+### GEX 重建輸入與模型細節（TAIFEX Worker V1.4 程式碼）
+- Chain 必要欄位：到期月份／到期日、履約價、Call/Put、結算價、OI。
+- Delta 必要欄位：到期月份／到期日、履約價、Call/Put、有限數值 Delta；目前實作僅用有限 Delta 建立 Chain/Delta 匹配鍵，Delta 數值本身不直接代入 Gamma 公式。
+- 標的價格必須是同 T0 的 TWSE TAIEX close（FMTQIK），不能以 TX 期貨價替代。
+- IV 由結算價反解 Black-Scholes implied volatility（r=0）；Gamma 使用 Black-Scholes；單筆 GEX = Gamma × OI × 50 × S² × 0.01。
+- 符號約定為 Call 正、Put 負；Worker 說明此為 customer-long/dealer-short 假設，不是官方 Dealer 實際部位資料。
+- Gamma Wall 為絕對 Net GEX 最大履約價；Gamma Flip 在標的價格 ±10% 掃描總 GEX，取第一個符號跨越並線性插值。
+- 模型有效門檻為可計算筆數／符合正 OI、正結算價及 Chain/Delta 匹配條件的筆數 >= 50%。
+- 獨立重建必須保存 Chain、Delta 原始列及標的收盤價；不能由 GEX_LEVELS_JSON 反推原始 IV／OI。
