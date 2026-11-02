@@ -147,7 +147,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertNotIn("(Math.random()-0.5)*0.6", self.html)
     def test_financing_gauge_uses_dynamic_range(self):
         self.assertIn(
-            "F=Math.max(0,Math.floor((e-1000)/1000)*1000),a=F+2000,v=(e-F)/(a-F)",
+            "validFinance=e!=null&&Number.isFinite(Number(e)),validRatio=l!=null&&Number.isFinite(Number(l)),F=Math.max(0,Math.floor((Number(e)-1000)/1000)*1000),a=F+2000,v=(Number(e)-F)/(a-F)",
             self.html,
         )
         self.assertNotIn("F=7000,a=9000", self.html)
