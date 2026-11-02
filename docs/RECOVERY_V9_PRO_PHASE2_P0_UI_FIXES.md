@@ -503,3 +503,25 @@ tests/test_dashboard_unit_contract.py 新增：
 | TWT93U/TPEX 原始回應逐檔加總與報表數字 | NOT TESTED | 尚未取得同 T0 原始回應及重算結果 |
 | BFI82U / TPEX / TWSE 其他欄位原始值逐筆對帳 | NOT TESTED | 後續逐來源執行 |
 | 六頁瀏覽器實際執行 | NOT TESTED | 仍待 Actions 結果 |
+
+
+## 9.12 2026-11-02 借券來源標籤修正
+
+### 根因
+- `src/sources/spot.py` 原本將借券餘額、借券賣出餘額、借券賣出增減共用 `sources["sbl"]`，但三者實際來源與市場涵蓋範圍不同。
+- `src/fetch_data.py` 將同一個來源標籤套用至三列，當上市 TWT93U 未取得時，仍可能把上櫃數值標示成上市＋上櫃，造成來源範圍誤導。
+
+### 已提交修正
+- `src/sources/spot.py` 改為分別輸出 `sbl_bal`、`sbl_sale_bal`、`sbl_sale_chg` 來源標籤；只把實際非空的市場來源列入標籤。
+- `src/fetch_data.py` 借券表格三列各自使用對應來源標籤，並說明缺值市場不納入加總。
+- Commit：`58df9767f6dcdffbb82dabb2262ff0b4292793d3`（spot source mapping）；`c0d2e2f44bdec7509c3540025ae853e052425052`（report output）。
+
+### 驗收
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| 欄位來源標籤拆分 | PASS（程式已提交） | 三個獨立 source keys 已寫入 spot builder，報告表格逐列讀取 |
+| Regression test | NOT TESTED | 正在新增欄位來源契約測試；尚未執行 CI |
+| 2026-10-30 原始 TWT93U／TPEX 數據重新核算 | NOT TESTED | 尚未取得同 T0 完整原始逐股回應並重算 |
+| 新 DATA_REPORT 產出驗證 | NOT TESTED | 尚未重新執行 data workflow |
+| Browser audit workflow | NOT TESTED | 尚未取得 Actions run 結果 |
+| Merge／部署 | NOT DONE | 僅限 phase2-p0-ui-fixes，不合併、不部署 |
