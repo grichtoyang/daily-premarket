@@ -354,9 +354,9 @@ tests/test_dashboard_unit_contract.py 新增：
 .github/workflows/unit-contract-audit.yml 已納入 test_builder_option_tables.py。
 
 ### D. 最新 GitHub Actions（2026-11-02）
-- V9 Pro Unit Contract Audit Run 41392957198：PASS（Commit 9db471be1a18086d3e472ffc228ab463a4abb489）。
-- V9 UI Fixes Regression Run 41392957155：PENDING（查詢時尚未完成）。
-- Daily Premarket V9 Pro Run 41392957245：IN_PROGRESS（查詢時尚未完成）。
+- V9 Pro Unit Contract Audit Run 41393233848：PASS（Commit 8d08df0504d378c2d3f2592802062e83bd37c8fa）。
+- V9 UI Fixes Regression Run 41393233879：PASS（同一 commit）。
+- Daily Premarket V9 Pro Run 41393233928：Build PASS（同一 commit）；Deploy SKIPPED。
 - 先前 commit 86fdc41f99b001d4989cdbb378137ee009b825b6 的 Unit Contract、UI Regression 與 Daily Premarket Build 均 PASS；其中新增的語義測試已包含在該輪 UI Regression。
 - Commit 2f272eacaf1a2017ef61709c69979d63b1a75f5e 的 Unit Contract 曾因測試 regex 過度跳脫而 FAIL；已修正 regex，commit 9db471be1a18086d3e472ffc228ab463a4abb489 的 Unit Contract 已 PASS。
 
@@ -371,13 +371,32 @@ tests/test_dashboard_unit_contract.py 新增：
 | 項目 | 狀態 |
 |---|---|
 | 42 區塊欄位／單位／正負號／存量流量語義矩陣 | PASS（文件與程式契約） |
-| T0 技術資料及歷史資料防前視 | PASS（新增回歸測試；待最新 UI／Build 結果） |
+| T0 技術資料及歷史資料防前視 | PASS（新增回歸測試、最新 UI／Build 均通過） |
 | GEX 非方向性與資料路徑 | PASS（新增回歸測試） |
 | 新聞、缺值、法人／三市場敘述 | PASS（新增回歸測試） |
 | Unit Contract Audit 最新 commit | PASS |
-| UI Regression 最新 commit | PENDING（最後查詢時） |
-| Daily Premarket V9 Pro 最新 commit | IN_PROGRESS（最後查詢時） |
+| UI Regression 最新 commit | PASS（41393233879） |
+| Daily Premarket V9 Pro 最新 commit | PASS（41393233928；Deploy SKIPPED） |
 | 上游 API 每筆原始資料獨立對帳 | NOT TESTED |
 | 因子策略預測力／walk-forward 回測 | NOT TESTED |
 | 使用者最終視覺驗收 | NOT DONE |
 | Merge／正式部署 | NOT DONE |
+
+### G. 最終複驗補充（2026-11-02；Commit 8d08df0504d378c2d3f2592802062e83bd37c8fa）
+- 先前 41393146802／41393146823 失敗原因是 Builder self-test 仍檢查舊字串「缺失」；因摘要改成區分「缺值」與「有值停用」，已同步修正 self-test，沒有略過或停用測試。
+- 最新三個 Workflow：
+  - Unit Contract Audit 41393233848：PASS。
+  - UI Fixes Regression 41393233879：PASS；Builder offline self-tests、React template regression、DATA_REPORT parser regression、JSON／借券欄位驗證、非部署 HTML 預覽及相關性 fixture 均 PASS。
+  - Daily Premarket V9 Pro 41393233928：Build PASS；deploy job SKIPPED。
+- 最新非部署 artifact 已實際解壓與核對：
+  - p0/v9-pro-20261030.html（317,862 bytes）。
+  - p0/data-20261030.json（91,810 bytes）。
+  - T0=2026-10-30；技術序列 18 筆，spot5Dates 最後日期 10/30；沒有 11/02 未來日期。
+  - technical_history=yahoo (T0 filtered)；historical_learning=SQLite db。
+  - 新聞 12 則，首則及原文 URL 正確。
+  - GEX available、139 levels；Net GEX 1,294,327,419.009 NT$／1%；Gross GEX 6,320,130,202.133 NT$／1%。
+  - factor_quality active=12/17；missing_factors 為 yield、volume、ma_bias、macd；disabled_factors 僅 gex。GEX 有數值但不納入方向性 Bias，狀態不再誤標為缺值。
+  - 前十大 OI 與外資日盤淨交易不再直接相減；選擇權外資日盤 +6,624 口、夜盤 -94 口，卡片正確顯示日夜分歧。
+  - analysis_card_count=48 是內部分析敘述卡數；visible_block_count=42 是使用者定義的可見 Dashboard 區塊數；cards_41_count 僅為相容舊版的 alias。
+- 最新 artifact 的本輪實際瀏覽器截圖驗收：NOT TESTED（目前執行環境阻擋 localhost／file 頁面導航）；最新 CI 的靜態、Builder、資料解析與 HTML 預覽測試均 PASS。此前版本的六頁 Desktop／Mobile 技術渲染紀錄仍保留於 9.7。
+- 最新 Recovery 文件更新後，分支 head 會再前進一個文件提交；上述程式驗證均對應 8d08df0504d378c2d3f2592802062e83bd37c8fa。
