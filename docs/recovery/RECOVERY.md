@@ -646,3 +646,52 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 3. 最後量測 Actions 執行時間，確認新增處理耗時；不可預先宣稱低於 10 秒。
 
 - 本次交接文件更新不改動程式、正式資料或部署設定。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 24. 2026-11-02 新對話恢復校正：P0 已正式結案
+
+> 本節優先於本文件第 4、6、9～23 節中任何「P0 尚未結案」或「DATA-UI 尚待修正」的舊狀態。舊紀錄保留作為歷史追溯，不得照舊重做。
+
+### 最新權威結案紀錄
+- 以 `phase2-p0-ui-fixes` HEAD `a791e4f3a2a15e46cc670b163b2160651df070c3` 為 P0 結案紀錄；Commit 訊息：`docs(recovery): close Phase 2 P0 semantic audit`。
+- P0：PASS／CLOSED。沒有已知未修正的 P0 程式或 Dashboard 欄位語義缺陷。
+- 沿用既有驗收：Unit Contract #106、UI Regression #136、Daily Build #173、Browser Audit #41400089885（12 次 Desktop／Mobile 畫面檢查）；不為了結案重跑未受影響的測試。
+- V8 保留不動；Master 與 P0 baseline 不修改；未 Merge、未部署。
+- 10/30 原始 API 逐筆對帳、GEX 原始輸入重建、因子預測力／walk-forward 均為 NOT TESTED 的後續獨立稽核，不是 P0 blocker。
+
+### 本次重新查證的分支
+| 分支 | HEAD |
+|---|---|
+| `ops/recovery-handoff`（本文件分支，更新前） | `227bcf862d03613d66eff7368886282edadc5c3f` |
+| `phase2-p0-ui-fixes` | `a791e4f3a2a15e46cc670b163b2160651df070c3` |
+| `phase2-p0-data-quality` | `49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33` |
+| `master` | `136eb43ebbfd0a59dc2bb715238d5fb9eae42cad` |
+
+- P0 UI fixes 相對 P0 baseline：ahead 272、behind 0。
+- P0 baseline 與 master：分歧；compare 顯示 master 相對 P0 ahead 8、behind 290。
+- 不得 Merge／Rebase／Force Push；任何整合須另行提出方案並取得明確授權。
+
+### 最新工作資料觀察（唯讀）
+- 10/30 DATA_REPORT SHA：`665ae0ce957cbda372a1d70e1f06f0eea124ba11`；含 139 筆 GEX_LEVELS_JSON 衍生結果，但不含足以獨立重建的原始 IV／OI payload。
+- 10/30 GEX 139 筆內部檢查曾確認 Net = Call + Put、Gross = |Call| + |Put|，逐筆及總計差異為 0；這只證明內部一致性，不是外部原始輸入對帳。
+- 11/02 DATA_REPORT SHA：`8ccd0dfc0f86f80e23253781bf923a533566df96`；產出時間 14:35:26，Gamma／GEX 原始端點未取得時如實標 unavailable。
+- 11/02 Dashboard JSON SHA：`9e2c50907535d6f070a353eca50722d8c5e98aa1`；GEX status unavailable。不可將 11/02 當日快照混作 10/30 歷史原始輸入。
+
+### 下一個唯一工作
+**開始 P0 結案後的 10/30 原始 API 資料稽核（唯讀）。**
+1. 盤點 TAIFEX／TWSE／TPEX 各欄位的原始端點、請求參數、資料日期、來源欄位與報告輸出欄位。
+2. 確認 10/30 原始 payload 是否仍可由官方 API／Proxy 歷史查詢取得；取得者保存可重現證據，無法取得者標 BLOCKED。
+3. 對可取得欄位逐筆重算並與 DATA_REPORT 比較，輸出差異表及來源日期／單位問題。
+4. 完成來源對帳後，再獨立重建 GEX 原始 IV／OI 輸入；最後才評估因子預測力與 walk-forward。
+5. 本輪不修改 P0 程式、不更新正式 Dashboard、不部署、不 Merge；V8、Master、P0 baseline 維持不動。
+
+### 本次狀態
+- 讀取三份 recovery 文件：PASS。
+- GitHub branch／HEAD／compare 唯讀查證：PASS。
+- 讀取 P0 結案 Commit 與結案報告：PASS。
+- 本次 Recovery／Progress 文件校正：IN PROGRESS（完成遠端寫入與讀回驗證後才可標 PASS）。
+- 原始 API 逐筆對帳：NOT STARTED。
+- GEX 原始輸入重建：NOT STARTED。
+- 因子預測力／walk-forward：NOT STARTED。
+- 本次未修改程式、正式資料、Dashboard、Workflow、V8、Master 或 P0 baseline。
+
