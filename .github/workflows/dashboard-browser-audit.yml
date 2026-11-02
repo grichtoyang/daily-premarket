@@ -1,0 +1,49 @@
+name: V9 Dashboard Browser Audit
+
+on:
+  push:
+    branches:
+      - phase2-p0-ui-fixes
+    paths:
+      - '.github/workflows/dashboard-browser-audit.yml'
+      - 'tests/browser_dashboard_audit.mjs'
+      - 'dashboards/v9-pro-*.html'
+      - 'templates/v9-pro-react-template.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run six-tab Desktop and Mobile browser audit
+        env:
+          DASHBOARD_HTML: dashboards/v9-pro-20261030.html
+          AUDIT_OUT: artifacts/dashboard-browser-audit
+        run: node tests/browser_dashboard_audit.mjs
+
+      - name: Upload screenshots and audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v9-dashboard-browser-audit
+          path: artifacts/dashboard-browser-audit/
+          if-no-files-found: warn
+          retention-days: 14
