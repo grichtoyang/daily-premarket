@@ -35,6 +35,14 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('("外資日盤多單交易量", _fi(', fetch_data)
         self.assertIn('"口", SRC_FX)', fetch_data)
 
+    def test_option_ratio_changes_use_percentage_points(self):
+        fetch_data = (ROOT / "src" / "fetch_data.py").read_text(encoding="utf-8")
+        standard = (ROOT / "docs" / "DASHBOARD_UNIT_STANDARD.md").read_text(encoding="utf-8")
+        self.assertIn('("Call／Put 成交量比例", _f2(_ot[\'vol_ratio\']), "倍"', fetch_data)
+        self.assertIn('"百分點（pp）", _pch_src)', fetch_data)
+        self.assertIn('("項目", "數值", "單位", "資料來源")', fetch_data)
+        self.assertIn("日變化為百分點（pp）", standard)
+
     def test_treasury_yield_curve_includes_20_year(self):
         treasury = (ROOT / "src" / "sources" / "treasury.py").read_text(encoding="utf-8")
         fetch_data = (ROOT / "src" / "fetch_data.py").read_text(encoding="utf-8")
