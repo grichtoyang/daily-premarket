@@ -1245,3 +1245,39 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 | 五張卡片端到端 fixture（直接呼叫 build_41_cards） | NOT TESTED | 本輪測試的是正式 builder 共用的分類邏輯函式 |
 | Master 同資料對照 | NOT TESTED | 下一步 |
 | 手機畫面 | NOT TESTED | 尚未進行瀏覽器／實機檢查 |
+
+
+## 9.41 三市場回歸測試最終結論與 Master 對照查核（2026-11-02）
+
+### 回歸測試最終結果
+- Run `41446616296`（Commit `b5eee0b2a8f0eef1f49fa26074255c244cf3bf05`）最終狀態：`completed / success`。
+- 三市場 12 情境測試、現貨分類測試、17F offline self-tests、history replay、Gamma fallback、DATA_REPORT build、HTML injection、Pages artifact assembly/upload 均成功；Deploy 為 workflow 設定的 skipped，並非部署成功。
+- 因此第 9.40 節「Workflow 最終結論尚未取得」已更新為 PASS。
+
+### Master 靜態程式／模板對照
+- Master `scripts/v9_pro_builder.py` SHA：`76c742ac0d0cd7ff310f587e980f963c7acd192b`；分支版本 SHA：`4f6a45e9a0d94ea7c56e356ba0309d8dc1639f70`。
+- Master builder 已建立「主力三市透視」及「三市一致性」等 cards 資料，但 Master `templates/v9-pro-react-template.html` SHA `84117a9d9fcf7d0e12e4aaf29bc5f5ef3f423c3a` 搜尋不到「主力三市透視」卡片動態綁定。
+- 分支模板 SHA `944c93f7acfa39f2d166d6580fec302c2510c9d4` 已有 `u.cards?.["主力三市透視"]?.look/compass/target` 動態綁定。分支 builder 另有五張卡片專屬分析內容及三市場分類函式。
+- 這證實 Master 存在「後端產生卡片分析資料、前端未綁定該卡片」的斷鏈；分支已修復該呈現路徑。此結論是程式碼／模板靜態查核，不等同同資料輸出品質評分。
+
+### Master 同資料 A/B 比較限制與根因
+- Master 盤前 workflow Run `41400662988`（2026-11-02）失敗，沒有產生 artifact。
+- 已讀取 job log：Master 當次選用 `data_reports/DATA_REPORT_20261030.md`，builder 在 `parse_data_report()` 因找不到符合舊 regex 的現貨法人列（`[NO-FALLBACK] DATA_REPORT missing 外資`）而中止；HTML injection 與後續 artifact 步驟均 skipped。
+- Master 當時使用的資料報告日期是 20261030，不是分支測試用的 `DATA_REPORT_20261102.md`。因此沒有可供逐卡比較的 Master 產出，也沒有可證明相同輸入的 A/B 測試。
+- 不為了做比較而修改 Master，也不以人工推測代替 Master 實際輸出。
+
+### 驗收狀態
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| Run 41446616296 整體 workflow | PASS | API 最終 conclusion = success |
+| 12 項三市場分類情境測試 | PASS | 同一 Run 測試步驟成功 |
+| Master builder 與分支 builder 靜態差異 | PASS | 兩版檔案 SHA 與程式內容已讀取 |
+| Master 卡片前端斷鏈確認 | PASS | Master 模板無該卡片綁定；分支模板有動態綁定 |
+| Master 當日 Build | FAIL | Run 41400662988，現貨法人 regex 欄位解析失敗 |
+| Master 同一份 20261102 DATA_REPORT 實際輸出 | BLOCKED | Master build 失敗且無 artifact；其輸入資料報告為 20261030 |
+| 兩版五卡逐項品質評分 | BLOCKED | 無 Master 同輸入輸出，禁止臆測評分 |
+| 瀏覽器／手機實際畫面 | NOT TESTED | 尚未完成實際渲染驗收 |
+| 95% 分析品質目標 | NOT VERIFIED | 無獨立評分及足夠樣本，不得宣稱達標 |
+
+- Master 未修改；未 merge、未部署。
+- 下一步應先完成分支五卡片實際渲染／手機排版驗收；Master A/B 僅能在取得同輸入、可成功產出的 Master 環境後再執行，不應為此擴張本輪範圍。
