@@ -170,6 +170,26 @@ jobs:
           print(f"Generated {out} ({out.stat().st_size} bytes)")
           PY
 
+      - name: Build 20261030 full-day golden fixture and validate HTML JavaScript
+        run: |
+          set -euo pipefail
+          mkdir -p dashboards/test-fixtures
+          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261030.md --out dashboards/test-fixtures/data-20261030.json --date 20261030
+          python3 <<'PY'
+          import json, pathlib
+          template = pathlib.Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
+          data_obj = json.loads(pathlib.Path("dashboards/test-fixtures/data-20261030.json").read_text(encoding="utf-8"))
+          if data_obj.get("meta", {}).get("date") != "2026-10-30":
+              raise SystemExit("Golden fixture T0 mismatch")
+          data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          html = template.replace("</head>", f"<script>window.DASHBOARD_DATA={data};</script>\\n</head>", 1)
+          out = pathlib.Path("dashboards/test-fixtures/v9-pro-20261030-full-day.html")
+          out.write_text(html, encoding="utf-8")
+          print(f"Golden fixture generated: {out} ({out.stat().st_size} bytes)")
+          PY
+          python tests/validate_react_html_js.py "dashboards/v9-pro-${DATE}.html"
+          python tests/validate_react_html_js.py dashboards/test-fixtures/v9-pro-20261030-full-day.html
+
       - name: Publish latest aliases and Pages entrypoint
         run: |
           set -euo pipefail
