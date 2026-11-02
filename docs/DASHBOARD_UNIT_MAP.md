@@ -135,5 +135,5 @@
 
 - 已以 DATA_REPORT_20261030 與 dashboards/data-20261030.json 核對現貨、重要市場、期貨、選擇權及 GEX 的實際欄位。
 - options.instOpt 是日／夜盤交易淨口數（口）；options.instOptForce 是法人多空力道金額（億元），不可共用同一單位。
-- margin.borrowedSell／margin.borrowedSellDiff 在 Builder 與 React Template 有欄位，但既有 2026-10-30 JSON 快照未包含這兩欄；該快照下 Dashboard 應顯示 unavailable。這是舊快照／資料產出版本差異，必須以最新 Builder 重新產 JSON 才能確認資料鏈完整。
+- 既有已提交的 dashboards/data-20261030.json 舊快照未包含借券賣出欄位；最新 UI Regression 重新執行 Builder 後的非部署預覽 JSON 已包含 borrowedSell=36,178 張、borrowedSellDiff=-1,273 張及 scope=上櫃（上市 TWT93U 未取得），Dashboard 表格會依 scope 顯示。此項資料鏈以最新 Builder 產出驗證 PASS。
 - 重要市場原始 DATA_REPORT 的表格欄位未逐列印出「單位」欄；單位依 DATA_REPORT_TEMPLATE 的章節 schema 與 Yahoo／Treasury 報價慣例解讀，不能宣稱每筆原始列都已由 parser 驗證單位後綴。
