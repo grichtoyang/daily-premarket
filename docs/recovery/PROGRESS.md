@@ -443,3 +443,45 @@ P1 尚未開始。啟動前必須：
 3. 量測 Actions 實際增量耗時。
 
 - 未修改 Master、P0 baseline、V8；未部署、未合併。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 23. 2026-11-02 P0 正式結案狀態校正
+
+> 本節依最新 P0 結案 Commit 與使用者交接截圖更新；覆蓋本文件較早章節中 P0 尚未結案、UI-01～UI-05 尚未完成的歷史狀態。歷史紀錄保留，不回溯改寫。
+
+### 遠端查證基準
+- Repository：`grichtoyang/daily-premarket`
+- P0 凍結基準分支 `phase2-p0-data-quality` HEAD：`49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33`。
+- P0 UI 修正／結案分支 `phase2-p0-ui-fixes` HEAD：`a791e4f3a2a15e46cc670b163b2160651df070c3`。
+- P0 UI 修正分支相對 P0 基準：ahead 272、behind 0；merge base 為 P0 基準。這不構成 Merge 授權。
+- `master` HEAD：`136eb43ebbfd0a59dc2bb715238d5fb9eae42cad`。
+- P0 基準與 master 已分歧；compare 顯示 master 相對 P0 ahead 8、behind 290。不得自行 Merge／Rebase／Force Push。
+- Recovery 文件分支 `ops/recovery-handoff` 本次更新前 HEAD：`227bcf862d03613d66eff7368886282edadc5c3f`。
+
+### P0 結案證據（沿用既有 PASS，不重跑）
+- Unit Contract Audit #106：PASS。
+- V9 UI Fixes Regression #136：PASS。
+- Daily Premarket V9 Pro #173：PASS。
+- Browser Audit #41400089885：PASS；六個分頁 Desktop／Mobile 共 12 次檢查通過。
+- P0 結案 Commit：`a791e4f3a2a15e46cc670b163b2160651df070c3`，訊息 `docs(recovery): close Phase 2 P0 semantic audit`。
+- P0 結論：目前沒有已知且尚未修正的 P0 程式或 Dashboard 欄位語義缺陷。
+- V8、Master、P0 baseline 均未由該結案 Commit 修改；未 Merge、未部署。
+
+### 非 P0 阻斷的後續稽核
+| 工作 | 狀態 | 邊界 |
+|---|---|---|
+| 2026-10-30 TAIFEX／TWSE／TPEX 原始 API payload 逐筆獨立重算 | NOT TESTED | 必須取得原始 payload；不可由 DATA_REPORT 衍生值冒充原始資料 |
+| 2026-10-30 GEX 原始 IV／OI 輸入重建 | NOT TESTED | 現有 139 筆 GEX_LEVELS_JSON 只證明模型輸出內部公式與彙總一致，不代表原始輸入已外部對帳 |
+| 因子預測力與 walk-forward | NOT TESTED | 需先固定因子定義、時間切分及避免 look-ahead 的驗證方法 |
+
+### 目前資料版本
+- `phase2-p0-ui-fixes/data_reports/DATA_REPORT_20261030.md` SHA：`665ae0ce957cbda372a1d70e1f06f0eea124ba11`。
+- `phase2-p0-ui-fixes/data_reports/DATA_REPORT_20261102.md` SHA：`8ccd0dfc0f86f80e23253781bf923a533566df96`。
+- `phase2-p0-ui-fixes/dashboards/data-20261102.json` SHA：`9e2c50907535d6f070a353eca50722d8c5e98aa1`；T0 2026-11-02，產出時間 14:35:26，GEX 狀態 unavailable。這是當日資料快照，不作為 10/30 原始輸入重建依據。
+
+### 後續工作順序
+1. 先做 10/30 原始 API payload 逐筆對帳，確認哪些原始資料可取得、哪些已無法回溯；產出差異清單，不修改 P0 程式。
+2. 以已確認的原始輸入重建 10/30 GEX；若原始 IV／OI／結算價／到期資訊不足，明確標 BLOCKED，不用衍生 JSON 反推原始資料。
+3. 最後再做因子預測力與 walk-forward，先定義樣本、時間切分、基準、交易成本及評估指標。
+4. 這些均屬 P0 結案後的獨立資料稽核／模型驗證，不重新開啟 P0。
+
