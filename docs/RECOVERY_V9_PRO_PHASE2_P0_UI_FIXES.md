@@ -782,3 +782,31 @@ tests/test_dashboard_unit_contract.py 新增：
 
 
 - V9 UI Fixes Regression Run **#131**（commit `a9c8a21`）：SUCCESS。期貨交易表逐列單位修正及其契約測試後，整體 UI／資料回歸流程通過。
+
+
+## 9.28 10/30 報告缺少 20 年期美債殖利率：確認需求並補齊資料鏈（2026-11-02）
+
+### 發現與確認
+- 10/30 DATA_REPORT 的美債表只有 2Y、10Y、30Y，缺少 20Y。
+- 專案原先 `src/sources/treasury.py` 的 FiscalData 主來源解析器只解析 2Y／10Y／30Y；API 失敗備援亦只有 2Y Treasury XML、10Y／30Y Yahoo，因此並非單日缺值，而是資料鏈根本沒有 20Y 欄位。
+- DATA_REPORT_TEMPLATE 原規格同樣只列 2／10／30 年，與本專案盤前分析需求應涵蓋 2／10／20／30 年的要求不一致。
+- 官方 Treasury yield curve 包含 20 年期 tenor；Treasury 官方 XML feed 提供每日 yield curve 資料。參考：Data.gov Treasury yield curve dataset、Treasury XML feed 說明（見對話引用）。
+
+### 已提交修正
+- `src/sources/treasury.py`：
+  - FiscalData 主解析新增 `bc_20year`／`20 Yr`。
+  - API 失敗時 Treasury XML 新增 `BC_20YEAR` 備援。
+  - 20Y 缺值維持 None/unavailable，不以 10Y 或 30Y 推估。
+- `src/fetch_data.py`：美債表新增「美國 20 年期殖利率」列。
+- `docs/DATA_REPORT_TEMPLATE.md`：需求欄位更新為 2／10／20／30 年。
+- `tests/test_dashboard_unit_contract.py`：新增 20Y source/parser/report row contract test。
+
+### Commits
+- `6a5ee98115af478a7564cc75b88fb484a1281111`（20Y Treasury source）
+- `005912bced4801287b25e727ee233bdeb163fde7`（DATA_REPORT 20Y row）
+- `334eb88b91d4c8c27f9945d2a247ebe475129396`（template requirement）
+- `722dd0f15e30df0831021bf75d9bad5b61405ec0`（20Y unit contract test）
+
+### 驗收
+- 程式、模板及測試檔已提交；新 Unit Contract Audit 尚待完成，NOT TESTED。
+- 10/30 歷史報告不會自動重寫；本修正供後續新報告使用。若要補 10/30 歷史數值，需另行取得該日官方 20Y 原始值，不可用目前值回填。
