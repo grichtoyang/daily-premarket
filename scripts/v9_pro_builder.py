@@ -1154,11 +1154,47 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         option_session_text=('日夜同向' if option_foreign_day*option_foreign_night>0 else '日夜方向分歧' if option_foreign_day*option_foreign_night<0 else '至少一盤中性')
     else:
         option_session_text='日夜資料不足'
+    # 三市場解析：分開現貨金額、期貨/選擇權交易流量與 OI 存量，避免跨口徑直接比較。
     three_market_values=[foreign,foreign_day,option_foreign_day]
     if all(value is not None for value in three_market_values):
-        three_market_text=('三市場一致偏多' if all(value>0 for value in three_market_values) else '三市場一致偏空' if all(value<0 for value in three_market_values) else '三市場方向分歧／含中性')
+        three_market_text=('三市場一致偏多' if all(value>0 for value in three_market_values) else '三市場一致偏空' if all(value<0 for value in three_market_values) else '三市場方向分歧')
     else:
-        three_market_text='三市場資料不足，不能判定一致性'
+        three_market_text='三市場資料不完整，不能判定一致性'
+    futures_oi_values=[parsed.get('futures',{}).get(key) for key in ('foreign_oi','trust_oi','dealer_oi')]
+    futures_oi_numbers=[]
+    for value in futures_oi_values:
+        try:
+            number=float(value)
+            futures_oi_numbers.append(number if math.isfinite(number) else None)
+        except (TypeError,ValueError):
+            futures_oi_numbers.append(None)
+    futures_oi_all_zero=(len(futures_oi_numbers)==3 and all(value is not None and value==0 for value in futures_oi_numbers))
+    futures_oi_status=("三法人淨 OI 全為 0，視為可疑快照，不納入方向判斷" if futures_oi_all_zero else
+                       "期貨淨 OI 有缺值，僅採可用欄位" if any(value is None for value in futures_oi_numbers) else
+                       "期貨淨 OI 可讀取；仍與日盤交易流量分開解讀")
+    opt_trust_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='投信'),None)
+    opt_dealer_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='自營商'),None)
+    option_trust_day=signed_table_value(opt_trust_row,3)
+    option_dealer_day=signed_table_value(opt_dealer_row,3)
+    def signed_text(value, unit, digits=0):
+        return "資料不足" if value is None else f"{value:+,.{digits}f}{unit}"
+    three_market_look=(
+        f"現貨外資 {signed_text(foreign,'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、"
+        f"自營商 {signed_text(spot_inst_values[2],'億元',1)}；"
+        f"期貨外資日盤淨交易 {signed_text(foreign_day,'口')}；"
+        f"選擇權外資日盤 {signed_text(option_foreign_day,'口')}／夜盤 {signed_text(option_foreign_night,'口')}"
+    )
+    three_market_compass=(
+        f"{three_market_text}：外資現貨{direction(foreign)}、期貨日盤流量{direction(foreign_day)}、"
+        f"選擇權日盤流量{option_day_dir}。{futures_oi_status}。"
+        f"選擇權同業別日盤：投信 {signed_text(option_trust_day,'口')}、自營商 {signed_text(option_dealer_day,'口')}。"
+        f"現貨與衍生品是不同市場/口徑，不能把金額與口數相加。"
+    )
+    three_market_target=(
+        "下一交易日先核對期貨法人 OI 是否恢復有效；在此之前以日盤淨交易量作流量觀察。"
+        "若外資現貨賣超收斂、期貨日盤流量轉弱或翻空、選擇權日盤淨流量仍偏空，才視為賣壓延續；"
+        "若期貨與選擇權流量轉同向且現貨賣超收斂，再確認分歧是否收斂。未收斂前不追單。"
+    )
     spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
     if all(value is not None for value in spot_inst_values) and all(float(value)>0 for value in spot_inst_values):
         spot_inst_text='三法人現貨同向買超'
@@ -1211,11 +1247,11 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '交易計畫': bias_card,
         '行事曆': news_card,
         '法人籌碼': {"look": f"外資現貨 {display(foreign)}億元（{direction(foreign)}）；期貨淨 OI {display(foreign_fut,0)}口；投信 {display(parsed['inst'].get('trust'))}億元；自營商 {display(parsed['inst'].get('dealer'))}億元", "compass": f"現貨外資 {direction(foreign)}、投信 {direction(parsed['inst'].get('trust'))}；依實際數值呈現，不預設對作", "target": f"觀察外資現貨後續變化；Put Wall {put_wall_text}僅為價位參考"},
-        '主力三市透視': {"look": f"三市場外資方向：現貨 {direction(foreign)}；期貨日盤淨交易 {direction(foreign_day)}；選擇權日盤淨交易 {option_day_dir}", "compass": three_market_text, "target": "三市場需同時觀察存量與流量；方向分歧時不宣稱主力一致"},
-        '三市一致性': {"look": f"期現選外資方向：現貨 {direction(foreign)}；期貨日盤 {direction(foreign_day)}；選擇權日盤 {option_day_dir}、夜盤 {option_night_dir}", "compass": three_market_text, "target": "若三市場方向分歧，等待訊號收斂；不將單一市場部位視為整體方向"},
-        '期現選方向對照': {"look": f"現貨外資 {display(foreign)}億元；期貨日盤淨交易 {display(foreign_day,0)}口；選擇權日盤淨交易 {display(option_foreign_day,0)}口；OI PCR {pcr_text}倍", "compass": three_market_text, "target": f"Put Wall {put_wall_text}為價位參考；PCR 僅為 OI 比值"},
-        '籌碼三市矩陣': {"look": f"現貨法人買賣超：外資 {display(spot_inst_values[0])}億元；投信 {display(spot_inst_values[1])}億元；自營 {display(spot_inst_values[2])}億元", "compass": spot_inst_text, "target": "比較三法人買賣超方向與金額，不預設投信必然撐盤"},
-        '主力意圖解碼': {"look": f"主力部位：外資期貨淨 OI {foreign_fut if foreign_fut is not None else 'unavailable'}口；投信現貨 {parsed['inst']['trust']} 億元", "compass": "僅呈現法人部位，不將單一市場部位解讀為控盤", "target": "搭配現貨、期貨、選擇權三市場方向與變化判斷"},
+        '主力三市透視': {"look": three_market_look, "compass": three_market_compass, "target": three_market_target},
+        '三市一致性': {"look": three_market_look, "compass": three_market_compass, "target": three_market_target},
+        '期現選方向對照': {"look": three_market_look + f"；OI PCR {pcr_text}倍", "compass": three_market_compass, "target": three_market_target + f" Put Wall {put_wall_text}僅作獨立價位觀察；PCR 是 OI 比值，不代表交易流量。"},
+        '籌碼三市矩陣': {"look": three_market_look, "compass": three_market_compass, "target": three_market_target},
+        '主力意圖解碼': {"look": three_market_look + f"；期貨 OI {display(foreign_fut,0)}口", "compass": three_market_compass, "target": three_market_target},
         '夜盤劇本': {"look": f"夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '台指夜盤劇本': {"look": f"台指夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '資金流向': spot_card,
