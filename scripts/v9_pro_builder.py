@@ -8,7 +8,7 @@ Skill: daily-premarket-analysis-v9-pro (參考 v8 pro skill 2026-10-28)
 - 17因子：基礎15因子 + RSI 3% + MACD 3% = 17F，VIX動態，基差過大假多 7%->2%
 - 方案C：Yahoo ^TWII 30天 → FinMind → SQLite DB 3層備援，全失敗 weight 0% 15因子運算
 - SQLite真DB：v9_pro_history + factor_performance，真勝率10天回測，歷史相似度
-- 41張全動態 + 20模板輪替 + 權重回測，20句型 day_hash%20避免重複
+- 42個可見區塊全動態 + 20模板輪替 + 權重回測，20句型 day_hash%20避免重複
 - 6頁結構：總覽/現貨/重要市場/期貨/選擇權/綜合分析，按 DATA_REPORT 四大類對位
 - 每區塊 圖表 + 分析→判斷→操作，機構級 Donut/Lollipop/Gauge/SparklineTable/Candlestick/Butterfly/Mountain/Depth/Ladder/Heatmap/Gauge (Bias半圓儀表仿附圖)
 - 防重疊：measureText預留4px，三欄固定寬，數值條外，文字不重疊
