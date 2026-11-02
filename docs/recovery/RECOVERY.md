@@ -738,3 +738,18 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - Gamma Wall 為絕對 Net GEX 最大履約價；Gamma Flip 在標的價格 ±10% 掃描總 GEX，取第一個符號跨越並線性插值。
 - 模型有效門檻為可計算筆數／符合正 OI、正結算價及 Chain/Delta 匹配條件的筆數 >= 50%。
 - 獨立重建必須保存 Chain、Delta 原始列及標的收盤價；不能由 GEX_LEVELS_JSON 反推原始 IV／OI。
+
+
+## 26. 2026-11-02 最終收尾決策
+
+本節為目前有效的收尾指令，優先於第23～25節要求重新逐筆對帳或建立原始 API 擷取流程的舊待辦；舊紀錄保留為歷史，不再執行。
+
+- 使用者確認：10/30 TAIFEX／TWSE／TPEX 逐筆比對已多次驗收，沿用既有結果，不重跑、不再總驗收。
+- 直接使用現有 DATA_REPORT 與既有驗收紀錄；不新增 Raw API Audit Runner、Fetch Data 機制或 Worker。
+- P0 保持 PASS／CLOSED；不修改正式資料鏈、Dashboard、P0 baseline、Master 或 V8；不 Merge／Rebase／Force Push／部署。
+- 10/30 DATA_REPORT SHA：665ae0ce957cbda372a1d70e1f06f0eea124ba11。報告含 139 筆衍生 GEX_LEVELS_JSON；underlying=45,211.83；Net GEX=1,294,327,419.01；Gross GEX=6,320,130,202.13；quality=usable。
+- 沿用既有 139 筆內部一致性驗收：Net=Call+Put、Gross=abs(Call)+abs(Put)，差異為 0；不重算。
+- GEX_LEVELS_JSON 不含原始 Chain、完整 Delta payload 與原始報價，因此 DATA_REPORT 足以保留既有 GEX 結果與內部一致性證據，但不足以獨立重建原始 IV／Gamma。標記 BLOCKED；本階段不新增抓取工具，將限制記錄後收尾。
+- 因子預測力／walk-forward 不屬本次 P0 收尾範圍，不列入待辦。新增 Fetch Data／Runner／Worker 均 NOT IN SCOPE。
+
+最終狀態：P0 結案後稽核收尾完成；GEX 原始輸入重建保留 BLOCKED 限制。不得因該限制重新啟動本階段或重複既有驗收。Auditor 為單模型自我審查，非獨立多模型審核。
