@@ -2,8 +2,8 @@
 
 更新日期：2026-11-02（Asia/Taipei）
 Repository：`grichtoyang/daily-premarket`
-工作分支：`phase2-p0-ui-fixes`
-更新基準 HEAD：`8034ee36ed51c84e13a79c2753f74e8a6b5ac49e`（2026-11-02 最新 Recovery 提交）
+原 P0 工作分支：`phase2-p0-ui-fixes`；目前續作分支：`fix/three-market-correlation-history`
+更新基準 HEAD：`85c6fe8175517ab89237f33fd568b33ba344f26d`（2026-11-02；目前續作分支最新已知提交）
 
 > 本文件是本階段的續作錨點。新對話先讀本文件，再從「下一步」接續。
 > 本文件只記錄可確認的狀態；未執行的測試不得標為 PASS。
@@ -871,3 +871,84 @@ tests/test_dashboard_unit_contract.py 新增：
 ### 後續處理原則
 
 P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽核／模型驗證工作，不再把它們混入 P0，也不重跑本次已通過的總驗收。
+
+
+## 9.31 相關性熱力圖歷史資料回填與交易計畫標籤斜線修正（2026-11-02）
+
+### 工作範圍與分支隔離
+- 本輪只處理兩項指定 UI 問題：三市場圖表選擇權數據、相關性熱力圖歷史累積資料；後續另修正交易計畫圖標籤附近的斜線。
+- Repository：`grichtoyang/daily-premarket`。
+- 工作分支：`fix/three-market-correlation-history`。
+- 最新已知提交：`85c6fe8175517ab89237f33fd568b33ba344f26d`（`85c6fe8`）。
+- 不修改正式分支、不部署、不 merge、不 rebase、不修改 V8／Master；P0 已結案，不重跑 P0 總驗收。
+
+### A. 相關性熱力圖歷史樣本不足
+
+**根因**
+- GitHub Actions 每次建置使用新的 runner，SQLite 歷史資料庫不會跨次執行持續存在。
+- 先前的 5 日歷史回放測試使用暫存 SQLite DB，並不代表正式 Dashboard build 也取得相同歷史樣本。
+- 另一個資料完整性問題是建置流程可能先寫入同日期的不完整舊列；回填遇到同日期既有資料時跳過，造成不完整列未被完整歷史資料取代。
+
+**修正**
+- 在 `.github/workflows/daily-premarket-v9-pro.yml` 加入建置前歷史回填，從 `data_reports/DATA_REPORT_*.md` 讀取最近 5 份報告，重建本次建置用的 `dashboards/v9_pro_history.db`。
+- 回填時先刪除本次建置中相同日期的舊列，再以完整歷史報告重建，避免不完整舊列被保留。
+- 日期寫入統一使用 `report_date.replace("-","")`，避免日期格式不一致。
+- 加入最終輸出診斷，直接檢查 `build_final_json` 的 `analysis.correlation`，而非只驗證回填資料庫。
+
+**CI 證據**
+- Actions Run：`41419540631`。
+- Commit：`85c6fe8175517ab89237f33fd568b33ba344f26d`。
+- Workflow build：SUCCESS；Deploy：SKIPPED（未部署）。
+- Log 確認歷史回填有效樣本 5/5。
+- Log 確認最終 Dashboard JSON：Pearson 相關係數、完整有效樣本 5 筆、最近 60 筆設定、labels=8、matrix_rows=8。
+- 這證明正式 build 的最終 JSON 已產生 8×8 矩陣；不是只有暫存回放測試通過。
+
+**使用者視覺驗收**
+- 使用者提供最新相關性熱力圖截圖。
+- 可見 8 個指標、8×8 相關係數矩陣、對角線 1.00、正負相關色階及 -1 至 +1 圖例；數值、標籤、色塊與下方分析／判斷／操作區塊未見重疊或裁切。
+- 使用者截圖視覺驗收：PASS。
+- 最終 JSON／CI 證據與使用者截圖相互支持，相關性熱力圖本項結案。
+
+### B. 交易計畫圖標籤附近斜線
+
+**根因與修正**
+- 原繪圖程式在標籤垂直移位時繪製 connector stroke；連接線可能穿過 Call Wall／Put Wall 標籤或數值區域。
+- 已從 `templates/v9-pro-react-template.html` 及當前分支 `dashboards/v9-pro-20261102.html` 移除該 connector stroke 繪製語句。
+- 保留價格水平線、標籤及數值。
+- 另已修正 `Number(null) === 0` 的 coercion 問題：先檢查 null／undefined／空字串，再進行數字轉換，避免缺值被誤畫為 0。
+
+**驗收**
+- 程式修改已提交至目前工作分支。
+- 最新 Actions build 成功，但目前尚未取得交易計畫圖修正後的使用者畫面確認。
+- 狀態：程式修改已完成；實際視覺驗收 NOT TESTED。
+
+### C. 三市場圖表選擇權數據
+
+- 已將外資、投信、自營商選擇權日盤淨交易納入三市場圖表，圖表顯示單位為百口。
+- 曾提供的數據截圖：外資 -2 百口、投信 -64 百口、自營商 +74 百口。
+- 解析區域曾顯示原始口數 -167、-6,362、+7,399，與圖表百口單位的呈現方式不一致；目前沒有證據確認此單位一致性問題已修正。
+- 狀態：選擇權數據已加入；圖表／解析區域單位一致性仍待確認（NOT TESTED）。
+
+### 9.31 驗收總表
+
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| 相關性熱力圖歷史回填 | PASS | Actions Run 41419540631；有效樣本 5/5 |
+| 相關性最終 JSON | PASS | 8 labels、8 matrix rows；完整有效樣本 5 筆 |
+| 相關性熱力圖使用者畫面 | PASS | 使用者最新截圖；8×8 矩陣與版面顯示正常 |
+| 交易計畫 connector 斜線程式修正 | FIXED | Template 與當前 HTML 已移除 connector stroke |
+| 交易計畫修正後視覺 | NOT TESTED | 尚未取得修正後實際畫面 |
+| 三市場選擇權日盤數據加入 | DONE | 外資／投信／自營商已加入，圖表單位百口 |
+| 三市場圖表與解析區單位一致性 | NOT TESTED | 圖表百口與解析區原始口數顯示口徑不同，尚待確認 |
+| Build workflow | PASS | Run 41419540631 SUCCESS |
+| Deploy／Merge | NOT DONE | Deploy SKIPPED；未 merge、未部署 |
+
+### 下一步（只處理未結項）
+1. 取得交易計畫圖最新建置產物或使用者截圖，確認 Call Wall／Put Wall 標籤與數值不再被斜線穿越；只做此區塊視覺驗收。
+2. 核對三市場圖表與解析區的選擇權法人淨交易單位；若解析區維持原始口數，須清楚標示「口」，不得與圖表百口混淆。只修改必要標籤／格式。
+3. 不重跑 P0、不做全 Dashboard 無差別回歸、不部署、不 merge。完成以上兩項後再更新 Recovery 並結案本輪指定工作。
+
+### 工作方式
+- 本輪只有單一模型；Auditor 為同模型自我複核，不宣稱獨立多模型審核。
+- 不把 build PASS 等同使用者端視覺 PASS；不把未取得的 Artifact 或截圖描述成已檢查。
+- 僅修改明確指定問題，保留其他已驗收區塊。
