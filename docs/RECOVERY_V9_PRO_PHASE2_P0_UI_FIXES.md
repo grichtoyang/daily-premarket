@@ -525,3 +525,13 @@ tests/test_dashboard_unit_contract.py 新增：
 | 新 DATA_REPORT 產出驗證 | NOT TESTED | 尚未重新執行 data workflow |
 | Browser audit workflow | NOT TESTED | 尚未取得 Actions run 結果 |
 | Merge／部署 | NOT DONE | 僅限 phase2-p0-ui-fixes，不合併、不部署 |
+
+
+### 9.12.1 CI 複驗結果（2026-11-02）
+- 新增 `tests/test_fetch_data_borrowed_sources.py`，檢查三個欄位使用獨立來源鍵，且 DATA_REPORT 表格逐列取用對應標籤。
+- `.github/workflows/daily-premarket-v9-pro.yml` 已新增執行該測試的步驟。
+- Workflow Run **41399740450**：`success`；Commit `6eeec5a759532de0fd5d34a0e07ad53994ea992b`。
+- 新增測試步驟 PASS；既有融資維持率／DATA_REPORT merge 測試、17F self-tests、Gamma fallback tests、Dashboard JSON build、HTML injection、Pages artifact upload 均 PASS。
+- Artifact：`github-pages`，ID `13120833006`。本 workflow 的 deploy job 未執行（本分支 deploy 條件不成立），不代表正式 Pages 已更新。
+- **重要限制**：本次為 Dashboard builder workflow，讀取既有 DATA_REPORT 並重建 Dashboard；它沒有重新執行 `src/fetch_data.py`，因此不能據此宣稱新的 DATA_REPORT 已產出正確的借券逐欄來源標籤。須待 daily-data workflow 下一次執行或可用的手動觸發，檢查新報告的三列來源欄位。
+- 本次程式／測試狀態：來源欄位拆分 PASS（CI）；新 DATA_REPORT 實際產出與欄位標籤 PASS 尚未驗證；TWT93U／TPEX 原始逐股數據核算 NOT TESTED；browser audit workflow NOT TESTED。
