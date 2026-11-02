@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.2",
   "applies_to": "daily-premarket V9 Pro",
   "metrics": {
     "spot.close": {
@@ -114,13 +114,15 @@
       "source_unit": "口",
       "canonical_unit": "口",
       "display_unit": "口",
-      "status": "defined"
+      "status": "defined",
+      "semantic_note": "OI is position stock at a point in time; day/night net trading is interval flow. Do not subtract one from the other or label the difference as opposing positions."
     },
     "options.volume_oi_institutional_net": {
       "source_unit": "口",
       "canonical_unit": "口",
       "display_unit": "口",
-      "status": "defined"
+      "status": "defined",
+      "semantic_note": "Call/Put volume, OI and day/night net trades are all contract counts but represent different measures. options.instOpt is contract flow; options.instOptForce is amount in NT$ 100M."
     },
     "options.strikes_walls_flip_max_pain": {
       "source_unit": "點",
@@ -144,25 +146,43 @@
       "source_unit": "NT$ exposure per 1% underlying move",
       "canonical_unit": "NT$ (gamma × OI × contract multiplier × underlying price² × 1%)",
       "display_unit": "NT$／標的價格變動 1%",
-      "status": "defined_by_worker_formula"
+      "status": "defined_by_worker_formula",
+      "semantic_note": "OI-based Black-Scholes Gamma exposure estimate; Call/Put sign convention is a model assumption, not verified dealer inventory. Net GEX sign is not a directional bullish/bearish signal and is excluded from Bias until a validated directional rule exists."
     },
     "synthesis.bias": {
       "source_unit": "分",
       "canonical_unit": "分",
       "display_unit": "分",
-      "status": "defined"
+      "status": "defined",
+      "semantic_note": "Bias uses active directional factors only; GEX remains visible as a model exposure metric but is not a directional score."
     },
     "synthesis.factor_count": {
       "source_unit": "項",
       "canonical_unit": "項",
       "display_unit": "項",
-      "status": "defined"
+      "status": "defined",
+      "semantic_note": "Count only factors with validated inputs and active scoring; disabled GEX is not included in the active count."
     },
     "synthesis.correlation": {
       "source_unit": "無量綱",
       "canonical_unit": "無量綱",
       "display_unit": "無量綱 [-1,+1]",
-      "status": "defined"
+      "status": "defined",
+      "semantic_note": "Pearson coefficient in [-1,+1], dimensionless; use only observations dated on or before DATA_REPORT T0 and require at least 5 complete samples."
+    },
+    "history.similarity_outcomes": {
+      "source_unit": "next-day index return (%) from historical similar days",
+      "canonical_unit": "percentage return; separate positive/negative outcome rates",
+      "display_unit": "隔日平均變動 %；隔日上漲比例 %；隔日下跌比例 %",
+      "status": "defined_by_builder",
+      "semantic_note": "Positive/negative outcome ratios are descriptive frequencies, not strategy win rate unless direction and execution rules are defined. Historical query must exclude rows on or after the as-of T0."
+    },
+    "technical.indicators": {
+      "source_unit": "Yahoo / FinMind / SQLite close/high/low history",
+      "canonical_unit": "RSI14 and stochastic are indicator values; MACD histogram in index points; moving-average deviation in %",
+      "display_unit": "依指標量綱分別顯示；缺少足夠 T0 以前樣本時 unavailable",
+      "status": "defined_by_builder",
+      "semantic_note": "All source records are filtered to Asia/Taipei T0 before calculating RSI, MACD, KD, SMA and five-day series."
     }
   },
   "chart_rules": {
