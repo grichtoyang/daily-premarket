@@ -56,7 +56,9 @@ class ReactTemplateStaticTests(unittest.TestCase):
         # Hn is shared by the futures day/night institutional chart, options top-10 chart,
         # and per-strike GEX chart. Its canvas must grow to fit every rendered row.
         self.assertIn("height:Math.max(n,e.length*46+48)", self.html)
-        self.assertIn('style:{minHeight:"180px",overflow:"visible"}', self.html)
+        self.assertIn('style:{minHeight:"180px"}', self.html)
+        self.assertIn('className:"bg-[#0a1424]"', self.html)
+        self.assertIn('style:{width:"100%",height:Math.max(n,e.length*46+48),display:"block",maxWidth:"100%"}', self.html)
         self.assertIn('title:"日夜法人交易"', self.html)
         self.assertIn('height:220}),chartNote:"未平倉量與日／夜盤淨交易均為口數，統計意義不同。', self.html)
         self.assertIn('title:"前十大選擇權"', self.html)
