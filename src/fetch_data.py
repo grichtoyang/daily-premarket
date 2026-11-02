@@ -678,24 +678,26 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     def _t(sess, k):
         v = _tr[(sess, k)]
         return v
-    A(_tbl([("外資日盤多單交易量", _fi(_t("day", "foreign")["long"]), SRC_FX),
-            ("外資日盤空單交易量", _fi(_t("day", "foreign")["short"]), SRC_FX),
-            ("外資日盤多空淨交易量", _f2s(_t("day", "foreign")["net"]), SRC_FX),
-            ("外資夜盤多單交易量", _fi(_t("night", "foreign")["long"]), SRC_FX),
-            ("外資夜盤空單交易量", _fi(_t("night", "foreign")["short"]), SRC_FX),
-            ("外資夜盤多空淨交易量", _f2s(_t("night", "foreign")["net"]), SRC_FX),
-            ("外資日盤／夜盤交易量變化", _f2s(_diff2(_t("day", "foreign")["net"], _t("night", "foreign")["net"])), SRC_FX),
-            ("投信日盤多空淨交易量", _f2s(_t("day", "investment_trust")["net"]), SRC_FX),
-            ("投信夜盤多空淨交易量", _f2s(_t("night", "investment_trust")["net"]), SRC_FX),
-            ("投信日盤／夜盤交易量變化", _f2s(_diff2(_t("day", "investment_trust")["net"], _t("night", "investment_trust")["net"])), SRC_FX),
-            ("自營商日盤多空淨交易量", _f2s(_t("day", "dealer")["net"]), SRC_FX),
-            ("自營商夜盤多空淨交易量", _f2s(_t("night", "dealer")["net"]), SRC_FX),
-            ("自營商日盤／夜盤交易量變化", _f2s(_diff2(_t("day", "dealer")["net"], _t("night", "dealer")["net"])), SRC_FX),
-            ("三大法人日盤多空淨交易量", _f2s(_add3(_t("day", "foreign")["net"], _t("day", "investment_trust")["net"], _t("day", "dealer")["net"])), SRC_FX),
-            ("三大法人夜盤多空淨交易量", _f2s(_add3(_t("night", "foreign")["net"], _t("night", "investment_trust")["net"], _t("night", "dealer")["net"])), SRC_FX),
-            ("法人日盤交易金額淨額 (億元)", _f1s(_add3(_t("day", "foreign")["net_amt_yi"], _t("day", "investment_trust")["net_amt_yi"], _t("day", "dealer")["net_amt_yi"])), SRC_FX),
-            ("法人夜盤交易金額淨額 (億元)", _f1s(_add3(_t("night", "foreign")["net_amt_yi"], _t("night", "investment_trust")["net_amt_yi"], _t("night", "dealer")["net_amt_yi"])), SRC_FX)],
-           ("項目", "口數", "資料來源")))
+    _fut_trade_rows = [
+        ("外資日盤多單交易量", _fi(_t("day", "foreign")["long"]), "口", SRC_FX),
+        ("外資日盤空單交易量", _fi(_t("day", "foreign")["short"]), "口", SRC_FX),
+        ("外資日盤多空淨交易量", _f2s(_t("day", "foreign")["net"]), "口", SRC_FX),
+        ("外資夜盤多單交易量", _fi(_t("night", "foreign")["long"]), "口", SRC_FX),
+        ("外資夜盤空單交易量", _fi(_t("night", "foreign")["short"]), "口", SRC_FX),
+        ("外資夜盤多空淨交易量", _f2s(_t("night", "foreign")["net"]), "口", SRC_FX),
+        ("外資日盤／夜盤交易量變化", _f2s(_diff2(_t("day", "foreign")["net"], _t("night", "foreign")["net"])), "口", SRC_FX),
+        ("投信日盤多空淨交易量", _f2s(_t("day", "investment_trust")["net"]), "口", SRC_FX),
+        ("投信夜盤多空淨交易量", _f2s(_t("night", "investment_trust")["net"]), "口", SRC_FX),
+        ("投信日盤／夜盤交易量變化", _f2s(_diff2(_t("day", "investment_trust")["net"], _t("night", "investment_trust")["net"])), "口", SRC_FX),
+        ("自營商日盤多空淨交易量", _f2s(_t("day", "dealer")["net"]), "口", SRC_FX),
+        ("自營商夜盤多空淨交易量", _f2s(_t("night", "dealer")["net"]), "口", SRC_FX),
+        ("自營商日盤／夜盤交易量變化", _f2s(_diff2(_t("day", "dealer")["net"], _t("night", "dealer")["net"])), "口", SRC_FX),
+        ("三大法人日盤多空淨交易量", _f2s(_add3(_t("day", "foreign")["net"], _t("day", "investment_trust")["net"], _t("day", "dealer")["net"])), "口", SRC_FX),
+        ("三大法人夜盤多空淨交易量", _f2s(_add3(_t("night", "foreign")["net"], _t("night", "investment_trust")["net"], _t("night", "dealer")["net"])), "口", SRC_FX),
+        ("法人日盤交易金額淨額", _f1s(_add3(_t("day", "foreign")["net_amt_yi"], _t("day", "investment_trust")["net_amt_yi"], _t("day", "dealer")["net_amt_yi"])), "億元", SRC_FX),
+        ("法人夜盤交易金額淨額", _f1s(_add3(_t("night", "foreign")["net_amt_yi"], _t("night", "investment_trust")["net_amt_yi"], _t("night", "dealer")["net_amt_yi"])), "億元", SRC_FX),
+    ]
+    A(_tbl(_fut_trade_rows, ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 6．期貨與現貨關係")
     A("")
