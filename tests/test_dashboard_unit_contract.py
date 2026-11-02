@@ -27,6 +27,14 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('call_vol=must_get(r"Call 總成交量', builder)
         self.assertIn('pcr=optional_get(r"Put／Call Ratio', builder)
 
+    def test_futures_trade_table_has_per_row_units(self):
+        fetch_data = (ROOT / "src" / "fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('("法人日盤交易金額淨額", _f1s(', fetch_data)
+        self.assertIn('"億元", SRC_FX)', fetch_data)
+        self.assertIn('("項目", "數值", "單位", "資料來源")', fetch_data)
+        self.assertIn('("外資日盤多單交易量", _fi(', fetch_data)
+        self.assertIn('"口", SRC_FX)', fetch_data)
+
     def test_unit_standard_and_skill_are_present(self):
         standard = (ROOT / "docs" / "DASHBOARD_UNIT_STANDARD.md").read_text(encoding="utf-8")
         skill = (ROOT / "skills" / "daily-premarket-analysis-v9-pro-skill.md").read_text(encoding="utf-8")
