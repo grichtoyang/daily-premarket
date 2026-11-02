@@ -141,6 +141,12 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -p "test_three_market_scenarios.py" -v
 
+      - name: Run options institutional force analysis contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p "test_builder_option_force_analysis.py" -v
+          python -m unittest discover -s tests -p "test_builder_option_tables.py" -v
+
       - name: Run 17F offline self-tests
         run: |
           set -euo pipefail
