@@ -1502,3 +1502,46 @@ P1 尚未開始。啟動前必須：
 - 借券餘額（張；借入尚未返還）。
 - 借券賣出餘額／借券賣出增減（張；已借券賣出尚未回補／當日淨變化）。
 - 來源代碼 TWT72U／TWT93U／S47 只留在技術來源註記，不作 Dashboard 主標題。
+
+## 2026-11-03｜借券資料鏈修正與官方 T0 live 驗證（最新）
+
+### 程式修正（僅 phase2-p0-ui-fixes）
+- TWT96U 已完全排除借券餘額與借券賣出餘額／增減計算；TWT96U 只代表當日可借券賣出限額。
+- TWT72U：新增歷史查詢 parser，使用西元 YYYYMMDD + selectType=SLBNLB；依 fields 取欄位、檢查 response date，逐列驗證「前日餘額＋新增借券－還券＝當日餘額」。個股分上市／上櫃加總，並核對兩市場小計與整體市場合計，防止總計重複加總。
+- TWT93U：改用 RWD 歷史 endpoint 與西元 YYYYMMDD；欄位名稱有重複時依欄位群組及中間「當日賣出／當日還券／當日調整」辨識借券賣出欄，不再使用 row[7]/row[11]；逐股驗證「前日＋賣出－還券＋調整＝當日」。
+- TPEx S47：改用官方日期查詢 endpoint；針對重複「前日餘額／當日餘額」欄名，以欄位群組結構辨識後段借券賣出欄，逐股驗證同一遞推公式。
+- spot.build() 分別使用 TWT72U 借券餘額、TWT93U 上市借券賣出、TPEx S47 上櫃借券賣出；只有同一 T0 兩市場都有效才可視為完整合計，否則 source label 明示市場範圍。
+- Builder 不再由舊報告的模糊來源註記推斷市場範圍；不能判定時輸出「範圍未註明」。
+- 更新 DATA_SOURCES.md、DATA_SCHEMA.md、DASHBOARD_UNIT_MAP.md；區塊 12 驗收明確區分 UI、source parser、舊 DATA_REPORT 數值三個層級。
+
+### 2026-10-30 官方端點 live 驗證（GitHub Actions）
+- Run 41671847081 / Job 126042001585，live-borrowed-sources：**PASS**。
+- TWT72U：response date 20261030，2,075 rows；市場分類為集中市場 1,238、櫃檯買賣中心 836、整體市場 1；其中個股 1,237 + 835 = 2,072。上市小計、上櫃小計及整體市場合計完全一致，subtotal_checks=PASS。
+- TWT93U：response date 20261030，1,308 rows；解析 1,307 個股，invalid_rows=0，逐股餘額遞推檢查通過。
+- TPEx S47：response/table date 20261030，932 rows；live parser 成功解析資料，逐股餘額遞推檢查通過。
+- 這是官方端點實際 live response，不是 mock fixture；但 E-Shop 訂閱商品的授權／自動化使用邊界仍需依官方條款確認。
+
+### CI／Builder 驗證
+- 最新修正分支 HEAD：899900c017ef036f808b4843ed85f6e29ca383e1（phase2-p0-ui-fixes）。
+- Unit Contract Audit Run 41671847081：**PASS**（borrowed source tests、Dashboard unit contract、DATA_REPORT/Builder regression、React template regression、TAIFEX night unavailable summary 等皆通過）。
+- V9 UI Fixes Regression Run 41671995742：**PASS**。GEX pipeline 2026-10-30、139 levels、GEX totals 驗證通過；Builder JSON 借券欄位輸出通過；非部署 HTML preview 318,829 bytes；獨立 correlation fixture 319,438 bytes。
+- Daily Premarket V9 Pro Run 41671847060：build **PASS**、deploy **SKIPPED**；workflow 使用既有 DATA_REPORT_20261102.md，沒有重跑或修改 DATA_REPORT_20261030。
+- Unit Contract Audit 曾因舊 UI regression 將模糊來源註記錯誤推斷為「上櫃（上市未取得）」而 FAIL；已修正為「範圍未註明」，符合 fail-closed 原則。舊 DATA_REPORT_20261030 借券賣出餘額 36,178 張、增減 -1,273 張尚未由新 parser 重建，不能宣稱數值已驗證。
+
+### 重要 Git commits（phase2-p0-ui-fixes）
+- TWT93U／TWT72U／TPEx S47 source parser 與 spot mapping 修正已提交；相關測試、live probe workflow、Builder scope parser、測試 expectation 也已提交。
+- 最新 HEAD 899900c017ef036f808b4843ed85f6e29ca383e1。
+- 主要檔案最新 SHA：spot_raw.py 937ea000d0b81b90fda46720d92ae88095df661a；spot.py 3c20c84bcc50d539741caa61b0f2cb544c33af97；v9_pro_builder.py 982bdf87884dce83aba54dbdb48e7f1b96122a32；test_spot_borrowed_semantics.py aac26ccc808caf08f9a950b346eaa22be76ff867。
+- 文件更新 commits：DATA_SOURCES c98cbc34f46d81af7efaee17c4e91a624ad5ad01；DATA_SCHEMA b14b18238b368fac73d1d22b9820b4c9bb8c6f46；DASHBOARD_UNIT_MAP 3e83b1649cebfd91d8cb2218bbfb896593ede2b6。
+
+### 尚未完成／限制
+- **NOT DONE**：尚未以修正後 fetch pipeline 重建 DATA_REPORT_20261030。
+- **NOT VERIFIED**：舊 DATA_REPORT_20261030 的借券餘額／借券賣出餘額／增減數值與市場範圍；Builder 對舊模糊 provenance 顯示「範圍未註明」是正確行為。
+- **NOT TESTED**：TWT72U／TWT93U／TPEx S47 的 E-Shop 訂閱／公開 API workflow 自動化授權界線；不可將 live endpoint 可讀取等同授權確認。
+- 未 Merge／Deploy；master、P0 base、V8 未修改；data_reports 樣本未修改。
+- Auditor 為單一模型自我稽核，非獨立多模型審核。
+
+### 下一步（只做收尾）
+1. 先確認官方公開 endpoint 與 E-Shop 商品授權邊界；若無需訂閱授權或已具合法授權，才進行歷史報告重建。
+2. 在使用者指定／已批准的方式下，僅重建 20261030 DATA_REPORT，逐欄核對借券餘額、上市借券賣出、上櫃借券賣出、跨市場增減及來源 scope。
+3. 驗收 DATA_REPORT 後再跑 Builder 與 dashboard preview；不部署，除非使用者明確授權。
