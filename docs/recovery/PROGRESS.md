@@ -764,3 +764,18 @@ P1 尚未開始。啟動前必須：
 2. 修復／確認 CI 可完成後，檢查正式 Artifact 中 Pth() 是否使用 triggering branch Template，並核對 T0 現價、PutWall、CallWall、GammaWall、Flip 的來源值。
 3. 用代表性 fixtures 驗證三劇本：有效偏多／缺 Flip、區間有效／價位錯側、有效偏空／缺 PutWall、缺支撐及零／缺值。
 4. 再產出手機 Artifact，複驗三劇本卡片及多空條件檢查表；未完成前不結案、不部署。
+
+
+## 19. 2026-11-03 三劇本路徑修正與 CI 全流程驗證
+- 原 Pth() 缺陷已修正：偏多需有效 Gamma Flip 且現價高於 Flip，另需上方壓力；區間需 PutWall < 現價 < CallWall；偏空需現價低於有效 PutWall，另需下方支撐。缺必要價位不顯示路徑，並明確標示站穩／有效跌破仍待價格行為確認。
+- 新增的六組實際 Pth() 執行測試已通過；測試曾因 React children 文字空白未正規化造成斷言失敗，已修正測試，不更動價格路徑條件。
+- 歷史回放失敗根因已查明：Yahoo ^TWII range=1mo 對歷史 T0 過濾後只剩 14 個交易日；RSI14 至少需要 15 個收盤價，故 RSI 缺值並被品質門檻正確排除。已把抓取窗口改為 3mo，未放寬有效樣本門檻。
+- 最新 commit c3a4e238e25e0f54c3c994c072c053622ac47782；CI Run 41559674941 整體 SUCCESS。
+- 本次 CI PASS 項目：Template source/ref 驗證、三市場情境測試、React Template／三劇本契約測試、選擇權契約測試、17F self-test、真實 DATA_REPORT 歷史回放、Gamma fallback、歷史資料 seed、Dashboard build、Golden Master 注入、Golden Fixture inline JS syntax、Pages artifact upload。
+- Pages artifact github-pages 已上傳（artifact id 13196591720，約 1.79 MB）。Deploy job SKIPPED，因本次為工作分支；未 merge／部署，Master／V8 未修改。
+- 狀態：邏輯與 CI = PASS；Artifact 已產生但內部 HTML／JSON 尚未人工抽查 = NOT TESTED；手機實機三劇本與下方多空條件檢查表 = NOT TESTED；正式部署 = NOT DONE。
+
+### 下一步
+1. 下載 Run 41559674941 的 github-pages artifact，人工核對 HTML／JSON、Template branch/ref、T0 現價及 PutWall／CallWall／GammaWall／Flip。
+2. 使用者手機開啟同一份 HTML，逐項驗收三劇本卡片及多空條件檢查表，特別檢查長文字換行、數字／圖表重疊及缺值狀態。
+3. 手機驗收 PASS 後再更新結案狀態；未經使用者明確授權不 merge／deploy。
