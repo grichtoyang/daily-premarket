@@ -702,3 +702,22 @@ P1 尚未開始。啟動前必須：
 2. 確認 Run 41486406787 的新增格式測試與完整 workflow PASS。
 3. 交付修正後 Artifact 的新版 HTML，請使用者確認投信夜淨顯示為 0.00，並快速複查七欄表格。
 4. 完成上述複驗前，區塊 B 不結案、不 merge、不部署。
+
+## 17. 2026-11-03 區塊 B Artifact 路徑釐清與格式修正交付
+
+- CI Run 41486390048：completed / success；Artifact 13161328313。
+- CI Run 41486406787：completed / success；新增格式靜態契約測試通過；Artifact 13163070059。
+- Workflow .github/workflows/daily-premarket-v9-pro.yml 明確將 Master dashboard 複製至 Pages 根目錄，並將觸發分支產物複製至 pages-site/p0/。
+- 因此 Artifact 根目錄 v9-pro-latest.html 是 Master 舊版，不是本次 P0 驗收目標；正確新版是 p0/v9-pro-latest.html。先前只檢查根目錄並判 Artifact FAIL，屬驗收路徑選錯，已更正。
+- 已檢查正確 P0 HTML：新版 B 標題、v9-force-table、instOptForceAnalysis、numeric.toFixed(2)、cellIndex===3||cellIndex===6 均存在。
+- p0/data-20261102.json 的 options.instOptForce 資料含投信夜淨 +0；顯示層會轉為 0.00，原始資料未改。
+- Node.js 對格式邏輯執行 7 組邊界案例：+0、正淨額、負淨額、一般數值、文字、null、千分位數值，7/7 PASS。另以靜態檢查確認 5 個新版 HTML 必要標記全數存在。
+- 已從 Artifact 抽出正確 P0 HTML 為 /mnt/data/v9-pro-latest-format-fixed.html，供使用者手機實際複驗。
+- Chromium headless 手機截圖嘗試逾時，未產生畫面；瀏覽器實際渲染／手機排版仍 NOT TESTED。
+- Pages deploy job 為 skipped（本 workflow 當次未部署）；未 merge、未部署。Master 根目錄保持原版，P0 新版留在子路徑。
+- 區塊 B 狀態：CI PASS；Artifact source/path PASS；格式邏輯 Node smoke test PASS；手機視覺複驗 NOT TESTED，尚未結案。
+
+### 下一步
+1. 請使用者開啟本輪交付的 v9-pro-latest-format-fixed.html，確認投信夜淨顯示 0.00，並檢查整個 B 區塊手機寬度、表格、文字是否重疊／裁切。
+2. 若畫面 PASS，區塊 B 才可結案；否則依截圖修正。
+3. 不合併、不部署，除非使用者明確指示。
