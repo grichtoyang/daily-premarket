@@ -1234,3 +1234,13 @@ P1 尚未開始。啟動前必須：
 - Updated V1.5 commit: `b45a694cea424958b4b90033f615853e3c7d7f04`; Blob SHA: `1af35533028ca1f3163c7fd346ec8c781f743d4c`; file re-read and V8 syntax parse PASS.
 - Temporary `workers/taifex-proxy_V1.6.js` was removed to avoid version ambiguity (delete commit `585a0e97f6140f6fe0d9375474d642ad16444c3d`).
 - Live TWSE RWD request could not be exercised from the current execution environment. Therefore exact 2026-10-30 response parsing, Cloudflare Worker runtime, real endpoint and GEX calculation remain NOT TESTED. Updated V1.5 is not deployed yet; deployed Worker remains whatever version is currently active until user deploys this patched V1.5.
+
+
+### V1.5 follow-up: date-regex escaping defect (2026-11-03)
+
+- User's post-deployment endpoint screenshot showed `Invalid TAIEX query date: 2026-10-30`, while Worker reported `V1.5 - Production` and Chain/Delta counts remained 3,102 / 3,030.
+- Root cause: the newly added date normalization regexes were over-escaped in the committed JavaScript: `/\\\\D/g` and `/^\\\\d{8}$/`. They therefore matched literal backslash sequences rather than stripping non-digits / validating eight digits.
+- Fixed directly in `workers/taifex-proxy_V1.5.js`: regexes now are `/\\D/g` and `/^\\d{8}$/`.
+- Fix commit: `ddc516f11840605c7bb704024298bbc395de0b73`; Blob SHA: `b8d09e461175839e178dab30de405c43b14fa7b7`.
+- GitHub file re-read SHA matches; V8 syntax parse PASS; local date-normalization check for `2026-10-30` produces `20261030` and passes eight-digit validation.
+- This is a source-level fix only. The updated V1.5 must be redeployed to Cloudflare and the real endpoint retested. TWSE RWD response parsing and full GEX success remain NOT TESTED.
