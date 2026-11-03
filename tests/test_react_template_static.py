@@ -25,7 +25,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_bias_chart_uses_signed_factor_contributions_and_chinese_names(self):
         self.assertIn('title:"多空因子方向貢獻"', self.html)
         self.assertIn("Bias ${u.bias}分｜${u.regime}", self.html)
-        self.assertIn('(l.factor_details||[]).filter(x=>x.status==="active"&&Number.isFinite(Number(x.contribution)))', self.html)
+        self.assertIn('(u.factor_details||[]).filter(x=>x.status==="active"&&Number.isFinite(Number(x.contribution)))', self.html)
         self.assertIn('map(x=>({l:x.name,v:Number(x.contribution)}))', self.html)
         self.assertIn("方向貢獻分數（非權重）", self.html)
         self.assertIn("綠色正值代表推升 Bias 的多方貢獻；紅色負值代表壓低 Bias 的空方貢獻", self.html)
