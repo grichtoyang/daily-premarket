@@ -198,7 +198,7 @@ function textOf(value){
 }
 function cards(current,levels){
   const root=Pth({current,levels});
-  return root.props.children.slice(1).map(textOf);
+  return root.props.children.slice(1).map(x=>textOf(x).replace(/\\s+/g," "));
 }
 const bull=cards(110,{flip:100,gammaWall:120,callWall:130,putWall:90});
 if(!bull[0].includes("現價高於 Gamma Flip 100")||!bull[0].includes("Gamma Wall 120")||!bull[0].includes("Call Wall 130")) throw Error("valid bullish path missing trigger/targets: "+bull[0]);
