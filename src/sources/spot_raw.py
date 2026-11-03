@@ -184,7 +184,10 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
     symbol_idx = next((normalized[name] for name in ("證券代號", "股票代號", "代號") if name in normalized), None)
     prev_idx, bal_idx = _borrowed_short_field_pair(fields)
-    if symbol_idx is None or prev_idx is None or bal_idx is None:
+    sell_idx = next((normalized[k] for k in ("當日賣出", "借券賣出當日賣出") if k in normalized), None)
+    return_idx = next((normalized[k] for k in ("當日還券", "借券賣出當日還券") if k in normalized), None)
+    adjust_idx = next((normalized[k] for k in ("當日調整", "當日調整數額", "借券賣出當日調整") if k in normalized), None)
+    if symbol_idx is None or prev_idx is None or bal_idx is None or sell_idx is None or return_idx is None or adjust_idx is None:
         print(f"[WARN] TWT93U required lending fields absent: fields={fields!r}")
         return out
 
@@ -193,15 +196,18 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     parsed = 0
     invalid = 0
     for row in data:
-        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx) >= len(row):
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, sell_idx, return_idx, adjust_idx, bal_idx) >= len(row):
             invalid += 1
             continue
         code = str(row[symbol_idx] or "").strip().upper()
         if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
             continue
         prev = _num(row[prev_idx])
+        sold = _num(row[sell_idx])
+        returned = _num(row[return_idx])
+        adjusted = _num(row[adjust_idx])
         bal = _num(row[bal_idx])
-        if prev is None or bal is None:
+        if prev is None or sold is None or returned is None or adjusted is None or bal is None or abs((prev + sold - returned + adjusted) - bal) > 1e-6:
             invalid += 1
             continue
         total_prev += prev
@@ -244,9 +250,11 @@ def twse_twt72u_sbl(date_value: str) -> dict:
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
     symbol_idx = next((normalized[k] for k in ("證券代號", "股票代號", "代號") if k in normalized), None)
     prev_idx = next((normalized[k] for k in ("前日借券餘額(1)股", "昨日借券餘額(股數)") if k in normalized), None)
+    borrow_idx = next((normalized[k] for k in ("本日異動股借券(2)", "今日新增借券股數") if k in normalized), None)
+    return_idx = next((normalized[k] for k in ("本日異動股還券(3)", "今日還券了結股數") if k in normalized), None)
     bal_idx = next((normalized[k] for k in ("本日借券餘額股(4)=(1)+(2)-(3)", "今日借券餘額(股數)") if k in normalized), None)
     market_idx = normalized.get("市場別")
-    if symbol_idx is None or prev_idx is None or bal_idx is None or market_idx is None or not data:
+    if symbol_idx is None or prev_idx is None or borrow_idx is None or return_idx is None or bal_idx is None or market_idx is None or not data:
         print(f"[WARN] TWT72U required fields/data absent: fields={fields!r}")
         return out
 
@@ -257,14 +265,16 @@ def twse_twt72u_sbl(date_value: str) -> dict:
     overall_total = None
     invalid = 0
     for row in data:
-        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx, market_idx) >= len(row):
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, borrow_idx, return_idx, bal_idx, market_idx) >= len(row):
             invalid += 1
             continue
         market_name = str(row[market_idx] or "").strip()
         code = str(row[symbol_idx] or "").strip().upper()
         prev = _num(row[prev_idx])
+        borrowed = _num(row[borrow_idx])
+        returned = _num(row[return_idx])
         bal = _num(row[bal_idx])
-        if prev is None or bal is None:
+        if prev is None or borrowed is None or returned is None or bal is None or abs((prev + borrowed - returned) - bal) > 1e-6:
             invalid += 1
             continue
         if code == "合計" and market_name in stock_market_names:
@@ -377,22 +387,28 @@ def tpex_sbl(roc: str) -> dict:
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
     symbol_idx = next((normalized[k] for k in ("股票代號", "證券代號", "代號") if k in normalized), None)
     prev_idx, bal_idx = _borrowed_short_field_pair(fields)
-    if symbol_idx is None or prev_idx is None or bal_idx is None:
+    sell_idx = next((normalized[k] for k in ("當日賣出", "借券賣出當日賣出") if k in normalized), None)
+    return_idx = next((normalized[k] for k in ("當日還券", "借券賣出當日還券") if k in normalized), None)
+    adjust_idx = next((normalized[k] for k in ("當日調整數額", "當日調整", "借券賣出當日調整數額") if k in normalized), None)
+    if symbol_idx is None or prev_idx is None or bal_idx is None or sell_idx is None or return_idx is None or adjust_idx is None:
         print(f"[WARN] TPEX margin_sbl required S47 fields absent: fields={fields!r}")
         return out
     import re
     total_prev = total_bal = 0.0
     parsed = invalid = 0
     for row in data:
-        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx) >= len(row):
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, sell_idx, return_idx, adjust_idx, bal_idx) >= len(row):
             invalid += 1
             continue
         code = str(row[symbol_idx] or "").strip().upper()
         if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
             continue
         prev = _num(row[prev_idx])
+        sold = _num(row[sell_idx])
+        returned = _num(row[return_idx])
+        adjusted = _num(row[adjust_idx])
         bal = _num(row[bal_idx])
-        if prev is None or bal is None:
+        if prev is None or sold is None or returned is None or adjusted is None or bal is None or abs((prev + sold - returned + adjusted) - bal) > 1e-6:
             invalid += 1
             continue
         total_prev += prev
