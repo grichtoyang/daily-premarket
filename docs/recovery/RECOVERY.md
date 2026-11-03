@@ -1409,3 +1409,15 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 交易計畫：現價 44,920、Bias 24 偏空、Put Wall 44,000 支撐、MaxPain 44,400 磁吸參考、Call Wall 48,000 壓力；Gamma／Flip 缺值以 unavailable 呈現，圖表與表格沒有把 MaxPain 誤作跌破目標；PASS。
 - 綜合分析頁狀態：A 口徑敘述 PASS（OI 數值顯示沿用缺陷）；B PASS；C PASS；三劇本 PASS；因子貢獻 FAIL（OI 因子）；相關性 FAIL（可疑樣本污染）；交易計畫 PASS。手機版面先前驗收 PASS，不因資料邏輯問題重做版面。
 - 本輪只讀及 Recovery／Progress 記錄，沒有修改程式、SQLite、JSON、Template 或 Artifact；未 Merge／Deploy。所有已 PASS 區塊凍結。
+
+
+## 2026-11-03 總覽頁 7 區塊首輪資料鏈稽核
+- KPI 群組：加權 44,920.14／-0.65%、外資現貨 -1,124.7 億、TX 日盤 45,301、夜盤 44,433、PCR 0.57、Call Wall 48,000、Bias 24 均與對應 P0 JSON／DATA_REPORT 欄位一致；外資期貨 OI 0 口仍屬可疑快照，顯示需沿用 OI 狀態傳遞 FAIL，不可當成有效部位。
+- Bias 盤前偏向：Bias 24、偏空、Put Wall 44,000 與 JSON 一致；但該分數由 active foreign_fut 零值因子參與權重正規化，confidence=high 失真，沿用 OI／Bias 缺陷群 FAIL。
+- 加權 5 日走勢＋關鍵水位：5 日序列 10/27–11/02 為 46,096／47,036／46,368／45,212／44,920，T0 收盤 44,920.14；歷史來源標示 technical_history=yahoo（T0 filtered），圖表以 5 日序列呈現；levels 僅有 Put Wall 44,000，未虛構其他水位。資料映射 PASS；外部 Yahoo 歷史序列原始 API 本輪未獨立重抓，來源原始回應 NOT TESTED。
+- 三大法人快照：外資 -1,124.7、投信 +236.2、自營 -513.7、合計 -1,402.2 億與 DATA_REPORT／JSON 一致，PASS。
+- 期選結構快照：PCR 0.57、Net GEX unavailable、關鍵價位依有效值顯示；Gamma Wall／Flip／GEX 缺值未補 0，PASS。
+- 美股連動：SOX -7.20%、VIX 19.42 點等值與重要市場資料對應；美股數值映射 PASS。
+- 重大新聞：12 則，首則標示 UTC 05:53:37Z／台北 13:53:37，時區換算 +8 小時正確；數量與 DATA_REPORT 對應 PASS。其餘 11 則逐則來源／內容品質未逐項查證，NOT TESTED。
+- 總覽頁狀態：5 日圖／法人快照／期選快照／美股連動／新聞資料映射 PASS（來源原始回應及其餘新聞品質仍有 NOT TESTED）；KPI 與 Bias 卡因可疑 OI 因子狀態未傳遞 FAIL。Bias 8 格已合併視為一個 KPI 群組區塊，維持 42 區塊計數口徑。
+- 本輪唯讀；沒有修改程式／資料／UI／Artifact；未 Merge／Deploy。
