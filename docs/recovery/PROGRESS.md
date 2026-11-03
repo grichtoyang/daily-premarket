@@ -1163,3 +1163,12 @@ P1 尚未開始。啟動前必須：
 - **Real endpoint / DATA_REPORT notes integration：NOT TESTED**.
 - **Worker deployment：NOT DONE**.
 - Next step: obtain an execution path with repository checkout and Node/Wrangler (e.g. user-run local command or authorized CI workflow); run syntax check before any deployment. No source changes made in this checkpoint.
+
+
+## 2026-11-03 Worker V1.5 語法驗證阻塞複核
+
+- 再查 .github/workflows/：目前分支現有 workflows 中，daily_data.yml 只有 Python 執行流程；unit-contract-audit.yml 僅執行 Python compile／測試；test-v9-ui-fixes.yml 的 Node／Acorn 步驟只檢查 React template，沒有檢查 Worker 原始檔。
+- 上述既有 workflows 均不能在不改 workflow 的情況下驗證 Worker V1.5。此次修改授權僅限三個程式檔案，不擴大修改 CI workflow。
+- GitHub connector 可讀取 workflow／檔案，但目前可用工具沒有 workflow_dispatch 或遠端 shell；本地執行環境亦無法取得 exact Worker source，故沒有可執行 node --check 的途徑。
+- Worker syntax/runtime validation：**BLOCKED（未執行）**；真實 endpoint／DATA_REPORT notes：**NOT TESTED**；Worker deploy：**NOT DONE**。
+- 未修改任何程式、workflow 或部署設定。下一步需在可 checkout repo 且有 Node.js 的環境，對 workers/taifex-proxy_V1.4.js 執行 node --check；通過後才考慮 Wrangler validation／部署。
