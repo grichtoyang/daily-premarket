@@ -1448,3 +1448,29 @@ P1 尚未開始。啟動前必須：
 - 現行 TPEX `bal`、`sale_bal` 的 build 用途：**FAIL / HIGH CONFIDENCE**；不得用於 DATA_REPORT。
 - TWT72U 作為真正借券餘額來源：官方定義 PASS；workflow 自動化取得及授權：NOT TESTED。
 - 本輪只讀程式與官方 PDF／頁面；未改程式、DATA_REPORT、workflow、DB；未重跑 10/30；未 Merge／Deploy。
+
+## 2026-11-03｜P0 Quality「數據真實性全面清查」回溯稽核
+
+### 本輪查核範圍與證據
+- 唯讀檢查 phase2-p0-data-quality 分支，當前 HEAD：49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33（GitHub branch API）。
+- 該分支 src/sources/spot_raw.py blob 53664aeeeb40032290c7bc895f3c79c217f573fc：sbl_tw() 仍將 TWT96U 當成「可借餘額」；twse_twt93u_sbl() 仍以 row[7]／row[11] 取借券前日／當日餘額。
+- 該分支 src/sources/spot.py blob f38d2e49994d48eeb4c58b191d0ebf08b7c751ae：build 將 TWT96U TWSE/OTC 值與 TPEX stp[bal] 合併為 sbl.bal；借券賣出餘額則將 TWT93U 與 stp[sale_bal] 合併。
+- docs/DATA_SOURCES.md blob 748e1ab43073219663650a6ca67d55642d50f6d1 仍明確寫「上市 TWT96U（可借餘額）＋上櫃 tpex_margin_sbl（賣出餘額/前日→增減）」並標記狀態「✅」。此文件本身把 TWT96U 指標語義寫錯。
+- P0 branch tests/ 目錄包含維持率、Builder、workflow isolation、Gamma 等測試；未見 spot_raw／TWT93U／TWT96U／TPEX S47 的 parser fixture 或欄位 mapping 測試。這是對該分支當前 tree 的檢查結果，不代表外部對話或未入庫材料不存在。
+- docs/DATA_SCHEMA.md blob fa422f250bfb41dab23241986e4756b215482b9e 對部分無日期端點允許採最新可得／標示最新值；但缺少能保證「歷史 T0 不會誤用最新快照」的全來源端到端契約。
+
+### 結論（針對 P0 Quality 清查品質）
+- FAIL：資料來源定義層未完成有效驗收。TWT96U 的錯誤語義不只留在程式，還被 DATA_SOURCES.md 正式文件標為正確並打勾。
+- FAIL：借券 parser 欄位 mapping 未有對應測試證據。現有測試目錄沒有 TWT93U／TPEX S47／TWT96U 專項測試；程式錯誤因此未被 regression 攔截。
+- FAIL：資料真實性驗收深度不足。至少未能證明每個欄位均完成「官方定義→原始 response/schema→欄位 mapping→日期/T0→計算→DATA_REPORT」逐段核對。
+- NOT ESTABLISHED：當初清查實際執行內容。本輪未取得當時完整清查工單、對話及逐欄簽核紀錄；不能斷言完全沒做，而是目前 repo 留存證據不足以支持「數據真實性全面 PASS」的結論。
+
+### 本輪邊界
+- 僅唯讀查核 phase2-p0-data-quality 的 branch HEAD、spot source、DATA_SOURCES／DATA_SCHEMA、docs 及 tests tree。
+- 未修改 phase2-p0-data-quality、phase2-p0-ui-fixes、DATA_REPORT、workflow 或 DB；未重跑 10/30；未 merge／deploy；master／V8 未動。
+- Auditor 為單一模型自我稽核，非獨立多模型審核。
+
+### 下一步（維持窄範圍）
+1. 不再抽象討論「全面清查」；先完成 TWT93U 20261030 真實 response、TPEX S47 同日 JSON/CSV 對照、TWT72U 歷史取得與授權確認。
+2. 以上證據齊備後，修正資料契約、parser、build mapping 與專項 fixture tests；來源日期不符或未取得時 fail closed。
+3. 測試通過後才重建 20261030 DATA_REPORT；目前仍禁止重跑。
