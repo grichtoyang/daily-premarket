@@ -1892,3 +1892,12 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 目前唯一直接阻止收尾的事項：先確認官方端點自動化使用授權／E-Shop 商品條款邊界；確認可用後，再重建並驗收 20261030 DATA_REPORT。舊報告借券數字不可當作新 parser 驗證結果。
 - 詳細實作、數據列數、測試結果及 commit 證據見 PROGRESS.md 最新兩節。
 - 未 merge/deploy；master、P0 base、V8 未修改；Auditor 為單一模型自我稽核。
+
+
+## 2026-11-03｜新增授權阻擋（接手時必讀）
+
+- TWSE TWT72U／TWT93U 雖已實際 live 查詢成功，但官方 E-Shop 將其列為月訂閱商品；目前未取得使用者訂閱／書面授權證據。技術可讀取 ≠ 可免費自動化使用。
+- TWT72U：內部 NT$1,500/月、外部 NT$3,000/月；TWT93U：內部 NT$1,000/月、外部 NT$1,500/月。官方商品連結及欄位內容見 PROGRESS.md 最新授權查證段。
+- TPEx S47 dataset 11632 則明確標示政府資料開放授權第 1 版、每日更新、免費。
+- 所以目前不得重建 DATA_REPORT_20261030，除非先確認使用者已訂購 TWT72U／TWT93U 或取得 TWSE 授權。若沒有，上市借券餘額及上市借券賣出欄應 unavailable；TPEx S47 可單獨顯示上櫃借券賣出值並標示 scope。
+- 最新 phase2-p0-ui-fixes HEAD 因 DATA_SOURCES 授權註記更新而變更；重新查詢 branch HEAD，不要沿用前一節的 HEAD。
