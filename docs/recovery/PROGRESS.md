@@ -835,3 +835,15 @@ P1 尚未開始。啟動前必須：
 1. 手機複驗 fixed-v2 因子圖是否實際出現 8 條正負貢獻。
 2. 通過後處理 B 區 0.01 億元精度差，再執行 42 區塊最終驗收。
 3. 未授權不 merge/deploy。
+
+ 
+## 23. 2026-11-03 因子圖 8 列顯示高度修正
+- 手機截圖顯示因子圖只有 7 列；根因是 Canvas 高度 240px，繪圖公式每列 30px、起始餘量 2px，最多繪製 7 列。
+- 已將因子圖高度調整為 260px，新增靜態測試鎖定此設定。未改變因子值、Bias 或排序。
+- CI Run 41562071919 SUCCESS；React template tests、因子圖測試、JS syntax、Golden Fixture build PASS；Artifact 13197570937 已上傳，deploy skipped。
+- 新版 260px 高度的手機畫面仍 NOT TESTED；尚未 merge/deploy。B 區精度差與 42 區塊總驗收仍未完成。
+ 
+### 下一步
+1. 從 Artifact 13197570937 取得新版 HTML並確認 260px。
+2. 手機確認 8 列均顯示。
+3. 處理 B 區精度差，再進行 42 區塊總驗收。
