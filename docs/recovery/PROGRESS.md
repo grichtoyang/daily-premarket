@@ -1066,3 +1066,12 @@ P1 尚未開始。啟動前必須：
 - 相關性熱圖：FAIL，T0 可疑 OI=0 被標記 correlation_eligible 並納入 5 筆 Pearson 樣本；外資期貨 vs 大盤漲跌 r 含該列=0.0146，排除後 n=4、r=0.9590（不足 min_samples=5，不應顯示）。JSON 內部相關性文字另與 matrix 狀態矛盾。
 - 交易計畫：價位、支撐／磁吸／壓力分工及缺值呈現 PASS。
 - 本頁無程式修改；既有手機版面 PASS 凍結。
+
+
+## 2026-11-03 總覽頁首輪結果
+- KPI 群組：除外資期貨 OI 0 口可疑外，其餘直接值與 T0 JSON／DATA_REPORT 對帳 PASS；OI 狀態沿用 FAIL。
+- Bias 卡：24 分與 JSON 重現一致，但 confidence high 受可疑 OI 因子污染，FAIL。
+- 加權 5 日序列與 Put Wall 44,000 映射 PASS；Yahoo 原始 API 回應未獨立重抓，NOT TESTED。
+- 三大法人快照 PASS；期選結構快照 PASS（GEX／Gamma 缺值有顯示 unavailable）；美股連動數值映射 PASS。
+- 新聞 12 則數量 PASS，首則 UTC／台北時間換算正確；其餘 11 則逐則品質 NOT TESTED。
+- 總覽 7 區塊首輪盤點完成；無程式修改。
