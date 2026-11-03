@@ -1423,3 +1423,28 @@ P1 尚未開始。啟動前必須：
 - TPEX 日期欄位實際格式及 20261030 歷史資料：**BLOCKED / NOT TESTED**。
 - TWT72U 官方公開查詢頁：**PASS**；自動化 CSV 請求及授權界線：**NOT TESTED**；E-Shop 訂閱商品價格與限制：**PASS / OFFICIAL**。
 - 本輪未修改程式、DATA_REPORT、workflow 或 DB；未重跑 10/30；未 Merge／Deploy；Master／V8 未動。
+
+
+## 2026-11-03 資料層第五輪：TPEX S47 官方格式與現行 build mapping 對照
+
+### 新增確認
+- 已直接讀取 TPEX 官方 V1.33 EDIS 格式 PDF，定位到 S47「Margin_SBL.csv」規格（PDF 第 122 頁／文件 lines 5043–5068）。其 15 欄依序為：
+  0 資料日期、1 證券代號、2 融券前日餘額、3 融券賣出、4 融券買進、5 融券現券、6 融券當日餘額、7 融券限額、8 借券賣出前日餘額、9 借券賣出當日賣出、10 借券賣出當日還券、11 借券賣出當日調整數額、12 借券賣出當日餘額、13 次一營業日可借券賣出限額、14 備註。官方 PDF：https://www.tpex.org.tw/storage/regular_system/新版收市後交易資訊格式說明(V1.33版).pdf 。
+- 官方 OpenAPI 把 `tpex_margin_sbl` 命名為「上櫃股票融券借券賣出餘額」；其官方資料表即 S47，內容不是「一般借券餘額表」，而是融券餘額與借券賣出餘額兩組不同欄位。
+- 對照現行 `tpex_sbl()` 與 `spot.build()`：
+  - parser 把 `SecuritiesBorrowingBalanceOfTheMarketDay` 放進 `stp["bal"]`，build 又將它與 TWSE TWT96U（可借券賣出限額）相加，輸出為 `sbl.bal`「借券餘額」。
+  - parser 把 `SaleBalanceOfTheMarketDay` 放進 `stp["sale_bal"]`，build 又將它與 TWSE TWT93U 的借券賣出餘額相加，輸出為 `sbl.sale_bal`。
+  - 依 S47 欄位結構與 property 命名，最合理對應是 `SecuritiesBorrowingBalanceOfTheMarketDay` = index 12「借券賣出當日餘額」；`SaleBalanceOfTheMarketDay`／`SaleBalancePreviousDay` = index 6／2「融券當日／前日餘額」。若同日 JSON schema 對照確認此 mapping，現行程式就是把「借券賣出餘額」放入 `sbl.bal`，並把「融券餘額」放入 `sbl.sale_bal`，兩欄用途完全顛倒。
+  - 因此現行兩項 TPEX 輸出均不得使用：`sbl.bal` 還額外混入 TWT96U 可借限額；`sbl.sale_bal` 還把融券餘額與 TWT93U 借券賣出餘額相加。此為 **FAIL / HIGH CONFIDENCE, exact OpenAPI property-to-S47 field mapping awaits same-date raw schema/CSV confirmation**。
+- 官方 S47 15 欄本身沒有「借入尚未返還的借券餘額」這個欄位；只有借券賣出未回補餘額。真正借券餘額應另用 TWT72U（官方 TWT72U 同時涵蓋市場別），不能從 S47/TWT93U/TWT96U 拼湊。
+- TWT96U 仍是可借券賣出限額，不應出現在 `sbl.bal`。
+- TWSE TWT93U + TPEX S47 的「借券賣出當日餘額」在同日、同單位股數、逐市場完整資料時可作為跨市場借券賣出餘額合計；不能把 TPEX 的融券餘額加進去。
+
+### 本輪狀態
+- TWT93U 日期格式 YYYYMMDD／15 欄順序：**PASS / 實際 API 範例**；目標日期 20261030 response：**NOT TESTED**。
+- TWT93U row[7]/row[11]：**FAIL / CONFIRMED**。
+- TPEX S47 欄位順序與語義：**PASS / OFFICIAL**。
+- TPEX OpenAPI property-to-S47 exact mapping：**HIGH CONFIDENCE / NOT TESTED**（需取得 JSON schema 或同日 CSV 對照）。
+- 現行 TPEX `bal`、`sale_bal` 的 build 用途：**FAIL / HIGH CONFIDENCE**；不得用於 DATA_REPORT。
+- TWT72U 作為真正借券餘額來源：官方定義 PASS；workflow 自動化取得及授權：NOT TESTED。
+- 本輪只讀程式與官方 PDF／頁面；未改程式、DATA_REPORT、workflow、DB；未重跑 10/30；未 Merge／Deploy。
