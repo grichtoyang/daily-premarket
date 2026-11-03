@@ -1385,3 +1385,15 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 夜盤劇本：夜盤量占比 44,305／(73,987+44,305)=37.45%，夜盤收盤低於日盤 868 點，外資夜盤淨交易 +1,365 口；計算與來源一致。UI 文案明確表示不預設續漲機率、需現貨開盤確認，PASS。
 - 期貨頁 6 區塊狀態：日盤 PASS；夜盤 FAIL（圖表標籤錯）；期現價差 PASS；法人 OI FAIL（可疑狀態未傳遞）；日夜法人交易 PASS（數值與口徑分離正確，但 OI 警示缺失，併入同一 OI 缺陷群）；夜盤劇本 PASS。
 - 未修改 Template／Builder／DATA_REPORT／JSON／Artifact；已 PASS 區塊凍結；未 Merge／Deploy。修正待全頁稽核完成後統一進行。
+
+
+## 2026-11-03 選擇權頁 8 區塊首輪資料鏈稽核
+- PCR／成交量結構：Call Vol 140,350、Put Vol 135,722、Call OI 61,578、Put OI 34,887、OI PCR 0.57 與 DATA_REPORT／P0 JSON 對帳一致；成交量占比圖與 PCR 分開標示，PASS。
+- 主要 OI 集中：Call／Put Top4 合併傳入同一 `Ct` 圖表，但呼叫固定 `type:"call"`；`Ct` 依 type 對整條曲線統一套 Call 紅色，故 Put OI 點也以 Call 色彩呈現，無法在圖上區分 Call 與 Put。表格標籤仍有 Call／Put 區分。狀態 FAIL（混合資料集被單一側別著色）。
+- Call OI Top10、Put OI Top10：各 10 筆履約價／OI 與 DATA_REPORT／JSON 對應；標籤與單位點／口一致，PASS。
+- Call Wall／Put Wall／Gamma Wall／Flip／MaxPain：Call Wall 48,000、Put Wall 44,000、MaxPain 44,400 與來源一致；Gamma Wall／Flip 為 null，UI 表格與標題顯示 unavailable，圖表不繪製缺值價位，缺值防護 PASS。
+- 選擇權法人交易：四列法人日盤／夜盤淨口數與 DATA_REPORT 一致；圖表過濾非有限值，表格呈現原值，PASS。
+- 前十大選擇權：買權／賣權多空 OI 與變化數值對應 DATA_REPORT；以標籤保留多空類型，未將淨 OI 變化當作單日流量，PASS。
+- 履約價 GEX 分布：gexStatus unavailable、gexLevels 空陣列、Net/Gross GEX null；標題與表格顯示 unavailable，不以 0 代替，資料缺值傳遞 PASS；Canvas 無資料時目前呈現空白座標區，缺少圖內 unavailable 提示，列為非阻斷可讀性改善（不列數值錯誤）。
+- 選擇權法人力道 B 區精度說明與前次獨立驗收一致，保留原始精度算法及手機 PASS，不再改動。
+- 選擇權頁狀態：6 個區塊資料／缺值映射 PASS；主要 OI 集中圖側別顏色 FAIL；GEX 空圖提示為非阻斷改善。沒有修改程式／資料／Artifact；未 Merge／Deploy。
