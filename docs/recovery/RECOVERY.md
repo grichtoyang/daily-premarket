@@ -1175,3 +1175,34 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 使用者手機開啟 `v9-pro-20261102-synthesis-verified.html`，驗收五組解析的文字可讀性、換行、重疊、裁切及圖表同源一致性。
 2. 手機 PASS 後，依 Recovery 原定順序處理 B 區 0.01 億元原始精度對帳，再進入 42 區塊全頁驗收。
 3. 未經使用者明確授權不得 Merge／Deploy；不得修改 Master／V8。
+
+
+## 2026-11-03 手機截圖審查與 C 區成交量單位修正
+
+### 使用者提供的手機截圖審查
+- 五個區塊均未見明顯卡片重疊、文字互相覆蓋或區塊裁切；三劇本價位、因子方向、相關性矩陣及交易計畫主要內容可辨識。
+- 手機截圖視覺檢查：版面初步 PASS；較長解析文字與熱圖小字仍有可讀性改善空間。
+- 發現 C 區右側日夜成交量圖將 73,987／44,305 口縮放為 74.0／44.3，但圖表未標示縮放單位；chartNote 卻僅寫成交量單位為「口」，容易誤讀。
+
+### 修正與最新 CI
+- 僅修改 `templates/v9-pro-react-template.html`：右側日量／夜量圖增加 `extra:"千口"`；說明同步標示「右側圖表以千口顯示」。保留原始數據卡的精確口數，不改計算值。
+- 修正 Commit：`ca4fe9d1a044f802182e10f74b3fdac45251c9c5`。
+- CI Run：`41566032790`，HEAD 與修正 Commit 相同，completed／success；Build PASS，Artifact upload PASS，Deploy SKIPPED（工作分支）。
+- Artifact ID：`13199196057`，github-pages，1,807,051 bytes，digest `fdfed15d248f2f900da5e68de4288f5a4cfefe1b7a42a4c40b20846cb126e488`。
+- 最新 Artifact 重新抽查：`p0/v9-pro-20261102.html`、`p0/data-20261102.json`、manifest date `20261102`；HTML 內嵌 DASHBOARD_DATA 與獨立 JSON 完全相同。
+- 修正後 HTML SHA-256：`2aca4c218351d1c0759d2099bea0087e9e6e5ed83daf29403881950ccfd0cea1`。
+- 已輸出手機重新驗收檔：`/mnt/data/v9-pro-20261102-synthesis-unitfix.html`，313,992 bytes。
+
+### 驗收狀態
+- 原使用者截圖版面：未見重疊／裁切，視覺初步 PASS。
+- C 區成交量單位問題：程式修正 PASS，最新 Artifact 含「千口」標示。
+- 最新修正 Artifact／HTML-JSON 一致：PASS。
+- 最新修正版本手機重新截圖：NOT TESTED；仍需確認「74.0 千口／44.3 千口」不造成手機畫面擠壓或重疊，故整體手機驗收尚未結案。
+- B 區 0.01 億元原始精度對帳：NOT TESTED。
+- 42 區塊總驗收：NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 使用者在手機開啟 `v9-pro-20261102-synthesis-unitfix.html`，確認 C 區成交量顯示「74.0 千口／44.3 千口」可讀且沒有重疊；五區塊版面重新確認。
+2. 手機確認通過後，查 B 區 0.01 億元差異的 TAIFEX Proxy 原始未格式化金額。
+3. 再開始 42 區塊完整驗收。不得 Merge／Deploy，除非使用者另行明確授權。
