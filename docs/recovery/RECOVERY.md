@@ -1364,3 +1364,13 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 重要市場頁在 React render 中由 map 產生 7 張市場卡，另加重大新聞 1 張；不可把 map 呼叫點只算成一張。總覽的 KPI 八個 tile 按邏輯群組計為一個區塊，Bias 卡另計一個。
 - 以上六頁 7+6+8+6+8+7=42，與 Builder `visible_block_count=42`、Artifact JSON 相符，也符合使用者確認的 42 區塊口徑。上一筆「總覽 5+8 KPI、重要市場 2」的計數方法已作廢，不可引用。
 - 此為 42 區塊結構映射 PASS；不代表每個區塊資料鏈已 PASS。程式仍未修改。
+
+
+## 2026-11-03 重要市場頁 8 區塊首輪資料鏈稽核
+- 固定 T0 DATA_REPORT／P0 JSON 對帳：美股指數 6 項、亞洲指數 5 項、美股期貨 4 項、美債殖利率 3 項、主要匯率 4 項、台灣 ADR 3 項、商品 3 項及重大新聞 12 則，所有本次列出的市場數值均可在 DATA_REPORT 與 JSON 的 `markets`／`marketPct`／`news` 找到對應，未發現本輪逐項對帳差異。數值映射 PASS。
+- 美債欄位需保留不同來源註記：2Y 來自 Treasury yield.xml 網頁備援；10Y／30Y 來自 Yahoo Finance 備援。UI 顯示殖利率水準（%）與日變化（pp），單位標示目前一致；不可將 pp 誤標為 %。
+- UI 分析文字接線問題：React `h2()` 對每個市場卡在 map 內建立空物件 `i={}`，後續 `compass:i[o.key]?.compass||"連動觀察"`、`target:i[o.key]?.target||"等待資料與價格確認"` 因空物件而全部落入泛用 fallback。雖然 P0 JSON 的 `analysis.cards` 已包含「美股指數／亞洲指數／美股期貨／美債殖利率／匯率／商品」各自的 compass／target，畫面未接入這些內容。七個市場子卡的方向判讀／下一步觀察未使用已產生的專屬解析，狀態 FAIL（分析輸出未接線；不是數值來源錯誤）。
+- 市場子卡的 look 目前由 UI 依 markets 數值動態組成，避免直接輸出 JSON 內部分卡片的原始 Python list；此呈現方式保留，不因本次發現而改動。
+- 重大新聞卡目前顯示 12 則標題／摘要／時間，資料數量與 T0 DATA_REPORT 相符；分析／判斷／操作為來源可信度與價格反應的通用提醒，暫不列為數據缺陷。
+- 重要市場頁狀態：7 組市場數值映射 PASS；7 張市場卡專屬 compass／target 接線 FAIL；重大新聞資料呈現 PASS。尚未完成新聞逐則品質／時間戳稽核。
+- 僅唯讀查證並更新 Recovery／Progress，未改動 Template／Builder／JSON／DATA_REPORT／Artifact；未 Merge／Deploy。後續修正待全部 42 區塊稽核完成後統一處理。
