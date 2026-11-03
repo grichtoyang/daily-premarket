@@ -807,3 +807,17 @@ P1 尚未開始。啟動前必須：
 1. 使用者手機開啟新版 HTML，確認偏多與偏空條件未成立、區間路徑正常，文字沒有重疊／裁切。
 2. 同時檢查多空條件檢查表的 Bias、因子權重及缺失因子是否與 JSON 一致。
 3. 視覺 PASS 後再結案；B 區 0.01 億元精度差仍列後續對帳。
+
+
+## 21. 2026-11-03 手機驗收與 Bias 因子圖表修正
+- 手機截圖視覺初步 PASS：區塊 C、三劇本、因子圖、相關性熱圖、交易計畫未見明顯重疊／裁切；截圖範圍未見橫向溢出。三劇本「機率未校準」標籤正確。現價 44,920.14 位於 PutWall 44,000 與 CallWall 48,000 之間，區間成立；偏多缺 Flip、偏空未跌破 PutWall，兩者不成立。
+- 發現多空圖表誤用 u.weights 作為方向貢獻，造成正值綠色權重柱與 Bias 24 偏空語意相反，且顯示英文程式 key。已改用 factor_details.active 的 contribution，按絕對值排序取前 8，使用中文名稱及正負顏色；標題改「多空因子方向貢獻」，明示正值推升 Bias、負值壓低 Bias，非權重。
+- 新增靜態契約測試；第一次因測試字串跳脫錯誤 FAIL，修正後 Run 41560578070 整體 SUCCESS，React template tests 19/19、inline JS 4 scripts、Artifact upload PASS；deploy SKIPPED。
+- Artifact 13196638130 已下載抽查；新 HTML p0/v9-pro-20261102.html，date 2026-11-02，Bias 24 偏空，14/17 有效因子。前 8 貢獻值：外資現貨 -7.1429、美股費半 -7.1429、夜盤 -4.7619、PCR -3.3333、現貨趨勢 -1.9345、投信 +1.7857、MACD -1.7857、Put Wall +0.8929。
+- 手機複驗檔 /mnt/data/v9-pro-20261102-factor-contrib-fixed.html，303,829 bytes，SHA-256 d82b30b923d70538570163febf80764ca5fc57b91551786d8cee570cf430843d。
+- 狀態：舊版手機排版初步 PASS；舊版因子語意 FAIL 已修正；新版 CI／Artifact／HTML data PASS；新版手機視覺 NOT TESTED；未 merge／部署；B 區 0.01 億元精度差仍未結案。
+
+### 下一步
+1. 手機驗收新版因子貢獻圖：中文名稱、紅負綠正、Bias 24 偏空語意一致，無重疊。
+2. 通過後處理 B 區 0.01 億元精度差，再做全頁最終驗收。
+3. 未經使用者明確授權不 merge／deploy。
