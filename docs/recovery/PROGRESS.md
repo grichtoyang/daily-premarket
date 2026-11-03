@@ -1010,3 +1010,13 @@ P1 尚未開始。啟動前必須：
 - 確認 FAIL：可疑 OI 狀態沒有傳遞到 Bias 因子引擎，Bias 24 雖可由現行程式重現，但輸入有效性／confidence 標示不一致。離線反事實估算排除該因子後 Bias 約 21、coverage 約 77.9%（僅估算，非修正後正式輸出）。
 - 僅讀取與記錄，沒有改動程式／資料／UI。已 PASS 的區塊凍結，不重做。
 - 後續先完成其餘區塊稽核，最後彙整缺陷一次提出最小修正，避免反覆修補造成迴圈。
+
+
+## 2026-11-03 現貨頁 6 區塊稽核結果
+- A 大盤行情：FAIL。T0 OHLC open/high/low 為 null；React 分析文字及 Candlestick `Pt` 未做 null guard，null 被 JS coercion 成 0，會生成錯誤開低走高／影線／實體與無效圖形。
+- B 漲跌家數：PASS。上市家數與報告一致；上櫃 null 由 Canvas 明確顯示 unavailable，分析文字不對缺值作方向推論。
+- C 三大法人現貨：PASS。外資 -1,124.7、投信 +236.2、自營 -513.7、合計 -1,402.2 億與報告一致。
+- D 融資融券：PASS（缺值防護）。融資及維持率 null 由 UI 顯示 unavailable；融券與借券餘額對應有效值。
+- E 借券／券：FAIL。表格顯示借券賣出 unavailable，但共用 Canvas `Ol` 將 null 轉成 0 畫圖。
+- F 成交結構：FAIL。上櫃成交金額 null 被 `Ol` 畫成 0；表格可能顯示 null億；total 7,588.8 仍標成上市櫃合計，實際僅等於上市成交額。資料一致性檢查因 OTC null 而跳過合計驗證。
+- 現貨頁合計：3 PASS（B/C/D）、3 FAIL（A/E/F）。僅記錄缺陷，沒有修改程式／報告／JSON／HTML。修正待 42 區塊清查彙總後一次執行。
