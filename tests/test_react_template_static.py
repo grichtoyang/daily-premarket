@@ -172,10 +172,51 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('情境一｜偏多', self.html)
         self.assertIn('情境二｜區間', self.html)
         self.assertIn('情境三｜偏空', self.html)
-        self.assertIn('d.id==="range"?(x.k==="putWall"?"位於":"↔"):"→"', self.html)
+        self.assertIn('rangeReady=cur!=null&&put!=null&&call!=null&&put<cur&&cur<call', self.html)
+        self.assertIn('cur>flip&&bullTargets.length>0', self.html)
+        self.assertIn('cur<put&&bearTargets.length>0', self.html)
+        self.assertIn('站穩／有效跌破仍須後續價格行為確認', self.html)
         self.assertIn('MaxPain 僅作磁吸參考，不當作跌破後的下跌目標', self.html)
-        self.assertIn('缺少位於現價正確方向的有效關鍵價位，暫不繪製延伸路徑', self.html)
         self.assertNotIn('"加速至$",g(l.maxPain)', self.html)
+
+    def test_three_scenario_runtime_paths_require_trigger_and_target_levels(self):
+        start = self.html.index("function Pth(")
+        end = self.html.index("function ", start + 1)
+        function_source = self.html[start:end]
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node.js is required for scenario path tests")
+        script = """
+const O=(type,props)=>({type,props});
+const p=(type,props)=>({type,props});
+const g=(value)=>String(value);
+""" + function_source + """
+function textOf(value){
+  if(value==null) return "";
+  if(typeof value==="string"||typeof value==="number") return String(value);
+  if(Array.isArray(value)) return value.map(textOf).join(" ");
+  return textOf(value.props?.children);
+}
+function cards(current,levels){
+  const root=Pth({current,levels});
+  return root.props.children.slice(1).map(textOf);
+}
+const bull=cards(110,{flip:100,gammaWall:120,callWall:130,putWall:90});
+if(!bull[0].includes("現價高於 Gamma Flip 100")||!bull[0].includes("Gamma Wall 120")||!bull[0].includes("Call Wall 130")) throw Error("valid bullish path missing trigger/targets: "+bull[0]);
+const bullNoFlip=cards(110,{flip:null,gammaWall:120,callWall:130});
+if(!bullNoFlip[0].includes("偏多條件未成立")||bullNoFlip[0].includes("現價 110")) throw Error("bullish path rendered without Gamma Flip: "+bullNoFlip[0]);
+const range=cards(100,{putWall:90,callWall:110});
+if(!range[1].includes("現價位於 Put Wall 90 與 Call Wall 110 之間")||!range[1].includes("現價 100")) throw Error("valid range path missing both walls: "+range[1]);
+const rangeInvalid=cards(120,{putWall:90,callWall:110});
+if(!rangeInvalid[1].includes("區間條件未成立")||rangeInvalid[1].includes("現價 120")) throw Error("range path rendered when current is outside walls: "+rangeInvalid[1]);
+const bear=cards(90,{putWall:100,gammaWall:80,flip:70});
+if(!bear[2].includes("現價低於 Put Wall 100")||!bear[2].includes("Gamma Wall 80")||!bear[2].includes("Gamma Flip 70")) throw Error("valid bearish path missing trigger/targets: "+bear[2]);
+const bearNoPut=cards(90,{putWall:null,gammaWall:80,flip:70});
+if(!bearNoPut[2].includes("偏空條件未成立")||bearNoPut[2].includes("現價 90")) throw Error("bearish path rendered without Put Wall trigger: "+bearNoPut[2]);
+console.log("scenario paths 6/6 PASS");
+"""
+        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("scenario paths 6/6 PASS", result.stdout)
 
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
