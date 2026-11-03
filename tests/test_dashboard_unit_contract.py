@@ -69,7 +69,7 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn("parse_data_report()", unit_map)
         self.assertNotIn("GEX 單位 BLOCKED", unit_map)
         self.assertIn("2026-11-02 完整欄位語義稽核", unit_map)
-        self.assertEqual(len(re.findall(r"^\|\s*(?:[1-9]|[1-3][0-9]|4[0-2])\s*\|[^|]*\|[^|]*\|\s*(?:PASS|UI PASS)[^|]*\|", unit_map, re.MULTILINE)), 42)
+        self.assertEqual(len(re.findall(r"^\|\s*(?:[1-9]|[1-3][0-9]|4[0-2])\s*\|[^|]*\|\s*(?:PASS|UI PASS)[^|]*\|", unit_map, re.MULTILINE)), 42)
         self.assertIn("GEX 正負不得直接轉成 Bias 多空分數", standard)
         self.assertIn("T0", standard)
         self.assertIn("semantic_note", registry["metrics"]["options.gex.net_gross_per_strike"])
