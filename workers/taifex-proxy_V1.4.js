@@ -1,7 +1,7 @@
 
 /*
  * ============================================================
- * TAIFEX Proxy V1.1 — Production + OpenAPI Fallback + GEX Diagnostic + Date Validation => V1.1 Final_V2 
+ * TAIFEX Proxy V1.5 — Production + OpenAPI Fallback + GEX Failure Diagnostics
  * ============================================================
  *
  * STATUS:
@@ -54,7 +54,11 @@
  *   + /snapshots/bundle?date=YYYY-MM-DD (exact or latest<=date)
  *   + /snapshots/write-now[?key=] (manual trigger for testing/backfill)
  *   Snapshot covers: top10fut/opt, chain, fut/opt day positions, walls.
- *   All prior endpoints byte-identical.
+ *
+ * V1.5 ADDITIVE (2026-11-03):
+ *   + /options-gamma-levels failure diagnostics: error_code, stage, detail
+ *   + Distinguish TXO Chain, Delta, TAIEX spot and GEX calculation failures.
+ *   + Preserve successful response fields and existing calculation semantics.
  * ============================================================
  */
 
@@ -4529,8 +4533,11 @@ export default {
             source: "TAIFEX",
             status:
               chainResult.response.status,
+            error_code: "TXO_CHAIN_FETCH_FAILED",
+            stage: "chain_fetch",
             error:
-              "TAIFEX option chain request failed"
+              "TAIFEX option chain request failed",
+            detail: chainResult.primary_error || `HTTP ${chainResult.response.status}`
           }, 502);
         }
 
@@ -4548,8 +4555,11 @@ export default {
               "options_gamma_levels",
             market: "TXO",
             date: queryDate,
+            error_code: "TXO_CHAIN_PARSE_FAILED",
+            stage: "chain_parse",
             error:
-              "TXO option chain not found"
+              "TXO option chain not found",
+            detail: parsedChain.reason || "No usable TXO option-chain rows"
           }, 502);
         }
 
@@ -4567,11 +4577,13 @@ export default {
               "options_gamma_levels",
             market: "TXO",
             date: queryDate,
+            error_code: "TXO_DELTA_FETCH_FAILED",
+            stage: "delta_fetch",
             error:
               "TAIFEX Daily Delta not found",
             detail:
               deltaResult.reason ||
-              null
+              "No usable TXO Delta rows"
           }, 502);
         }
 
@@ -4604,7 +4616,16 @@ export default {
                     : (
                         taiexResult.reason ||
                         "TAIEX underlying price unavailable"
-                      )
+                      ),
+                error_code: !gammaExpiry
+                  ? "GEX_NO_COMMON_EXPIRY"
+                  : "TAIEX_SPOT_UNAVAILABLE",
+                stage: !gammaExpiry
+                  ? "gex_input_match"
+                  : "taiex_underlying",
+                detail: !gammaExpiry
+                  ? "TXO Chain and Delta have no matching expiry for requested date"
+                  : (taiexResult.reason || "TAIEX underlying price unavailable")
               };
 
         return json({
@@ -4627,9 +4648,15 @@ export default {
           data:
             gamma,
 
+          ...(gamma.found ? {} : {
+            error_code: gamma.error_code || "GEX_CALCULATION_UNAVAILABLE",
+            stage: gamma.stage || "gex_calculation",
+            detail: gamma.detail || gamma.reason || "GEX calculation unavailable"
+          }),
+
           parser: {
 
-            version: "V1.0 — Production",
+            version: "V1.5 — Production",
 
             chain_contracts:
               parsedChain.data.length,
@@ -4648,7 +4675,10 @@ export default {
         return json({
           ok: false,
           source: "TAIFEX",
-          error: String(error)
+          error_code: "GEX_INTERNAL_ERROR",
+          stage: "gex_calculation",
+          error: "GEX calculation failed",
+          detail: String(error)
         }, 500);
       }
     }
