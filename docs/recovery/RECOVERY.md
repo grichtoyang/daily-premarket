@@ -1539,3 +1539,25 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 
 ### 下一個唯一工作
 先完成 Worker JavaScript 語法／部署前驗證；若通過，再部署 Worker。部署後使用受控 GEX endpoint 呼叫，確認 Worker 的 stage／error_code 能被 Python 解析並寫入 DATA_REPORT notes。不可把 Python 測試成功當作 Worker runtime 或部署成功。
+
+
+
+## 2026-11-03 Worker V1.5 source-level audit checkpoint
+
+### Source review
+- Re-read the Worker route, Python `_get()`, `build()` and regression tests on `phase2-p0-ui-fixes`.
+- Worker diagnostic stages and Python parser keys are aligned: `error_code`, `stage`, `error`, `detail`, and `data.reason`.
+- Python resets `_LAST_FETCH_ERRORS` at `build()` start; when the T0 Gamma endpoint is unavailable it appends the diagnostic summary to returned `notes`.
+- P0 T0-date guard and GEX unavailable handling remain in place.
+- Source-level review only: **PASS**.
+
+### Syntax/runtime check
+- Local `node --check` could not be run because the environment cannot resolve `raw.githubusercontent.com` to retrieve the exact repository file.
+- GitHub connector provides read-only fetch and no workflow-dispatch action; repository listing showed no Wrangler config or Worker-specific syntax-validation workflow.
+- **Worker JavaScript syntax/runtime validation: BLOCKED** (not executed; no PASS claim).
+- Real Worker endpoint and DATA_REPORT notes integration: **NOT TESTED**.
+- Worker deployment: **NOT DONE**.
+- No source files changed in this checkpoint.
+
+### Next action
+Use an execution environment with the repository checked out and Node/Wrangler available to run syntax validation against the exact Worker file. Only after that passes should deployment be considered. Do not treat source review or Python regression tests as Worker runtime validation.
