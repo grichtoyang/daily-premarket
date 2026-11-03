@@ -932,3 +932,16 @@ P1 尚未開始。啟動前必須：
 - 修正後版本手機重驗 NOT TESTED；B 區 0.01 億元精度差 NOT TESTED；42 區塊驗收 NOT STARTED。
 - 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查。
 - 下一步：手機重驗修正後 C 區單位及五區塊版面，通過後對帳 B 區精度差，再進入 42 區塊總驗收。
+
+
+## 2026-11-03 五區塊主動稽核與 MaxPain 分類修正
+- 最新使用者截圖中 C 區顯示 74.0／44.3 千口，原始卡片仍為 73,987／44,305 口；可見範圍無明顯重疊。
+- 釐清資料版本：根目錄 `dashboards/data-20261102.json` 並非此次手機截圖所用 P0 Artifact。正確 P0 Artifact `p0/data-20261102.json` 為 Bias 24、14/17、8×8 correlation、樣本 5/5；內嵌 JSON 與外部 JSON 一致。最強正／負相關 +0.854／-0.9053，顯示 +0.85／-0.91。
+- 主動發現交易計畫原本將 Put Wall 與 MaxPain 同列「支撐」，與 MaxPain 僅磁吸參考的規格矛盾。已修改為支撐只列 Put Wall、另列「磁吸參考」MaxPain；新增靜態測試防回歸。
+- Template commit `e923f2dde34b011407263a4831b2e58a363bb354`；test commit／最新 HEAD `d335c755644840f61e7ca7f386900126f5cd17da`。
+- CI Run `41566885386` SUCCESS；Build 全步驟 PASS、React template 測試 PASS、Artifact upload PASS、deploy SKIPPED。
+- Artifact ID `13199517282`；digest `ddc9e03e52f44bf0c669dc93d6108c307f2a966c390aae68f130a705b0b86aab`；P0 HTML SHA-256 `a0ceeb82731a98c33947cc5c9ed7e911dd977dd6869228f4c536e3842f7a066c`；P0 JSON SHA-256 `aaf5cc488a2d86f7abadbe3c9ed0ab05417863ba726c6bcf30dde2caed25a980`。
+- 新手機驗收檔 `/mnt/data/v9-pro-20261102-maxpain-fix.html`，314,009 bytes。Artifact 已確認包含「千口」及獨立「磁吸參考」列。
+- 五組數據／解析核對 PASS；最新版本手機重驗 NOT TESTED；B 區 0.01 億元精度差 NOT TESTED；42 區塊驗收 NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查。
+- 下一步：手機重驗最新版五區塊，尤其交易計畫新增列；通過後對帳 B 區精度，再進入 42 區塊總驗收。
