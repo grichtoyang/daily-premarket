@@ -962,3 +962,21 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 數值精度保留待查：外資日盤顯示多方 11.36、空方 11.17、淨額 +0.18，差 0.01 億元。原始未四捨五入值未取得，故精度對帳 NOT TESTED，後續以原始值確認。
 - 本次未驗收其他區塊、其他手機尺寸、橫向模式及跨瀏覽器。未 merge／部署；Master／V8 未修改。
 - 下一步：進入下一個未完成 P0 項目，沿用資料來源、計算、HTML、CI、Artifact、手機畫面完整驗收；0.01 億元差異列入對帳清單。
+
+
+## 35. 2026-11-03 三劇本路徑條件修正（進行中）
+- 區塊 B 格式修正已由使用者手機截圖驗收 PASS。本節開始檢查其下方三劇本路徑。
+- 原 Pth() 缺陷：偏多只需任一上方 GammaWall／CallWall，未要求有效 Gamma Flip；偏空只需任一下方 GammaWall／Flip，未要求現價低於 PutWall。顯示路徑可能與觸發文字不一致。
+- 修正條件：偏多＝有效 Flip 且現價高於 Flip，另需至少一個上方壓力；區間＝PutWall < 現價 < CallWall；偏空＝現價低於有效 PutWall，另需至少一個下方支撐。必要條件缺失即不顯示路徑。
+- 文案不再把單一現價位置當成已確認「站穩／有效跌破」；明確說明仍須後續價格行為確認。
+- Template commit f87dad314976ad6c4d26125f7a4c37d72f92b6b4；Workflow 增加 Template contract tests commit 8d0fe6f9f5ab4780facbb9fc62f130dc7b409c3c；最新測試修正 HEAD dca0dc9706407b5757d747f5cd608f7419dd86b9。
+- 最新 Run 41559500824：React Template／三劇本契約測試 PASS，正式 inline JavaScript syntax PASS；Pth() 代表性六案例由執行環境抽取實際函式測試 6/6 PASS。
+- Workflow 整體 FAIL：Replay real historical DATA_REPORTs 在 20261027 eligible=0（expected 1）失敗，且同段出現 SQLite init_db missing primary-key date 訊息。下游 Dashboard build／Artifact skipped。不得將其包裝為完整 CI PASS。
+- 三劇本修正狀態：邏輯測試 PASS、Template JS syntax PASS；完整 Workflow FAIL（歷史回放阻斷）；Artifact／完整資料注入／手機畫面 NOT TESTED。
+- 未修改 V8／Master；未 merge／部署。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 釐清 history replay 20261027 eligible=0 及 SQLite schema 訊息，不跳過或弱化測試。
+2. Workflow 完成後，核對 Artifact Template branch/ref、T0 現價與五個關鍵價位來源。
+3. 用有效偏多、缺 Flip、區間有效／價位錯側、有效偏空、缺 PutWall／支撐、缺值等 fixtures 驗證。
+4. 產出新 Artifact 後由使用者複驗手機三劇本及多空條件檢查表；完成前不得結案或部署。
