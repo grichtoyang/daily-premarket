@@ -249,21 +249,35 @@ def build(t0: str) -> dict:
         if margin[k] is None:
             unavailable.append(f"margin.{k}")
 
-    # ---- 借券：三種指標嚴格分離 ----
-    # TWT96U 是「當日可借券賣出股數」，不是借券餘額；不得納入 sbl.bal。
-    # 真正借券餘額需 TWT72U；該歷史檔自動化取得／授權尚未驗證，故 fail closed。
-    tw_sbl = spot_raw.twse_twt93u_sbl(roc)
-    sbl_bal = None
-    _tw_sale = tw_sbl["sale_bal"] / 1000 if tw_sbl["sale_bal"] is not None else None
-    sbl = {"bal": None, "sale_bal": _tw_sale, "sale_chg": (
-        tw_sbl["sale_chg"] / 1000 if tw_sbl["sale_chg"] is not None else None
-    )}
-    sources["sbl_bal"] = "unavailable（需 TWT72U 借券餘額資料；自動化取得／授權未驗證）"
-    sources["sbl_sale_bal"] = "TWSE TWT93U（上市；TPEX 尚未完成欄位映射驗證）" if _tw_sale is not None else "unavailable"
-    sources["sbl_sale_chg"] = "TWSE TWT93U（上市；TPEX 尚未完成欄位映射驗證）" if sbl["sale_chg"] is not None else "unavailable"
-    notes.append("TWT96U 可借券賣出股數不等於借券餘額，已排除；借券餘額暫 unavailable，待 TWT72U 可用來源確認")
-    notes.append("借券賣出餘額／增減目前僅採上市 TWT93U；上櫃 TPEX 欄位 mapping 尚未驗證，暫不合併")
-    unavailable.append("sbl.bal")
+    # ---- 借券：借券餘額與借券賣出餘額分開取自官方歷史資料 ----
+    # TWT96U 是當日可借券賣出股數，不屬於借券餘額；完全不納入此區。
+    tw72 = spot_raw.twse_twt72u_sbl(roc)
+    tw93 = spot_raw.twse_twt93u_sbl(roc)
+    tp_sbl = spot_raw.tpex_sbl(roc)
+    sbl_bal = tw72["bal"] / 1000 if tw72["bal"] is not None else None
+    _tw_sale = tw93["sale_bal"] / 1000 if tw93["sale_bal"] is not None else None
+    _tp_sale = tp_sbl["sale_bal"] / 1000 if tp_sbl["sale_bal"] is not None else None
+    _tw_schg = tw93["sale_chg"] / 1000 if tw93["sale_chg"] is not None else None
+    _tp_schg = tp_sbl["sale_chg"] / 1000 if tp_sbl["sale_chg"] is not None else None
+    _sale = _add(_tw_sale, _tp_sale)
+    _schg = _add(_tw_schg, _tp_schg)
+    sbl = {"bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg}
+
+    def _sbl_scope(*parts):
+        available = [name for name, value in parts if value is not None]
+        return " + ".join(available) if available else "unavailable"
+    sources["sbl_bal"] = "TWSE TWT72U（SLBNLB；上市+上櫃）" if sbl_bal is not None else "unavailable"
+    sources["sbl_sale_bal"] = _sbl_scope(
+        ("TWSE TWT93U（上市）", _tw_sale), ("TPEX S47（上櫃）", _tp_sale))
+    sources["sbl_sale_chg"] = _sbl_scope(
+        ("TWSE TWT93U（上市）", _tw_schg), ("TPEX S47（上櫃）", _tp_schg))
+    if sbl_bal is None:
+        unavailable.append("sbl.bal")
+        notes.append("借券餘額未取得：TWSE TWT72U（SLBNLB）資料日期或欄位驗證失敗")
+    if _tw_sale is None or _tp_sale is None:
+        notes.append("借券賣出餘額市場覆蓋不完整；來源欄已明確標示實際取得市場")
+    if _tw_schg is None or _tp_schg is None:
+        notes.append("借券賣出增減市場覆蓋不完整；來源欄已明確標示實際取得市場")
     if sbl["sale_bal"] is None:
         unavailable.append("sbl.sale_bal")
     if sbl["sale_chg"] is None:
