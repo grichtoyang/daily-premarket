@@ -1861,3 +1861,10 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - TWSE 投資人教育資料定義借券餘額＝借入尚未返還，並將借券賣出餘額、融券餘額列為不同指標。
 - TWT72U 欄位含系統別及市場別；TWSE 官方儀表板又分別呈現證交所借券系統、證商／證金營業處所及借券餘額合計。因此必須核對分類 selectType、系統別覆蓋與合計規則，不能未經對照便認定單一 TWT72U 分類可代表全市場合計。
 - TWT72U 指標定義正確，但資料覆蓋範圍、分類參數、重複列風險、workflow 取得方式與授權仍 NOT TESTED。
+## 2026-11-03 現貨籌碼投資人語義與文件／程式矛盾
+
+- 投資人可見欄位應為融資餘額／增減（億元）、融券餘額／增減（張）、上市融資維持率（%）、借券餘額（張）、借券賣出餘額／增減（張）。`margin.s_bal` 是融券餘額；`sbl.bal` 是借券餘額；`sbl.sale_bal` 是借券賣出餘額，三者不可混用。
+- phase2-p0-ui-fixes 的 DATA_SOURCES.md 已寫明 TWT96U 不得當 TWT93U 替代來源；但 spot_raw.py 仍把 TWT96U 當可借餘額，spot.py 仍將 TWT96U + TPEX stp.bal 填入 sbl.bal。文件與程式矛盾，sbl.bal FAIL。
+- TWT93U parser 仍使用 row[7]/row[11]，上市借券賣出餘額 parser FAIL。
+- DASHBOARD_UNIT_MAP 的區塊 12 舊 PASS 只能代表 UI 欄位／單位／scope 顯示契約，不能視為來源定義與原始 mapping 的真實性 PASS；必須修正驗收語義。
+- 本輪僅盤點現貨融資融券及借券欄位，未改程式或報告，未重跑 10/30，未 merge/deploy。
