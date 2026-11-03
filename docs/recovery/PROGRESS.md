@@ -921,3 +921,14 @@ P1 尚未開始。啟動前必須：
 - 手機畫面 NOT TESTED；B 區 0.01 億元原始精度對帳 NOT TESTED；42 區塊全頁驗收 NOT STARTED。
 - 未 Merge／Deploy；Master／V8 未修改。單模型自我審查，非獨立多模型 Auditor。
 - 下一步：使用者手機驗收最新 HTML；通過後查 B 區原始金額精度，再進入 42 區塊總驗收。
+
+
+## 2026-11-03 手機截圖審查與 C 區單位修正
+- 使用者提供的五區塊截圖未見明顯重疊／裁切；視覺初步 PASS。長文字及熱圖小字仍可改善。
+- 發現 C 區日夜量圖顯示 74.0／44.3，但缺少千口縮放標示；已在 template 為兩個圖表項目增加 `extra:"千口"`，chartNote 同步解釋右側圖表以千口顯示。原始數據卡口數不變。
+- 修正 Commit `ca4fe9d1a044f802182e10f74b3fdac45251c9c5`；CI Run `41566032790` SUCCESS，Build PASS、Artifact upload PASS、Deploy SKIPPED。
+- Artifact ID `13199196057`；manifest date 20261102；HTML 內嵌 JSON 與獨立 JSON 一致。
+- 新 HTML SHA-256 `2aca4c218351d1c0759d2099bea0087e9e6e5ed83daf29403881950ccfd0cea1`；手機驗收檔 `/mnt/data/v9-pro-20261102-synthesis-unitfix.html`。
+- 修正後版本手機重驗 NOT TESTED；B 區 0.01 億元精度差 NOT TESTED；42 區塊驗收 NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查。
+- 下一步：手機重驗修正後 C 區單位及五區塊版面，通過後對帳 B 區精度差，再進入 42 區塊總驗收。
