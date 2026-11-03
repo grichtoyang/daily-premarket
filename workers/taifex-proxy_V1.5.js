@@ -1,7 +1,7 @@
 
 /*
  * ============================================================
- * TAIFEX Proxy V1.5 — Production + OpenAPI Fallback + GEX Failure Diagnostics
+ * TAIFEX Proxy V1.5 — Production + RWD Historical TAIEX + GEX Failure Diagnostics
  * ============================================================
  *
  * STATUS:
@@ -1274,8 +1274,18 @@ async function fetchTAIFEXText(url) {
 
 
 async function fetchTAIEXCloseForDate(requestedISO) {
+  const requestedDigits =
+    String(requestedISO ?? "").replace(/\\D/g, "");
+
+  if (!/^\\d{8}$/.test(requestedDigits)) {
+    return {
+      found: false,
+      reason: `Invalid TAIEX query date: ${requestedISO}`
+    };
+  }
+
   const sourceUrl =
-    `${TWSE_OPENAPI}/exchangeReport/FMTQIK`;
+    `https://www.twse.com.tw/rwd/zh/afterTrading/FMTQIK?date=${requestedDigits}&response=json`;
 
   let response;
 
@@ -1356,8 +1366,6 @@ async function fetchTAIEXCloseForDate(requestedISO) {
   const digits = value =>
     String(value ?? "").replace(/\D/g, "");
 
-  const requestedDigits =
-    digits(requestedISO);
 
   const normalizeDate = value => {
     const raw = digits(value);
