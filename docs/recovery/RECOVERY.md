@@ -1057,3 +1057,18 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 請使用者手機開啟 fixed-v2 HTML，確認 8 個因子長條、中文標籤、正負顏色及數值均出現，且不重疊。
 2. 手機 PASS 後處理區塊 B 0.01 億元精度差，再進行完整 42 區塊最終驗收。
 3. 未經使用者明確授權不 merge／deploy。
+
+ 
+## 40. 2026-11-03 因子圖第 8 列被 Canvas 高度裁掉：修正與驗收
+- 使用者手機實機回報截圖：新版因子圖可見 7 列，非預期 8 列；其他可見 UI（正負顏色、中文標籤、數值）正常。
+- 根因定位於模板 `mf({items,height=160,...})`：每列高度 m=18、間距 k=12、起始 y=14；可畫列數 N=Math.min(items.length, Math.floor((height-14+12)/30))。當高度 240px 時 N=floor(238/30)=7，故第 8 個有效因子資料雖存在，未被 Canvas 繪製。
+- 已將「多空因子方向貢獻」圖表高度從 240px 提高至 260px，保留 8 項排序及「顯示 8 項」說明；未改變因子計算、權重、Bias。
+- 新增靜態測試，斷言該圖表高度維持 260px（目前繪圖列距條件下足以容納 8 列）。
+- Template commit `cc9ca65bfef14f0908b8f44bdae803640ef5da83`；test commit `642fd0c4f14e27652c3b859ff48b5ca901368612`。
+- CI Run 41562071919 SUCCESS；React template and three-scenario path contract tests PASS；`test_bias_chart_uses_signed_factor_contributions_and_chinese_names` PASS；inline JavaScript syntax PASS；Golden Fixture build PASS；GitHub Pages artifact 13197570937 uploaded; deploy job SKIPPED（工作分支）。
+- 狀態：高度根因確認 PASS；程式修正 PASS；CI PASS；使用者上一版手機截圖只驗證 7 列可見，修正版 260px 的實際手機 8 列畫面 NOT TESTED；尚未 merge/deploy；區塊 B 精度差仍未結案；42 區塊總驗收未完成。
+ 
+### 下一步
+1. 從本次 CI Artifact 13197570937 取得新 HTML，確認輸出模板高度為 260px。
+2. 交付新 HTML，請使用者手機確認 8 列均顯示（尤其 Put Wall +0.9）。
+3. 通過後再處理區塊 B 精度差及 42 區塊完整驗收；未授權不 merge/deploy。
