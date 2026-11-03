@@ -114,53 +114,78 @@ def sbl_tw() -> dict:
     return out
 
 
-def twse_twt93u_sbl(roc: str) -> dict:
-    """TWT93U 信用額度總量管制餘額表 — 上市借券賣出餘額與增減。
+def _twse_date8(date_value: str) -> str | None:
+    """Normalize an ISO (YYYY-MM-DD), AD (YYYYMMDD), or ROC (YYYMMDD) date to YYYYMMDD."""
+    value = str(date_value or "").strip().replace("-", "").replace("/", "")
+    if len(value) == 8 and value.isdigit():
+        return value
+    if len(value) == 7 and value.isdigit():
+        return f"{int(value[:3]) + 1911:04d}{value[3:]}"
+    return None
+
+
+def twse_twt93u_sbl(date_value: str) -> dict:
+    """TWT93U 上市借券賣出餘額與當日增減；依 API fields 欄名定位，不使用固定欄位索引。
 
     回傳 {sale_bal, sale_chg, prev_bal, date_ok}。單位：股數 (API 原值)。
-    借券欄位在 data[i][7..13]：前日餘額/當日賣出/當日還券/當日調整/當日餘額/次一營業日可限額
     """
-    url = f"https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date={roc}"
-    j = _get_json(url)
+    date8 = _twse_date8(date_value)
     out = {"sale_bal": None, "sale_chg": None, "prev_bal": None, "date_ok": False}
+    if date8 is None:
+        print(f"[WARN] TWT93U invalid requested date: {date_value!r}")
+        return out
+    url = f"https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date={date8}"
+    j = _get_json(url)
     if not isinstance(j, dict):
         print(f"[WARN] TWT93U invalid response type: {type(j).__name__}")
         return out
     if j.get("stat") != "OK":
-        print(f"[WARN] TWT93U stat not OK: {j.get('stat')!r}; fields={list(j)[:12]}")
+        print(f"[WARN] TWT93U stat not OK: {j.get('stat')!r}; date={date8}")
         return out
+
+    fields = j.get("fields") or []
     data = j.get("data") or []
-    if not data:
-        print(f"[WARN] TWT93U has no data rows for {roc}")
+    if not fields or not data:
+        print(f"[WARN] TWT93U missing fields/data: date={date8}")
         return out
-    total_prev = 0.0
-    total_bal = 0.0
-    n = 0
-    short_rows = 0
-    invalid_rows = 0
+
+    # API field labels vary slightly between display versions; only accept explicit
+    # semantic labels. Never fall back to positional indices.
+    normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
+    prev_aliases = ("借券賣出前日餘額", "前日借券賣出餘額股數")
+    bal_aliases = ("借券賣出當日餘額", "本日借券賣出餘額股數")
+    prev_idx = next((normalized[name] for name in prev_aliases if name in normalized), None)
+    bal_idx = next((normalized[name] for name in bal_aliases if name in normalized), None)
+    if prev_idx is None or bal_idx is None:
+        print(f"[WARN] TWT93U required lending fields absent: fields={fields!r}")
+        return out
+
+    total_prev = total_bal = 0.0
+    parsed = 0
+    invalid = 0
     for row in data:
-        if not isinstance(row, (list, tuple)) or len(row) < 12:
-            short_rows += 1
+        if not isinstance(row, (list, tuple)) or max(prev_idx, bal_idx) >= len(row):
+            invalid += 1
             continue
-        prev = _num(row[7])   # 前日餘額 (借券)
-        bal = _num(row[11])   # 當日餘額 (借券)
-        if prev is not None and bal is not None:
-            total_prev += prev
-            total_bal += bal
-            n += 1
-        else:
-            invalid_rows += 1
-    if n:
-        print(f"[INFO] TWT93U parsed rows={n}/{len(data)} short_rows={short_rows} invalid_rows={invalid_rows} date={roc}")
-        out = {
-            "sale_bal": total_bal,
-            "sale_chg": total_bal - total_prev,
-            "prev_bal": total_prev,
-            "date_ok": True,
-        }
-    else:
-        print(f"[WARN] TWT93U no parseable balance rows: total={len(data)} short_rows={short_rows} invalid_rows={invalid_rows}")
-    return out
+        prev = _num(row[prev_idx])
+        bal = _num(row[bal_idx])
+        if prev is None or bal is None:
+            invalid += 1
+            continue
+        total_prev += prev
+        total_bal += bal
+        parsed += 1
+
+    if not parsed:
+        print(f"[WARN] TWT93U no parseable lending rows: date={date8} total={len(data)} invalid={invalid}")
+        return out
+    print(f"[INFO] TWT93U parsed rows={parsed}/{len(data)} invalid_rows={invalid} date={date8}")
+    return {
+        "sale_bal": total_bal,
+        "sale_chg": total_bal - total_prev,
+        "prev_bal": total_prev,
+        "date_ok": True,
+    }
 
 # ---------- 上市成交 ----------
 
