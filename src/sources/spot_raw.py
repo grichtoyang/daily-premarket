@@ -143,6 +143,10 @@ def twse_twt93u_sbl(date_value: str) -> dict:
         print(f"[WARN] TWT93U stat not OK: {j.get('stat')!r}; date={date8}")
         return out
 
+    actual_date = _twse_date8(j.get("date"))
+    if actual_date != date8:
+        print(f"[WARN] TWT93U date mismatch: requested={date8} actual={j.get('date')!r}")
+        return out
     fields = j.get("fields") or []
     data = j.get("data") or []
     if not fields or not data:
@@ -152,20 +156,25 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     # API field labels vary slightly between display versions; only accept explicit
     # semantic labels. Never fall back to positional indices.
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
+    symbol_idx = next((normalized[name] for name in ("證券代號", "股票代號", "代號") if name in normalized), None)
     prev_aliases = ("借券賣出前日餘額", "前日借券賣出餘額股數")
     bal_aliases = ("借券賣出當日餘額", "本日借券賣出餘額股數")
     prev_idx = next((normalized[name] for name in prev_aliases if name in normalized), None)
     bal_idx = next((normalized[name] for name in bal_aliases if name in normalized), None)
-    if prev_idx is None or bal_idx is None:
+    if symbol_idx is None or prev_idx is None or bal_idx is None:
         print(f"[WARN] TWT93U required lending fields absent: fields={fields!r}")
         return out
 
+    import re
     total_prev = total_bal = 0.0
     parsed = 0
     invalid = 0
     for row in data:
-        if not isinstance(row, (list, tuple)) or max(prev_idx, bal_idx) >= len(row):
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx) >= len(row):
             invalid += 1
+            continue
+        code = str(row[symbol_idx] or "").strip().upper()
+        if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
             continue
         prev = _num(row[prev_idx])
         bal = _num(row[bal_idx])
