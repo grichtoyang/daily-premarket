@@ -30,7 +30,7 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertIn("買權", options["top10Call"][1][0])
         self.assertIn("賣權", options["top10Put"][1][0])
 
-    def test_borrowed_securities_balance_and_change_preserve_scope(self):
+    def test_legacy_borrowed_securities_sample_does_not_infer_missing_scope(self):
         report = ROOT / "data_reports" / "DATA_REPORT_20261030.md"
         parsed = parse_data_report(report)
         margin = parsed["margin"]
@@ -39,8 +39,21 @@ class BuilderOptionTableTests(unittest.TestCase):
         self.assertEqual(margin["borrowed_sell_diff"], -1273.0)
         self.assertEqual(
             margin["borrowed_sell_diff_scope"],
-            "上櫃（上市 TWT93U 未取得）",
+            "範圍未註明",
         )
+
+
+    def test_borrowed_short_scope_is_read_from_explicit_source_label(self):
+        source = (ROOT / "data_reports" / "DATA_REPORT_20261030.md").read_text(encoding="utf-8")
+        source = source.replace(
+            "| 借券賣出增減 | -1,273 | 張 | 沿用前版（原來源：TWSE TWT93U + TPEX margin_sbl） |",
+            "| 借券賣出增減 | -1,273 | 張 | TWSE TWT93U（上市） |",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "DATA_REPORT_20261030.md"
+            report.write_text(source, encoding="utf-8")
+            parsed = parse_data_report(report)
+        self.assertEqual(parsed["margin"]["borrowed_sell_diff_scope"], "上市（上櫃未取得）")
 
 
     def test_stale_margin_ratio_provenance_is_not_current_t0(self):
