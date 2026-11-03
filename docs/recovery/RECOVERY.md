@@ -1206,3 +1206,49 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 使用者在手機開啟 `v9-pro-20261102-synthesis-unitfix.html`，確認 C 區成交量顯示「74.0 千口／44.3 千口」可讀且沒有重疊；五區塊版面重新確認。
 2. 手機確認通過後，查 B 區 0.01 億元差異的 TAIFEX Proxy 原始未格式化金額。
 3. 再開始 42 區塊完整驗收。不得 Merge／Deploy，除非使用者另行明確授權。
+
+
+## 2026-11-03 主動五區塊數據稽核、MaxPain 分類修正與新版 Artifact
+
+### 使用者截圖及資料版本釐清
+- 使用者最新手機截圖確認 C 區日量／夜量顯示 `74.0 千口`／`44.3 千口`，原始數據卡仍為 73,987／44,305 口；可見範圍沒有因單位標籤造成重疊。五區塊版面可見範圍初步 PASS，整體手機驗收仍待最新版完整複驗。
+- 曾發現 GitHub 根目錄 `dashboards/data-20261102.json` 為 Bias 25、active 12/17、相關性樣本不足；該檔不是此次驗收的 P0 Artifact 資料。已下載正確 CI Artifact 並確認 `p0/data-20261102.json` 才是手機截圖對應資料：Bias 24、active 14/17、8×8 correlation，樣本 5/5（最近 60 筆）。兩者不可混用；後續所有 P0 驗收以同一 Run 的 `p0/v9-pro-20261102.html` + `p0/data-20261102.json` + manifest 為準。
+- 正確 P0 JSON 核對：現貨 44,920.14；日盤收 45,301、夜盤收 44,433、差 -868 點；日／夜成交量 73,987／44,305 口，夜盤占比 37.45%；外資夜盤淨交易 +1,365 口、外資期貨 OI 0 口；Put Wall 44,000、Call Wall 48,000、MaxPain 44,400、Gamma Wall／Flip 缺值。
+- 因子 14/17；正向合計 +2.6786、負向合計 -28.7203、淨貢獻 -26.0417；Bias 24（50 中性基準，計算後四捨五入）。相關矩陣 8×8，最強正相關 +0.854（顯示 +0.85），最強負相關 -0.9053（顯示 -0.91）；不可將其他歷史截圖的 -0.89 數字沿用至本版。
+- HTML 內嵌 DASHBOARD_DATA 與同一 P0 Artifact 獨立 JSON 完全相同。
+
+### 主動發現並修正的邏輯分類缺陷
+- 原交易計畫表將 Put Wall 與 MaxPain 一起列在「支撐」欄；但旁邊說明明確規定 MaxPain 僅作磁吸參考，不當作跌破後下跌目標。這會使使用者把 MaxPain 誤讀成實際支撐，屬於圖表／文字分類不一致。
+- Template 已最小修改：支撐列只顯示 Put Wall；MaxPain 獨立列為「磁吸參考」。未更改數值、策略條件或其他區塊。
+- 新增測試 `test_trade_plan_keeps_max_pain_separate_from_support`，防止 MaxPain 再被列為支撐。
+- Template commit：`e923f2dde34b011407263a4831b2e58a363bb354`；測試 commit：`d335c755644840f61e7ca7f386900126f5cd17da`。
+
+### 新版 CI／Artifact 驗證
+- 工作分支：`fix/three-market-correlation-history`；最新 HEAD：`d335c755644840f61e7ca7f386900126f5cd17da`。
+- CI Run：`41566885386`，HEAD 精確相符，completed／success。Build 所有步驟 PASS；React template／three-scenario contract test step PASS；Artifact upload PASS；deploy job SKIPPED（未部署）。
+- Artifact ID：`13199517282`，github-pages，1,807,081 bytes，digest `ddc9e03e52f44bf0c669dc93d6108c307f2a966c390aae68f130a705b0b86aab`。
+- 新 Artifact P0 HTML：314,009 bytes；SHA-256 `a0ceeb82731a98c33947cc5c9ed7e911dd977dd6869228f4c536e3842f7a066c`。P0 JSON 62,774 bytes；SHA-256 `aaf5cc488a2d86f7abadbe3c9ed0ab05417863ba726c6bcf30dde2caed25a980`。
+- 已從實際 Artifact 解壓並驗證：manifest date 20261102；內嵌 JSON 與 `p0/data-20261102.json` 完全一致；新 HTML 包含「千口」單位與「磁吸參考」獨立列，不再包含舊的 Put Wall／MaxPain 合併支撐列。
+- 已輸出新版手機驗收檔：`/mnt/data/v9-pro-20261102-maxpain-fix.html`，314,009 bytes。
+
+### 五區塊主動稽核結果
+- C 日夜盤劇本：價格／流量背離描述與 -868 點、+1,365 口一致；量能占比 37.45% 計算正確；零 OI 明確顯示 0 口；價位確認條件使用日盤收盤及夜盤低點。數據／邏輯 PASS。
+- 三劇本：現價 44,920.14 位於 Put Wall 44,000 與 Call Wall 48,000 之間，區間條件成立；Gamma Flip 缺值使偏多條件不成立；偏空條件不成立。數據／邏輯 PASS。
+- 多空因子：14/17、正負合計及淨貢獻一致；Bias 24 與 50 中性基準及 -26.0417 淨貢獻一致；圖表只顯示貢獻絕對值較大的 8 項，其他有效因子仍納入 Bias。PASS。
+- 相關性：8×8、樣本 5/5；最大正負配對及四捨五入顯示與矩陣一致（+0.85／-0.91）；說明限制為歷史共變、不作因果／預測。PASS。
+- 交易計畫：區間內不追價；Put Wall 作下方參考、Call Wall 作上方壓力，MaxPain 已獨立標為磁吸參考。新分類修正已進 Artifact；程式／CI PASS。
+
+### 狀態
+- 最新 CI／Build／Artifact upload：PASS。
+- P0 Artifact／JSON 一致：PASS。
+- 五組資料計算與圖表來源核對：PASS（以 Run 41566885386 的 P0 Artifact 為準）。
+- MaxPain 支撐分類缺陷：已修正，測試／CI PASS。
+- 最新版本手機驗收：NOT TESTED（需使用者開啟新檔，檢查新增列是否影響手機排版及五區塊可讀性）。
+- B 區 0.01 億元原始精度對帳：NOT TESTED。
+- 42 區塊全頁驗收：NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 使用者手機開啟 `v9-pro-20261102-maxpain-fix.html`，重驗五區塊，尤其交易計畫表新增「磁吸參考」列的可讀性、換行、重疊及裁切。
+2. 手機 PASS 後，追查 B 區 0.01 億元差異的 TAIFEX Proxy 原始未格式化 long_amount／short_amount。
+3. 完成 B 區對帳後，開始 42 區塊全頁驗收。未經明確授權不得 Merge／Deploy；不得修改 Master／V8。
