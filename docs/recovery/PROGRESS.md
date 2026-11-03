@@ -993,3 +993,12 @@ P1 尚未開始。啟動前必須：
 - 結構盤點：Artifact JSON 有 48 個 `analysis.cards` 解析鍵；Template 初步找到 34 個主要卡片元件呼叫點及 8 個 KPI 格。與使用者確認的 42 個可見區塊尚未逐項對映，不能以此粗略相加／替代完整清單。
 - 狀態：T0／Artifact／程式版本固定 PASS；42 個可見區塊對映與逐項資料鏈驗證 IN PROGRESS／NOT YET TESTED。
 - 下一步：對照四頁實際 render tree 建立精確 42 項清單，再逐項追蹤 source → DATA_REPORT → Builder → Artifact JSON → chart/table → analysis/judgment/action，測試缺值、零值、反向及單位邊界。
+
+
+## 2026-11-03 42 個可見區塊結構盤點結果（已對帳）
+- 固定 Artifact `13200545155` 實際 render tree 確認本版為六頁：總覽／現貨／重要市場／期貨／選擇權／綜合分析；舊筆記「四頁」判讀錯誤，已更正。Builder 規格亦為六頁，禁止為遷就舊筆記改動頁面架構。
+- 可見卡片 34 張：總覽 5、現貨 6、重要市場 2、期貨 6、選擇權 8、綜合分析 7；總覽另有 8 KPI 格，總計 42。
+- 8 KPI：加權收盤、外資現貨、台指日盤、台指夜盤、外資期貨、PCR、Call Wall、Bias。
+- JSON `analysis.visible_block_count=42`，Builder `visible_block_count=42`；48 個 `analysis.cards`／`analysis_card_count` 是內部敘述卡，不是可見 UI 區塊。結構計數 PASS。
+- 42 區塊逐項資料鏈稽核仍 IN PROGRESS；本次沒有改動任何 Builder／Template／資料／UI 程式，也沒有 Merge／Deploy。
+- 下一步：按六頁清單逐項核對來源、DATA_REPORT、Builder、JSON、圖表與分析／判斷／操作；已驗收正確者凍結不動。
