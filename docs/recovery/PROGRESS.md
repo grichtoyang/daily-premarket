@@ -847,3 +847,13 @@ P1 尚未開始。啟動前必須：
 1. 從 Artifact 13197570937 取得新版 HTML並確認 260px。
 2. 手機確認 8 列均顯示。
 3. 處理 B 區精度差，再進行 42 區塊總驗收。
+
+ 
+## 24. 2026-11-03 八列因子圖新版 HTML 已從 CI Artifact 抽取
+- Artifact 13197570937 / Run 41562071919 中抽取 `p0/v9-pro-20261102.html`，輸出 `/mnt/data/v9-pro-20261102-factor-chart-8rows-v3.html`（303,829 bytes；SHA-256 `a0cc47e5a566f272438d48fdcae03f5a4dfa837affdf29b54f9a3626e15e7bba`）。
+- 實際 HTML 已確認高度 260px；對應 data JSON 有 14 個有效因子，前 8 名第 8 項為 Put Wall +0.8929。
+- 手機驗收仍 NOT TESTED；B 區精度差與 42 區塊總驗收未完成；未 merge/deploy。
+ 
+### 下一步
+1. 手機確認 8 條（含 Put Wall +0.9）完整顯示且無重疊。
+2. 修正 B 區 0.01 億元精度差，進行 42 區塊總驗收。
