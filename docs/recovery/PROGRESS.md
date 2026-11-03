@@ -1127,3 +1127,22 @@ P1 尚未開始。啟動前必須：
 - **DATA_REPORT 實際診斷輸出：NOT TESTED**；尚未以新 Worker 實際產出報告驗證 notes。
 - 本次僅更新 Recovery 文件；不改 master、V8、原始 P0 分支，不 Merge／Rebase／Deploy。
 - 下一步唯一工作：對照這三個遠端檔案的實際 diff 與測試內容，修正任何審查發現，再執行對應測試；測試通過後才部署 Worker，最後用一次真實 GEX endpoint 呼叫確認錯誤階段能被 Python／DATA_REPORT 接收。
+
+
+
+## 2026-11-03 GEX Worker V1.5 CI 審查結果追加
+
+- 程式分支最新查證 HEAD：`e852ee6d8eaab4225b563b2b856ce1f76ad7cb41`（GitHub Actions 自動產生的 `V9 Pro 20261102 Bias 25分` commit；不是 Worker 部署 commit）。
+- V1.5 相關三個程式檔案 blob SHA 維持：
+  - Worker `3f5fdfe3442a106aa21a74706e911f7970258056`
+  - Python `aebb590370105937c0ad86506c7e8f66d9b8118c`
+  - Tests `ff7f83c0a1081f27781eb3dbf2ae08da840e8c08`
+- CI 首次執行 Run `41626557631` FAIL，原因是新增測試的 Python 多行 with 語法有多餘反斜線；不是產品程式測試斷言失敗。已由 commit `82796f958b3cedd62e077e11a59ac4cd680e5c06` 修正為巢狀 context manager。
+- 修正後 Run `41626627855` SUCCESS；Gamma fallback regression step PASS，執行 11 tests，輸出 OK。Builder／其餘工作流程步驟亦成功；Deploy job SKIPPED。
+- CI 成功流程另執行 Build、注入、產生 Dashboard history commit 並上傳 Pages artifact；**沒有部署**。該 workflow 的一般 Build／artifact 行為與 Worker 部署不同。
+- 程式碼審查：Worker Chain parser 的回傳結構只有 `found/data`，沒有 `reason`，所以新增的 Chain parse detail 會採用固定 fallback 文案；不影響分類，但無法提供更細解析錯誤。其他 Chain／Delta／TAIEX／GEX failure stage 與 Python response parser 欄位名稱目前吻合。
+- **Python regression tests：PASS**（Run `41626627855`，11 tests）。
+- **Worker JavaScript runtime／Wrangler validation：NOT TESTED**。
+- **真實 Worker endpoint 與 DATA_REPORT notes：NOT TESTED**。
+- **Worker deploy：NOT DONE**。
+- 下一步：補做 Worker JavaScript 語法／部署前驗證；檢查通過後才部署 Worker，部署後再以受控 GEX endpoint 呼叫驗證錯誤階段與 DATA_REPORT notes。不得因 Python tests PASS 就宣稱 Worker 已上線。
