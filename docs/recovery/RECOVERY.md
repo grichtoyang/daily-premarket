@@ -1110,3 +1110,21 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 2. 修正發現的 schema 或推論錯誤，重跑 CI。
 3. 交付最新 Artifact 給使用者手機驗收五組解析文字、圖表一致性、換行及重疊。
 4. 通過後再進行 42 區塊全頁總驗收；B 區 0.01 億元精度差仍待原始值對帳。未經使用者明確授權不得 merge／deploy。
+
+
+## 2026-11-03 Artifact 抽查與解析邊界修正（CI 待確認）
+- 已下載 Run 41563655940 / Artifact 13197767563，解壓後確認驗收目標為 `p0/v9-pro-20261102.html` 與 `p0/data-20261102.json`；manifest 日期 20261102。HTML 內嵌 `window.DASHBOARD_DATA` 與獨立 JSON 完全相同；Artifact 來源 HEAD 為 `0a397dc3e2c4e13e1bdb5149c6e1a679e206a284`。
+- 以 Artifact 真實 JSON 執行原版 `v9ProSynthesisAnalysis()`，五組實際解析與資料核對：日收 45,301、夜收 44,433、夜盤變化 -868 點、夜盤量占比 37.45%、外資夜盤 +1,365 口；現價 44,920.14 位於 PutWall 44,000／CallWall 48,000 之間；Bias 24、14/17 有效因子、淨貢獻 -26.04；相關矩陣 8×8，最強正相關 +0.85、負相關 -0.89；交易計畫為區間內不追價。
+- Artifact 邊界情境檢查發現三個問題並已在工作分支修正：①夜盤低點／日收缺值時，舊解析仍輸出包含「缺值」的價位觸發句；②零值 PutWall 可能在敘述／交易計畫中被當成有效牆位，與 Pth() 的正值有效性規則不一致；③相關矩陣非方陣或係數超出 [-1,1] 時，舊邏輯仍可能宣稱 NxN 並讓圖表嘗試繪製。
+- 已修改 `templates/v9-pro-react-template.html`：價格欄位以正值有效性判斷，零值流量／OI 仍保留為有效 0；缺少夜盤低點或日盤收盤時停止產生價位觸發句；情境位置、交易計畫與 Pth() 使用一致的有效價位規則；新增共用 `v9ProCorrelationMatrixReady()`，熱圖與解析文字共用方陣／有限值／[-1,1] 驗證。
+- 已修改 `tests/test_react_template_static.py`：增加缺值、零值、錯誤相關矩陣及圖表／文字共用驗證條件。
+- 修正 commits：Template `a0212f191a96a918c4e96e0eb0ff7b787a496cbc`；測試 `0e59d8cc4350137facdb6924300ad0f25c42928a`。兩檔已讀回 GitHub 工作分支確認新內容存在。
+- **新修正版本 CI：NOT TESTED／BLOCKED**。目前可用 GitHub 連線只提供 PR-triggered workflow runs 查詢，不提供 push-triggered run 清單或 workflow dispatch；新 commit 的 combined status 回傳空 statuses，不能視為 PASS。不得用舊 Run 41563655940 代替新版本 CI 證據。
+- 新修正版本 Artifact 與手機畫面：NOT TESTED。舊 Artifact 僅用於發現問題，不可交付作為修正版手機驗收。
+- 未 merge／deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步（唯一工作）
+1. 先確認工作分支 HEAD `0e59d8cc4350137facdb6924300ad0f25c42928a` 是否已有新的 GitHub Actions run；若有，檢查完整 build job，必須 SUCCESS。
+2. 若未觸發或無法查詢，需取得該 HEAD 對應的新 Run ID；不可用舊 Run 41563655940 代替。
+3. 新 CI PASS 後下載新 Artifact，重新核對 HTML／JSON、五組解析及缺值／零值／反向情境；再交付手機驗收。
+4. 手機 PASS 後才進入 42 區塊全頁驗收；B 區 0.01 億元精度差仍待原始值對帳。未經明確授權不 merge／deploy。
