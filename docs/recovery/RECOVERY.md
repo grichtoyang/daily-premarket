@@ -936,3 +936,20 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 確認兩個 CI Run 最終狀態；尤其 Run 41486406787 新增格式測試。
 2. 交付最新 Artifact HTML，確認投信夜淨為 0.00 及整張七欄表格。
 3. 修正後畫面複驗完成才結案；未經使用者授權不 merge／部署。
+
+## 33. 2026-11-03 Artifact 路徑釐清與區塊 B 格式修正交付
+
+- CI Run 41486390048 與 41486406787 均 completed / success；後者包含新增格式靜態測試。
+- Artifact 13163070059 中，根目錄 v9-pro-latest.html 是 Master dashboard；Workflow 會把本次觸發分支產物放在 p0/。正確驗收目標為 p0/v9-pro-latest.html。先前只檢查根目錄而判定 Artifact 不含新版，是路徑選錯，已更正。
+- 正確 P0 HTML 確認新版 B 標題、v9-force-table、instOptForceAnalysis、numeric.toFixed(2)、cellIndex===3||cellIndex===6 均存在。
+- p0/data-20261102.json 的 options.instOptForce 中，投信夜淨原始值為 +0；顯示層轉為 0.00，不修改原始資料。
+- Node.js 格式邏輯 7 組案例全部 PASS（+0、正值、負值、一般數值、文字、null、千分位數值）；HTML 5 個必要標記全數存在。
+- 正確 P0 HTML 已抽取至 /mnt/data/v9-pro-latest-format-fixed.html，供手機複驗。
+- Chromium headless 截圖逾時，無畫面產出；瀏覽器實際渲染及手機排版仍 NOT TESTED。
+- Pages deploy job skipped，未部署；未 merge；Master root 保持不動。
+- 區塊 B 尚未結案，待使用者實際手機檢查修正後 HTML。
+
+### 下一步
+1. 使用者開啟交付 HTML，確認投信夜淨顯示 0.00，並檢查手機表格及分析文字。
+2. 畫面 PASS 後才結案；FAIL 則修正。
+3. 未經明確授權不 merge／deploy。
