@@ -8,7 +8,7 @@ class TWT93USourceTests(unittest.TestCase):
     @patch("src.sources.spot_raw._get_json")
     def test_roc_date_is_converted_to_ad_and_named_fields_are_used(self, get_json):
         get_json.return_value = {
-            "stat": "OK",
+            "stat": "OK", "date": "115/10/30",
             "fields": [
                 "代號", "名稱", "融券前日餘額", "融券賣出", "融券買進",
                 "融券現券", "融券當日餘額", "融券限額",
@@ -31,7 +31,7 @@ class TWT93USourceTests(unittest.TestCase):
     @patch("src.sources.spot_raw._get_json")
     def test_field_order_does_not_change_mapping(self, get_json):
         get_json.return_value = {
-            "stat": "OK",
+            "stat": "OK", "date": "2026/10/30",
             "fields": ["名稱", "借券賣出當日餘額", "代號", "借券賣出前日餘額"],
             "data": [["台積電", "110", "2330", "100"]],
         }
@@ -42,7 +42,7 @@ class TWT93USourceTests(unittest.TestCase):
     @patch("src.sources.spot_raw._get_json")
     def test_missing_semantic_fields_fails_closed(self, get_json):
         get_json.return_value = {
-            "stat": "OK", "fields": ["代號", "名稱", "融券前日餘額"],
+            "stat": "OK", "date": "115/10/30", "fields": ["代號", "名稱", "融券前日餘額"],
             "data": [["2330", "台積電", "10"]],
         }
         result = spot_raw.twse_twt93u_sbl("1151030")
