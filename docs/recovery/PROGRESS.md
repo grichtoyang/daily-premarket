@@ -982,3 +982,14 @@ P1 尚未開始。啟動前必須：
 - 42 區塊全頁稽核：IN PROGRESS（尚未逐項完成）。不可將五區塊驗收擴張為 42 區塊 PASS。
 - 下一步：固定最新 P0 Artifact／T0，盤點 42 區塊，逐一完成來源、DATA_REPORT、Builder／JSON、圖表、解析文字與缺值／反向情境驗證；所有缺陷修正後需重新回歸。
 - 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 2026-11-03 42 區塊稽核基準固定
+- 工作分支 HEAD：`fix/three-market-correlation-history` / `e678877bc076e157c948483d40f136e0f504303e`；Recovery branch HEAD 更新後：待本次寫入後查證。
+- Run `41568208858` completed / success，head_sha 精確匹配；Artifact `13200545155` 已重新下載。
+- 固定稽核資料：P0 Artifact `p0/data-20261102.json` SHA-256 `aaf5cc488a2d86f7abadbe3c9ed0ab05417863ba726c6bcf30dde2caed25a980`；HTML SHA-256 `d98eec6560462a21d63d4df03f8d3bdf950b2442a0d8f1f8de6190b37af28839`；T0 DATA_REPORT SHA `8ccd0dfc0f86f80e23253781bf923a533566df96`。
+- Template SHA `513ecee347f8df931196b46dd7a0f798902fc576`；Builder SHA `c4e49dfcf047cb86bd1592bf2ffdeb3e6121581f`。
+- 防錯：工作分支根目錄 `dashboards/data-20261102.json` SHA `9e2c50907535d6f070a353eca50722d8c5e98aa1`，不是 P0 Artifact JSON，禁止混用。
+- 結構盤點：Artifact JSON 有 48 個 `analysis.cards` 解析鍵；Template 初步找到 34 個主要卡片元件呼叫點及 8 個 KPI 格。與使用者確認的 42 個可見區塊尚未逐項對映，不能以此粗略相加／替代完整清單。
+- 狀態：T0／Artifact／程式版本固定 PASS；42 個可見區塊對映與逐項資料鏈驗證 IN PROGRESS／NOT YET TESTED。
+- 下一步：對照四頁實際 render tree 建立精確 42 項清單，再逐項追蹤 source → DATA_REPORT → Builder → Artifact JSON → chart/table → analysis/judgment/action，測試缺值、零值、反向及單位邊界。
