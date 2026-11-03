@@ -1101,7 +1101,7 @@ P1 尚未開始。啟動前必須：
 ## 2026-11-03 1030／1102 DATA_REPORT 實檔與 Actions 複核
 - `phase2-p0-ui-fixes` 的 10/30 全日報告 SHA `665ae0ce957cbda372a1d70e1f06f0eea124ba11`：夜盤、三大法人 OI、前十大 OI 均有值。
 - `phase2-p0-ui-fixes` 的 11/02 全日報告 SHA `4add0443546bde87309fc1f13396f3a478e60bb0`（2026-11-03 08:55:11）：夜盤、三大法人 OI、前十大 OI 均有值。
-- `master` 的 11/02 全日報告 SHA `38fc2e8a5fe2578e6779ffc11e157fed3e76e8ff`（2026-11-03 12:32:18）：夜盤、OI 均有值；Actions run #98 `41578655028` success。
+- `master` 的 11/02 全日報告 SHA `38fc2e8a5fe2578e6779ffc11e157fed3e76a8ee`（2026-11-03 12:32:18）：夜盤、OI 均有值；Actions run #98 `41578655028` success。
 - Actions run #97 `41556173914` 在 `phase2-p0-ui-fixes` 以 workflow_dispatch 執行，log 證實 `--t0 ""`，自動解析 T0=2026-11-02、session=全日；不能據此推定 11/02 14:35 舊日盤版 run #95 的輸入。
 - 舊分支 `fix/three-market-correlation-history` 的 11/02 14:35 日盤版 SHA `8ccd0dfc0f86f80e23253781bf923a533566df96` 有三法人 OI 全零及期貨行情沿用 10/30 數值。該版本不是 11/03 產出的全日版，不能混版比較。
 - 結論：目前 10/30／11/02 全日 DATA_REPORT 並未缺夜盤／OI；舊日盤版的 OI 零值仍是資料完整性缺陷。Worker `number()` 將空白／dash 轉 0 的風險已確認，但 11/02 原始 HTML 未取到，當次直接成因仍 NOT TESTED。
