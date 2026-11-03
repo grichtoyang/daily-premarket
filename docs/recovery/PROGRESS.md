@@ -964,3 +964,12 @@ P1 尚未開始。啟動前必須：
 - B 區原始精度對帳 PASS；UI 新備註的 CI／Artifact／手機驗收 PENDING；42 區塊總驗收 NOT STARTED。
 - 未 Merge／Deploy；V8／Master 未修改。Auditor 為單模型自我審查。
 - 下一步：確認 Run `41568208858` 結果及 Artifact，檢查 B 區備註與資料 JSON 不變，再手機確認備註可讀性；之後進入 42 區塊總驗收。
+
+
+## 2026-11-03 B 區精度說明 CI／Artifact 結果
+- 最新 HEAD `e678877bc076e157c948483d40f136e0f504303e`；CI Run `41568208858` SUCCESS，HEAD 精確相符。Build PASS、React template 測試 PASS（含新備註斷言）、option force analysis 測試 PASS、Artifact upload PASS、Deploy SKIPPED。
+- Artifact ID `13200545155`，size 1,807,354 bytes，digest `c80d9596a33f77d8f87d9997f50238dcdf5e0cad93ec2725546d2409b8b3f654`。
+- Artifact P0 HTML 314,159 bytes，SHA-256 `d98eec6560462a21d63d4df03f8d3bdf950b2442a0d8f1f8de6190b37af28839`；P0 JSON 62,774 bytes，SHA-256 `aaf5cc488a2d86f7abadbe3c9ed0ab05417863ba726c6bcf30dde2caed25a980`，與原版一致；HTML 內嵌 JSON = 外部 P0 JSON。
+- 新版 HTML 確認有四捨五入說明；手機驗收檔 `v9-pro-20261102-rounding-note.html`。
+- B 區原始數據對帳 PASS；備註／CI／Artifact PASS；最新備註手機可讀性 NOT TESTED；42 區塊總驗收 NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。下一步請使用者手機確認新增備註排版，通過後開始 42 區塊總驗收。
