@@ -1290,3 +1290,15 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 42 區塊完整總驗收：NOT STARTED。
 - 未 Merge／Deploy；V8／Master 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
 - 下一步：等待並檢查 Run `41568208858`；若 PASS，抽查新 Artifact 的 B 區備註及 JSON 不變性，再交付使用者手機確認備註可讀性。通過後進入 42 區塊總驗收。
+
+
+## 2026-11-03 B 區精度說明 CI／Artifact 驗收
+- 最新工作 HEAD：`e678877bc076e157c948483d40f136e0f504303e`。
+- 最新 CI Run：`41568208858`，completed／success，HEAD 精確相符。Build job PASS；React template／scenario contract tests PASS（含新增獨立四捨五入說明斷言）；option force analysis contract tests PASS；Artifact upload PASS；deploy job SKIPPED；Commit generated dashboard history SKIPPED（沒有需要提交的生成歷史變更）。
+- 測試 log 明確顯示 `test_option_force_table_normalizes_amounts_and_signed_net_values ... ok`，React template 測試共 21 tests，OK；其他工作流測試亦均 OK。
+- Artifact ID：`13200545155`，size 1,807,354 bytes，digest `c80d9596a33f77d8f87d9997f50238dcdf5e0cad93ec2725546d2409b8b3f654`。
+- 已下載並解壓 Artifact；P0 HTML `p0/v9-pro-20261102.html` 314,159 bytes，SHA-256 `d98eec6560462a21d63d4df03f8d3bdf950b2442a0d8f1f8de6190b37af28839`；P0 JSON `p0/data-20261102.json` 62,774 bytes，SHA-256 `aaf5cc488a2d86f7abadbe3c9ed0ab05417863ba726c6bcf30dde2caed25a980`（與先前 P0 JSON SHA 相同，資料未被 UI 說明修正改動）。
+- 實際 Artifact HTML 已確認含獨立四捨五入說明；HTML 內嵌 DASHBOARD_DATA 與外部 P0 JSON 完全相同。新手機驗收檔：`/mnt/data/v9-pro-20261102-rounding-note.html`，314,159 bytes。
+- 狀態：B 區原始金額精度對帳 PASS；備註程式／靜態測試／CI／Artifact PASS；最新備註手機可讀性 NOT TESTED。五區塊先前版本手機結構驗收 PASS，但因 B 區新增說明文字，最新 Artifact 的 B 區備註仍需手機複驗。42 區塊總驗收 NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+- 下一步：使用者手機開啟最新 `v9-pro-20261102-rounding-note.html`，檢查 B 區新增備註字級、換行、裁切及是否與圖表／表格重疊。通過後開始 42 區塊完整總驗收。
