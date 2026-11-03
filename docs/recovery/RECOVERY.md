@@ -1072,3 +1072,16 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 從本次 CI Artifact 13197570937 取得新 HTML，確認輸出模板高度為 260px。
 2. 交付新 HTML，請使用者手機確認 8 列均顯示（尤其 Put Wall +0.9）。
 3. 通過後再處理區塊 B 精度差及 42 區塊完整驗收；未授權不 merge/deploy。
+
+ 
+## 41. 2026-11-03 八列因子圖新版 Artifact 抽取完成
+- 已下載 CI Run 41562071919 的 Artifact 13197570937，從 `p0/v9-pro-20261102.html` 抽取新版 HTML。
+- 新檔：`/mnt/data/v9-pro-20261102-factor-chart-8rows-v3.html`，303,829 bytes；SHA-256 `a0cc47e5a566f272438d48fdcae03f5a4dfa837affdf29b54f9a3626e15e7bba`。
+- 抽查實際 Artifact HTML：因子圖設定為 `height:260`，原 `height:240` 已不存在；確認新版 build 使用修正後 Template。
+- 同一 Artifact 的 `p0/data-20261102.json` 核對：17 個 factor_details，其中 14 個 active 且 contribution 為有限數字。依絕對值排序前 8：外資現貨 -7.1429、美股費半 -7.1429、夜盤 -4.7619、PCR -3.3333、現貨趨勢 -1.9345、投信 +1.7857、MACD -1.7857、Put Wall +0.8929。新版 260px 高度依 mf 列高公式可容納 8 列。
+- 下載 HTML 已可交使用者手機驗收；實際手機視覺仍 NOT TESTED。未 merge/deploy；B 區精度差與 42 區塊總驗收仍未完成。
+ 
+### 下一步
+1. 使用者手機開啟 `v9-pro-20261102-factor-chart-8rows-v3.html`，確認 8 列包含 Put Wall +0.9 全部可見、無重疊。
+2. 通過後處理區塊 B 0.01 億元精度差，接著執行 42 區塊總驗收。
+3. 未經授權不 merge/deploy。
