@@ -821,3 +821,17 @@ P1 尚未開始。啟動前必須：
 1. 手機驗收新版因子貢獻圖：中文名稱、紅負綠正、Bias 24 偏空語意一致，無重疊。
 2. 通過後處理 B 區 0.01 億元精度差，再做全頁最終驗收。
 3. 未經使用者明確授權不 merge／deploy。
+
+ 
+## 22. 2026-11-03 因子方向貢獻圖空白修正
+- 手機驗收上一版因子圖空白，FAIL。根因：綜合分析頁 y2 解構 `options:l`、`analysis:u`，圖表卻讀 `l.factor_details`；正確來源是 `u.factor_details`，導致空陣列。
+- Template 已修正圖表資料 filter 及缺失因子名稱 lookup 均讀 `u.factor_details`；靜態測試改為明確斷言正確來源。
+- CI Run 41561549286 / commit c97b970dd29fc05664fbdb2b251b7f4ef6735f3e SUCCESS；JS 4 scripts PASS；React template 因子圖測試 PASS；Artifact 13196699558 上傳成功，deploy skipped。
+- Artifact 實際 HTML 已抽查，確認使用 `u.factor_details`；注入資料 14 個有效因子，前 8 貢獻值：外資現貨 -7.1429、美股費半 -7.1429、夜盤 -4.7619、PCR -3.3333、現貨趨勢 -1.9345、投信 +1.7857、MACD -1.7857、Put Wall +0.8929。
+- 新 HTML `/mnt/data/v9-pro-20261102-factor-contrib-fixed-v2.html`，303,829 bytes，SHA-256 `0dc550e7a6adb19e324fa1ed7af7308605a614092c061d9beda8ce1dc886bf72`。
+- 狀態：程式／CI／Artifact 靜態資料來源核對 PASS；手機視覺 NOT TESTED；未 merge/deploy；Master/V8 未修改；B 區 0.01 億元精度差未結案。
+ 
+### 下一步
+1. 手機複驗 fixed-v2 因子圖是否實際出現 8 條正負貢獻。
+2. 通過後處理 B 區 0.01 億元精度差，再執行 42 區塊最終驗收。
+3. 未授權不 merge/deploy。
