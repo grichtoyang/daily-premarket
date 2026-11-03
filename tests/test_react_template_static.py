@@ -228,6 +228,57 @@ console.log("scenario paths 6/6 PASS");
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("scenario paths 6/6 PASS", result.stdout)
 
+
+    def test_synthesis_narratives_are_derived_from_live_data(self):
+        self.assertIn("function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis})", self.html)
+        for binding in (
+            "analysis:narrative.night", "analysis:narrative.scenarios",
+            "analysis:narrative.factors", "analysis:narrative.correlation",
+            "analysis:narrative.trade",
+        ):
+            self.assertIn(binding, self.html)
+        self.assertNotIn("站上${g(l.gammaWall)}偏多，跌破${g(l.putWall)}追空", self.html)
+        start = self.html.index("function v9ProSynthesisAnalysis(")
+        end = self.html.index("function y2(", start)
+        function_source = self.html[start:end]
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node.js is required for synthesis narrative runtime tests")
+        fixture = {
+            "day": {"c": 45301, "vol": 73987},
+            "night": {"c": 44433, "vol": 44305, "l": 44200},
+            "futures": {"foreign_night": 1365, "foreign_oi": 0},
+            "spot": {"close": 44920},
+            "options": {"putWall": 44000, "callWall": 48000, "gammaWall": None, "flip": None},
+            "analysis": {
+                "bias": 24, "regime": "偏空",
+                "factor_quality": {"active_count": 14, "confidence": "high", "missing_factors": ["gex", "yield"]},
+                "factor_details": [
+                    {"key":"spot_trend","name":"現貨趨勢","status":"active","contribution":-1.9},
+                    {"key":"foreign_spot","name":"外資現貨","status":"active","contribution":-7.1},
+                    {"key":"trust","name":"投信","status":"active","contribution":1.8},
+                    {"key":"gex","name":"GEX","status":"disabled","contribution":0},
+                    {"key":"yield","name":"殖利率","status":"disabled","contribution":0},
+                ],
+                "correlation": {
+                    "labels": ["現貨","外資現貨","費半"],
+                    "matrix": [[1,0.85,-0.64],[0.85,1,-0.46],[-0.64,-0.46,1]],
+                    "desc": "日期對齊樣本矩陣"
+                }
+            }
+        }
+        script = "const fixture=" + __import__("json").dumps(fixture, ensure_ascii=False) + ";\n" + function_source + """
+const out=v9ProSynthesisAnalysis(fixture);
+if(!out.night.compass.includes("背離")) throw Error("night flow/price divergence not identified");
+if(!out.scenarios.compass.includes("區間條件：成立")||!out.scenarios.compass.includes("偏多價格條件：未成立")) throw Error("scenario status not derived from levels");
+if(!out.factors.look.includes("正向貢獻合計")||!out.factors.look.includes("外資現貨")) throw Error("factor contribution summary missing");
+if(!out.correlation.look.includes("現貨／外資現貨 +0.85")||!out.correlation.look.includes("現貨／費半 -0.64")) throw Error("strongest correlation pairs not identified");
+if(!out.trade.target.includes("區間內不追價")) throw Error("trade plan does not respect current range");
+console.log("synthesis narrative fixture PASS");
+"""
+        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("synthesis narrative fixture PASS", result.stdout)
+
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
