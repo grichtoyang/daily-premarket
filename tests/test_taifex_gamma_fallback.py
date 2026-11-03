@@ -35,9 +35,9 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
             "detail": "TWSE FMTQIK HTTP 503",
             "data": {"reason": "TWSE FMTQIK HTTP 503"},
         }
-        with patch("src.sources.taifex.requests.get", return_value=response), \\
-             patch("time.sleep", return_value=None):
-            payload = _get("options-gamma-levels", "2026-10-30")
+        with patch("src.sources.taifex.requests.get", return_value=response):
+            with patch("time.sleep", return_value=None):
+                payload = _get("options-gamma-levels", "2026-10-30")
 
         self.assertIsNone(payload)
         diagnostic = _LAST_FETCH_ERRORS["options-gamma-levels"]
@@ -55,9 +55,9 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
             "error": "GEX unavailable",
             "data": {"reason": "No common Chain/Delta expiry"},
         }
-        with patch("src.sources.taifex.requests.get", return_value=response), \\
-             patch("time.sleep", return_value=None):
-            payload = _get("options-gamma-levels", "2026-10-30")
+        with patch("src.sources.taifex.requests.get", return_value=response):
+            with patch("time.sleep", return_value=None):
+                payload = _get("options-gamma-levels", "2026-10-30")
 
         self.assertIsNone(payload)
         diagnostic = _LAST_FETCH_ERRORS["options-gamma-levels"]
