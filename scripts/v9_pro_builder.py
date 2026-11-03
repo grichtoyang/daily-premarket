@@ -740,7 +740,7 @@ def parse_data_report(report_path):
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張",None)
     sbl_sold_balance=get_value(r"\| 借券賣出餘額 \| ([0-9,]+) \| 張",None)
     sbl_sold_change=get_value(r"\| 借券賣出增減 \| ([-\\+0-9,]+) \| 張",None)
-    sbl_scope_row=re.search(r"\\|\\s*借券賣出增減\\s*\\|[^|]*\\|[^|]*\\|\\s*([^|]+)\\|",text)
+    sbl_scope_row=re.search(r"\|\s*借券賣出增減\s*\|[^|]*\|[^|]*\|\s*([^|]+)\|",text)
     sbl_scope_source=sbl_scope_row.group(1).strip() if sbl_scope_row else ""
     has_listed_scope=("上市" in sbl_scope_source and ("TWT93U" in sbl_scope_source or "上市" in sbl_scope_source))
     has_otc_scope=("上櫃" in sbl_scope_source and ("S47" in sbl_scope_source or "TPEX" in sbl_scope_source or "上櫃" in sbl_scope_source))
