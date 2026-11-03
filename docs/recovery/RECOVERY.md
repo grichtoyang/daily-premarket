@@ -1856,3 +1856,8 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - TWSE TWT93U 20261030 JSON 嘗試讀取遭查詢環境 Internal Error／DNS resolution failure；標記 BLOCKED（環境限制），不是官方 API 失效結論。目標日 response 尚未取得。
 - TPEX 官方歷史 SBL 查詢頁提供日期選擇及 CSV 下載介面；但 E-Shop 對 Margin_SBL.csv 列為每日訂閱商品（22:00 產製；內部 NT$1,000/月、外部 NT$1,500/月，並有使用限制）。公開網頁 CSV 下載是否可合法供 workflow 自動化，以及與訂閱商品的授權界線，仍未確認。
 - TPEX S47 exact JSON property mapping 及 20261030 同日 CSV/JSON 對照仍 NOT TESTED；禁止依欄位名稱推測直接改 mapping。
+## 2026-11-03 TWT72U 範圍口徑補查
+
+- TWSE 投資人教育資料定義借券餘額＝借入尚未返還，並將借券賣出餘額、融券餘額列為不同指標。
+- TWT72U 欄位含系統別及市場別；TWSE 官方儀表板又分別呈現證交所借券系統、證商／證金營業處所及借券餘額合計。因此必須核對分類 selectType、系統別覆蓋與合計規則，不能未經對照便認定單一 TWT72U 分類可代表全市場合計。
+- TWT72U 指標定義正確，但資料覆蓋範圍、分類參數、重複列風險、workflow 取得方式與授權仍 NOT TESTED。
