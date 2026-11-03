@@ -1299,3 +1299,13 @@ P1 尚未開始。啟動前必須：
 3. 擷取 TPEX `tpex_margin_sbl` 真實 Date 值樣本，再實作可辨識格式的日期正規化；同時檢查 TPEX highlight／margin 的 Date 比對是否同類問題。
 4. 對無日期 TWT96U／MI_MARGN 歷史回補設 fail-closed 規則；TWT96U 指標名稱需與官方「當日可借券賣出限額」一致，不得稱為借券餘額。保留舊 T0 已驗證值時，來源與日期必須明確標註。
 5. 完成後只在工作分支執行 CI／實際 endpoint 驗證；先抽查 10/30 與 11/02 全日報告，再決定是否需要歷史報告重建。未經明確授權不 Merge／Deploy；Master／V8 不動。
+
+
+## 2026-11-03 DATA_REPORT protect 第一階段修正已提交（CI 待確認）
+- 工作分支 phase2-p0-ui-fixes：先前 HEAD 581a808d6db6bea50a971f74a00b695ffbe8b509；最新 HEAD 1e15691a1c0964f626786779561e702fde3c7bee。
+- src/fetch_data.py commit 9a576b97bfbc9030308a68eac07546abad9f1cc2，blob SHA cd33a860f27d4d7d3bd3a7289174c42e8e9fadf6：新增 _should_protect_existing_data_report(data_report_exists, force_rewrite)；只要 DATA_REPORT 已存在且未指定 --force-rewrite 就進入 protect，不再依賴 reports/Daily_REPORT 是否存在。更新模式 log 明確標示需 --force-rewrite 才可覆蓋。
+- tests/test_dashboard_unit_contract.py commit／最新 HEAD 1e15691a1c0964f626786779561e702fde3c7bee，blob SHA 0b9a6142aebfafc7f5e9f1b2bcc6f7a3f101fae9：新增測試覆蓋既有 DATA_REPORT、無 force → protect；有 force → 不 protect；沒有既有 DATA_REPORT → 不 protect。
+- GitHub compare 581a808... → 1e15691... 僅兩檔變更：src/fetch_data.py、tests/test_dashboard_unit_contract.py。兩檔均從 GitHub 讀回，確認 helper／測試存在，舊 has_report = bool(...reports/Daily_REPORT...) 判斷已移除。
+- CI：GitHub combined status 查詢回傳空 statuses；目前可用 GitHub 工具無 push-triggered workflow run 清單／dispatch 能力。故新 commit CI = NOT TESTED／BLOCKED，不能宣稱測試 PASS。
+- 尚未修正 TWT93U 日期、TPEX Date、TWT96U 歷史快照／指標語義；10/30 報告未重跑；未 Merge／Deploy；Master／V8 未修改。
+- 下一步：取得 commit 1e15691... 對應 CI Run 並核對 unit-contract-audit／test-v9-ui-fixes；PASS 後再進行 TWT93U／TPEX 日期修正與無日期快照隔離。
