@@ -1094,3 +1094,19 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 下一工作回到 B 區 0.01 億元精度差：日盤外資多方 11.36、空方 11.17、淨額 +0.18。顯示值相減為 +0.19，可能是各欄獨立四捨五入造成，但目前 artifact JSON 只有格式化字串，原始未四捨五入值尚未取得，不能先判定為單純 rounding。
 - 先追溯 TAIFEX Proxy options-day-call-put 原始 long_amount / short_amount（千元）及金額彙總路徑，使用未格式化值重算：多方、空方、淨額各自獨立換算億元與四捨五入；核對淨額是否以原始多方－空方計算。若原始值可支持 +0.18，記錄為正常四捨五入差異並補充 UI 註記；若不能，修正資料計算鏈及測試。不得為了讓顯示相減相等而把淨額改成顯示值相減。
 - 未 merge／部署；Master／V8 未修改；42 區塊總驗收未完成。
+
+
+## 2026-11-03 工作快照：其他區塊解析文字動態化
+- 使用者要求延續 A／B 區塊解析文字的處理方式，檢查其餘區塊解析是否能接受；不可只潤飾文字，必須由同一份當日 Dashboard data 推導，與圖表、價位、單位及缺值狀態一致。
+- 工作分支 `fix/three-market-correlation-history`，HEAD `0a397dc3e2c4e13e1bdb5149c6e1a679e206a284`。修改 Template `templates/v9-pro-react-template.html` 及測試 `tests/test_react_template_static.py`。
+- Template 新增 `v9ProSynthesisAnalysis()`，動態產生五組解析：C 日夜盤劇本、三劇本路徑、多空因子方向貢獻、相關性熱圖、交易計畫。內容包括日夜價格與外資流量同向／背離、三劇本價位條件狀態、正負因子貢獻加總與缺失因子、最強正負相關配對及相關不代表因果、交易計畫按有效關鍵位與價格確認而非只靠 Bias。
+- 相關 commits：`bfafaec57521744d91e52a2dc49d87a2175350a1`、`57166c2b92a5baae030ced64eca43a321ed145dd`、`0b3f51959a7b93590ca178e5f8e2fd5bbca3e2a8`、`0a397dc3e2c4e13e1bdb5149c6e1a679e206a284`。
+- 最新 CI Run `41563655940` 對應 HEAD `0a397dc...`，整體 SUCCESS；build job 的 React Template／三劇本契約、資料流程、歷史 DATA_REPORT correlation replay、Dashboard build、Golden Master 注入、Golden Fixture inline JavaScript 驗證及 Pages Artifact upload 均 SUCCESS。Deploy job SKIPPED，因工作分支未部署。
+- 最新 CI 成功只代表自動化檢查通過；Artifact 五組解析實際注入值／最終 HTML 抽查與手機畫面驗收尚未執行，狀態 NOT TESTED。先前三次 CI failure 是中間 commits；最新 HEAD 的 CI 已成功。
+- 未 merge／部署；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 恢復後下一步
+1. 抽查 Run `41563655940` Artifact，核對 Template ref、資料注入、五組解析與當日 JSON 一致；用實際資料及缺值／零值／反向 fixtures 驗證。
+2. 修正發現的 schema 或推論錯誤，重跑 CI。
+3. 交付最新 Artifact 給使用者手機驗收五組解析文字、圖表一致性、換行及重疊。
+4. 通過後再進行 42 區塊全頁總驗收；B 區 0.01 億元精度差仍待原始值對帳。未經使用者明確授權不得 merge／deploy。
