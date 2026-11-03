@@ -973,3 +973,12 @@ P1 尚未開始。啟動前必須：
 - 新版 HTML 確認有四捨五入說明；手機驗收檔 `v9-pro-20261102-rounding-note.html`。
 - B 區原始數據對帳 PASS；備註／CI／Artifact PASS；最新備註手機可讀性 NOT TESTED；42 區塊總驗收 NOT STARTED。
 - 未 Merge／Deploy；Master／V8 未修改。下一步請使用者手機確認新增備註排版，通過後開始 42 區塊總驗收。
+
+
+## 2026-11-03 最新手機驗收與 42 區塊總稽核
+- B 區四捨五入說明手機可讀性：PASS；文字完整、無截斷／重疊／遮蓋。字體偏小但放大可辨識，列為非阻斷改善項。
+- 本輪五區塊（B 精度說明、C 夜盤劇本、三劇本路徑、多空因子方向貢獻、相關性熱圖、交易計畫）手機畫面未見重疊、裁切或單位碰撞：PASS。
+- CI Run 41568208858、Artifact 13200545155、資料 JSON 未變更之核對結果沿用前節：PASS；Deploy SKIPPED。
+- 42 區塊全頁稽核：IN PROGRESS（尚未逐項完成）。不可將五區塊驗收擴張為 42 區塊 PASS。
+- 下一步：固定最新 P0 Artifact／T0，盤點 42 區塊，逐一完成來源、DATA_REPORT、Builder／JSON、圖表、解析文字與缺值／反向情境驗證；所有缺陷修正後需重新回歸。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
