@@ -1309,3 +1309,44 @@ P1 尚未開始。啟動前必須：
 - CI：GitHub combined status 查詢回傳空 statuses；目前可用 GitHub 工具無 push-triggered workflow run 清單／dispatch 能力。故新 commit CI = NOT TESTED／BLOCKED，不能宣稱測試 PASS。
 - 尚未修正 TWT93U 日期、TPEX Date、TWT96U 歷史快照／指標語義；10/30 報告未重跑；未 Merge／Deploy；Master／V8 未修改。
 - 下一步：取得 commit 1e15691... 對應 CI Run 並核對 unit-contract-audit／test-v9-ui-fixes；PASS 後再進行 TWT93U／TPEX 日期修正與無日期快照隔離。
+
+
+## 2026-11-03 資料層第二輪：借券指標語義與歷史日期可用性稽核
+
+### 新增確認的重大資料模型錯誤
+1. **TWT96U 被當成借券餘額：CONFIRMED FAIL。** TWSE 官方商品頁明確定義 TWT96U 為「當日可借券賣出股數」，每交易日約 22:30 產出，欄位是「本日可借券賣出限額」，不是已借入尚未返還的借券餘額。官方來源：https://eshop.twse.com.tw/zh/product/detail/57d33ebcf0e54c2187d06dd23e793096 。目前 `spot_raw.sbl_tw()` 讀取 `/SBL/TWT96U` 的 `TWSEAvailableVolume`／`GRETAIAvailableVolume`；`spot.build()` 卻把它們加上 TPEX `SecuritiesBorrowingBalanceOfTheMarketDay`，輸出為 `sbl.bal`／「借券餘額」。這是不同指標混加，必須停止這種計算。
+2. **TWT96U 沒有歷史 T0 參數：CONFIRMED。** 目前 `sbl_tw()` URL 固定 `/SBL/TWT96U`，無 date 參數；官方資料為每日 22:30 產生的當日可借券賣出限額。歷史重跑 2026-10-30 時取到的是執行當下最新快照，不能回填歷史日期。
+3. **TWSE 正確「借券餘額」資料產品是 TWT72U：官方定義已確認，程式接入尚未測試。** TWSE 官方商品頁說明 TWT72U 是「借券餘額表」，包含前日餘額、今日新增借券、今日還券、今日借券餘額及資料日期；每日約 20:30 產出。官方來源：https://eshop.twse.com.tw/zh/product/detail/8247357531294f4ab139f64c96394096 。這與 TWT96U 完全不同。TWT72U 可作為上市／上櫃借券餘額候選正確來源，但需先確認 RWD 歷史查詢路徑、selectType 市場分類及授權／回傳結構，不能直接假設可用。
+4. **借券賣出餘額與借券餘額亦不同。** TWSE 官方定義借券餘額是已借入未返還；借券賣出餘額是已借入並賣出、尚未回補。TWT93U 是融券／借券賣出餘額總量管制資料，不是 TWT72U 借券餘額。官方定義：https://wwwc.twse.com.tw/zh/products/sbl/disclosures/info.html 。TPEX 的 Margin_SBL 文件亦明列融券與借券賣出欄位，借券賣出餘額公式為前日餘額＋當日賣出－當日還券＋當日調整：https://www.tpex.org.tw/storage/regular_system/新版收市後交易資訊格式說明(V1.33版).pdf 。
+5. **10/30 報告欄位值與來源註記不可信任：CONFIRMED provenance mismatch。** 舊版 10/30 報告（blob `665ae0ce957cbda372a1d70e1f06f0eea124ba11`）列「借券餘額」4,651,514 張，來源註記 `TWSE TWT93U + TPEX margin_sbl`；重跑版（blob `61b5a8799bec62762a60d5efb3f1099c18084fc5`）列 2,525,111 張，來源註記 `TWSE TWT96U + TWT96U GRETAI（上櫃）`。前者來源註記本身也不是正確的借券餘額來源（TWT93U 為借券賣出餘額類），後者則明確是可借券賣出限額。不能把任一數值直接視為正確歷史借券餘額；此欄應標為資料模型錯誤，先撤除錯誤混算，再選定正確來源。
+
+### TWT93U parser 需升級為高優先待核項
+- 官方 TWT93U 商品欄位順序包含：代號、名稱、融券前日餘額、融券賣出、融券買進、融券現券、融券當日餘額、融券限額、借券賣出前日餘額、借券賣出當日賣出、借券賣出當日還券、借券賣出當日調整、借券賣出當日餘額、次一營業日可借券賣出限額、備註／狀態。官方商品說明：https://eshop.twse.com.tw/zh/product/detail/000000006e0bbe8d016f181acc1f0321 。
+- 目前 `twse_twt93u_sbl()` 註解稱借券欄位在 `data[i][7..13]`，程式實際使用 `row[7]` 當前日借券餘額、`row[11]` 當日借券餘額。若 API data row 依 15 欄 `fields` 原順序回傳，這兩個 index 很可能偏移一欄（正確借券前日餘額應在 index 8，借券當日餘額應在 index 12）。但本次尚未取得有效 JSON `fields`／data row，故 **INDEX OFF-BY-ONE = HIGH RISK / NOT CONFIRMED**；不可直接修 index，必須先保存實際 response 並依 `fields.index()` 對欄名取值。
+- 日期參數已由 Run log 證實傳入 ROC `1151030` 被拒絕（stat: 查詢日期小於94年7月1日）；應測試西元 `YYYYMMDD` `20261030`，並核對回傳 `date` 是否等於請求日期。
+
+### 其他歷史 T0 日期污染面盤點
+- `spot_raw.margin_tw()`：TWSE MI_MARGN URL 無日期參數，程式註解明確標記無日期欄、採最新；不能用於歷史 T0。
+- `spot_raw.sbl_tw()`：TWT96U 無日期參數、最新快照；歷史 T0 禁用。
+- `spot_raw.tpex_highlight()`：只取 TPEX API 回傳 `j[0]`，再與指定 ROC T0 比較；歷史 T0 若 API 只供最新日，將無法回補。需檢查回傳日期與歷史端點。
+- `spot_raw.tpex_margin()`、`tpex_sbl()`：只抓當前 OpenAPI 列表並嚴格比較 `str(Date) == roc`。Run log 已顯示 tpex_margin_sbl 932 rows、matched_date_rows=0。必須取得原始 `Date` 樣本，確認其格式（例如是否含斜線）後做標準化；若 API 只回最新日期，不能靠正規化解決歷史查詢，需改用 TPEX 歷史 afterTrading 查詢或可信歷史資料。
+- `spot_raw.turnover_tw()`：FMTQIK 無日期參數，僅掃描回傳列表找指定 ROC 日期；若回傳月份資料集合可正常找到，否則需記錄其實際覆蓋範圍；不得在缺列時採最新值。
+- `twse.get_institutional(query_date)`：Proxy 與 RWD BFI82U 均傳西元日期，這條路徑有歷史日期參數；`spot.build()` 在回傳 date 不等於 T0 時仍註記「採用最新可得」，這個 fallback 對歷史報告不可接受，應改成 date mismatch -> unavailable。
+- `twse_proxy.fetch(date8)`、`histock.get(t0)`、`finmind.taiex_ohlc(t0)` 已見明確傳入 T0 的日期型介面；仍須以 response 日期／資料列日期核對，不能僅因參數存在就當成歷史命中。
+
+### 下一步決策（先資料契約，不先亂改 API）
+1. 將借券欄位拆成三個獨立語義：`sbl_borrow_balance`（借入未還，候選 TWT72U）、`sbl_short_sale_balance`（借券賣出未回補，TWSE TWT93U + TPEX Margin_SBL）、`sbl_shortable_limit`（當日可借券賣出限額，TWT96U）。禁止跨指標相加。
+2. 先驗證 TWT72U 歷史 API：日期參數、`selectType`、資料日期、上市／上櫃範圍、欄位名稱及資料授權；若 API 無法取得歷史，借券餘額欄不得填入假值，應 unavailable。
+3. 修 TWT93U 時先取得 `fields`／`data` 真實 response；用欄名對 index，不使用硬編碼猜測。日期改西元 YYYYMMDD 後確認 2026-10-30 回傳日期。
+4. 取得 TPEX `tpex_margin_sbl` 原始 Date 與欄位 sample；確認 endpoint 是否只供最新日，再決定 historical route。對 `tpex_margin`、`tpex_highlight` 同步檢查。
+5. 歷史資料來源無日期／日期不匹配，一律 fail closed，不得用最新快照冒充 T0。完成上述資料契約前，不重跑 10/30 DATA_REPORT，不把任何借券欄位標 PASS。
+
+### 狀態更新
+- TWT96U 語義及歷史無日期污染：FAIL／CONFIRMED。
+- TWT96U 與 TPEX 借券餘額混加：FAIL／CONFIRMED。
+- TWT72U 為官方借券餘額產品：PASS（官方定義），API 接入 NOT TESTED。
+- TWT93U 日期參數 ROC 錯誤：FAIL／CONFIRMED by run log；西元修正後未測。
+- TWT93U row index：HIGH RISK／NOT CONFIRMED。
+- TPEX Date 0 matched：CONFIRMED by run log；具體格式／歷史查詢能力 BLOCKED。
+- MI_MARGN 歷史 T0 無日期：FAIL／CONFIRMED。
+- 本輪僅程式／報告唯讀稽核及官方文件查核；未改程式、DATA_REPORT、workflow、DB，未 Merge／Deploy。
