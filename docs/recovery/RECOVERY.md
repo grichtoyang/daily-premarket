@@ -1843,3 +1843,11 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 官方 S47 不含「借入未返還」的借券餘額欄；真正借券餘額要另用 TWT72U。TWT96U 是可借券賣出限額，不能用於任何餘額欄。
 - 這項發現比單純修 TWT93U 更重要：即使把 TWT93U 修正，現行 TPEX 的 `sbl.bal`／`sbl.sale_bal` mapping 仍會污染兩個彙總值。因此在 TPEX schema 對照完成前，不能重建 10/30 DATA_REPORT。
 - 本輪未修改程式／資料／workflow，未重跑報告，未 Merge／Deploy。詳細證據見 PROGRESS.md「資料層第五輪」。
+
+## 2026-11-03 P0 Quality 清查回溯稽核補充
+
+- phase2-p0-data-quality HEAD 49fd5b0dfd6a9c1b89fc49bb6e4d81ae5fdc4d33 的 spot_raw.py／spot.py 仍有 TWT96U 指標誤用及 TWT93U row[7]/row[11] 欄位錯誤；DATA_SOURCES.md 甚至將 TWT96U 寫為「可借餘額」並標示通過。
+- 該分支 tests/ tree 未見 TWT93U、TWT96U、TPEX S47 的原始 response fixture／欄位 mapping 專項測試；現有專項測試集中於維持率、Builder、workflow isolation、Gamma 等。
+- 因此「P0 Quality 已完成數據真實性全面清查」目前無法由 repo 證據支持；更精確的結論是資料可用性／維持率／workflow 等部分品質工作確有實作，但資料來源定義、借券欄位語義及端到端日期真實性驗收存在重大缺口。
+- 本結論是對 repo 留存證據的回溯稽核，不代表已取得當初所有外部稽核紀錄；不得宣稱已還原所有歷史驗收活動。
+- 未改程式或報告，未重跑 10/30，未 merge／deploy，master／V8 未動。
