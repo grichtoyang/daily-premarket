@@ -1198,6 +1198,16 @@ def _norm_t0_arg(s: str) -> str:
     return s
 
 
+def _should_protect_existing_data_report(data_report_exists: bool, force_rewrite: bool) -> bool:
+    """An existing DATA_REPORT is itself the T0 freeze object.
+
+    A Daily_REPORT may not exist for a T0; its absence must never disable
+    protection of an already-published DATA_REPORT. Explicit --force-rewrite
+    is the only opt-in to replacing existing values.
+    """
+    return bool(data_report_exists and not force_rewrite)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="", help="報告日期 YYYY-MM-DD，預設今天 (Asia/Taipei)")
@@ -1247,13 +1257,11 @@ def main() -> None:
             "\n- 註記：--force-rewrite 明示覆蓋（人工指定）\n- 未取得欄位 (",
             1)
     if out.exists():
-        has_report = bool(list((ROOT / "reports").glob(
-            f"Daily_REPORT_{t0.replace('-', '')}_*.md")))
-        protect = has_report and not args.force_rewrite
+        protect = _should_protect_existing_data_report(out.exists(), args.force_rewrite)
         if protect:
-            print("[INFO] 同 T0 保護模式：已有報告，沿用前版")
+            print("[INFO] 同 T0 保護模式：DATA_REPORT 已存在（不依賴 Daily_REPORT 是否存在）")
         else:
-            print("[INFO] 同 T0 覆蓋模式：尚無報告，以本次抓取為準")
+            print("[INFO] 同 T0 覆蓋模式：--force-rewrite 明示覆蓋")
         try:
             old_text = out.read_text(encoding="utf-8")
             new_text, _filled = merge_same_t0(old_text, new_text, session, protect=protect)
