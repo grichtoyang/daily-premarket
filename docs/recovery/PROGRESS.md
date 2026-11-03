@@ -864,3 +864,21 @@ P1 尚未開始。啟動前必須：
 - 下一項：追查區塊 B 外資日盤多方 11.36、空方 11.17、淨額 +0.18 億元的 0.01 差異。先取 TAIFEX Proxy 原始千元 long_amount / short_amount 未格式化值，重算並確認是否獨立四捨五入；目前僅有格式化 JSON 字串，原因仍 NOT TESTED。
 - 不得未查原始值就判定 rounding；若屬正常獨立四捨五入，補註而非強制改算式；若不符，修正資料鏈與測試。
 - 未 merge／部署；42 區塊總驗收未完成。
+
+
+## 26. 2026-11-03 其他區塊解析文字動態化（進行中，尚未手機驗收）
+- 使用者要求延續 A／B 區塊解析文字修正經驗，全面檢查其餘區塊解析；解析必須由當日 Dashboard data 推導，與圖表、價位及缺值狀態一致。
+- 工作分支：`fix/three-market-correlation-history`；目前 HEAD：`0a397dc3e2c4e13e1bdb5149c6e1a679e206a284`。
+- 變更檔案：`templates/v9-pro-react-template.html`、`tests/test_react_template_static.py`。新增 `v9ProSynthesisAnalysis()`，將五組解析改為動態推導：C 日夜盤劇本、三劇本路徑、多空因子方向貢獻、相關性熱圖、交易計畫。
+- 日夜盤解析交叉判讀日夜收盤、成交量占比、外資夜盤淨交易及 OI；三劇本依現價與 Put／Call Wall、Gamma Flip／Wall 有效性列出條件成立與否；因子解析計算正負及淨貢獻、主要因子與缺失因子；相關性解析辨識最強正負配對並說明不代表因果；交易計畫依價格位置及關鍵位給出條件式觀察，不單靠 Bias 產生追價指令。
+- 修改 commits：Template `bfafaec57521744d91e52a2dc49d87a2175350a1`；解析測試 `57166c2b92a5baae030ced64eca43a321ed145dd`；Template 修正 `0b3f51959a7b93590ca178e5f8e2fd5bbca3e2a8`；最新測試修正 `0a397dc3e2c4e13e1bdb5149c6e1a679e206a284`。
+- CI Run `41563655940`，HEAD 與工作分支一致，整體 SUCCESS。Build job 中 Template source/ref、資料來源與分類測試、三市場情境、React Template／三劇本契約、選擇權法人力道、17F self-test、歷史 DATA_REPORT correlation replay、Gamma fallback、Dashboard build、Golden Master 注入、Golden Fixture HTML JavaScript 驗證、Pages artifact upload 均 SUCCESS；deploy job SKIPPED（工作分支）。
+- CI PASS 不等於解析內容與畫面已驗收：最新 Artifact 的五組解析實際注入值、HTML 內容及手機畫面仍 NOT TESTED。不得宣告完成。
+- 先前 Run `41563482857`、`41563515516`、`41563640245` 曾 FAIL；最新 HEAD `0a397dc...` 的 Run `41563655940` 已 SUCCESS。
+- 未 merge／部署；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 抽查 Run `41563655940` Pages Artifact，確認最新 HTML 使用 triggering branch Template，五組解析的 data binding 正確，並以當日 JSON 執行解析函式，測試缺值、零值及反向情境。
+2. 核對解析文字與圖表同源，檢查正負號、單位、關鍵位、Bias、有效因子數及相關性配對。
+3. 以最新 Artifact 進行手機驗收：解析可讀性、換行、重疊、裁切及圖表一致性。
+4. 通過後再進入 42 區塊全頁驗收；B 區 0.01 億元精度差仍待查。未經使用者明確授權不 merge／deploy。
