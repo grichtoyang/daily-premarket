@@ -1128,3 +1128,17 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 2. 若未觸發或無法查詢，需取得該 HEAD 對應的新 Run ID；不可用舊 Run 41563655940 代替。
 3. 新 CI PASS 後下載新 Artifact，重新核對 HTML／JSON、五組解析及缺值／零值／反向情境；再交付手機驗收。
 4. 手機 PASS 後才進入 42 區塊全頁驗收；B 區 0.01 億元精度差仍待原始值對帳。未經明確授權不 merge／deploy。
+
+
+## 2026-11-03 反向夜盤情境文案修正（CI 待確認）
+- 對五組解析進一步做反向情境稽核時，發現舊版 C 區 `cTarget` 固定使用偏空措辭；即使夜盤收盤高於日盤收盤，也會寫成「夜盤弱勢訊號延續」，與反向價格情境不一致。
+- 已修正 Template：夜盤日收差為負時採偏弱確認條件；為正時改為守住日盤收盤、夜盤低點作第二層防守參考的偏強確認條件；價差接近零時採中性觀察；日收／夜收／夜低缺值或無效時不產生價位觸發句。
+- 新增反向夜盤情境測試，檢查上漲情境不得出現偏空目標、下跌情境須輸出跌勢確認條件。
+- 最新修正 commits：Template `a3a49002c31646b29906b970ac4c1170647636f0`；測試 `882227d153007c7429833c011f826dadd6b8cb99`。目前工作分支最新已知 commit：`882227d153007c7429833c011f826dadd6b8cb99`；Template／測試均已讀回確認。
+- 新版 CI 仍無可查證 Run ID；最新 commit combined status 回傳空 statuses，且可用 workflow-run 查詢僅限 PR-triggered runs。故新修正版本 CI = NOT TESTED／BLOCKED，不能引用舊 Run 41563655940 作為修正後驗收證據。
+- 新修正版本 Artifact、手機畫面 = NOT TESTED；未 merge／deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步（唯一工作）
+1. 取得最新 HEAD `882227d153007c7429833c011f826dadd6b8cb99` 對應的新 GitHub Actions Run ID，核對所有 build 步驟及新增加的缺值／零值／反向測試。
+2. CI SUCCESS 後下載新 Artifact，重新核對五組解析、HTML 內嵌 JSON、圖表同源與 edge fixtures。
+3. 再交付手機驗收；通過後進入 42 區塊全頁驗收。B 區 0.01 億元精度差仍待原始值對帳；未授權不 merge／deploy。
