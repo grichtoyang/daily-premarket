@@ -1558,3 +1558,14 @@ P1 尚未開始。啟動前必須：
 - 最新 tests/test_dashboard_unit_contract.py commit：01d8d6e82810b13ce617feff18f142189cb9c14a。
 - 尚未完成：DATA_REPORT_20261030 尚未使用新 parser 重建；舊 36,178 張／-1,273 張數值仍 NOT VERIFIED；E-Shop／公開 endpoint 自動化授權界線仍 NOT TESTED。
 - 未 merge/deploy；master、P0 base、V8 未修改；data_reports 樣本未修改。Auditor 為單一模型自我稽核，非獨立多模型審核。
+
+
+## 2026-11-03｜TWSE／TPEx 資料授權邊界查證（阻止未授權報告重建）
+
+- TWSE E-Shop 官方商品頁顯示 TWT72U「借券餘額表」為月訂閱：內部 NT$1,500/月、外部 NT$3,000/月；資料每日產製，含系統別、借券前日餘額、今日新增借券、今日還券、今日借券餘額、市場別與資料日期。來源：https://eshop.twse.com.tw/zh/product/detail/8247357531294f4ab139f64c96394096 。
+- TWSE E-Shop 官方商品頁顯示 TWT93U「信用額度總量管制餘額檔」為月訂閱：內部 NT$1,000/月、外部 NT$1,500/月；含融券與借券賣出兩組餘額欄。來源：https://eshop.twse.com.tw/zh/product/detail/000000006e0bbe8d016f181acc1f0321 。
+- TWSE OpenAPI Swagger 搜尋結果列出 TWT96U（當日可借券賣出股數），但未見 TWT72U／TWT93U；不能把 RWD 網頁端點可匿名讀取等同已取得開放資料授權。
+- TPEx S47 對應政府資料開放平臺 dataset 11632「上櫃股票融券借券賣出餘額」，官方 metadata 標示每日更新、政府資料開放授權條款第 1 版、免費，欄位含融券與借券賣出兩組。來源：https://data.gov.tw/dataset/11632 。
+- 因此：TPEx S47 有免費開放資料授權證據；TWSE TWT72U／TWT93U 的 RWD live endpoint 已通過技術驗證，但 production 自動化授權尚無證據，應標 **BLOCKED / LICENSE NOT CONFIRMED**。不得重建 20261030 DATA_REPORT，也不得把 live test 成功當成可合法自動化使用的證據。
+- TWSE E-Shop 頁面提供價格與用途條款；本專案尚未取得使用者已訂購／授權證明。待使用者確認是否有 TWT72U、TWT93U 訂閱，或取得官方書面授權後，才能決定啟用上市借券餘額及上市借券賣出來源。若沒有授權，兩欄應 unavailable；TPEx S47 仍可依政府開放資料授權單獨呈現上櫃借券賣出值，並明確標示「上櫃」而非全市場。
+- 最新 phase2-p0-ui-fixes 文件 DATA_SOURCES.md 授權註記 commit：8317dcb359b5629cf073c144068339322e89884a。
