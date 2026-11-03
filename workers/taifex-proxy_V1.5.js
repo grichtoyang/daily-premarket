@@ -1275,9 +1275,9 @@ async function fetchTAIFEXText(url) {
 
 async function fetchTAIEXCloseForDate(requestedISO) {
   const requestedDigits =
-    String(requestedISO ?? "").replace(/\\D/g, "");
+    String(requestedISO ?? "").replace(/\D/g, "");
 
-  if (!/^\\d{8}$/.test(requestedDigits)) {
+  if (!/^\d{8}$/.test(requestedDigits)) {
     return {
       found: false,
       reason: `Invalid TAIEX query date: ${requestedISO}`
