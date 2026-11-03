@@ -28,6 +28,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('(u.factor_details||[]).filter(x=>x.status==="active"&&Number.isFinite(Number(x.contribution)))', self.html)
         self.assertIn('map(x=>({l:x.name,v:Number(x.contribution)}))', self.html)
         self.assertIn("方向貢獻分數（非權重）", self.html)
+        self.assertIn('height:260}),chartNote:"方向貢獻分數', self.html)  # 8 rows need >=242px at current row pitch
         self.assertIn("綠色正值代表推升 Bias 的多方貢獻；紅色負值代表壓低 Bias 的空方貢獻", self.html)
         self.assertNotIn('Object.entries(u.weights).slice(0,8)', self.html)
 
