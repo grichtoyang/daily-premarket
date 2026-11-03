@@ -1106,3 +1106,24 @@ P1 尚未開始。啟動前必須：
 - 舊分支 `fix/three-market-correlation-history` 的 11/02 14:35 日盤版 SHA `8ccd0dfc0f86f80e23253781bf923a533566df96` 有三法人 OI 全零及期貨行情沿用 10/30 數值。該版本不是 11/03 產出的全日版，不能混版比較。
 - 結論：目前 10/30／11/02 全日 DATA_REPORT 並未缺夜盤／OI；舊日盤版的 OI 零值仍是資料完整性缺陷。Worker `number()` 將空白／dash 轉 0 的風險已確認，但 11/02 原始 HTML 未取到，當次直接成因仍 NOT TESTED。
 - 本輪只讀驗證，無程式／DB／報告／Dashboard 修改，無 Merge／Deploy。下一步：在允許的工作分支對 OI parser 做局部 nullable 修正，並驗證 OI 有效性狀態能阻止零值污染 Bias、confidence 與 correlation；先不動通用 `number()`。
+
+
+
+## 2026-11-03 GEX Worker V1.5 診斷修正進度（本次交接更新）
+
+- 工作 repo：`grichtoyang/daily-premarket`。
+- 程式工作分支：`phase2-p0-ui-fixes`。
+- Recovery 文件分支：`ops/recovery-handoff`。
+- 本次核對三個程式檔案遠端內容，確認它們已包含 GEX Worker V1.5 診斷修改（不是只停留在聊天草稿）：
+  - `workers/taifex-proxy_V1.4.js` blob SHA：`3f5fdfe3442a106aa21a74706e911f7970258056`；檔案路徑依既有部署引用保留 V1.4 名稱，程式標頭／GEX parser 版本已標示 V1.5。
+  - `src/sources/taifex.py` blob SHA：`aebb590370105937c0ad86506c7e8f66d9b8118c`。
+  - `tests/test_taifex_gamma_fallback.py` blob SHA：`ff7f83c0a1081f27781eb3dbf2ae08da840e8c08`。
+- Worker 已新增 GEX 失敗診斷分類：TXO Chain fetch／parse、TXO Delta fetch、Chain/Delta expiry 配對、TAIEX underlying、GEX internal error；回應增加 `error_code`、`stage`、`detail`，成功回應欄位及 GEX 計算公式不應改變。
+- Python 呼叫端新增 Worker error payload 解析與 `_LAST_FETCH_ERRORS` 記錄；HTTP 502、HTTP 200 但 `ok=false` 及 request timeout／failure 不再只留下狀態碼。GEX unavailable 時將錯誤摘要寫入 DATA_REPORT notes；不把失敗值當成有效 GEX。
+- 測試檔已新增 HTTP 502 階段／細節保留，以及 HTTP 200 `ok=false` 的 data.reason 保留測試。
+- **本次遠端內容核對：PASS**（三檔均讀回且含預期診斷修改）。
+- **測試執行：NOT TESTED**（本次尚未取得 GitHub Actions／本機測試結果；不得宣稱測試通過）。
+- **Worker 部署：NOT DONE**；未觸發 Worker deploy。
+- **DATA_REPORT 實際診斷輸出：NOT TESTED**；尚未以新 Worker 實際產出報告驗證 notes。
+- 本次僅更新 Recovery 文件；不改 master、V8、原始 P0 分支，不 Merge／Rebase／Deploy。
+- 下一步唯一工作：對照這三個遠端檔案的實際 diff 與測試內容，修正任何審查發現，再執行對應測試；測試通過後才部署 Worker，最後用一次真實 GEX endpoint 呼叫確認錯誤階段能被 Python／DATA_REPORT 接收。
