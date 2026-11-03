@@ -740,7 +740,22 @@ def parse_data_report(report_path):
     sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張",None)
     sbl_sold_balance=get_value(r"\| 借券賣出餘額 \| ([0-9,]+) \| 張",None)
     sbl_sold_change=get_value(r"\| 借券賣出增減 \| ([-\\+0-9,]+) \| 張",None)
-    sbl_sold_change_scope=("上櫃（上市 TWT93U 未取得）" if re.search(r"借券賣出增減僅上櫃值",text) else "範圍未註明")
+    sbl_scope_row=re.search(r"\\|\\s*借券賣出增減\\s*\\|[^|]*\\|[^|]*\\|\\s*([^|]+)\\|",text)
+    sbl_scope_source=sbl_scope_row.group(1).strip() if sbl_scope_row else ""
+    has_listed_scope=("上市" in sbl_scope_source and ("TWT93U" in sbl_scope_source or "上市" in sbl_scope_source))
+    has_otc_scope=("上櫃" in sbl_scope_source and ("S47" in sbl_scope_source or "TPEX" in sbl_scope_source or "上櫃" in sbl_scope_source))
+    if has_listed_scope and has_otc_scope:
+        sbl_sold_change_scope="上市+上櫃"
+    elif has_listed_scope:
+        sbl_sold_change_scope="上市（上櫃未取得）"
+    elif has_otc_scope:
+        sbl_sold_change_scope="上櫃（上市未取得）"
+    elif re.search(r"借券賣出增減僅上櫃值",text):
+        sbl_sold_change_scope="上櫃（上市 TWT93U 未取得）"
+    elif re.search(r"借券賣出增減僅上市值",text):
+        sbl_sold_change_scope="上市（上櫃 TPEX 未取得）"
+    else:
+        sbl_sold_change_scope="範圍未註明"
     listed_turnover=optional_get(r"\| 上市成交金額 \| ([0-9,.]+) \| 億元"); otc_turnover=optional_get(r"\| 上櫃成交金額 \| ([0-9,.]+) \| 億元"); total_turnover=optional_get(r"\| 上市櫃成交金額合計 \| ([0-9,.]+) \| 億元")
 
     fut_day_o=must_get(r"### 1．台指期近月日盤行情.*?開盤價 \| ([0-9,]+) \|","台指日盤開"); fut_day_h=must_get(r"### 1．台指期近月日盤行情.*?最高價 \| ([0-9,]+) \|","台指日盤高")
