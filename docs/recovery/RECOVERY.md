@@ -1851,3 +1851,8 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 因此「P0 Quality 已完成數據真實性全面清查」目前無法由 repo 證據支持；更精確的結論是資料可用性／維持率／workflow 等部分品質工作確有實作，但資料來源定義、借券欄位語義及端到端日期真實性驗收存在重大缺口。
 - 本結論是對 repo 留存證據的回溯稽核，不代表已取得當初所有外部稽核紀錄；不得宣稱已還原所有歷史驗收活動。
 - 未改程式或報告，未重跑 10/30，未 merge／deploy，master／V8 未動。
+## 2026-11-03 資料源取得性補查
+
+- TWSE TWT93U 20261030 JSON 嘗試讀取遭查詢環境 Internal Error／DNS resolution failure；標記 BLOCKED（環境限制），不是官方 API 失效結論。目標日 response 尚未取得。
+- TPEX 官方歷史 SBL 查詢頁提供日期選擇及 CSV 下載介面；但 E-Shop 對 Margin_SBL.csv 列為每日訂閱商品（22:00 產製；內部 NT$1,000/月、外部 NT$1,500/月，並有使用限制）。公開網頁 CSV 下載是否可合法供 workflow 自動化，以及與訂閱商品的授權界線，仍未確認。
+- TPEX S47 exact JSON property mapping 及 20261030 同日 CSV/JSON 對照仍 NOT TESTED；禁止依欄位名稱推測直接改 mapping。
