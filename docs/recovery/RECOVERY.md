@@ -1786,3 +1786,15 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 - CI 狀態：combined status 空 statuses；可用 GitHub 工具目前無 push-triggered workflow run listing／dispatch，因此 CI NOT TESTED／BLOCKED，不能標 PASS。
 - TWT93U／TPEX 日期修正、TWT96U 歷史快照隔離、指標語義修正、10/30 報告重建均尚未完成。未 Merge／Deploy；Master／V8 未修改。
 - 下一步：先取得 HEAD 1e15691... 的 CI Run ID 並核對 build／regression；CI PASS 後再修正日期來源與歷史快照混用問題。完整調查與分支／blob 證據見 PROGRESS.md 最新段落。
+
+
+## 2026-11-03 資料層最新調查：借券指標模型存在錯誤（先不要重跑 10/30）
+- **重大發現：TWT96U 不是借券餘額。** TWSE 官方定義 TWT96U 為「當日可借券賣出股數／限額」，每日約 22:30 產出。現行 `spot.build()` 卻將 TWT96U 上市／上櫃可借額度與 TPEX `SecuritiesBorrowingBalanceOfTheMarketDay` 相加，填入 DATA_REPORT「借券餘額」。這是跨指標混加，確定錯誤。
+- 正確借券餘額候選官方來源是 TWSE TWT72U（每日約 20:30，包含前日餘額、今日新增借券、今日還券、今日借券餘額、資料日期）。但程式接入及歷史 API 參數尚未驗證，不能直接宣稱已可用。
+- TWT93U 是融券／借券賣出餘額總量管制資料，應用於「借券賣出餘額」，不是借券餘額。官方資料欄位有 15 個；現行 parser 用 `row[7]`、`row[11]` 取借券前日／當日餘額，若 data row 保持 fields 原順序，可能 off-by-one。尚未拿到有效 response fields/data，列 HIGH RISK / NOT CONFIRMED，禁止猜 index。
+- Run log 已證實 TWT93U 使用 ROC `1151030` 被拒絕（stat: 查詢日期小於94年7月1日）；日期參數需改測西元 `20261030`，再核對回傳日期。
+- TPEX `tpex_margin_sbl` 本次 932 rows、0 matched；目前 `Date == roc` 嚴格比對。需取得原始 Date sample，確認格式及 endpoint 是否只回最新日。不能在未確認歷史能力前用日期正規化掩蓋資料缺失。
+- 其他已確認歷史風險：MI_MARGN 無日期參數、TWT96U 無日期參數；TPEX highlight 只讀第一列最新資料；TPEX margin/SBL 僅在當前 OpenAPI 結果中比對 T0；歷史回補時可能無資料或拿到最新快照。三大法人若日期不符，目前仍註記「採用最新可得」，歷史報告必須改為 fail-closed。
+- 因此先不要重跑 10/30。完整證據、各 source 的程式位置、官方資料定義及接續方案均已記錄在 PROGRESS.md 最新的「資料層第二輪：借券指標語義與歷史日期可用性稽核」段落。
+- 後續先訂資料契約：`sbl_borrow_balance`（TWT72U 借入未還）、`sbl_short_sale_balance`（TWT93U + TPEX Margin_SBL 借券賣出未回補）、`sbl_shortable_limit`（TWT96U 當日可借券賣出限額）；三者絕不可混加。歷史來源缺日期或日期不符即 unavailable。
+- 本輪僅唯讀稽核及官方文件查核；未改程式、報告、workflow、DB，未 Merge／Deploy。
