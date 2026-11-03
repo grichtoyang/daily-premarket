@@ -124,6 +124,32 @@ def _twse_date8(date_value: str) -> str | None:
     return None
 
 
+
+def _borrowed_short_field_pair(fields):
+    """Resolve previous/current borrowed-short balances from unique or grouped labels."""
+    names = [str(name).strip().replace(" ", "") for name in fields]
+    prev_unique = ("借券賣出前日餘額", "前日借券賣出餘額股數", "借券前日餘額")
+    curr_unique = ("借券賣出當日餘額", "本日借券賣出餘額股數", "借券當日餘額")
+    prev_idx = next((names.index(name) for name in prev_unique if name in names), None)
+    curr_idx = next((names.index(name) for name in curr_unique if name in names), None)
+    if prev_idx is not None and curr_idx is not None and prev_idx < curr_idx:
+        return prev_idx, curr_idx
+
+    prev_candidates = [i for i, name in enumerate(names) if name == "前日餘額"]
+    curr_candidates = [i for i, name in enumerate(names) if name == "當日餘額"]
+    marker_names = {"當日還券", "當日調整", "當日調整數額", "借券賣出當日還券", "借券賣出當日調整數額"}
+    marker_indices = [i for i, name in enumerate(names) if name in marker_names]
+    pairs = [
+        (p, q) for p in prev_candidates for q in curr_candidates
+        if p < q and any(p < marker < q for marker in marker_indices)
+    ]
+    if not pairs:
+        return None, None
+    # The borrowed-short section follows the margin section; the pair that
+    # encloses the SBL return/adjustment columns is the intended pair.
+    return max(pairs, key=lambda pair: (pair[0], pair[1]))
+
+
 def twse_twt93u_sbl(date_value: str) -> dict:
     """TWT93U 上市借券賣出餘額與當日增減；依 API fields 欄名定位，不使用固定欄位索引。
 
@@ -157,10 +183,7 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     # semantic labels. Never fall back to positional indices.
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
     symbol_idx = next((normalized[name] for name in ("證券代號", "股票代號", "代號") if name in normalized), None)
-    prev_aliases = ("借券賣出前日餘額", "前日借券賣出餘額股數")
-    bal_aliases = ("借券賣出當日餘額", "本日借券賣出餘額股數")
-    prev_idx = next((normalized[name] for name in prev_aliases if name in normalized), None)
-    bal_idx = next((normalized[name] for name in bal_aliases if name in normalized), None)
+    prev_idx, bal_idx = _borrowed_short_field_pair(fields)
     if symbol_idx is None or prev_idx is None or bal_idx is None:
         print(f"[WARN] TWT93U required lending fields absent: fields={fields!r}")
         return out
@@ -327,8 +350,7 @@ def tpex_sbl(roc: str) -> dict:
     data = table["data"]
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
     symbol_idx = next((normalized[k] for k in ("股票代號", "證券代號", "代號") if k in normalized), None)
-    prev_idx = next((normalized[k] for k in ("借券賣出前日餘額", "借券前日餘額") if k in normalized), None)
-    bal_idx = next((normalized[k] for k in ("借券賣出當日餘額", "借券當日餘額", "借券賣出餘額") if k in normalized), None)
+    prev_idx, bal_idx = _borrowed_short_field_pair(fields)
     if symbol_idx is None or prev_idx is None or bal_idx is None:
         print(f"[WARN] TPEX margin_sbl required S47 fields absent: fields={fields!r}")
         return out
