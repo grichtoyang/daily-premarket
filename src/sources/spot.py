@@ -6,7 +6,7 @@
   inst {foreign, trust, dealer, total} 單位億元
   margin {fin_yi, fin_chg_yi, s_bal, s_chg, ratio} 上市+上櫃合計；融資億元、融券張、維持率%
     (HiStock 金額口徑為主；失敗則官方逐股張數備援 → 融資改 unavailable)
-  sbl {bal, sale_bal, sale_chg} bal 股數；sale 上櫃值+上市缺註記
+  sbl {bal, sale_bal, sale_chg}；借券餘額需 TWT72U，借券賣出餘額目前僅採已驗證上市 TWT93U
   turnover {listed, otc, total} 單位億元
   unavailable[] / notes[] / sources{}
 """
@@ -249,40 +249,25 @@ def build(t0: str) -> dict:
         if margin[k] is None:
             unavailable.append(f"margin.{k}")
 
-    # ---- 借券 (TWT96U/TPEX 原值為股數 → 張，1張=1000股) ----
-    stw = spot_raw.sbl_tw()
-    stp = spot_raw.tpex_sbl(roc)
+    # ---- 借券：三種指標嚴格分離 ----
+    # TWT96U 是「當日可借券賣出股數」，不是借券餘額；不得納入 sbl.bal。
+    # 真正借券餘額需 TWT72U；該歷史檔自動化取得／授權尚未驗證，故 fail closed。
     tw_sbl = spot_raw.twse_twt93u_sbl(roc)
-    sbl_bal = _add(_add(stw["tw"], stw["otc"]), stp["bal"])
-    if sbl_bal is not None:
-        sbl_bal /= 1000
-    # 借券賣出餘額 = 上市 (TWT93U) + 上櫃 (TPEX)
+    sbl_bal = None
     _tw_sale = tw_sbl["sale_bal"] / 1000 if tw_sbl["sale_bal"] is not None else None
-    _tp_sale = stp["sale_bal"] / 1000 if stp["sale_bal"] is not None else None
-    _sale = _add(_tw_sale, _tp_sale)
-    _tw_schg = tw_sbl["sale_chg"] / 1000 if tw_sbl["sale_chg"] is not None else None
-    _tp_schg = stp["sale_chg"] / 1000 if stp["sale_chg"] is not None else None
-    _schg = _add(_tw_schg, _tp_schg)
-    sbl = {"bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg}
-    def _sbl_scope(*parts):
-        available = [name for name, value in parts if value is not None]
-        return " + ".join(available) if available else "端點未提供"
-    sources["sbl_bal"] = _sbl_scope(
-        ("TWSE TWT96U", stw.get("tw")), ("TWT96U GRETAI（上櫃）", stw.get("otc")),
-        ("TPEX margin_sbl", stp.get("bal")))
-    sources["sbl_sale_bal"] = _sbl_scope(
-        ("TWSE TWT93U", _tw_sale), ("TPEX margin_sbl", _tp_sale))
-    sources["sbl_sale_chg"] = _sbl_scope(
-        ("TWSE TWT93U", _tw_schg), ("TPEX margin_sbl", _tp_schg))
-    if sbl_bal is None:
-        notes.append("借券餘額未取得")
-        unavailable.append("sbl.bal")
+    sbl = {"bal": None, "sale_bal": _tw_sale, "sale_chg": (
+        tw_sbl["sale_chg"] / 1000 if tw_sbl["sale_chg"] is not None else None
+    )}
+    sources["sbl_bal"] = "unavailable（需 TWT72U 借券餘額資料；自動化取得／授權未驗證）"
+    sources["sbl_sale_bal"] = "TWSE TWT93U（上市；TPEX 尚未完成欄位映射驗證）" if _tw_sale is not None else "unavailable"
+    sources["sbl_sale_chg"] = "TWSE TWT93U（上市；TPEX 尚未完成欄位映射驗證）" if sbl["sale_chg"] is not None else "unavailable"
+    notes.append("TWT96U 可借券賣出股數不等於借券餘額，已排除；借券餘額暫 unavailable，待 TWT72U 可用來源確認")
+    notes.append("借券賣出餘額／增減目前僅採上市 TWT93U；上櫃 TPEX 欄位 mapping 尚未驗證，暫不合併")
+    unavailable.append("sbl.bal")
     if sbl["sale_bal"] is None:
         unavailable.append("sbl.sale_bal")
     if sbl["sale_chg"] is None:
         unavailable.append("sbl.sale_chg")
-    if tw_sbl["sale_bal"] is None and stp["sale_bal"] is not None:
-        notes.append("借券賣出增減僅上櫃值 (TWSE TWT93U 未取得)")
 
     # ---- 成交結構 (億元) ----
     listed_yi = listed_turnover_yuan / 1e8 if listed_turnover_yuan else None
