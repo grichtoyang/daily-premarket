@@ -137,5 +137,15 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('chartNote&&p("div"', html)
 
 
+    def test_existing_data_report_is_protected_without_daily_report(self):
+        # The DATA_REPORT itself is the published T0 snapshot. A missing
+        # reports/Daily_REPORT file must not switch an existing T0 to overwrite.
+        from src.fetch_data import _should_protect_existing_data_report
+
+        self.assertTrue(_should_protect_existing_data_report(True, False))
+        self.assertFalse(_should_protect_existing_data_report(True, True))
+        self.assertFalse(_should_protect_existing_data_report(False, False))
+
+
 if __name__ == "__main__":
     unittest.main()
