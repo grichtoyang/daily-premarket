@@ -1510,3 +1510,32 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 
 ### 下一個唯一工作
 先做三檔 diff／程式審查，確認 Worker response schema 與 Python parser 完全吻合，並檢查測試可執行；修正後執行測試。測試 PASS 後再另行部署 Worker，並用實際 endpoint 驗證 GEX error diagnostics 能進入 DATA_REPORT。不得先部署再測，也不得擴大修改到其他模組。
+
+
+
+## 2026-11-03 GEX Worker V1.5 CI 審查結果追加
+
+### 最新 Git／CI 證據
+- `phase2-p0-ui-fixes` 最新 HEAD：`e852ee6d8eaab4225b563b2b856ce1f76ad7cb41`；此為 GitHub Actions 產生的 Dashboard history commit，並非 Worker deploy。
+- V1.5 三檔 blob SHA：Worker `3f5fdfe3442a106aa21a74706e911f7970258056`；Python `aebb590370105937c0ad86506c7e8f66d9b8118c`；Tests `ff7f83c0a1081f27781eb3dbf2ae08da840e8c08`。
+- 首輪 Run `41626557631` FAIL：新增測試檔的多行 `with` 語法有多餘反斜線，導致 SyntaxError。Commit `82796f958b3cedd62e077e11a59ac4cd680e5c06` 已改成巢狀 context manager。
+- 修正後 Run `41626627855` SUCCESS；`test_taifex_gamma_fallback.py` 執行 11 tests，全部 OK；Deploy job SKIPPED。該 run 的一般 V9 build、資料注入及 artifact upload 成功，但不等同 Worker 已部署。
+
+### 程式審查補充
+- Worker 的 `parseTXOOptionChain()` 失敗回傳只有 `found/data`，沒有 `reason`；Chain parse failure 會使用固定 detail fallback。分類可辨識，但 parser 本身沒有更細的錯誤原因。
+- Worker 回應的 `error_code`／`stage`／`detail` 與 Python `_worker_error_payload()` 的讀取欄位相符；GEX calculation failure 亦會由 `data.reason` 保留原因。
+- Python notes 的診斷摘要在 `build()` 回傳的 `notes` 陣列中；尚未用真實 Worker error response 跑完整 DATA_REPORT 產生流程驗證。
+
+### 狀態更新
+| 項目 | 狀態 |
+|---|---|
+| Python GEX fallback regression（11 tests） | PASS |
+| 修正新增測試語法錯誤 | PASS |
+| Worker JavaScript runtime／Wrangler validation | NOT TESTED |
+| 真實 GEX endpoint 診斷回應 | NOT TESTED |
+| DATA_REPORT notes 實際輸出 | NOT TESTED |
+| Worker deploy | NOT DONE |
+| Pages deploy | 本次 Deploy job SKIPPED |
+
+### 下一個唯一工作
+先完成 Worker JavaScript 語法／部署前驗證；若通過，再部署 Worker。部署後使用受控 GEX endpoint 呼叫，確認 Worker 的 stage／error_code 能被 Python 解析並寫入 DATA_REPORT notes。不可把 Python 測試成功當作 Worker runtime 或部署成功。
