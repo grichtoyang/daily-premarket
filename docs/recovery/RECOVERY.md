@@ -1743,3 +1743,36 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 ### 本輪 GitHub 文件更新紀錄
 - 僅更新 `docs/recovery/RECOVERY.md` 與 `docs/recovery/PROGRESS.md`。
 - 程式分支 `phase2-p0-ui-fixes`、master、V8、DATA_REPORT、Dashboard、Worker 均未修改。
+
+
+## 2026-11-03 最新接手狀態：歷史 DATA_REPORT 重跑混版（22:xx）
+
+### 目前工作焦點
+- 暫停擴大 42 區塊 Dashboard 稽核；先處理 2026-10-30 歷史 DATA_REPORT 重跑造成的欄位覆蓋／資料日期混用。
+- 目前工作分支 `phase2-p0-ui-fixes` HEAD：`581a808d6db6bea50a971f74a00b695ffbe8b509`；Recovery 分支：`ops/recovery-handoff`。Master HEAD `9f88de0bd92294df0051f706a0af1018e439bf6f`，禁止修改。
+- 最新調查與完整證據已追加至 `PROGRESS.md` 的「2026-11-03 歷史 DATA_REPORT 重跑問題：第二輪實檔／程式根因稽核」段落；本節為新對話快速接手摘要。
+
+### 最重要的已確認事實
+1. Run `41644283168`（Job `125945406903`）確實執行 `--date 2026-11-03 --t0 20261030`，session=全日。這次指定歷史 T0 的日期／盤別本身正確。
+2. Run log 顯示 TWT93U 因傳入民國日期 `1151030` 被拒絕；TPEX margin_sbl 取得 932 rows 但日期比對 0 rows。
+3. `src/fetch_data.py` 的 protect 判斷只搜尋 `reports/Daily_REPORT_{T0}_*.md`，沒有把已存在的 `data_reports/DATA_REPORT_{T0}.md` 本身視為保護對象。因此既有 DATA_REPORT 在沒有 Daily_REPORT 時仍以 `protect=False` 重跑；本次 50 格沿用舊值、73 格被新抓取覆蓋，造成混版。
+4. 無日期 TWT96U 最新快照被用在歷史 T0；官方定義 TWT96U 為「當日可借券賣出股數／限額」，不是「借券餘額」。此欄同時有日期污染與指標語義問題，不能直接用最新值覆寫舊 T0。
+5. 11/02 全日 DATA_REPORT（phase2 branch blob `4add0443546bde87309fc1f13396f3a478e60bb0`）夜盤及 OI 有值；舊分支 11/02 日盤版不可拿來比較。10/30 舊完整報告 blob `665ae0ce957cbda372a1d70e1f06f0eea124ba11` 位於 `fix/three-market-correlation-history`；本次重跑後報告 blob `61b5a8799bec62762a60d5efb3f1099c18084fc5` 位於 `phase2-p0-ui-fixes`。
+
+### 尚未完成／不可宣稱 PASS
+- DATA_REPORT protect 程式修正與 regression tests：NOT STARTED。
+- TWT93U 西元日期修正及真實 endpoint：NOT TESTED。
+- TWT93U raw JSON fields／row index 對齊：NOT TESTED。
+- TPEX Date 原始值樣本與日期正規化：BLOCKED／NOT TESTED。
+- TWT96U／MI_MARGN 無日期來源的歷史回補隔離：NOT STARTED。
+- 10/30 報告修復後重跑與完整性驗收：NOT TESTED。
+- 本次只有 Recovery 文件更新，未改程式、資料、workflow、DB；未 Merge／Deploy。
+
+### 接續執行順序
+1. 只在 `phase2-p0-ui-fixes` 修正 `src/fetch_data.py`：只要同 T0 的 DATA_REPORT 已存在，預設必須 protect；只有明確 `--force-rewrite` 才允許覆寫。加入 regression tests，驗證沒有 Daily_REPORT 仍會保護 DATA_REPORT。
+2. 修正 TWT93U 查詢日期使用西元 `YYYYMMDD`；先核對原始 JSON `fields`／row 長度再決定 index，不能猜。
+3. 取得 TPEX `Date` 原始樣本，實作嚴格日期正規化；同查 highlight／margin 的日期比對。
+4. 歷史 T0 不得採用無日期最新快照；TWT96U 名稱／來源必須反映「當日可借券賣出限額」，不能冒稱借券餘額。
+5. 完成 code + tests + CI + endpoint validation 後，先核對 10/30、11/02 全日報告。未經明確授權不 Merge／Deploy；Master／V8 不動。
+
+**Auditor 狀態：** 目前由單一模型依 GitHub 檔案、workflow log 及官方公開文件做自我稽核，並非獨立多模型審核。  
