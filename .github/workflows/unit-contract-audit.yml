@@ -38,6 +38,10 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Compile Python sources
         run: python -m compileall -q scripts src tests
+      - name: Run borrowed-securities source and semantic regression tests
+        run: |
+          python -m unittest discover -s tests -p 'test_fetch_data_borrowed_sources.py' -v
+          python -m unittest discover -s tests -p 'test_spot_borrowed_semantics.py' -v
       - name: Run Dashboard unit contract tests
         run: python -m unittest discover -s tests -p 'test_dashboard_unit_contract.py' -v
       - name: Run DATA_REPORT and field-semantic regression tests
@@ -46,7 +50,3 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_react_template_static.py' -v
       - name: Run TAIFEX night unavailable summary regression tests
         run: python -m unittest discover -s tests -p 'test_taifex_night_unavailable_summary.py' -v
-      - name: Run borrowed-securities source and semantic regression tests
-        run: |
-          python -m unittest discover -s tests -p 'test_fetch_data_borrowed_sources.py' -v
-          python -m unittest discover -s tests -p 'test_spot_borrowed_semantics.py' -v
