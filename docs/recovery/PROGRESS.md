@@ -1350,3 +1350,44 @@ P1 尚未開始。啟動前必須：
 - TPEX Date 0 matched：CONFIRMED by run log；具體格式／歷史查詢能力 BLOCKED。
 - MI_MARGN 歷史 T0 無日期：FAIL／CONFIRMED。
 - 本輪僅程式／報告唯讀稽核及官方文件查核；未改程式、DATA_REPORT、workflow、DB，未 Merge／Deploy。
+
+
+## 2026-11-03 資料層第三輪：TWT93U 欄位索引確認與 TWT72U 歷史來源查核
+
+### 新增證據與狀態
+1. **TWT93U parser 欄位索引錯誤：CONFIRMED FAIL（欄位順序交叉核對）。**
+   - 目前工作分支 `phase2-p0-ui-fixes` 的 `src/sources/spot_raw.py` 中，`twse_twt93u_sbl()` 使用 `row[7]` 作為借券前日餘額、`row[11]` 作為借券當日餘額。
+   - 15 欄順序為：0代號、1名稱、2融券前日餘額、3融券賣出、4融券買進、5融券現券、6融券當日餘額、7融券限額、8借券賣出前日餘額、9借券賣出當日賣出、10借券賣出當日還券、11借券賣出當日調整、12借券賣出當日餘額、13次一營業日可借券賣出限額、14備註。
+   - 獨立欄位文件列出相同的 15 欄順序：https://github.com/twcs-analysis/tw-stock-collector/blob/main/data/README.md；TWSE 官方 TWT93U 說明亦確認「借券賣出當日餘額＝前日餘額＋當日賣出－當日還券＋當日調整」及調整欄位存在：https://www.twse.com.tw/exchangeReport/TWT93U?date=20220316&response=html 。
+   - 因此現行 row[7] 實為融券限額、row[11] 實為借券賣出當日調整；正確欄位位置應為 8 與 12（前提是實際 JSON data row 與 fields 順序一致）。現行 parser 會將錯誤欄位加總，故 TWT93U sale_bal／sale_chg = FAIL，不可使用。
+   - 修正方式不得只硬改 index；應先取得真實 JSON response，使用 `fields.index("借券賣出前日餘額")`、`fields.index("借券賣出當日餘額")` 等欄名定位，並驗證 row 長度、日期及欄位存在。
+2. **TWT72U 歷史查詢頁存在：官方頁面 PASS；RWD API NOT TESTED。**
+   - TWSE 官方 TWT72U 歷史查詢頁可選日期及分類，頁面標示資料自 2004-11-22 起：https://www.twse.com.tw/zh/products/sbl/disclosures/twt72u.html 。
+   - 官方 TWT72U 產品欄位包含前日借券餘額、今日新增借券、今日還券、今日借券餘額及資料日期；官方投資人知識網將借券餘額定義為借入尚未返還數量：https://eshop.twse.com.tw/zh/product/detail/8247357531294f4ab139f64c96394096 、https://investoredu.twse.com.tw/Pages/TWSE_InvestmentQA.aspx?ID=8 。
+   - TWSE Data E-Shop 亦將 TWT72U 列為訂閱商品，故公開網頁可查詢不等於 workflow 可無條件使用其資料檔/API；需分別確認 RWD API 的實際回應、歷史日期、分類、可用性及授權條件：https://eshop.twse.com.tw/en/product/detail/790d45d2b28b4f50a52a951ec0723150 。
+   - 嘗試讀取候選 RWD URL `/rwd/zh/sbl/TWT72U?date=20261030&selectType=SLBNLB&response=json`，本次查詢工具回傳不可存取；此結果不是 API 失效證明。狀態仍為 API NOT TESTED／BLOCKED。
+3. **TWT96U 的資料定義再次由官方 OpenAPI 文件確認：**
+   - TWSE OpenAPI 將 `/SBL/TWT96U` 定義為「上市上櫃股票當日可借券賣出股數」，Data E-Shop 產品頁亦明列為當日可借券賣出股數，22:30 產出；不得映射成借券餘額：https://openapi.twse.com.tw/ 、https://eshop.twse.com.tw/en/product/detail/6206e910508c4f2c96c9d38f0a53b715 。
+4. **TPEX tpex_margin_sbl 的歷史資料語義仍需原始 API response 才能最後定案。**
+   - TPEX 官方 OpenAPI 將 `tpex_margin_sbl` 命名為「上櫃股票融券借券賣出餘額」；官方頁明確說明借券賣出餘額公式為前日餘額＋當日賣出－當日還券＋當日調整，且含融券及借券賣出欄位：https://www.tpex.org.tw/openapi/ 、https://www.tpex.org.tw/zh-tw/mainboard/trading/margin-trading/sbl.html 。
+   - TPEX 官方歷史查詢頁可指定日期並下載 CSV：https://www.tpex.org.tw/web/stock/margin_trading/margin_sbl/margin_sbl_result.php 。官方文件頁在本次工具環境部分回傳 403；不能把工具 403 說成官方服務不可用。
+   - 現行 `tpex_sbl()` 把 `SecuritiesBorrowingBalanceOfTheMarketDay` 填入 `bal`，又把 `SaleBalanceOfTheMarketDay`／`SaleBalancePreviousDay` 當成借券賣出餘額與前日值。從 endpoint 名稱與官方欄位組成看，這很可能把「融券餘額」與「借券賣出餘額」映射反了；但尚未取得實際 OpenAPI fields／row 樣本，標記 **HIGH RISK / NOT CONFIRMED**，不可直接改 mapping。
+   - OpenAPI endpoint 呼叫不帶日期參數；現有 Run log 932 rows、0 matched_date_rows。歷史 T0 應改走官方歷史查詢／可驗證日期參數來源，不能把 latest-only OpenAPI 回應當成歷史值。
+5. **TWSE／TPEX 官方借券賣出餘額可按相同語義分市場加總，但必須先修正各自欄位映射與日期。**
+   - TWSE 官方說明借券賣出餘額為已借券賣出尚未回補；TPEX 官方公式亦包含前日餘額、當日賣出、當日還券與調整。市場分開統計後，若單位同為股數且日期相同，才可換算張數後合併；不可混入 TWT72U 借券餘額或 TWT96U 可借限額。
+
+### 本輪狀態表
+- TWT93U row[7]/row[11] 對應錯誤欄位：**FAIL / CONFIRMED**（依官方欄位定義及 15 欄順序交叉核對；尚待 raw JSON fixture 做 parser regression）。
+- TWT93U 西元日期 20261030 真實 API response：**NOT TESTED**。
+- TWT72U 官方歷史查詢頁與欄位定義：**PASS**；RWD API、分類及授權：**NOT TESTED / BLOCKED**。
+- TWT96U 可借券賣出限額語義：**PASS / OFFICIAL**。
+- TPEX 欄位 mapping（融券餘額 vs 借券賣出餘額）：**HIGH RISK / NOT CONFIRMED**。
+- TPEX OpenAPI Date／歷史查詢：**BLOCKED**，尚缺 raw sample。
+- 本輪未修改程式、DATA_REPORT、workflow 或 DB；未重跑 10/30；未 Merge／Deploy；Master／V8 未動。
+- Auditor：單一模型自我稽核，非獨立多模型審核。
+
+### 下一個窄範圍工作
+1. 取得 TWT93U 2026-10-30 真實 JSON response，保存 fields/data fixture，依欄名定位並測試 date equality。
+2. 取得 TPEX `tpex_margin_sbl` 原始 JSON 樣本，逐欄對照官方歷史 CSV 欄位，確認 `SecuritiesBorrowingBalanceOfTheMarketDay`、`SaleBalanceOfTheMarketDay`、`SaleBalancePreviousDay` 的真實中文語義。
+3. 驗證 TWT72U 歷史查詢 API 的資料日期、selectType、回傳欄位及授權可用性；若無法在 workflow 中合法穩定取得，`sbl_borrow_balance` 保持 unavailable。
+4. 以上三項完成前，不改報告 mapping、不重跑 10/30。
