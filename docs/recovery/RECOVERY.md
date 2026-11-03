@@ -1322,3 +1322,13 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 初步盤點發現 Artifact JSON 的 `analysis.cards` 有 48 個解析卡片鍵；目前 template 靜態掃描找到 34 個主要卡片元件呼叫點，另有 8 個 KPI 格。此數量不直接等於使用者確認的 42 個可見區塊（動態 map／隱藏／跨頁渲染仍待核對），不得直接把 48 個解析鍵當成 48 個 UI 區塊，也不得只憑 34 個靜態呼叫點結案。
 - 42 區塊總稽核：IN PROGRESS；目前只完成 T0／Artifact／程式基準固定及初步盤點差異辨識，尚未逐區塊驗證資料鏈。不得宣稱全頁資料或解析 PASS。
 - 下一步：以實際四頁 React render tree 對照使用者確認的 42 個可見區塊，建立唯一 42 項清單；每項再核對來源欄位、DATA_REPORT、Builder 計算、Artifact JSON、圖表／表格與分析／判斷／操作文字。先完成清單與資料鏈映射，再逐項測試缺值、零值、反向及單位邊界。
+
+
+## 2026-11-03 42 區塊清單對映完成（修正前一筆頁數判讀）
+- 重新以固定 Artifact `13200545155` 的實際 HTML React render tree 逐頁切分檢查；確認此版本不是四頁，而是 **六頁**：總覽、現貨、重要市場、期貨、選擇權、綜合分析。這與工作分支 Builder 的版頭規格「6頁結構」一致。前一筆「四頁」是舊上下文沿用錯誤，已在本筆更正；不應為了符合舊描述而刪併頁面。
+- 六頁可見卡片清單（34 張）逐頁計數：總覽 5、現貨 6、重要市場 2、期貨 6、選擇權 8、綜合分析 7，合計 34。
+- 總覽另有 8 格 KPI：加權收盤、外資現貨、台指日盤、台指夜盤、外資期貨、PCR、Call Wall、Bias。故可見區塊總數為 34 張卡片 + 8 格 KPI = **42**；與 Artifact JSON `analysis.visible_block_count=42` 及 Builder 明確設定 `visible_block_count: 42` 一致。
+- Artifact JSON 的 `analysis.cards` 48 個鍵及 `cards_41_count`／`analysis_card_count` 是內部 AI 解析卡片／敘述卡片數，不是 UI 可見區塊數；Builder 原始碼註解明確標示這是 legacy alias，不能拿 48 取代 42。
+- 本次完成的是 42 個可見區塊的**結構盤點與計數對帳**，不是 42 項資料鏈品質驗收。結構對映：PASS；逐項 source → DATA_REPORT → Builder → JSON → chart/table → analysis/judgment/action：仍 IN PROGRESS。
+- 此次僅修正 Recovery／Progress 的頁數與區塊數判讀，未修改 Builder、Template、DATA_REPORT、Artifact 或 Dashboard UI；未 Merge／Deploy，Master／V8 未修改。
+- 下一步依六頁 42 項清單逐一進行資料鏈核驗；先從總覽 8 KPI 與現貨頁 6 區塊開始，保留已 PASS 區塊不動，只在有原始證據的缺陷上提出最小修正。
