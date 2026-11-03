@@ -1397,3 +1397,15 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 履約價 GEX 分布：gexStatus unavailable、gexLevels 空陣列、Net/Gross GEX null；標題與表格顯示 unavailable，不以 0 代替，資料缺值傳遞 PASS；Canvas 無資料時目前呈現空白座標區，缺少圖內 unavailable 提示，列為非阻斷可讀性改善（不列數值錯誤）。
 - 選擇權法人力道 B 區精度說明與前次獨立驗收一致，保留原始精度算法及手機 PASS，不再改動。
 - 選擇權頁狀態：6 個區塊資料／缺值映射 PASS；主要 OI 集中圖側別顏色 FAIL；GEX 空圖提示為非阻斷改善。沒有修改程式／資料／Artifact；未 Merge／Deploy。
+
+
+## 2026-11-03 綜合分析頁 7 區塊首輪資料鏈稽核
+- 區塊 A 三市場法人：現貨、期貨日夜盤交易流量、選擇權日夜盤淨口數分欄呈現；敘述明確指出三市場方向分歧，並警告三法人 OI 全零為可疑快照、不納入方向判斷。內容口徑正確；但 OI 圖／數值仍顯示 0，納入既有 OI 狀態傳遞缺陷群。
+- 區塊 B 選擇權法人多空力道：原始千元換算、日夜盤、淨額及多空雙邊分類與前次已核對；獨立四捨五入說明及手機版面 PASS，凍結不動。
+- 區塊 C 日夜盤劇本：日盤收 45,301、夜盤收 44,433、相對變化 -868、夜盤量占比 37.45%、外資夜盤淨交易 +1,365；價格走弱與外資流量偏多的背離判讀合理，操作條件要求現貨開盤價格確認，PASS。
+- 三劇本路徑：現價 44,920.14 位於 Put Wall 44,000 與 Call Wall 48,000 之間；Flip／Gamma 缺值時不成立偏多確認，偏空條件亦未成立；以區間觀察、不追價呈現，PASS。
+- 多空因子方向貢獻：正負貢獻加總及 Bias 24 與 P0 JSON 對應；但因 `foreign_fut=0` 可疑因子仍 active，且 confidence=high，圖表／文字把錯誤有效因子集合當成可信來源。狀態 FAIL，併入 OI 狀態傳遞缺陷群。
+- 相關性熱圖：SQLite 中 T0 2026-11-02 的 `foreign_fut=0` 被 `save_today_to_db()` 的 `correlation_eligible` 條件接受（目前只檢查非 null／有限數字，沒有排除可疑全零 OI）；故 8×8 Pearson 矩陣以 5 筆樣本計算，包含該可疑列。獨立重算「大盤漲跌幅 vs 外資期貨」係數：含 T0 可疑列 n=5 時 r=0.0146；排除 T0 後 n=4 時 r=0.9590，但低於 min_samples=5，應不顯示矩陣。數值對比證明可疑零值大幅扭曲相關性；狀態 FAIL（無效樣本進入歷史資料及熱圖）。另 JSON `analysis.cards[相關性熱圖]` 說未計算，但 `analysis.correlation` 有矩陣，屬內部敘述卡與實際矩陣狀態不一致，需一併清理。
+- 交易計畫：現價 44,920、Bias 24 偏空、Put Wall 44,000 支撐、MaxPain 44,400 磁吸參考、Call Wall 48,000 壓力；Gamma／Flip 缺值以 unavailable 呈現，圖表與表格沒有把 MaxPain 誤作跌破目標；PASS。
+- 綜合分析頁狀態：A 口徑敘述 PASS（OI 數值顯示沿用缺陷）；B PASS；C PASS；三劇本 PASS；因子貢獻 FAIL（OI 因子）；相關性 FAIL（可疑樣本污染）；交易計畫 PASS。手機版面先前驗收 PASS，不因資料邏輯問題重做版面。
+- 本輪只讀及 Recovery／Progress 記錄，沒有修改程式、SQLite、JSON、Template 或 Artifact；未 Merge／Deploy。所有已 PASS 區塊凍結。
