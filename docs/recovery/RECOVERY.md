@@ -1445,3 +1445,24 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 比對資料完整性時，以已確認的完整全日版 DATA_REPORT（目前指定 2026-10-30）作為基準。未確認目標報告是日盤版或全日版前，不得把其缺欄位直接列為資料遺失。
 
 **程式依據（已讀取工作分支原始碼）：** `src/fetch_data.py` 的 CLI 說明指出手動 `--t0` 未指定 `--session` 時預設「全日」；未指定 `--t0` 時呼叫 `src.t0.resolve()` 自動判斷。全日夜盤查詢使用 T0 的下一個交易日。這確認了參數分支差異；但 2026-11-02 當次 dispatch 是否真的填入日期，仍須以該次 workflow run 的實際輸入／紀錄查證，不能僅憑報告缺夜盤推定。
+
+
+## 2026-11-03 1030／1102 DATA_REPORT 實檔與 Actions 執行紀錄複核（新增證據）
+
+### 已確認的報告版本
+- `phase2-p0-ui-fixes` 分支的 `data_reports/DATA_REPORT_20261030.md`：blob SHA `665ae0ce957cbda372a1d70e1f06f0eea124ba11`；T0=2026-10-30、全日版。期貨日盤／夜盤、三大法人 OI、前十大 OI、日夜盤法人交易均有值。
+- `phase2-p0-ui-fixes` 分支的 `data_reports/DATA_REPORT_20261102.md`：blob SHA `4add0443546bde87309fc1f13396f3a478e60bb0`；產出時間 2026-11-03 08:55:11、T0=2026-11-02、全日版。期貨日盤／夜盤、三大法人 OI、前十大 OI、日夜盤法人交易均有值；例如 TX 夜盤收盤 44,310、外資 OI 淨額 -89,379、三法人 OI 淨額 +1,067。
+- `master` 分支的 `data_reports/DATA_REPORT_20261102.md`：blob SHA `38fc2e8a5fe2578e6779ffc11e157fed3e76a8ee`；產出時間 2026-11-03 12:32:18、T0=2026-11-02、全日版，夜盤及 OI 同樣有值。
+- 舊工作分支 `fix/three-market-correlation-history` 的 `DATA_REPORT_20261102.md`：blob SHA `8ccd0dfc0f86f80e23253781bf923a533566df96`；產出時間 2026-11-02 14:35:26、盤別為日盤。該版三法人 OI 全零，且期貨行情數值與 10/30 報告相同；不得拿這份日盤版與 11/03 早上／中午的全日版當成同一資料版本比較。
+- 因此，**目前可讀取的 10/30 全日版與 11/02 全日版都沒有缺少夜盤／OI**。異常集中在 11/02 14:35 的舊日盤版及 OI 零值狀態；尚不能把它描述成目前 master／phase2-p0-ui-fixes 的全日 DATA_REPORT 遺失。
+
+### Actions 執行輸入已查證
+- Run #97：`41556173914`，分支 `phase2-p0-ui-fixes`，event=`workflow_dispatch`，2026-11-03 08:54（台北）。Job log 明確顯示 `SCHED=''`、命令 `--t0 ""`，程式輸出 `slot` 未指定、T0=2026-11-02、session=全日，產生上述 08:55 全日版。
+- Run #98：`41578655028`，分支 `master`，event=`schedule`，2026-11-03 12:31（台北）。Job log 顯示 morning slot，T0=2026-11-02、session=全日，產生上述 12:32 全日版；run success。
+- 這兩次執行均不能代表 2026-11-02 14:35 的舊日盤版當次輸入；該次 run 的 dispatch input／完整 log 仍需另找歷史 run #95 證據。不可將 #97 的空白輸入反推為 #95 的輸入。
+
+### 仍待處理的根因與界線
+- Worker 的通用 `number()` 將空字串、`-`、`--` 轉為 0；`parseFuturesInstitutionalOI()` 對 OI 欄位直接呼叫該函式。這是已確認的程式風險，但 2026-11-02 14:35 當時原始 TAIFEX HTML 未取得，故不能宣稱已證實當次 0 一定由 dash 轉換造成。
+- 最小安全修正仍限定在 OI parser：採 OI 專用 nullable parser（保留真實數字 0；空白／dash → null），並讓 parser 完整性狀態能被 Python／DATA_REPORT 下游辨識；不可改通用 `number()`。
+- 下游 Bias、confidence／coverage、KPI／OI 卡、correlation eligibility 及已污染的 2026-11-02 SQLite row，仍按本文件前述修正邊界處理。修正及回歸測試尚未執行。
+- 本次只讀 GitHub 文件、分支報告與 Actions logs；沒有修改程式、資料庫、報告或 Dashboard；沒有 Merge／Deploy。
