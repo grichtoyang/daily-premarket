@@ -16,7 +16,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('twse_twt93u_sbl(roc)', source)
         self.assertIn('tpex_sbl(roc)', source)
         self.assertNotIn('_add(_add(stw["tw"], stw["otc"]), stp["bal"])', source)
-        self.assertIn('TWT96U 可借券賣出股數不等於借券餘額', source)
+        self.assertIn('TWT96U 是當日可借券賣出股數', source)
 
     def test_raw_borrowed_parsers_emit_diagnostics_when_unavailable(self):
         source = (ROOT / "src/sources/spot_raw.py").read_text(encoding="utf-8")
