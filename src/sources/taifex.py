@@ -39,24 +39,66 @@ def _missing_night_fields(night: dict) -> list[str]:
 # 故直接回傳同一物件，不做昂貴的深拷貝。
 _SNAP_CACHE: dict[tuple, dict] = {}
 
+_LAST_FETCH_ERRORS: dict[str, dict] = {}
+
+
+def _worker_error_payload(response) -> dict:
+    """Extract bounded diagnostics from a Worker JSON error response."""
+    try:
+        payload = response.json()
+    except Exception:  # noqa: BLE001
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+    detail = payload.get("detail") or data.get("detail") or data.get("reason")
+    return {
+        "error_code": payload.get("error_code"),
+        "stage": payload.get("stage"),
+        "error": payload.get("error"),
+        "detail": str(detail)[:400] if detail is not None else None,
+        "data_reason": str(data.get("reason"))[:400] if data.get("reason") is not None else None,
+    }
+
+
 def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
     import time
     url = f"{BASE}/{ep}?date={t0}" if ep in DATE_EPS else f"{BASE}/{ep}"
+    _LAST_FETCH_ERRORS.pop(ep, None)
     for attempt in range(2):
         try:
             r = requests.get(url, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
+            diagnostic = _worker_error_payload(r)
             if r.status_code == 200:
-                j = r.json()
+                try:
+                    j = r.json()
+                except Exception as e:  # noqa: BLE001
+                    j = None
+                    diagnostic["detail"] = f"Invalid Worker JSON: {e}"[:400]
                 if isinstance(j, dict) and j.get("ok") is True and j.get("data") is not None:
+                    _LAST_FETCH_ERRORS.pop(ep, None)
                     return j
-                # 200 但上游暫時無資料 → 有限重試一次後放棄
+                diagnostic.update({
+                    "http_status": 200,
+                    "error_code": diagnostic.get("error_code") or "WORKER_OK_FALSE_OR_EMPTY",
+                    "stage": diagnostic.get("stage") or "worker_response",
+                    "error": diagnostic.get("error") or "Worker returned ok=false or empty data",
+                })
+                _LAST_FETCH_ERRORS[ep] = diagnostic
                 if attempt == 0:
                     print(f"[INFO] taifex {ep} ok!=true/無資料 (try {attempt + 1})，4 秒後重試",
                           file=sys.stderr, flush=True)
                     time.sleep(4)
                     continue
-                print(f"[INFO] taifex {ep} 仍無資料，放棄", file=sys.stderr, flush=True)
+                print(f"[INFO] taifex {ep} 仍無資料，放棄：{diagnostic}", file=sys.stderr, flush=True)
                 return None
+            diagnostic.update({
+                "http_status": r.status_code,
+                "error_code": diagnostic.get("error_code") or f"HTTP_{r.status_code}",
+                "stage": diagnostic.get("stage") or "http_request",
+                "error": diagnostic.get("error") or f"Worker HTTP {r.status_code}",
+            })
+            _LAST_FETCH_ERRORS[ep] = diagnostic
             # F3-a（2026-10-19）：退避只留給真的會自己好的狀況（限流 429／上游忙碌 503／
             # read timeout）；502 上游閘道錯誤直接重試，不再每次固定睡 3 秒。
             # 重試次數（2 次）與「失敗即 None」的語意完全不變。
@@ -66,17 +108,24 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
                 time.sleep(3)
                 continue
             if r.status_code == 502:
-                print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，直接重試",
-                      file=sys.stderr, flush=True)
+                print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，直接重試", file=sys.stderr, flush=True)
                 continue
-            print(f"[INFO] taifex {ep} HTTP {r.status_code}，放棄", file=sys.stderr, flush=True)
+            print(f"[INFO] taifex {ep} HTTP {r.status_code}，放棄：{diagnostic}", file=sys.stderr, flush=True)
             return None
         except requests.exceptions.Timeout as e:
+            _LAST_FETCH_ERRORS[ep] = {
+                "error_code": "REQUEST_TIMEOUT", "stage": "http_request",
+                "error": "Worker request timed out", "detail": str(e)[:400],
+            }
             print(f"[INFO] taifex {ep} read timeout (try {attempt + 1})：{e}",
                   file=sys.stderr, flush=True)
             if attempt == 0:
                 time.sleep(3)
         except Exception as e:  # noqa: BLE001
+            _LAST_FETCH_ERRORS[ep] = {
+                "error_code": "REQUEST_FAILED", "stage": "http_request",
+                "error": "Worker request failed", "detail": str(e)[:400],
+            }
             print(f"[WARN] taifex {ep} failed (try {attempt + 1}): {e}",
                   file=sys.stderr, flush=True)
             if attempt == 0:
@@ -334,6 +383,7 @@ def dateless_content_date(now=None) -> str:
     return d.isoformat()
 
 def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
+    _LAST_FETCH_ERRORS.clear()
     unav: list[str] = []
     notes: list[str] = []
     _content = dateless_content_date()
@@ -370,6 +420,18 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     elif _p is not None:
         notes.append(f"Gamma 端點日期 {_p.get('date')} 非 T0 {t0}，拒絕採用（避免舊值混入）")
     gamma_endpoint_unavailable = g_pay is None
+    if gamma_endpoint_unavailable and _LAST_FETCH_ERRORS.get("options-gamma-levels"):
+        _diag = _LAST_FETCH_ERRORS["options-gamma-levels"]
+        _parts = [
+            f"code={_diag.get('error_code')}",
+            f"stage={_diag.get('stage')}",
+            f"HTTP={_diag.get('http_status')}",
+            _diag.get("error"),
+            _diag.get("detail"),
+            _diag.get("data_reason"),
+        ]
+        _summary = "；".join(str(x) for x in _parts if x)
+        notes.append(f"GEX Worker 診斷：{_summary[:900]}")
     # Market-structure-compact 仍保留 T-1/T-2 遞補（Gamma Wall proxy 來源）
     c_pay, c_date = None, None
     for _d in _prev_dates(t0, 2):
