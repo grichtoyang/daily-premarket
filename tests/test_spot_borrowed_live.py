@@ -46,6 +46,11 @@ class LiveBorrowedSourceProbeTests(unittest.TestCase):
         self.assertIsInstance(payload, dict, f"TWT93U response type: {type(payload).__name__}")
         print("TWT93U_LIVE_META", payload.get("stat"), payload.get("date"), len(payload.get("data") or []))
         print("TWT93U_LIVE_FIELDS", payload.get("fields"))
+        fields = payload.get("fields") or []
+        for label in ("當日賣出", "當日還券", "當日調整"):
+            if label in fields:
+                idx = fields.index(label)
+                print("TWT93U_FLOW_FIELD", label, "blank_rows=", sum(1 for row in payload.get("data", []) if len(row) > idx and not str(row[idx]).strip()), "sample=", [row[idx] for row in payload.get("data", [])[:3] if len(row) > idx])
         with patch("src.sources.spot_raw._get_json", return_value=payload):
             parsed = spot_raw.twse_twt93u_sbl(T0)
         self.assertTrue(parsed["date_ok"], parsed)
@@ -62,6 +67,11 @@ class LiveBorrowedSourceProbeTests(unittest.TestCase):
         table = next((x for x in tables if isinstance(x, dict)), {})
         print("TPEX_S47_LIVE_META", payload.get("date"), table.get("date"), len(table.get("data") or []))
         print("TPEX_S47_LIVE_FIELDS", table.get("fields"))
+        fields = table.get("fields") or []
+        for label in ("當日賣出", "當日還券", "當日調整數額"):
+            if label in fields:
+                idx = fields.index(label)
+                print("TPEX_S47_FLOW_FIELD", label, "blank_rows=", sum(1 for row in table.get("data", []) if len(row) > idx and not str(row[idx]).strip()), "sample=", [row[idx] for row in table.get("data", [])[:3] if len(row) > idx])
         with patch("src.sources.spot_raw._get_json", return_value=payload):
             parsed = spot_raw.tpex_sbl(T0)
         self.assertTrue(parsed["date_ok"], parsed)
