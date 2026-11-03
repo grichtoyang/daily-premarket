@@ -1312,3 +1312,13 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 五區塊驗收僅代表本輪指定五區，不等同 42 區塊全 Dashboard 驗收。42 區塊總驗收自本日開始列為 IN PROGRESS；尚未完成逐區塊資料鏈稽核，不得宣稱全頁 PASS。
 - 下一步：以最新 P0 Artifact／對應 DATA_REPORT 為固定 T0，建立 42 區塊清單，逐項追蹤原始來源 → DATA_REPORT → Builder／JSON → 圖表 → 分析／判斷／操作；每區標示 PASS／FAIL／BLOCKED／NOT TESTED，發現缺陷先定位再最小修正並回歸測試。
 - 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+
+## 2026-11-03 42 區塊稽核：T0 基準固定與盤點差異待釐清
+- 工作分支唯讀查證：`fix/three-market-correlation-history` HEAD `e678877bc076e157c948483d40f136e0f504303e`；Recovery 文件分支 HEAD `77de89fe1834fd72c44f61ca1eadd0d7e2d3fda5`。
+- CI Run `41568208858` 已重新查證為 completed / success，head_sha 與工作分支 HEAD 完全相符；Artifact `13200545155` 已重新下載，確認 ZIP 內含 `p0/data-20261102.json`（62,774 bytes，SHA-256 `aaf5cc488a2d86f7abadbe3c9ed0ab05417863ba726c6bcf30dde2caed25a980`）及 `p0/v9-pro-20261102.html`（314,159 bytes，SHA-256 `d98eec6560462a21d63d4df03f8d3bdf950b2442a0d8f1f8de6190b37af28839`）。此 Artifact 是本輪 42 區塊稽核的 UI／資料固定基準。
+- 同一分支的程式基準：React template SHA `513ecee347f8df931196b46dd7a0f798902fc576`；Builder SHA `c4e49dfcf047cb86bd1592bf2ffdeb3e6121581f`；T0 DATA_REPORT `data_reports/DATA_REPORT_20261102.md` SHA `8ccd0dfc0f86f80e23253781bf923a533566df96`。
+- **重要防錯：**工作分支根目錄 `dashboards/data-20261102.json` SHA `9e2c50907535d6f070a353eca50722d8c5e98aa1`，不是此次 P0 Artifact 的 JSON（SHA `aaf5cc...`）。不得拿根目錄 JSON 代替 Artifact P0 JSON 做畫面／數值驗收；所有後續稽核需固定讀取 Artifact 的 `p0/data-20261102.json`。
+- 初步盤點發現 Artifact JSON 的 `analysis.cards` 有 48 個解析卡片鍵；目前 template 靜態掃描找到 34 個主要卡片元件呼叫點，另有 8 個 KPI 格。此數量不直接等於使用者確認的 42 個可見區塊（動態 map／隱藏／跨頁渲染仍待核對），不得直接把 48 個解析鍵當成 48 個 UI 區塊，也不得只憑 34 個靜態呼叫點結案。
+- 42 區塊總稽核：IN PROGRESS；目前只完成 T0／Artifact／程式基準固定及初步盤點差異辨識，尚未逐區塊驗證資料鏈。不得宣稱全頁資料或解析 PASS。
+- 下一步：以實際四頁 React render tree 對照使用者確認的 42 個可見區塊，建立唯一 42 項清單；每項再核對來源欄位、DATA_REPORT、Builder 計算、Artifact JSON、圖表／表格與分析／判斷／操作文字。先完成清單與資料鏈映射，再逐項測試缺值、零值、反向及單位邊界。
