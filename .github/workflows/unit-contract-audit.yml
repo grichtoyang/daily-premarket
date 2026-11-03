@@ -21,12 +21,28 @@ on:
       - 'tests/test_taifex_night_unavailable_summary.py'
       - 'tests/test_fetch_data_borrowed_sources.py'
       - 'tests/test_spot_borrowed_semantics.py'
+      - 'tests/test_spot_borrowed_live.py'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+
+  live-borrowed-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install HTTP dependency
+        run: python -m pip install requests
+      - name: Verify official TWSE and TPEx historical sources for 2026-10-30
+        run: python -m unittest discover -s tests -p 'test_spot_borrowed_live.py' -v
+
   unit-contract:
     runs-on: ubuntu-latest
     steps:
