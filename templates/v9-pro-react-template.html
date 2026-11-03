@@ -155,9 +155,14 @@ function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis}) {
     "；夜盤成交量占日夜總量 "+(volumeShare==null?"缺值":fmt(volumeShare,2)+"%")+
     "；外資夜盤淨交易 "+(foreignNight==null?"缺值":(foreignNight>0?"+":"")+fmt(foreignNight,0)+" 口")+
     "；外資期貨 OI "+(foreignOi==null?"缺值":fmt(foreignOi,0)+" 口")+"。";
-  const cTarget=valid(night?.l)&&valid(closeDay)
-    ?"開盤先核對加權現貨與台指期是否守住夜盤低點 "+priceFmt(night.l,0)+"；若反彈無法收復日盤收盤 "+priceFmt(closeDay,0)+"，夜盤弱勢訊號延續的風險較高；若收復並站穩，則夜盤跌勢尚未獲現貨確認。夜盤量占比只代表成交分布，不直接等同方向強度。"
-    :"夜盤低點或日盤收盤缺值／無效，暫不提供價位觸發條件；待價格資料完整後，再確認是否守住夜盤低點及能否收復日盤收盤。";
+  const nightPriceReady=valid(closeDay)&&valid(closeNight)&&valid(night?.l);
+  const cTarget=!nightPriceReady
+    ?"夜盤收盤、夜盤低點或日盤收盤缺值／無效，暫不提供價位觸發條件；待價格資料完整後，再確認日夜盤關鍵價位。"
+    :nightDelta<0
+      ?"開盤先觀察能否收復日盤收盤 "+priceFmt(closeDay,0)+"；若反彈受阻後再跌破夜盤低點 "+priceFmt(night.l,0)+"，夜盤弱勢才獲得進一步價格確認；若重新站回日盤收盤並守穩，弱勢訊號應降級。夜盤量占比只代表成交分布，不直接等同方向強度。"
+      :nightDelta>0
+        ?"開盤先觀察能否守住日盤收盤 "+priceFmt(closeDay,0)+"；若回落跌破，夜盤偏強訊號尚未獲現貨確認；若回測守住並續強，才提高偏強延續判斷。夜盤低點 "+priceFmt(night.l,0)+" 作第二層防守參考，不是直接進場價。夜盤量占比只代表成交分布，不直接等同方向強度。"
+        :"日夜盤收盤差距不明顯；先觀察日盤收盤 "+priceFmt(closeDay,0)+" 附近的價格反應，夜盤低點 "+priceFmt(night.l,0)+" 作下方參考，不單憑量能占比推斷方向。";
   const current=num(spot?.close), put=num(options?.putWall), call=num(options?.callWall), flip=num(options?.flip), gamma=num(options?.gammaWall);
   const currentReady=valid(current);
   const upper=[gamma,call].filter(x=>valid(x)&&currentReady&&x>current).sort((a,b)=>a-b)[0]??null;
