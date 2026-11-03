@@ -1,7 +1,10 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from src.sources.taifex import BASE, DATE_EPS, _get, _gamma_status, _sync_gamma_unavailable, _valid_gex_levels
+from src.sources.taifex import (
+    BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status,
+    _sync_gamma_unavailable, _valid_gex_levels,
+)
 
 
 class GammaFallbackAvailabilityTests(unittest.TestCase):
@@ -21,6 +24,46 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
             get.call_args.args[0],
             f"{BASE}/options-gamma-levels?date=2026-10-30",
         )
+
+    def test_worker_http_502_preserves_stage_and_detail(self):
+        response = Mock(status_code=502)
+        response.json.return_value = {
+            "ok": False,
+            "error_code": "TAIEX_SPOT_UNAVAILABLE",
+            "stage": "taiex_underlying",
+            "error": "TAIEX underlying price unavailable",
+            "detail": "TWSE FMTQIK HTTP 503",
+            "data": {"reason": "TWSE FMTQIK HTTP 503"},
+        }
+        with patch("src.sources.taifex.requests.get", return_value=response), \\
+             patch("time.sleep", return_value=None):
+            payload = _get("options-gamma-levels", "2026-10-30")
+
+        self.assertIsNone(payload)
+        diagnostic = _LAST_FETCH_ERRORS["options-gamma-levels"]
+        self.assertEqual(diagnostic["error_code"], "TAIEX_SPOT_UNAVAILABLE")
+        self.assertEqual(diagnostic["stage"], "taiex_underlying")
+        self.assertEqual(diagnostic["detail"], "TWSE FMTQIK HTTP 503")
+        self.assertEqual(diagnostic["http_status"], 502)
+
+    def test_worker_http_200_ok_false_preserves_data_reason(self):
+        response = Mock(status_code=200)
+        response.json.return_value = {
+            "ok": False,
+            "error_code": "GEX_NO_COMMON_EXPIRY",
+            "stage": "gex_input_match",
+            "error": "GEX unavailable",
+            "data": {"reason": "No common Chain/Delta expiry"},
+        }
+        with patch("src.sources.taifex.requests.get", return_value=response), \\
+             patch("time.sleep", return_value=None):
+            payload = _get("options-gamma-levels", "2026-10-30")
+
+        self.assertIsNone(payload)
+        diagnostic = _LAST_FETCH_ERRORS["options-gamma-levels"]
+        self.assertEqual(diagnostic["error_code"], "GEX_NO_COMMON_EXPIRY")
+        self.assertEqual(diagnostic["stage"], "gex_input_match")
+        self.assertEqual(diagnostic["data_reason"], "No common Chain/Delta expiry")
 
     def test_validates_source_schema_and_sorts_levels(self):
         rows = [
