@@ -1,5 +1,6 @@
 import unittest
 from collections import Counter
+import re
 from unittest.mock import patch
 
 from src.sources import spot_raw
@@ -23,6 +24,14 @@ class LiveBorrowedSourceProbeTests(unittest.TestCase):
         if "市場別" in fields:
             market_index = fields.index("市場別")
             print("TWT72U_MARKET_COUNTS", Counter(str(row[market_index]).strip() for row in payload.get("data", []) if len(row) > market_index))
+            stock_markets = {"集中市場", "櫃檯買賣中心"}
+            bad_rows = [
+                (row[0], row[market_index], row[5])
+                for row in payload.get("data", [])
+                if len(row) > market_index and str(row[market_index]).strip() in stock_markets
+                and not re.fullmatch(r"[0-9A-Z]{4,6}", str(row[0] or "").strip().upper())
+            ]
+            print("TWT72U_BAD_STOCK_CODES", bad_rows[:20], "count=", len(bad_rows))
         with patch("src.sources.spot_raw._get_json", return_value=payload):
             parsed = spot_raw.twse_twt72u_sbl(T0)
         self.assertTrue(parsed["date_ok"], parsed)
