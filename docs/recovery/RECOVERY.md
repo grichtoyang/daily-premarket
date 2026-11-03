@@ -1798,3 +1798,29 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 - 因此先不要重跑 10/30。完整證據、各 source 的程式位置、官方資料定義及接續方案均已記錄在 PROGRESS.md 最新的「資料層第二輪：借券指標語義與歷史日期可用性稽核」段落。
 - 後續先訂資料契約：`sbl_borrow_balance`（TWT72U 借入未還）、`sbl_short_sale_balance`（TWT93U + TPEX Margin_SBL 借券賣出未回補）、`sbl_shortable_limit`（TWT96U 當日可借券賣出限額）；三者絕不可混加。歷史來源缺日期或日期不符即 unavailable。
 - 本輪僅唯讀稽核及官方文件查核；未改程式、報告、workflow、DB，未 Merge／Deploy。
+
+## 2026-11-03 資料層第三輪接手摘要：TWT93U 索引錯誤已確認
+
+### 目前最重要結論
+- **TWT93U parser 現行欄位索引錯誤，已確認。** `src/sources/spot_raw.py` 用 `row[7]` 當借券前日餘額、`row[11]` 當借券當日餘額；但 15 欄原始順序中，index 7 是融券限額、index 11 是借券賣出當日調整，借券賣出前日餘額／當日餘額分別在 index 8／12。這會使現行 TWT93U sale_bal／sale_chg 不可信。欄位順序依獨立資料欄位整理與 TWSE 官方 TWT93U 欄位說明交叉核對。修正時必須先取得真實 JSON `fields`／`data`，以欄名定位，不可只硬改 index。
+- **TWT72U 是官方借券餘額資料產品，且官方歷史查詢頁存在。** 頁面可選日期及分類，資料自 2004-11-22 起；官方欄位包含前日借券餘額、今日新增借券、今日還券、今日借券餘額。可是 Data E-Shop 同時把 TWT72U 列為訂閱商品，因此 RWD API 的實際可用性、分類、授權及 workflow 可否穩定使用尚未確認。不得先把它當成可用資料源。
+- **TWT96U 只代表當日可借券賣出限額**，不是借券餘額，也不是借券賣出餘額。
+- **TPEX `tpex_margin_sbl` 的欄位映射可能也反了。** endpoint 是「融券借券賣出餘額」，官方歷史表同時包含融券餘額與借券賣出餘額。現行程式把 `SecuritiesBorrowingBalanceOfTheMarketDay` 寫入 `bal`，把 `SaleBalanceOfTheMarketDay` 寫入 `sale_bal`，疑似把借券賣出餘額與融券餘額對調；但未取得真實 JSON 欄位樣本，仍列 HIGH RISK / NOT CONFIRMED，不可猜 mapping。
+- TWSE／TPEX 的借券賣出餘額在市場分開、日期一致、單位確認為股數後，才可合併；絕不能和 TWT72U 借券餘額或 TWT96U 可借限額混加。
+
+### 接續工作（嚴格限縮）
+1. 取得 TWT93U 2026-10-30 真實 JSON response，核對 `fields`、row 長度、date，加入 fixture；依欄名取 index。
+2. 取得 TPEX `tpex_margin_sbl` 真實 JSON sample，對照官方歷史 CSV 欄位，確認三個欄位 `SecuritiesBorrowingBalanceOfTheMarketDay`、`SaleBalanceOfTheMarketDay`、`SaleBalancePreviousDay` 的中文意義及單位。
+3. 驗證 TWT72U 歷史 RWD 查詢路徑、selectType、日期回傳及授權可用性；若不能穩定合法使用，真正借券餘額欄保持 unavailable。
+4. 上述未完成前，不修改 DATA_REPORT 借券 mapping、不重跑 10/30、不 Merge／Deploy。只在 `phase2-p0-ui-fixes` 工作；master、P0 base、V8 不動。
+
+### 本輪狀態
+- TWT93U index mapping：**FAIL / CONFIRMED**。
+- TWT93U date=20261030 raw response：**NOT TESTED**。
+- TWT72U 官方產品定義及歷史查詢頁：**PASS**；API／授權：**NOT TESTED**。
+- TWT96U 語義：**PASS / OFFICIAL**（當日可借券賣出限額）。
+- TPEX field mapping：**HIGH RISK / NOT CONFIRMED**。
+- 程式、DATA_REPORT、workflow、DB：本輪未修改；未重跑歷史報告。
+- Auditor：單一模型自我稽核，非獨立多模型審核。
+
+Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第三輪：TWT93U 欄位索引確認與 TWT72U 歷史來源查核」。
