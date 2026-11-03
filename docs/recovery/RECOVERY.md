@@ -995,3 +995,16 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 從 Run 41559674941 下載 github-pages artifact，確認內含正確分支產生的最新 HTML／data JSON，檢查 Pth() 注入與關鍵位來源。
 2. 將該 HTML 交由使用者手機開啟，驗收三劇本：有效偏多／缺 Flip、區間有效／價位錯側、有效偏空／缺 PutWall／缺支撐／缺值；並檢查多空條件檢查表、文字換行、數字與圖表不重疊。
 3. 只有 Artifact source、資料值、手機視覺均 PASS 才結案；未經授權不 merge／deploy。
+
+
+## 37. 2026-11-03 CI Artifact 實際內容抽查
+- 已下載 Run 41559674941 的 github-pages artifact（artifact id 13196591720），解開 ZIP／TAR 後確認 `p0/manifest.json` 指向 date=20261102、data-20261102.json、v9-pro-20261102.html；本次 V9 Pro 正式產物位於 p0 子目錄，不能誤拿 artifact root 的舊版 Pages root HTML。
+- 已核對 p0/v9-pro-latest.html 含本次修正後 Pth()；注入資料日期 2026-11-02，現貨收盤 44920.14，PutWall 44000、CallWall 48000、GammaWall／Gamma Flip 均為 null。
+- 將 Artifact 實際 HTML 中 Pth() 函式抽出，以 2026-11-02 實際注入資料執行：偏多因 Flip 缺值而阻擋、區間因 44000 < 44920.14 < 48000 而成立、偏空因現價未低於 PutWall 而阻擋。Node runtime check PASS。
+- 已抽取正確 HTML 至 /mnt/data/v9-pro-20261102-scenario-fixed.html（303,448 bytes；SHA-256 e22783b01067a0de641665012c48827d4f8144b827d28b5126ce82716addec63），可供使用者手機複驗。
+- Artifact 內容／日期／資料注入／實際 Pth() 對照 PASS；手機實機畫面仍 NOT TESTED。未 merge／部署；Master／V8 未修改。
+
+### 下一步
+1. 使用者下載並以手機瀏覽器開啟 v9-pro-20261102-scenario-fixed.html，檢查三劇本及多空條件檢查表的文字、卡片、換行、圖表／數字重疊。
+2. 依本次資料，應看到偏多未成立（Gamma Flip 缺值）、區間成立（PutWall 44000 < 現價 44920.14 < CallWall 48000）、偏空未成立（現價未跌破 PutWall）。若畫面與此不符即 FAIL，提供截圖修正。
+3. 手機 PASS 後再檢查下一個未完成 P0 區塊；未經授權不 merge／deploy。
