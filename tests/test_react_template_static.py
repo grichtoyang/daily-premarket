@@ -48,6 +48,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('numeric.toFixed(2)', self.html)
         self.assertIn('numeric>0?"+":""', self.html)
         self.assertIn('Number(String(cell).replace(/,/g,""))', self.html)
+        self.assertIn("各欄由原始千元金額獨立換算並四捨五入至小數二位", self.html)
+        self.assertIn("淨額以未四捨五入原始值計算", self.html)
 
     def test_option_institutional_chart_parses_signed_thousands(self):
         # The chart must render both session fields, not just the daytime field.
