@@ -896,3 +896,16 @@ P1 尚未開始。啟動前必須：
 1. 取得並核對 HEAD `0e59d8cc4350137facdb6924300ad0f25c42928a` 的新 CI Run，完整 build 必須 SUCCESS。
 2. 抽查新 Artifact 與實際 JSON，重跑缺值／零值／反向測試。
 3. 交付新版手機驗收；通過後進入 42 區塊完整驗收。
+
+
+## 2026-11-03 夜盤反向情境修正追加
+- 五組解析反向稽核發現 C 區交易觀察句固定偏空，夜盤上漲時仍可能輸出「夜盤弱勢訊號延續」。已改為依夜盤相對日盤收盤的正／負／零方向分別產生偏強、偏弱、中性觀察；必要價格缺值時不提供價位觸發句。
+- 新增測試覆蓋夜盤上漲／下跌反向情境。Template commit `a3a49002c31646b29906b970ac4c1170647636f0`；test commit `882227d153007c7429833c011f826dadd6b8cb99`。
+- 工作分支最新已知 HEAD `882227d153007c7429833c011f826dadd6b8cb99`；兩檔已讀回確認。
+- 最新修正版本 CI 仍 NOT TESTED／BLOCKED（目前可用 GitHub 連線無法查詢 push-triggered run 清單或手動 dispatch；combined status 空值不代表 PASS）。新 Artifact／手機驗收 NOT TESTED。
+- 未 merge／deploy；Master／V8 未修改；B 區 0.01 億元精度差未解；42 區塊總驗收未開始。
+
+### 下一步
+1. 取得 HEAD `882227d153007c7429833c011f826dadd6b8cb99` 的新 CI Run ID，完整 build 必須 SUCCESS。
+2. 抽查新 Artifact 並重跑五組解析實際 JSON、缺值／零值／反向測試。
+3. 交付手機驗收；通過後進入 42 區塊完整驗收。
