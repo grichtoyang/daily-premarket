@@ -1661,3 +1661,85 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 - Fix commit: `ddc516f11840605c7bb704024298bbc395de0b73`; Blob SHA: `b8d09e461175839e178dab30de405c43b14fa7b7`.
 - GitHub file re-read SHA matches; V8 syntax parse PASS; local date-normalization check for `2026-10-30` produces `20261030` and passes eight-digit validation.
 - This is a source-level fix only. The updated V1.5 must be redeployed to Cloudflare and the real endpoint retested. TWSE RWD response parsing and full GEX success remain NOT TESTED.
+
+
+## 2026-11-03 最新中斷恢復點：歷史 DATA_REPORT 日期混用
+
+> 本節是目前最新工作中斷點，優先於前面 GEX Worker V1.5 的「下一個唯一工作」。GEX Worker V1.5 的程式版本與部署狀態仍按前文保留；目前工作焦點已切回 DATA_REPORT 日期一致性。
+
+### 目標與範圍
+- Repository：`grichtoyang/daily-premarket`
+- 程式分支：`phase2-p0-ui-fixes`
+- Recovery 文件分支：`ops/recovery-handoff`
+- 目標 T0：2026-10-30。
+- 問題：2026-11-03 21:26 手動重跑後，歷史報告混入非 T0 快照，部分欄位 unavailable，部分欄位沿用舊報告。
+- 不碰 master、V8、原始 P0 分支；未經批准不修改程式、不 commit 程式、不 deploy、不 merge、不重跑 workflow。
+
+### 最新報告與比較證據
+- 新報告：`data_reports/DATA_REPORT_20261030.md`，phase2-p0-ui-fixes blob SHA `61b5a8799bec62762a60d5efb3f1099c18084fc5`；報告產出時間 2026-11-03 21:26:27；workflow Run `41644283168`，Job `125945406903`。
+- 舊報告：fix/three-market-correlation-history blob SHA `665ae0ce957cbda372a1d70e1f06f0eea124ba11`；產出時間 2026-11-01 23:51:51。
+- 新報告註記：50 格沿用前版有值；73 格以本次新抓取覆蓋。兩者是不同計數，不能合併解讀成報告完整重建。
+- 新舊報告逐欄比對已見到三大法人、台指期日盤、日盤法人等新值與舊報告不同，但新值日期未被一致證明為 T0；部分夜盤欄位因日期檢核而 unavailable；GEX／Gamma Wall／Gamma Flip 仍有 10/30 值。
+- 新報告借券欄位：借券餘額 2,525,111 張（TWT96U + GRETAI，無日期欄最新快照）；借券賣出餘額 36,178 張、增減 -1,273 張均沿用前版，原來源註記 TWT93U + TPEX margin_sbl。舊報告借券餘額為 4,651,514 張。
+
+### 已確認的程式根因
+
+1. **歷史日期隔離不一致**
+   - TAIFEX 的部分無日期端點回傳最新快照；目前程式有些欄位只加 note 仍採用最新資料，有些夜盤欄位則會因日期不符拒絕。
+   - TWSE 三大法人日期不符時只新增 note，仍採用最新可得資料。
+   - TWT96U 無日期欄，程式直接使用最新快照。
+   - 這會使同一份歷史 T0 報告混合 T0 原始值、較新快照、沿用舊值及 unavailable。
+   - 狀態：程式行為已定位 **PASS**；逐一修正及回歸測試尚未做。
+
+2. **同 T0 protect 判斷漏查 DATA_REPORT**
+   - `src/fetch_data.py` 的 `main()` 在輸出檔已存在時，使用 `reports/Daily_REPORT_{T0}_*.md` 判斷 `has_report`。
+   - 沒有將 `data_reports/DATA_REPORT_{T0}.md` 本身納入判斷。
+   - 因此同 T0 DATA_REPORT 已存在，但 reports 目錄沒有符合檔案時，會被錯誤判為 `protect=False`，進入「同 T0 覆蓋模式」。
+   - `merge_same_t0()` 已讀取確認：protect=True 時新舊不同實值傾向沿用舊值；新值 unavailable 時可回填舊值；protect=False 時新舊不同實值保留本次新值並計入 overwritten；缺值回填仍會發生。50 格 filled 與 73 格 overwritten 是不同計數。
+   - 狀態：程式缺陷已定位 **PASS**；修正及測試尚未做。
+
+3. **TWSE TWT93U 日期參數**
+   - `spot_raw.roc8("2026-10-30")` 產生 `1151030`。
+   - `twse_twt93u_sbl(roc)` 將該民國日期直接放入 `https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date={roc}`。
+   - 本次 workflow log 曾回報「查詢日期小於 94 年 7 月 1 日」。
+   - 已確認程式把民國年格式傳入 API；但尚未以官方文件或實際成功請求確認正確 query date 格式，故不可直接把「改成西元 YYYYMMDD」當作已驗證修法。
+   - 狀態：民國格式傳入 **PASS（程式事實）**；正確格式／端點回應 **BLOCKED，待查**。
+
+4. **TPEX margin_sbl 日期匹配**
+   - `tpex_sbl(roc)` 呼叫 `tpex_margin_sbl`，沒有日期 query parameter。
+   - 逐列只接受 `str(row["Date"]).strip() == roc`。
+   - 本次回應 932 rows，但 matched_date_rows=0。
+   - 尚未取得原始 Date 欄位樣本，無法確認資料實際格式或是否包含 2026-10-30。
+   - 狀態：比對邏輯 **PASS（程式事實）**；格式根因 **BLOCKED**。
+
+### 下一步（請嚴格依序）
+1. 查證 TWT93U 官方／實際 endpoint 的正確日期格式，取得修正前後可重現的 response；不要只憑錯誤訊息猜格式。
+2. 取得 TPEX `tpex_margin_sbl` 原始資料的 Date 欄位樣本，確認 932 rows 是否包含 2026-10-30，並核對日期表示方式。
+3. 查核舊報告 11/1 當次原始 API response 或可追溯 log，區分 API 當時提供歷史值、同 T0 沿用值、最新快照。
+4. 提出最小修正清單與測試矩陣：相同 T0 白天／晚上重跑、舊報告存在、缺值回填、錯日期拒收、無日期端點拒收、明示 force rewrite。
+5. 取得使用者批准後才修改程式；修正後先跑測試，再以同一 T0 白天及晚上重跑做日期一致性驗收，最後才回到 Dashboard 階段。
+
+### 明確驗收原則
+- 同一 T0 的報告不得因產出時間不同而混入其他交易日資料。
+- 無日期欄位的最新快照不得冒充歷史 T0 值；若無法證明日期，應標示 unavailable 或採明確可追溯的同 T0 舊值。
+- 沿用值必須標示「沿用前版」、原始來源與可得的資料日期；不得偽裝成當次抓取成功。
+- 不可將 workflow SUCCESS 當作 DATA_REPORT 日期正確性或完整性 PASS。
+- 不可把 50 格 filled 與 73 格 overwritten 混為一談。
+- 本輪為單模型自我審查，非獨立多模型 Auditor。
+
+### 本輪狀態
+| 項目 | 狀態 |
+|---|---|
+| 歷史 T0 日期混用的程式行為定位 | PASS |
+| 同 T0 protect 判斷漏查 DATA_REPORT | PASS |
+| TWT93U 民國日期被直接傳入 query | PASS |
+| TWT93U 正確日期格式及實際成功 response | BLOCKED |
+| TPEX Date 原始格式／目標日期是否存在 | BLOCKED |
+| 舊報告 11/1 原始 API response 追溯 | NOT TESTED |
+| 程式修正／測試／commit | NOT DONE |
+| DATA_REPORT 重跑／Dashboard workflow | NOT DONE |
+| Deploy／Merge | NOT DONE |
+
+### 本輪 GitHub 文件更新紀錄
+- 僅更新 `docs/recovery/RECOVERY.md` 與 `docs/recovery/PROGRESS.md`。
+- 程式分支 `phase2-p0-ui-fixes`、master、V8、DATA_REPORT、Dashboard、Worker 均未修改。
