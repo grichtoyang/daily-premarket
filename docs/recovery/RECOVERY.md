@@ -1332,3 +1332,14 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 本次完成的是 42 個可見區塊的**結構盤點與計數對帳**，不是 42 項資料鏈品質驗收。結構對映：PASS；逐項 source → DATA_REPORT → Builder → JSON → chart/table → analysis/judgment/action：仍 IN PROGRESS。
 - 此次僅修正 Recovery／Progress 的頁數與區塊數判讀，未修改 Builder、Template、DATA_REPORT、Artifact 或 Dashboard UI；未 Merge／Deploy，Master／V8 未修改。
 - 下一步依六頁 42 項清單逐一進行資料鏈核驗；先從總覽 8 KPI 與現貨頁 6 區塊開始，保留已 PASS 區塊不動，只在有原始證據的缺陷上提出最小修正。
+
+
+## 2026-11-03 首輪 KPI 資料鏈核驗：期貨 OI 零值被 Bias 因子誤納（確認缺陷，暫不改碼）
+- 以 Artifact `13200545155` P0 JSON、T0 `DATA_REPORT_20261102.md`、Builder `c4e49dfcf047cb86bd1592bf2ffdeb3e6121581f` 交叉核對總覽 8 KPI。
+- 六個直接資料 KPI 對帳 PASS：加權收盤 44,920.14 點、外資現貨 -1,124.7 億、台指期日盤收 45,301 點、夜盤收 44,433 點、OI PCR 0.57、Call Wall 48,000 點；均與 DATA_REPORT／P0 JSON 對應欄位一致。
+- 外資期貨淨 OI 0 口：原始 DATA_REPORT 及 JSON 都是 0，但同一份資料中三法人 OI 全為 0，Builder 的 `classify_futures_oi()` 已明確判定「三法人淨 OI 全為 0，視為可疑快照，不納入方向判斷」。因此此值不可當成已驗證有效的真實持倉數字；UI／KPI 仍顯示 0 口，屬需修正的狀態傳遞／標示問題。
+- 已確認的邏輯矛盾：`build_41_cards()` 產生的「三法人 OI 可疑、不納入方向判斷」文字存在；但 `V9Analyzer._evaluate_factors()` 仍直接將 `futures.foreign_oi=0` 當作有效值，建立 `foreign_fut` active factor（score 0、base weight 8），且 `calculate_weights()` 將它納入有效權重正規化。P0 JSON 亦顯示此因子 status=active、effective_weight=9.52381；factor_quality confidence=high、bias_reliable=true。
+- 影響量化（只做離線反事實試算，未修改任何檔案）：依 P0 JSON 既有 adaptive weights，若排除可疑 foreign_fut 因子並重新正規化其餘有效權重，Bias 約由 24 降至 21（未重新跑全套 optimizer，屬影響估算，不是修正後正式值）；base weight coverage 約由 85.6% 降至 77.9%，品質等級會由 high 降為 medium。故目前 Bias 24 的程式重現性可確認，但因納入可疑 OI 因子，Bias 的可靠度標示與方向解讀 FAIL。
+- 狀態：總覽六個直接行情／籌碼 KPI 映射 PASS；期貨 OI 值有效性／狀態傳遞 FAIL；Bias 現行輸出可重現 PASS、其輸入有效性與 confidence 標示 FAIL。此為一個已定位的根因群，不拆成多個重複修正任務。
+- 保護措施：本輪只讀查證與 Recovery／Progress 記錄，沒有修改 Builder、Template、DATA_REPORT、JSON、Artifact、Dashboard；沒有 Merge／Deploy。已通過的 B 區精度、五區手機版面與 42 區塊結構對映全部凍結。
+- 後續處置：先完成 42 區塊其餘資料鏈清查，彙整缺陷後再一次提出最小修正方案；修正時須讓「全零可疑 OI」狀態同步影響 KPI 顯示、Bias 因子 active/disabled、權重覆蓋率／confidence、相關分析文字，並加回歸測試，禁止只改單一文案。
