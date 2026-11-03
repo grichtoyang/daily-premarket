@@ -1366,8 +1366,6 @@ async function fetchTAIEXCloseForDate(requestedISO) {
   const digits = value =>
     String(value ?? "").replace(/\D/g, "");
 
-  const requestedDigits =
-    digits(requestedISO);
 
   const normalizeDate = value => {
     const raw = digits(value);
