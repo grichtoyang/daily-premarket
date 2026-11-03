@@ -318,6 +318,10 @@ console.log("synthesis narrative actual + missing + zero + malformed + reverse f
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS", result.stdout)
 
+    def test_trade_plan_keeps_max_pain_separate_from_support(self):
+        self.assertIn('["磁吸參考",`${g(l.maxPain)}`]', self.html)
+        self.assertNotIn('["支撐",`${g(l.putWall)} / ${g(l.maxPain)}`]', self.html)
+
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
 
