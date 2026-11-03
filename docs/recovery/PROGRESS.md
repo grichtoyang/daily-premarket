@@ -1244,3 +1244,21 @@ P1 尚未開始。啟動前必須：
 - Fix commit: `ddc516f11840605c7bb704024298bbc395de0b73`; Blob SHA: `b8d09e461175839e178dab30de405c43b14fa7b7`.
 - GitHub file re-read SHA matches; V8 syntax parse PASS; local date-normalization check for `2026-10-30` produces `20261030` and passes eight-digit validation.
 - This is a source-level fix only. The updated V1.5 must be redeployed to Cloudflare and the real endpoint retested. TWSE RWD response parsing and full GEX success remain NOT TESTED.
+
+
+## 2026-11-03 DATA_REPORT 歷史 T0 重跑日期混用調查（最新中斷點）
+
+- 最新調查分支：`phase2-p0-ui-fixes`；Recovery 文件分支：`ops/recovery-handoff`。
+- 目標：釐清 2026-10-30 DATA_REPORT 在 2026-11-03 晚間手動重跑後，為何混入其他日期快照、部分欄位 unavailable、部分欄位沿用前版。
+- 11/03 新報告 workflow Run：`41644283168`；Job：`125945406903`；產出時間 2026-11-03 21:26:27；T0=2026-10-30。
+- 新報告檔案 blob SHA（phase2-p0-ui-fixes）：`61b5a8799bec62762a60d5efb3f1099c18084fc5`。舊報告（fix/three-market-correlation-history）blob SHA：`665ae0ce957cbda372a1d70e1f06f0eea124ba11`。
+- 新報告含 50 格沿用前版、73 格以本次新抓取覆蓋的註記；欄位值比較證明有部分最新快照日期未對齊 T0。GEX／Gamma Wall／Gamma Flip 仍有 10/30 值，但不得據此認定整份報告日期正確。
+- `merge_same_t0()` 的規則已讀取：`protect=True` 時同欄新舊實值不同會沿用舊值；新值 unavailable 時舊值有值則填回；`protect=False` 時新舊實值不同會保留本次新值並計入 overwritten；缺值回填仍會發生。回傳的 filled count 與 overwritten count 是不同計數。
+- `main()` 的 protect 判斷已確認只查 `reports/Daily_REPORT_{T0}_*.md`；沒有查同 T0 的 `data_reports/DATA_REPORT_{T0}.md`。因此，即使目標 DATA_REPORT 已存在，只要 reports 目錄沒有符合檔案，就會進入 `protect=False`。這是已定位的程式缺陷。
+- TWT93U：`spot_raw.roc8("2026-10-30")` 產生 `1151030`；`twse_twt93u_sbl(roc)` 將此字串直接放入 `TWT93U?response=json&date={roc}`。Log 曾回報「查詢日期小於 94 年 7 月 1 日」。已確認程式傳入民國年格式；但官方端點要求的正確日期格式及修正後真實回應尚未驗證，不能直接宣稱已修好。
+- TPEX `tpex_sbl(roc)` 呼叫不帶日期參數的 `tpex_margin_sbl`，逐列要求 `str(row["Date"]).strip() == roc`。本次 932 rows、matched_date_rows=0；尚未取得原始 Date 值樣本，無法確認應如何正規化。
+- 舊報告的借券賣出餘額 36,178 張、增減 -1,273 張；新報告同值但來源註記「沿用前版（原來源：TWSE TWT93U + TPEX margin_sbl）」。因此新報告這兩值不是本次 API 成功取得。借券餘額則由 4,651,514 張變成 2,525,111 張，來源為無日期欄位的 TWT96U／GRETAI 最新快照。
+- 修正原則：歷史 T0 報告不得混入其他日期快照；無日期 API 必須有日期證據或拒絕納入；同 T0 有效舊值可依明確規則沿用並保留原始來源／日期；protect 判斷須涵蓋 DATA_REPORT 本身。
+- 狀態：日期混用根因（無日期端點缺少一致 T0 gate）PASS；protect 判斷漏查 DATA_REPORT PASS；TWT93U 日期格式根因已定位到民國格式傳入，但官方正確格式驗證 BLOCKED；TPEX Date 格式 BLOCKED；舊報告當次原始 API 回應 NOT TESTED。
+- 本輪未修改程式、報告、workflow 或資料庫；未 commit 程式、未 deploy、未重跑 workflow、未 merge。
+- 下一步唯一工作：先取得 TWT93U 正確日期格式的官方／實際端點證據及 TPEX 原始 Date 值，再提出最小修正與測試清單；未經使用者批准不得修改程式。
