@@ -12,7 +12,9 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('sources["sbl_sale_bal"]', source)
         self.assertIn('sources["sbl_sale_chg"]', source)
         self.assertNotIn('sources["sbl"] =', source)
-        self.assertIn('sbl_bal = None', source)
+        self.assertIn('twse_twt72u_sbl(roc)', source)
+        self.assertIn('twse_twt93u_sbl(roc)', source)
+        self.assertIn('tpex_sbl(roc)', source)
         self.assertNotIn('_add(_add(stw["tw"], stw["otc"]), stp["bal"])', source)
         self.assertIn('TWT96U 可借券賣出股數不等於借券餘額', source)
 
