@@ -1146,3 +1146,20 @@ P1 尚未開始。啟動前必須：
 - **真實 Worker endpoint 與 DATA_REPORT notes：NOT TESTED**。
 - **Worker deploy：NOT DONE**。
 - 下一步：補做 Worker JavaScript 語法／部署前驗證；檢查通過後才部署 Worker，部署後再以受控 GEX endpoint 呼叫驗證錯誤階段與 DATA_REPORT notes。不得因 Python tests PASS 就宣稱 Worker 已上線。
+
+
+
+## 2026-11-03 Worker V1.5 source-level audit / syntax validation checkpoint
+
+- Re-read Worker, Python source and tests on `phase2-p0-ui-fixes`; the three blob SHAs remain unchanged from the previous checkpoint.
+- Source-level audit confirms:
+  - Worker classifies Chain fetch/parse, Delta fetch, Chain-Delta expiry mismatch, TAIEX underlying and internal GEX failures.
+  - Python `_get()` extracts Worker `error_code`, `stage`, `error`, `detail`, `data.reason`; preserves HTTP status and retries under existing rules.
+  - `build()` clears diagnostics at start and appends GEX diagnostics to `notes` only when the T0 Gamma endpoint is unavailable.
+  - Existing T0 date check and GEX unavailable behavior remain present.
+- **Source-level contract review：PASS** (code inspection only; not runtime validation).
+- Attempted to obtain Worker source for local `node --check`, but the execution environment cannot resolve `raw.githubusercontent.com`; GitHub connector is read-only and exposes no workflow-dispatch action. No Wrangler/package config or Worker-specific validation workflow was found in the repository root/workflow listing.
+- **Worker JavaScript syntax/runtime validation：BLOCKED** (not executed; do not mark PASS).
+- **Real endpoint / DATA_REPORT notes integration：NOT TESTED**.
+- **Worker deployment：NOT DONE**.
+- Next step: obtain an execution path with repository checkout and Node/Wrangler (e.g. user-run local command or authorized CI workflow); run syntax check before any deployment. No source changes made in this checkpoint.
