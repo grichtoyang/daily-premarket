@@ -909,3 +909,15 @@ P1 尚未開始。啟動前必須：
 1. 取得 HEAD `882227d153007c7429833c011f826dadd6b8cb99` 的新 CI Run ID，完整 build 必須 SUCCESS。
 2. 抽查新 Artifact 並重跑五組解析實際 JSON、缺值／零值／反向測試。
 3. 交付手機驗收；通過後進入 42 區塊完整驗收。
+
+
+## 2026-11-03 五組解析 Artifact 驗收進度
+- GitHub 工作分支 HEAD 已從交接快照的 `0a397dc3...` 前進至 `6aa7ac665a5f47cbc6f1634d3e8988f26c848d58`；最新測試 commit 增加反向價位情境斷言。
+- 最新 CI Run `41564828844` 對應最新 HEAD，整體 SUCCESS；Build 全步驟 PASS、Artifact `13197918949` 上傳 PASS，deploy SKIPPED。
+- 已抽查正確 P0 Artifact：`p0/v9-pro-20261102.html` + `p0/data-20261102.json`，manifest 日期 20261102；HTML 內嵌 JSON 與獨立 JSON 完全一致。
+- 五組解析已以 Artifact 真實 JSON 執行；日夜盤、三劇本、因子貢獻、相關性配對、交易計畫數值及邏輯與圖表資料源核對 PASS。
+- 缺值、零值、夜盤上漲／下跌反向、錯誤相關矩陣、反向價位情境 runtime 測試 PASS。
+- 最新手機驗收檔：`/mnt/data/v9-pro-20261102-synthesis-verified.html`；SHA-256 `c0104af557a855d9ddf8b024c7166a0d17d225208ad62c867f5b281ab4b24f29`。
+- 手機畫面 NOT TESTED；B 區 0.01 億元原始精度對帳 NOT TESTED；42 區塊全頁驗收 NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。單模型自我審查，非獨立多模型 Auditor。
+- 下一步：使用者手機驗收最新 HTML；通過後查 B 區原始金額精度，再進入 42 區塊總驗收。
