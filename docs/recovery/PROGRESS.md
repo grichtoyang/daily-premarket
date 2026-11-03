@@ -1172,3 +1172,13 @@ P1 尚未開始。啟動前必須：
 - GitHub connector 可讀取 workflow／檔案，但目前可用工具沒有 workflow_dispatch 或遠端 shell；本地執行環境亦無法取得 exact Worker source，故沒有可執行 node --check 的途徑。
 - Worker syntax/runtime validation：**BLOCKED（未執行）**；真實 endpoint／DATA_REPORT notes：**NOT TESTED**；Worker deploy：**NOT DONE**。
 - 未修改任何程式、workflow 或部署設定。下一步需在可 checkout repo 且有 Node.js 的環境，對 workers/taifex-proxy_V1.4.js 執行 node --check；通過後才考慮 Wrangler validation／部署。
+
+
+## 2026-11-03 Worker V1.5 V8 語法解析結果
+
+- 直接由 GitHub 讀取 `phase2-p0-ui-fixes` 的 exact Worker source：`workers/taifex-proxy_V1.4.js`，blob SHA `3f5fdfe3442a106aa21a74706e911f7970258056`，檔案長度 132,720 characters。
+- 原始碼只有一個 `export default`，沒有 static import。使用本環境 V8 parser 對完整 source 解析；為相容 script parser，僅在記憶體副本將唯一 `export default` 改成等價的 `const __worker_default__ =`，原始碼與 GitHub 檔案均未修改。
+- V8 parser syntax validation：**PASS**。此結果確認完整程式本文可被 V8 parser 解析，但不是 `node --check`，亦不是 Cloudflare Workers runtime／Wrangler validation。
+- 本地 Node.js 22.16.0 已確認存在，但因 DNS 無法解析 raw.githubusercontent.com，無法把 exact source 下載到本地執行 `node --check`。
+- Worker `node --check`：**BLOCKED（未執行）**；V8 syntax parse：**PASS**；Wrangler／Cloudflare runtime：**NOT TESTED**；真實 endpoint／DATA_REPORT notes：**NOT TESTED**；Worker deploy：**NOT DONE**。
+- 未修改任何程式檔案、workflow、Worker 設定或部署狀態。
