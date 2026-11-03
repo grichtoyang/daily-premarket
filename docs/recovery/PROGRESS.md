@@ -1223,3 +1223,13 @@ P1 尚未開始。啟動前必須：
 ### 版本連結
 - [V1.4 原始穩定版](https://github.com/grichtoyang/daily-premarket/blob/phase2-p0-ui-fixes/workers/taifex-proxy_V1.4.js)
 - [V1.5 GEX 診斷版](https://github.com/grichtoyang/daily-premarket/blob/phase2-p0-ui-fixes/workers/taifex-proxy_V1.5.js)
+
+
+## 2026-11-03 V1.6 TAIEX historical fetch follow-up
+
+- V1.5 production endpoint test (user screenshot): Worker reports `V1.5 - Production`; TXO Chain contracts=3,102 and Delta rows=3,030; GEX stops at `TAIEX_SPOT_UNAVAILABLE` / `taiex_underlying` because 2026-10-30 close is not found by the OpenAPI FMTQIK source.
+- Root cause narrowed to TAIEX historical-close fetch path, not Chain/Delta acquisition or GEX calculation. V1.5 used `https://openapi.twse.com.tw/v1/exchangeReport/FMTQIK`, a latest-snapshot style OpenAPI endpoint without date-scoped history query.
+- Created separate `workers/taifex-proxy_V1.6.js` on `phase2-p0-ui-fixes`; V1.4 and V1.5 remain unchanged.
+- V1.6 changes only `fetchTAIEXCloseForDate()` to request TWSE RWD `/rwd/zh/afterTrading/FMTQIK?date=YYYYMMDD&response=json`; existing row/date normalization and GEX calculation semantics are retained.
+- V1.6 commit: `be50c350844f047470b0342c0e9aa861c6789514`; Blob SHA: `373403d56be4c1cf78ea423891aa5d97ba3406be`; file re-read and V8 syntax parse PASS.
+- Live TWSE RWD request could not be exercised from the current execution environment (DNS/network unavailable). Therefore exact 2026-10-30 response parsing, Cloudflare Worker runtime, real endpoint and GEX calculation remain NOT TESTED. V1.6 is not deployed; V1.5 remains current production version until explicit deployment and endpoint validation.
