@@ -1142,3 +1142,36 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 取得最新 HEAD `882227d153007c7429833c011f826dadd6b8cb99` 對應的新 GitHub Actions Run ID，核對所有 build 步驟及新增加的缺值／零值／反向測試。
 2. CI SUCCESS 後下載新 Artifact，重新核對五組解析、HTML 內嵌 JSON、圖表同源與 edge fixtures。
 3. 再交付手機驗收；通過後進入 42 區塊全頁驗收。B 區 0.01 億元精度差仍待原始值對帳；未授權不 merge／deploy。
+
+
+## 2026-11-03 最新工作續接：五組解析 Artifact 驗收完成，待手機驗收
+
+### Git／CI 最新查證
+- Repository：`grichtoyang/daily-premarket`。
+- 工作分支：`fix/three-market-correlation-history`。
+- 本次恢復時使用者提供 HEAD `0a397dc3e2c4e13e1bdb5149c6e1a679e206a284`；重新查詢 GitHub 後，實際分支 HEAD 已前進至 `6aa7ac665a5f47cbc6f1634d3e8988f26c848d58`。最新 commit 為 `test(v9): assert synthesis reverse scenario consistency`，只擴充反向價位情境測試。
+- 最新 CI Run `41564828844`，HEAD `6aa7ac665a5f47cbc6f1634d3e8988f26c848d58`，completed／success。Build job 所有步驟 SUCCESS；Pages artifact upload SUCCESS；deploy job SKIPPED（工作分支）。
+- Artifact：`13197918949`（github-pages，1,806,890 bytes，SHA-256 digest `5005dad2f050397a00ac903d2b2972eb9089d8b6fa784bba4728e3497ea9545c`）。
+
+### Artifact／實際 JSON 驗收
+- 已下載並解壓最新 Artifact；驗收目標確認為 `p0/v9-pro-20261102.html`、`p0/data-20261102.json`，manifest 日期 `20261102`。
+- HTML 內嵌 `window.DASHBOARD_DATA` 與獨立 JSON 完全相同；HTML SHA-256 `c0104af557a855d9ddf8b024c7166a0d17d225208ad62c867f5b281ab4b24f29`。
+- 五組解析以最新 Artifact 實際 JSON 執行：日夜盤日收 45,301、夜收 44,433、差 -868 點、夜盤量占比 37.45%、外資夜盤 +1,365 口、OI 0 口；現價 44,920.14 位於 Put Wall 44,000／Call Wall 48,000 之間，區間成立，偏多／偏空路徑因必要價位缺失或條件不符而不成立；Bias 24、有效因子 14/17、正向 +2.6786、負向 -28.7203、淨貢獻 -26.0417；相關矩陣 8×8，最強正相關 +0.854、最強負相關 -0.8892；交易計畫為區間內不追價。
+- 實際 Artifact 的 `v9ProSynthesisAnalysis()` 與 `Pth()` 已在 Node runtime 執行；缺值、零值、夜盤上漲／下跌反向、非方陣相關矩陣、係數超出 [-1,1]、反向價位情境測試全部 PASS。
+- 圖表與解析資料來源已核對：夜盤摘要使用 tx.day／tx.night／futures；三劇本 Pth 與解析使用同一現價及 Put／Call／Gamma／Flip；因子圖與摘要使用同一 factor_details；相關性熱圖與摘要共用矩陣有效性檢查；交易計畫圖與文字使用同一現價及關鍵位。
+- 已抽取最新手機驗收 HTML：`/mnt/data/v9-pro-20261102-synthesis-verified.html`，313,917 bytes；SHA-256 同上。
+
+### 狀態與限制
+- 最新 HEAD CI：PASS。
+- Artifact 路徑／manifest／HTML 與 JSON 一致：PASS。
+- 五組解析實際值／圖表資料來源一致性：PASS（依實際 JSON 與 Artifact 程式執行核對）。
+- 缺值／零值／反向／錯誤相關矩陣 runtime cases：PASS。
+- 手機實際畫面：NOT TESTED，必須由使用者開啟上述 HTML 驗收；CI PASS 不可替代手機驗收。
+- B 區 0.01 億元精度差：NOT TESTED，仍需回查 TAIFEX Proxy 原始未格式化 long_amount／short_amount。
+- 42 個區塊全頁驗收：NOT STARTED。
+- 未 Merge／Deploy；Master／V8 未修改。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一個唯一工作
+1. 使用者手機開啟 `v9-pro-20261102-synthesis-verified.html`，驗收五組解析的文字可讀性、換行、重疊、裁切及圖表同源一致性。
+2. 手機 PASS 後，依 Recovery 原定順序處理 B 區 0.01 億元原始精度對帳，再進入 42 區塊全頁驗收。
+3. 未經使用者明確授權不得 Merge／Deploy；不得修改 Master／V8。
