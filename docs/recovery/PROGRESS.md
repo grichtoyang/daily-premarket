@@ -1262,3 +1262,40 @@ P1 尚未開始。啟動前必須：
 - 狀態：日期混用根因（無日期端點缺少一致 T0 gate）PASS；protect 判斷漏查 DATA_REPORT PASS；TWT93U 日期格式根因已定位到民國格式傳入，但官方正確格式驗證 BLOCKED；TPEX Date 格式 BLOCKED；舊報告當次原始 API 回應 NOT TESTED。
 - 本輪未修改程式、報告、workflow 或資料庫；未 commit 程式、未 deploy、未重跑 workflow、未 merge。
 - 下一步唯一工作：先取得 TWT93U 正確日期格式的官方／實際端點證據及 TPEX 原始 Date 值，再提出最小修正與測試清單；未經使用者批准不得修改程式。
+
+
+## 2026-11-03 歷史 DATA_REPORT 重跑問題：第二輪實檔／程式根因稽核（22:xx）
+
+### 分支與版本固定
+- 本次 GitHub compare 同 ref 核對：`phase2-p0-ui-fixes` HEAD `581a808d6db6bea50a971f74a00b695ffbe8b509`；`ops/recovery-handoff` HEAD（本次更新前）`416f69317d658d51267bf9186c984e7f2598e849`；`master` HEAD `9f88de0bd92294df0051f706a0af1018e439bf6f`。
+- 程式只讀查核；未改程式、DATA_REPORT、workflow、DB，未 Merge／Deploy。
+
+### Run／報告交叉核對
+- 手動歷史重跑 Run `41644283168` / Job `125945406903`，log 明確顯示執行參數 `--date 2026-11-03 --t0 20261030`；因手動指定 T0 且未指定 session，程式判定 `session=全日`。本次目標 T0／盤別選擇正確，不能把本次資料混用單純歸因於 T0 參數。
+- Run log 明確顯示：`TWT93U stat not OK: 查詢日期小於94年7月1日`；`TPEX margin_sbl total_rows=932 matched_date_rows=0`；同時印出「同 T0 覆蓋模式：尚無報告，以本次抓取為準」及「同 T0 保護：沿用前版 50 格有值」。
+- 本次產出 `data_reports/DATA_REPORT_20261030.md` blob `61b5a8799bec62762a60d5efb3f1099c18084fc5`。舊版已知完整報告在 `fix/three-market-correlation-history`，blob `665ae0ce957cbda372a1d70e1f06f0eea124ba11`。兩份不可混稱同一版。
+- 2026-11-02 全日報告在 `phase2-p0-ui-fixes` blob `4add0443546bde87309fc1f13396f3a478e60bb0`，夜盤及三法人 OI 有值；`master` 同日全日報告 blob `38fc2e8a5fe2578e6779ffc11e157fed3e76a8ee` 亦有值。另有舊分支 11/02 日盤版，不得拿來與全日版直接比較。
+
+### 已確認程式缺陷／風險
+1. **同 T0 protect 判斷錯誤（CONFIRMED FAIL）**：`src/fetch_data.py` 在 `out.exists()` 後，`has_report` 只搜尋 `reports/Daily_REPORT_{T0}_*.md`，沒有把已存在的 `data_reports/DATA_REPORT_{T0}.md` 本身納入保護條件。若沒有 Daily_REPORT，即使 DATA_REPORT 已存在仍會進入 `protect=False`。本次 Run 因此以新抓取覆蓋既有實值；log 顯示 50 格沿用舊值、其餘 73 格被本次抓取覆蓋。這是報告混版的直接程式根因。
+2. **TWT93U 日期格式錯誤（CONFIRMED）**：`spot.build()` 傳入民國日期 `1151030`；`spot_raw.twse_twt93u_sbl()` 直接作為 API `date` 參數。該端點日期參數使用西元 `YYYYMMDD`（例如 `20250829`），故本次被官方拒絕。應改傳 `20261030`，並以真實回應驗證。
+3. **TPEX 日期字串比對（ROOT CAUSE LIKELY；RAW SAMPLE NOT TESTED）**：`tpex_sbl()` 以 `str(row['Date']) == '1151030'` 嚴格比較；本次 932 rows、0 matched。尚未取得本次原始 Date 值樣本，不能猜定它是 `115/10/30` 或其他格式。應先取樣，再用明確正規化後比對 ISO T0；無法解析／日期不符時 fail closed。
+4. **無日期 TWT96U 最新快照混入歷史 T0（CONFIRMED RISK）**：`spot_raw.sbl_tw()` 讀取 TWT96U 的 `AvailableVolume`，端點沒有日期欄，`spot.build()` 卻在歷史 T0 重跑時照樣採用最新值。10/30 報告的該欄從舊版 4,651,514 變為 2,525,111，來源註記由舊來源變成 TWT96U/TWT96U GRETAI/TPEX 最新快照。官方定義 TWT96U 是「當日可借券賣出股數／限額」，不是「借券餘額」；官方亦區分「借券餘額」與「借券賣出餘額」。此處有日期混用與欄位語義問題，必須先決定正確指標／來源，不能只把最新值硬塞回歷史 T0。
+5. **TWT93U parser index 尚待原始 JSON 核驗（NOT TESTED）**：程式目前使用 `row[7]`、`row[11]`；官方 TWT93U 表頭順序與 API list index 需以實際 JSON `fields`／data row 對齊，不能僅憑 HTML 表格推定 index。未核對前不得改 index。
+
+### 目前狀態
+- T0=2026-10-30、session=全日：PASS（Run log 已證實）。
+- protect 判斷漏查 DATA_REPORT：FAIL／根因已確認。
+- TWT93U 日期參數：FAIL／根因已確認；修正後真實 endpoint 尚未測試。
+- TPEX Date 格式：BLOCKED（缺原始 Date 樣本）。
+- TWT96U 無日期快照歷史隔離與指標語義：FAIL／修正設計待定。
+- TWT93U row index：NOT TESTED。
+- 11/02 全日報告夜盤／OI 缺失：未由目前實檔證據支持；不可將舊日盤版誤認為全日版。
+- 本次未改碼／未跑測試／未重跑 workflow／未部署。
+
+### 下一個唯一工作（不擴大到 42 區塊）
+1. 在 `phase2-p0-ui-fixes` 先修正 DATA_REPORT 自身 protect 判斷，並新增同 T0 重跑 regression：既有 DATA_REPORT 無 Daily_REPORT 時仍 protect；只有明確 `--force-rewrite` 才允許覆寫。
+2. 以原始 API response fixture 核對 TWT93U 的 `fields`、row 長度與欄位 index；將查詢日期改為西元 `YYYYMMDD`，測試日期與欄位對應。
+3. 擷取 TPEX `tpex_margin_sbl` 真實 Date 值樣本，再實作可辨識格式的日期正規化；同時檢查 TPEX highlight／margin 的 Date 比對是否同類問題。
+4. 對無日期 TWT96U／MI_MARGN 歷史回補設 fail-closed 規則；TWT96U 指標名稱需與官方「當日可借券賣出限額」一致，不得稱為借券餘額。保留舊 T0 已驗證值時，來源與日期必須明確標註。
+5. 完成後只在工作分支執行 CI／實際 endpoint 驗證；先抽查 10/30 與 11/02 全日報告，再決定是否需要歷史報告重建。未經明確授權不 Merge／Deploy；Master／V8 不動。
