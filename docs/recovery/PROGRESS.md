@@ -1075,3 +1075,11 @@ P1 尚未開始。啟動前必須：
 - 三大法人快照 PASS；期選結構快照 PASS（GEX／Gamma 缺值有顯示 unavailable）；美股連動數值映射 PASS。
 - 新聞 12 則數量 PASS，首則 UTC／台北時間換算正確；其餘 11 則逐則品質 NOT TESTED。
 - 總覽 7 區塊首輪盤點完成；無程式修改。
+
+
+## 2026-11-03 上游根因定位與避免誤傷的修正邊界
+- OI：Worker 通用 number() 將空白／dash 轉 0，OI parser 未驗證欄位有效性；原始 2026-11-02 TAIFEX HTML 未成功取得，故該日是否 dash 被轉 0 NOT TESTED。不可改通用 number()，應限縮 OI nullable parser。
+- OI downstream：必須同步處理 Bias factor、coverage/confidence、KPI、OI 卡及 correlation eligibility；P0 DB 已把 T0 零值列為 eligible，save_today_to_db 對既有日期 skip，需另有明確 T0 eligibility 修正步驟。
+- turnover：spot.py 通用 _add 同時用於融券／借券，不能全域改；僅 turnover.total 改為兩市場皆有效才計算完整合計。
+- UI：Ol null→0、Pt 缺 OHLC 仍運算；需保留 null/0 差異並加測試。其他精確點：夜盤圖標籤、h2() 專屬市場解析接線、Call/Put OI 顏色區分。
+- 尚未改碼；先固定修正邊界，避免改到其他共用來源語意。
