@@ -1466,3 +1466,47 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 最小安全修正仍限定在 OI parser：採 OI 專用 nullable parser（保留真實數字 0；空白／dash → null），並讓 parser 完整性狀態能被 Python／DATA_REPORT 下游辨識；不可改通用 `number()`。
 - 下游 Bias、confidence／coverage、KPI／OI 卡、correlation eligibility 及已污染的 2026-11-02 SQLite row，仍按本文件前述修正邊界處理。修正及回歸測試尚未執行。
 - 本次只讀 GitHub 文件、分支報告與 Actions logs；沒有修改程式、資料庫、報告或 Dashboard；沒有 Merge／Deploy。
+
+
+
+## 2026-11-03 最新中斷恢復點：GEX Worker V1.5 診斷修改
+
+> 本節為目前 GEX Worker 診斷工作的最新狀態；早期章節中的下一步如與本節衝突，以本節為準。
+
+### 工作位置
+- Repository：`grichtoyang/daily-premarket`
+- 程式分支：`phase2-p0-ui-fixes`
+- Recovery 文件分支：`ops/recovery-handoff`
+- 修改範圍僅三檔：
+  1. `workers/taifex-proxy_V1.4.js`（程式版本升為 V1.5；檔名保留既有 V1.4 路徑）
+  2. `src/sources/taifex.py`
+  3. `tests/test_taifex_gamma_fallback.py`
+
+### 已讀回確認的程式內容
+- Worker blob：`3f5fdfe3442a106aa21a74706e911f7970258056`。
+- Python blob：`aebb590370105937c0ad86506c7e8f66d9b8118c`。
+- Tests blob：`ff7f83c0a1081f27781eb3dbf2ae08da840e8c08`。
+- Worker GEX endpoint 已加入 `error_code`／`stage`／`detail` 診斷欄位，區分 Chain fetch／parse、Delta fetch、共同到期月份配對、TAIEX underlying 及 GEX internal error。
+- Python `_get()` 已解析 Worker JSON error payload，保存 HTTP status、error code、stage、error、detail／data.reason；GEX endpoint unavailable 時將摘要加入 DATA_REPORT notes。
+- 測試檔已加入 HTTP 502 與 HTTP 200 + `ok=false` 診斷資訊保留測試。
+- 保留 P0 fixes 的 T0 日期檢查、GEX unavailable 語意及既有 GEX 計算公式；不以 Gamma Wall／Flip proxy 假造 GEX。
+
+### 驗收狀態
+| 項目 | 狀態 |
+|---|---|
+| 三個遠端程式檔案讀回及診斷修改存在 | PASS |
+| Worker V1.5 程式測試 | NOT TESTED |
+| Python GEX fallback 測試 | NOT TESTED |
+| DATA_REPORT notes 真實輸出驗證 | NOT TESTED |
+| Worker 部署 | NOT DONE |
+| master／V8／原始 P0 分支未被本次修改 | 本次未操作 |
+| Merge／Rebase | NOT DONE |
+
+### 已知背景與限制
+- 2026-11-03 的 daily-data run `41621794469` 成功產生 T0=2026-10-30 報告，但 `options-gamma-levels` 連續兩次 HTTP 502，`options-market-structure-compact` 備援 read timeout；報告中的舊 GEX 值是沿用前版，不代表本輪成功重新取得。
+- 原始 P0 與 P0 fixes 使用相同 Worker blob，但 Python 呼叫端版本不同；原始 P0 也曾出現 GEX endpoint 502。
+- Worker route 已知依賴 TXO Chain、TXO Delta、TWSE FMTQIK TAIEX close；FMTQIK 沒有第二資料源備援。此次新增診斷的目的在於下次能識別實際失敗階段，不代表已修復上游 502／timeout 根因。
+- 本輪尚未測試新 Worker 是否能在真實 Cloudflare 執行環境回傳預期 JSON，也未部署。
+
+### 下一個唯一工作
+先做三檔 diff／程式審查，確認 Worker response schema 與 Python parser 完全吻合，並檢查測試可執行；修正後執行測試。測試 PASS 後再另行部署 Worker，並用實際 endpoint 驗證 GEX error diagnostics 能進入 DATA_REPORT。不得先部署再測，也不得擴大修改到其他模組。
