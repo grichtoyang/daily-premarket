@@ -1833,3 +1833,13 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - TPEX 官方 S47 Margin_SBL.csv 的 15 欄格式已取得：融券欄位在前 8 欄，借券賣出欄位在後 7 欄。現行 OpenAPI mapping 的兩個名稱 `SecuritiesBorrowingBalanceOfTheMarketDay` 與 `SaleBalanceOfTheMarketDay` 很可能分別落在借券賣出當日餘額與融券當日餘額，但還沒有直接 JSON schema／同日逐代號對照，故仍列 HIGH RISK / NOT CONFIRMED；不可先改 mapping。
 - TWT72U 官方歷史頁有日期／分類查詢及 CSV 下載，但 E-Shop 訂閱產品標示月費及使用限制。不能假定 RWD API 可免費自動化使用；需先驗證公開頁 CSV 請求與授權邊界。TWT72U 仍是「借入未還」的正確官方候選來源。
 - 本輪未修改程式、資料或 workflow，未重跑 10/30，未 Merge／Deploy。
+
+
+## 2026-11-03 最新補充：TPEX S47 官方規格揭露現行 build 兩欄用途顛倒
+
+- 已直接核對 TPEX 官方 V1.33 EDIS PDF 的 S47 Margin_SBL.csv（第 122 頁）：欄位 2–7 是融券前日餘額、融券交易、融券當日餘額及融券限額；欄位 8–13 是借券賣出前日餘額、當日賣出、當日還券、當日調整、借券賣出當日餘額及次日可借券賣出限額。
+- 現行 `tpex_sbl()` 把 `SecuritiesBorrowingBalanceOfTheMarketDay` 當成 `bal`，再由 build 與 TWT96U 相加成「借券餘額」；把 `SaleBalanceOfTheMarketDay` 當成 `sale_bal`，再與 TWSE TWT93U 相加成「借券賣出餘額」。
+- 依 OpenAPI 欄位命名與官方 S47 15 欄資料結構，最合理對應是 `SecuritiesBorrowingBalanceOfTheMarketDay` = 借券賣出當日餘額（S47 index 12），`SaleBalanceOfTheMarketDay`／`SaleBalancePreviousDay` = 融券當日／前日餘額（S47 index 6／2）。這代表目前 build 把兩個指標放反：借券賣出餘額被拿去當借券餘額，融券餘額被加進跨市場借券賣出餘額。仍需同日 OpenAPI JSON + 官方 CSV 逐代號對照確認 property mapping，因此不把這項推論寫成已完全驗證，但目前兩個輸出均應視為不可信。
+- 官方 S47 不含「借入未返還」的借券餘額欄；真正借券餘額要另用 TWT72U。TWT96U 是可借券賣出限額，不能用於任何餘額欄。
+- 這項發現比單純修 TWT93U 更重要：即使把 TWT93U 修正，現行 TPEX 的 `sbl.bal`／`sbl.sale_bal` mapping 仍會污染兩個彙總值。因此在 TPEX schema 對照完成前，不能重建 10/30 DATA_REPORT。
+- 本輪未修改程式／資料／workflow，未重跑報告，未 Merge／Deploy。詳細證據見 PROGRESS.md「資料層第五輪」。
