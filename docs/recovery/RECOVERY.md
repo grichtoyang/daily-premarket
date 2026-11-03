@@ -1421,3 +1421,14 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 重大新聞：12 則，首則標示 UTC 05:53:37Z／台北 13:53:37，時區換算 +8 小時正確；數量與 DATA_REPORT 對應 PASS。其餘 11 則逐則來源／內容品質未逐項查證，NOT TESTED。
 - 總覽頁狀態：5 日圖／法人快照／期選快照／美股連動／新聞資料映射 PASS（來源原始回應及其餘新聞品質仍有 NOT TESTED）；KPI 與 Bias 卡因可疑 OI 因子狀態未傳遞 FAIL。Bias 8 格已合併視為一個 KPI 群組區塊，維持 42 區塊計數口徑。
 - 本輪唯讀；沒有修改程式／資料／UI／Artifact；未 Merge／Deploy。
+
+
+## 2026-11-03 已定位缺值／可疑值缺陷的上游根因與安全修正邊界（尚未改碼）
+- 期貨 OI 上游解析：`workers/taifex-proxy_V1.4.js` 的通用 `number()` 對空字串、`-`、`--` 回傳 0；`parseFuturesInstitutionalOI()` 對 OI 欄位直接呼叫此函式，且只以三法人列數是否足夠判定 `found`，沒有驗證 OI 欄位本身是否有效。這可把來源缺值轉成 0。**原始 2026-11-02 TAIFEX HTML 欄位本身本輪未成功取得，故「該日三法人 0 是否由 dash 轉成 0」仍 NOT TESTED；已確認的是 parser 具有此風險路徑。**
+- 安全邊界：不可直接改通用 `number()`，它被其他 TAIFEX endpoint 共用，空值／dash 在交易量等欄位可能具有不同語意。修正應限定在 OI parser，使用保留真數字 0、但將空白／dash 轉為 null 的 OI 專用 nullable parser，並檢查完整性。
+- OI 狀態下游：需以三法人 OI 快照狀態同步控制外資期貨 Bias 因子 active/disabled、factor coverage／confidence、KPI／期貨 OI 卡片及 correlation eligibility。不能只在文字上加警告。
+- 歷史 DB：P0 SQLite 已把 2026-11-02 的 OI=0 列存為 `correlation_eligible=1`；`save_today_to_db()` 遇到已存在 T0 會直接 skip，不會自動重寫。修正後若要排除該列，需以明確、限縮到該 T0 的 eligibility 修正／重建步驟處理，不能只改 eligibility 計算函式就宣稱歷史矩陣已修復。
+- 成交金額合計上游：`src/sources/spot.py` 的通用 `_add(a,b)` 設計為一邊缺值時回傳另一邊，並同時用於融券／借券等跨市場可用部分加總；因此不可全域改寫 `_add`。成交結構目前 `total=_add(listed_yi,otc_turnover_yi)`，造成 OTC null 時 total 仍等於上市值。安全修正應只對 turnover total 採嚴格完整性規則（兩市場皆有效才計算完整合計），並同步 DATA_REPORT、Builder、JSON、圖表／表格。
+- UI null 處理：`Ol` 將 `Number(null)||0`，應保留 null 與真 0 的區別；`Pt` 在 OHLC 缺值時仍執行座標與影線計算，應在缺值時停止 K 棒及相關分析計算。修正需增加 null 與真 0 的獨立回歸案例。
+- 其餘精確修正點：夜盤 `Pt` 的圖表參數標籤應可指定為「夜盤變化」而非沿用「基差」；重要市場 h2() 的 `i={}` 空物件造成七張市場卡不讀 JSON 專屬 compass／target；Call+Put 合併 OI 圖不可全套 Call 紅色，須保留 Call／Put 側別。
+- 以上是已確認的程式風險／缺陷定位與修正邊界，不代表修正已執行。當前工作分支程式碼維持原樣；未 Merge／Deploy；V8／Master 未修改。
