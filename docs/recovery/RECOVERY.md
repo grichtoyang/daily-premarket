@@ -1824,3 +1824,12 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 - Auditor：單一模型自我稽核，非獨立多模型審核。
 
 Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第三輪：TWT93U 欄位索引確認與 TWT72U 歷史來源查核」。
+
+
+## 2026-11-03 接手補充：TWT93U 真實欄位範例已找到；TPEX mapping 待精確對照
+
+- TWT93U 已找到實際 API response 範例（2025-08-29），確認 endpoint query 日期格式為西元 `YYYYMMDD`，成功回傳 15 欄 fields 與 data。index 7=融券限額、8=借券賣出前日餘額、11=借券賣出當日調整、12=借券賣出當日餘額。現行 parser row[7]/row[11] 是確定錯誤；需依 fields 欄名定位、檢查 row 長度及 response date。來源與詳細內容見 PROGRESS.md「資料層第四輪」。
+- 目前尚未取得本專案目標日期 2026-10-30 的真實 response；ROC 日期已由 workflow log 證實被拒絕，修正後應傳 `20261030` 並確認 response date。
+- TPEX 官方 S47 Margin_SBL.csv 的 15 欄格式已取得：融券欄位在前 8 欄，借券賣出欄位在後 7 欄。現行 OpenAPI mapping 的兩個名稱 `SecuritiesBorrowingBalanceOfTheMarketDay` 與 `SaleBalanceOfTheMarketDay` 很可能分別落在借券賣出當日餘額與融券當日餘額，但還沒有直接 JSON schema／同日逐代號對照，故仍列 HIGH RISK / NOT CONFIRMED；不可先改 mapping。
+- TWT72U 官方歷史頁有日期／分類查詢及 CSV 下載，但 E-Shop 訂閱產品標示月費及使用限制。不能假定 RWD API 可免費自動化使用；需先驗證公開頁 CSV 請求與授權邊界。TWT72U 仍是「借入未還」的正確官方候選來源。
+- 本輪未修改程式、資料或 workflow，未重跑 10/30，未 Merge／Deploy。
