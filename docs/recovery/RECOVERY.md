@@ -1776,3 +1776,13 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 5. 完成 code + tests + CI + endpoint validation 後，先核對 10/30、11/02 全日報告。未經明確授權不 Merge／Deploy；Master／V8 不動。
 
 **Auditor 狀態：** 目前由單一模型依 GitHub 檔案、workflow log 及官方公開文件做自我稽核，並非獨立多模型審核。  
+
+
+## 2026-11-03 接手續作：DATA_REPORT protect 修正已提交、CI 待確認
+- 工作分支 phase2-p0-ui-fixes 最新 HEAD：1e15691a1c0964f626786779561e702fde3c7bee。
+- 已修正 src/fetch_data.py：既有 DATA_REPORT 本身就是 T0 保護對象；除非明確傳入 --force-rewrite，否則重跑必須 protect，不再看 reports/Daily_REPORT 是否存在。程式 commit：9a576b97bfbc9030308a68eac07546abad9f1cc2。
+- 已新增 tests/test_dashboard_unit_contract.py regression test，覆蓋 existing DATA_REPORT + no force、force rewrite、no existing report 三種狀態；最新測試 commit：1e15691a1c0964f626786779561e702fde3c7bee。
+- GitHub 讀回驗證：src/fetch_data.py blob cd33a860f27d4d7d3bd3a7289174c42e8e9fadf6；test blob 0b9a6142aebfafc7f5e9f1b2bcc6f7a3f101fae9。Compare 顯示僅上述兩檔修改。
+- CI 狀態：combined status 空 statuses；可用 GitHub 工具目前無 push-triggered workflow run listing／dispatch，因此 CI NOT TESTED／BLOCKED，不能標 PASS。
+- TWT93U／TPEX 日期修正、TWT96U 歷史快照隔離、指標語義修正、10/30 報告重建均尚未完成。未 Merge／Deploy；Master／V8 未修改。
+- 下一步：先取得 HEAD 1e15691... 的 CI Run ID 並核對 build／regression；CI PASS 後再修正日期來源與歷史快照混用問題。完整調查與分支／blob 證據見 PROGRESS.md 最新段落。
