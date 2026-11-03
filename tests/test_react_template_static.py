@@ -307,11 +307,16 @@ malformed.analysis.correlation={labels:["A","B","C"],matrix:[[1,0],[0,1]],desc:"
 const malformedOut=v9ProSynthesisAnalysis(malformed);
 if(!malformedOut.correlation.look.includes("缺值或維度不一致")||malformedOut.correlation.look.includes("矩陣 3×3")) throw Error("malformed correlation matrix reported as valid");
 if(v9ProCorrelationMatrixReady(["A","B"],[[1,1.2],[1,1]])) throw Error("out-of-range correlation coefficient accepted");
-console.log("synthesis narrative actual + missing + zero + malformed matrix fixtures PASS");
+const reverse=JSON.parse(JSON.stringify(fixture));
+reverse.spot.close=43000; reverse.options.putWall=44000; reverse.options.flip=42000; reverse.options.gammaWall=43500;
+const reverseOut=v9ProSynthesisAnalysis(reverse);
+if(reverseOut.scenarios.compass.includes("偏多價格條件：成立")||!reverseOut.scenarios.compass.includes("偏空價格條件：成立")) throw Error("reverse price state has conflicting bull/bear conditions");
+if(!reverseOut.scenarios.target.includes("偏空價位條件具備")) throw Error("reverse price state narrative prioritizes wrong scenario");
+console.log("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS");
 """
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("synthesis narrative fixture PASS", result.stdout)
+        self.assertIn("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS", result.stdout)
 
     def test_kpi_sparklines_do_not_fabricate_history(self):
         self.assertIn("function e2(e,n=10,r=0.02,l=0){return[]}", self.html)
