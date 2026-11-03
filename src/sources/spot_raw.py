@@ -245,32 +245,58 @@ def twse_twt72u_sbl(date_value: str) -> dict:
     symbol_idx = next((normalized[k] for k in ("證券代號", "股票代號", "代號") if k in normalized), None)
     prev_idx = next((normalized[k] for k in ("前日借券餘額(1)股", "昨日借券餘額(股數)") if k in normalized), None)
     bal_idx = next((normalized[k] for k in ("本日借券餘額股(4)=(1)+(2)-(3)", "今日借券餘額(股數)") if k in normalized), None)
-    if symbol_idx is None or prev_idx is None or bal_idx is None or not data:
+    market_idx = normalized.get("市場別")
+    if symbol_idx is None or prev_idx is None or bal_idx is None or market_idx is None or not data:
         print(f"[WARN] TWT72U required fields/data absent: fields={fields!r}")
         return out
 
     import re
-    total_prev = total_bal = 0.0
-    parsed = invalid = 0
+    stock_market_names = ("集中市場", "櫃檯買賣中心")
+    market_sums = {name: [0.0, 0.0, 0] for name in stock_market_names}
+    market_totals = {}
+    overall_total = None
+    invalid = 0
     for row in data:
-        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx) >= len(row):
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx, market_idx) >= len(row):
             invalid += 1
             continue
+        market_name = str(row[market_idx] or "").strip()
         code = str(row[symbol_idx] or "").strip().upper()
-        if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
-            continue  # skip market-total / note rows
         prev = _num(row[prev_idx])
         bal = _num(row[bal_idx])
         if prev is None or bal is None:
             invalid += 1
             continue
-        total_prev += prev
-        total_bal += bal
-        parsed += 1
-    if not parsed:
-        print(f"[WARN] TWT72U no parseable stock rows: date={date8} total={len(data)} invalid={invalid}")
+        if code == "合計" and market_name in stock_market_names:
+            market_totals[market_name] = (prev, bal)
+            continue
+        if market_name == "整體市場":
+            overall_total = (prev, bal)
+            continue
+        if market_name not in market_sums or not re.fullmatch(r"[0-9A-Z]{4,6}", code):
+            invalid += 1
+            continue
+        market_sums[market_name][0] += prev
+        market_sums[market_name][1] += bal
+        market_sums[market_name][2] += 1
+
+    if invalid or any(market_sums[name][2] == 0 for name in stock_market_names):
+        print(f"[WARN] TWT72U incomplete stock rows: date={date8} invalid={invalid} market_sums={market_sums}")
         return out
-    print(f"[INFO] TWT72U parsed rows={parsed}/{len(data)} invalid_rows={invalid} date={date8}")
+    for name in stock_market_names:
+        if name not in market_totals or (
+            market_sums[name][0] != market_totals[name][0]
+            or market_sums[name][1] != market_totals[name][1]
+        ):
+            print(f"[WARN] TWT72U market subtotal mismatch: market={name} stocks={market_sums[name]} subtotal={market_totals.get(name)}")
+            return out
+    total_prev = sum(market_sums[name][0] for name in stock_market_names)
+    total_bal = sum(market_sums[name][1] for name in stock_market_names)
+    if overall_total != (total_prev, total_bal):
+        print(f"[WARN] TWT72U overall subtotal mismatch: stocks={(total_prev, total_bal)} overall={overall_total}")
+        return out
+    parsed = sum(market_sums[name][2] for name in stock_market_names)
+    print(f"[INFO] TWT72U parsed rows={parsed} listed={market_sums['集中市場'][2]} otc={market_sums['櫃檯買賣中心'][2]} subtotal_checks=PASS date={date8}")
     return {
         "bal": total_bal,
         "prev_bal": total_prev,
