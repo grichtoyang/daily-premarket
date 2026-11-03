@@ -1880,3 +1880,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 尚未重建 DATA_REPORT_20261030。E-Shop 訂閱商品與公開 endpoint 的自動化授權邊界仍 NOT TESTED，確認前不要進行報告重建。
 - Recovery 完整證據、commit、CI Run IDs、檔案 SHA、限制及下一步見 PROGRESS.md 本節。
 - Auditor 為單一模型自我稽核，非獨立多模型審核。
+
+
+## 2026-11-03 最新驗收覆核｜目前可接續狀態
+
+- 活躍分支 phase2-p0-ui-fixes HEAD：01d8d6e82810b13ce617feff18f142189cb9c14a。
+- Unit Contract Audit Run 41672806366 **PASS**；V9 UI Fixes Regression Run 41672806450 **PASS**；Daily Premarket V9 Pro Run 41672806998 build **PASS**、deploy **SKIPPED**。
+- 三個官方借券端點 2026-10-30 live 驗證通過；TWT72U 市場小計與整體合計一致，TWT93U／TPEx S47 逐股餘額遞推檢查通過。
+- 42 區塊 unit contract、DATA_REPORT／Builder、React、TAIFEX night unavailable regression 均通過。
+- 2026-11-02 既有報告 Builder build 成功；未修改 data_reports 樣本。2026-10-30 報告仍未重建。
+- 目前唯一直接阻止收尾的事項：先確認官方端點自動化使用授權／E-Shop 商品條款邊界；確認可用後，再重建並驗收 20261030 DATA_REPORT。舊報告借券數字不可當作新 parser 驗證結果。
+- 詳細實作、數據列數、測試結果及 commit 證據見 PROGRESS.md 最新兩節。
+- 未 merge/deploy；master、P0 base、V8 未修改；Auditor 為單一模型自我稽核。
