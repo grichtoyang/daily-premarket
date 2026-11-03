@@ -1868,3 +1868,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - TWT93U parser 仍使用 row[7]/row[11]，上市借券賣出餘額 parser FAIL。
 - DASHBOARD_UNIT_MAP 的區塊 12 舊 PASS 只能代表 UI 欄位／單位／scope 顯示契約，不能視為來源定義與原始 mapping 的真實性 PASS；必須修正驗收語義。
 - 本輪僅盤點現貨融資融券及借券欄位，未改程式或報告，未重跑 10/30，未 merge/deploy。
+
+## 2026-11-03 最新接手狀態｜借券資料鏈已修正並完成來源 live 驗證
+
+- 活躍分支：phase2-p0-ui-fixes；最新 HEAD：899900c017ef036f808b4843ed85f6e29ca383e1。master、P0 base、V8 未修改；未 merge/deploy。
+- 三個官方歷史端點已在 GitHub Actions 對 2026-10-30 實際查詢成功：TWT72U（2,072 個股，上市 1,237、上櫃 835，兩市場小計及整體總計一致）；TWT93U（1,307 個股，逐股遞推檢查通過）；TPEx S47（932 rows，逐股遞推檢查通過）。
+- 借券三指標已分離：TWT72U＝借入未還的借券餘額；TWT93U＝上市借券賣出餘額；TPEx S47＝上櫃借券賣出餘額；TWT96U＝當日可借券賣出限額，已排除於餘額欄位。
+- TWT93U／TPEx S47 重複欄名以欄位群組辨識；所有來源均驗 response date、欄位、逐列餘額遞推。缺資料 fail-closed。
+- Unit Contract Audit Run 41671847081 PASS；V9 UI Fixes Regression Run 41671995742 PASS；Daily Premarket build Run 41671847060 PASS、deploy skipped。
+- 區塊 12 的舊 DATA_REPORT 數值尚未由新 parser 重建；舊來源註記無法證明市場範圍，Builder 現正顯示「範圍未註明」。不可把舊 DATA_REPORT 的 36,178 張／-1,273 張當成新來源驗證通過。
+- 尚未重建 DATA_REPORT_20261030。E-Shop 訂閱商品與公開 endpoint 的自動化授權邊界仍 NOT TESTED，確認前不要進行報告重建。
+- Recovery 完整證據、commit、CI Run IDs、檔案 SHA、限制及下一步見 PROGRESS.md 本節。
+- Auditor 為單一模型自我稽核，非獨立多模型審核。
