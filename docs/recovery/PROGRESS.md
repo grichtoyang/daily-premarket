@@ -1044,3 +1044,14 @@ P1 尚未開始。啟動前必須：
 - 日夜法人交易流量與 OI 存量分列，日夜淨額對帳 PASS；但 OI 可疑狀態未顯示，納入同一缺陷群。
 - 夜盤劇本量占比 37.45% 算式與報告一致；不預設方向，PASS。
 - 本頁無程式修改。
+
+
+## 2026-11-03 選擇權頁首輪結果
+- PCR／成交量結構：成交量與 OI 對帳 PASS；PCR 0.57 = Put OI 34,887 / Call OI 61,578 四捨五入；成交量占比與 PCR 分開呈現。
+- 主要 OI 集中：FAIL。Call Top4 + Put Top4 混合資料送入 Ct(type="call")，整條曲線套 Call 紅色，Put 點未以 Put 綠色區分。
+- Call OI Top10、Put OI Top10：各 10 筆對帳 PASS。
+- 關鍵價位：Call Wall 48,000、Put Wall 44,000、MaxPain 44,400 對帳 PASS；Gamma Wall／Flip null，UI 顯示 unavailable，不補 0，PASS。
+- 選擇權法人交易與前十大選擇權數值對帳 PASS。
+- GEX unavailable 狀態正確傳遞，空圖欠缺圖內提示列為非阻斷改善。
+- B 區金額精度說明維持既有 PASS，不改動。
+- 本頁僅記錄，無程式修改。
