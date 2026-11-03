@@ -1545,3 +1545,16 @@ P1 尚未開始。啟動前必須：
 1. 先確認官方公開 endpoint 與 E-Shop 商品授權邊界；若無需訂閱授權或已具合法授權，才進行歷史報告重建。
 2. 在使用者指定／已批准的方式下，僅重建 20261030 DATA_REPORT，逐欄核對借券餘額、上市借券賣出、上櫃借券賣出、跨市場增減及來源 scope。
 3. 驗收 DATA_REPORT 後再跑 Builder 與 dashboard preview；不部署，除非使用者明確授權。
+
+
+## 2026-11-03｜最新驗收更新（HEAD 01d8d6e）
+
+- phase2-p0-ui-fixes 最新 HEAD：01d8d6e82810b13ce617feff18f142189cb9c14a。
+- Unit Contract Audit Run 41672806366：**PASS**。live-borrowed-sources、借券 source semantic tests、42 區塊 unit contract、DATA_REPORT／Builder tests、React template tests、TAIFEX night unavailable tests 均通過。
+- V9 UI Fixes Regression Run 41672806450：**PASS**。Builder self-tests、React regression、DATA_REPORT parser regression、借券 JSON 欄位與 scope 驗證、GEX 139 levels／總量、non-deploy HTML preview、correlation fixture 均通過。
+- Daily Premarket V9 Pro Run 41672806998：build **PASS**、deploy **SKIPPED**；使用既有 DATA_REPORT_20261102.md，沒有修改 data_reports 樣本，也沒有重建 20261030。
+- 先前 Unit Contract Audit 因 42 區塊表格的驗收 regex 不接受 UI PASS 標籤而失敗；已修正測試，使其同時接受 PASS 與 UI PASS，最新 Run 41672806366 已通過。這是驗收測試 regex 修正，不是放寬資料來源驗收。
+- 最新 docs/DATA_SOURCES.md、DATA_SCHEMA.md、DASHBOARD_UNIT_MAP.md 已提交於 phase2-p0-ui-fixes；區塊 12 明確區分 UI PASS／新來源 parser PASS／舊 DATA_REPORT 數值 NOT VERIFIED。
+- 最新 tests/test_dashboard_unit_contract.py commit：01d8d6e82810b13ce617feff18f142189cb9c14a。
+- 尚未完成：DATA_REPORT_20261030 尚未使用新 parser 重建；舊 36,178 張／-1,273 張數值仍 NOT VERIFIED；E-Shop／公開 endpoint 自動化授權界線仍 NOT TESTED。
+- 未 merge/deploy；master、P0 base、V8 未修改；data_reports 樣本未修改。Auditor 為單一模型自我稽核，非獨立多模型審核。
