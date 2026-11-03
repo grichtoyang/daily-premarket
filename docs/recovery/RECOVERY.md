@@ -1343,3 +1343,16 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 - 狀態：總覽六個直接行情／籌碼 KPI 映射 PASS；期貨 OI 值有效性／狀態傳遞 FAIL；Bias 現行輸出可重現 PASS、其輸入有效性與 confidence 標示 FAIL。此為一個已定位的根因群，不拆成多個重複修正任務。
 - 保護措施：本輪只讀查證與 Recovery／Progress 記錄，沒有修改 Builder、Template、DATA_REPORT、JSON、Artifact、Dashboard；沒有 Merge／Deploy。已通過的 B 區精度、五區手機版面與 42 區塊結構對映全部凍結。
 - 後續處置：先完成 42 區塊其餘資料鏈清查，彙整缺陷後再一次提出最小修正方案；修正時須讓「全零可疑 OI」狀態同步影響 KPI 顯示、Bias 因子 active/disabled、權重覆蓋率／confidence、相關分析文字，並加回歸測試，禁止只改單一文案。
+
+
+## 2026-11-03 現貨頁 6 區塊首輪資料鏈稽核：3 組確認缺陷（只記錄、不改碼）
+- 稽核依固定 T0 DATA_REPORT `2026-11-02`、Artifact P0 JSON 與實際 React component source；本次只讀，未改程式。
+- 現貨 A「大盤行情」：DATA_REPORT 明確標示 open/high/low unavailable；P0 JSON 對應為 null。但 React 分析文字直接執行 `n.open>n.close`、`n.close>n.open`、`n.high-Math.max(...)`、`Math.min(...)-n.low`，未先檢查 OHLC 是否完整，會把 null 強制轉成 0，產生「開低走高／收盤高於開盤」及不合理影線／實體數字；Candlestick `Pt` 亦直接用 null 計算座標範圍。狀態 FAIL（缺值被當成數值運算）。
+- 現貨 B「漲跌家數」：上市家數 518／447／116 與 DATA_REPORT 一致；上櫃欄位 null。Canvas `u2` 對上櫃任一欄位缺值會明確顯示 unavailable，分析 compass 亦在上市漲跌家數缺失時停判。此區目前可見缺值防護 PASS（上櫃缺值未被補成 0）。
+- 現貨 C「三大法人現貨」：外資 -1,124.7 億、投信 +236.2 億、自營 -513.7 億、合計 -1,402.2 億與 DATA_REPORT 對帳一致；此組數值與方向敘述 PASS。
+- 現貨 D「融資融券」：融資餘額／增減及維持率 null，UI 表格與 Canvas `i2` 有 unavailable 防護；融券 197,359 張、借券餘額 2,525,241 張有值。缺值防護目前 PASS；維持率未取得不得當作 0%。
+- 現貨 E「借券／券」：借券賣出餘額與增減為 null，表格有顯示 unavailable；但共用 Lollipop Canvas `Ol` 將 `Number(null)||0`，故圖表會把借券賣出畫成 0，而不是 unavailable。狀態 FAIL（表格與圖表語意不一致）。
+- 現貨 F「成交結構」：上櫃成交金額 DATA_REPORT／JSON 為 unavailable／null，但 Lollipop Canvas `Ol` 會把 null 畫成 0；表格字串插值可能顯示 `null億`。更重要的是 `turnover.total=7,588.8` 等於上市金額，卻仍標為「上市櫃成交金額合計」，因上櫃值缺失而不是完整總額。Builder 的 consistency check 僅在上市與上櫃皆非 null 時才檢查合計，因此本案例被跳過。狀態 FAIL（缺值顯示與總額完整性兩個問題，根因屬同一欄位缺值未向下游正確傳遞）。
+- 本輪現貨頁狀態：A FAIL、B PASS、C PASS、D PASS、E FAIL、F FAIL。此為資料鏈與 UI 缺值處理稽核，不是手機版面驗收；未因本次發現而修改任何既有 PASS 區塊。
+- 後續修正原則（尚未執行）：A 僅在 OHLC 完整時才畫 K 棒並計算開高低、影線及實體；否則明確顯示 OHLC unavailable 並取消方向判讀。E/F 圖表通用 renderer 必須保留 null 與 0 的區別；F 的上市櫃總額只有在兩市場皆有有效數據時才可標示完整合計，否則標示部分／不可計算並同步處理 DATA_REPORT、JSON、圖表、表格與解析文字。需加 regression tests 覆蓋 null 與真 0。
+- 未 Merge／Deploy；Master／V8、Builder、Template、DATA_REPORT、Artifact 均未修改。既有 PASS（B、C、D）凍結保留。
