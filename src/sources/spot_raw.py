@@ -132,7 +132,7 @@ def _borrowed_short_field_pair(fields):
     curr_unique = ("借券賣出當日餘額", "本日借券賣出餘額股數", "借券當日餘額")
     prev_idx = next((names.index(name) for name in prev_unique if name in names), None)
     curr_idx = next((names.index(name) for name in curr_unique if name in names), None)
-    if prev_idx is not None and curr_idx is not None and prev_idx < curr_idx:
+    if prev_idx is not None and curr_idx is not None and prev_idx != curr_idx:
         return prev_idx, curr_idx
 
     prev_candidates = [i for i, name in enumerate(names) if name == "前日餘額"]
