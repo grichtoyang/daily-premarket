@@ -1024,3 +1024,20 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 使用者手機開啟新版 HTML，驗收三劇本條件顯示及排版。
 2. 檢查多空條件檢查表 Bias、因子權重及缺失因子與 JSON 一致。
 3. 手機視覺 PASS 後才結案；B 區 0.01 億元精度差仍列後續對帳。
+
+
+## 38. 2026-11-03 手機驗收與 Bias 因子圖表語意修正
+- 使用者提供手機實機截圖（v9-pro-20261102）。版面檢查：區塊 C 日夜盤劇本、三劇本卡片、多空圖表、相關性熱圖、交易計畫未見明顯重疊或裁切；截圖範圍未見橫向溢出。視覺初步 PASS。
+- 三劇本顯示「機率未校準」屬正確狀態，不是條件未成立。實際區間情境：現價 44,920.14，PutWall 44,000，CallWall 48,000，區間條件成立；偏多因 Flip 缺值不成立，偏空因現價仍高於 PutWall 不成立。
+- 截圖發現多空條件圖表實際把 u.weights（正規化因子權重）當成方向貢獻畫圖，並直接顯示 spot_trend、foreign_spot 等程式 key；全正綠色長條會造成全部偏多的錯誤印象。此為內容語意 FAIL，非單純視覺問題。
+- 已修正 templates/v9-pro-react-template.html：改讀 factor_details 中 status=active 的 contribution，依絕對值排序顯示前 8 項；使用中文 name；正值綠色推升 Bias、負值紅色壓低 Bias；標題改為「多空因子方向貢獻」，清楚標示不是權重；缺失因子名稱也轉為中文。
+- 新增測試 test_bias_chart_uses_signed_factor_contributions_and_chinese_names；第一次 CI 因測試 assertion 的反引號跳脫寫法錯誤而 FAIL，修正測試後通過，非產品程式錯誤。
+- 最新 CI Run 41560578070（commit 0034eb9155857db2a869709b8b64b4e13a547586）整體 SUCCESS；React template tests 19/19 PASS；新因子圖表測試 PASS；inline JS 4 scripts PASS；Pages artifact upload PASS；deploy job SKIPPED（工作分支）。
+- Artifact 13196638130 已下載抽查，正確檔案 p0/v9-pro-20261102.html。實際 HTML 包含新圖表程式；資料 date=2026-11-02、Bias=24 偏空、有效因子 14/17。前 8 方向貢獻：外資現貨 -7.1429、美股費半 -7.1429、夜盤 -4.7619、PCR -3.3333、現貨趨勢 -1.9345、投信 +1.7857、MACD -1.7857、Put Wall +0.8929。新圖表已正確混合呈現正負貢獻。
+- 新手機複驗檔：/mnt/data/v9-pro-20261102-factor-contrib-fixed.html，303,829 bytes，SHA-256 d82b30b923d70538570163febf80764ca5fc57b91551786d8cee570cf430843d。此檔由 Run 41560578070 Artifact 的 p0/v9-pro-20261102.html 抽出。
+- 狀態：手機原截圖排版初步 PASS；舊版因子語意 FAIL 已修正；新版 CI／HTML／注入資料 PASS；新版手機視覺 NOT TESTED。未 merge／部署，Master／V8 未修改。區塊 B 0.01 億元精度差仍未結案。
+
+### 下一步
+1. 使用者手機開啟 v9-pro-20261102-factor-contrib-fixed.html，確認圖表顯示中文因子名稱、紅綠正負方向貢獻，且 Bias 24 偏空不再搭配全正綠色權重圖。
+2. 新版手機 PASS 後，回頭對帳區塊 B 0.01 億元精度差及完整來源／單位；之後再做全頁最終驗收。
+3. 未經使用者明確授權不 merge／deploy。
