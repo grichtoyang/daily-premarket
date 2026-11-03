@@ -980,3 +980,18 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 2. Workflow 完成後，核對 Artifact Template branch/ref、T0 現價與五個關鍵價位來源。
 3. 用有效偏多、缺 Flip、區間有效／價位錯側、有效偏空、缺 PutWall／支撐、缺值等 fixtures 驗證。
 4. 產出新 Artifact 後由使用者複驗手機三劇本及多空條件檢查表；完成前不得結案或部署。
+
+
+## 36. 2026-11-03 三劇本路徑與完整 CI 修復驗證
+- 根據 Run 41559500824 日誌，新增的 Pth() 六組執行情境測試原先因測試斷言未正規化 React children 文字空白而 FAIL；非路徑計算錯誤。修正測試文字空白正規化後，React Template／三劇本路徑契約測試 PASS。
+- 歷史回放失敗根因：fetch_yahoo_twii_30d() 僅取 range=1mo，對較早 T0 過濾後僅剩 14 個交易日；calc_rsi(period=14) 需要至少 15 個收盤價，故 RSI=None，correlation_eligible=0。資料品質門檻正確，不應降低。
+- 已將 Yahoo ^TWII 技術指標歷史擷取窗口由 1mo 擴大至 3mo（commit c3a4e238e25e0f54c3c994c072c053622ac47782），維持 RSI14 完整資料要求。
+- 最新 CI Run 41559674941：整體 SUCCESS。Template source/ref 驗證、三市場情境測試、React Template／三劇本 18 tests、選擇權契約測試、17F self-test、真實 DATA_REPORT 歷史累積回放、Gamma fallback、歷史資料 seed、Dashboard build、React Golden Master 注入、Golden Fixture inline JavaScript syntax、Pages artifact upload 全部 PASS。
+- Run 41559674941 的 deploy job SKIPPED（工作分支，不等同正式部署）；Commit generated dashboard history 亦 SKIPPED。未 merge／部署，Master／V8 未修改。
+- Artifact：Run 41559674941 的 github-pages（artifact id 13196591720，約 1.79 MB）。Artifact 已成功上傳，但本輪尚未下載／抽查其中 HTML 及手機實機畫面，故 Artifact 內容抽查、手機三劇本視覺仍 NOT TESTED。
+- 歷史回放由 CI 步驟 PASS，表示 20261027→20261102 五日有效樣本累積檢查通過；但本摘要未取得逐日 console 輸出，故不額外宣稱每個樣本的原始數值已人工覆核。
+
+### 下一步
+1. 從 Run 41559674941 下載 github-pages artifact，確認內含正確分支產生的最新 HTML／data JSON，檢查 Pth() 注入與關鍵位來源。
+2. 將該 HTML 交由使用者手機開啟，驗收三劇本：有效偏多／缺 Flip、區間有效／價位錯側、有效偏空／缺 PutWall／缺支撐／缺值；並檢查多空條件檢查表、文字換行、數字與圖表不重疊。
+3. 只有 Artifact source、資料值、手機視覺均 PASS 才結案；未經授權不 merge／deploy。
