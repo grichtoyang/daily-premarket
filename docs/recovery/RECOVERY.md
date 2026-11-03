@@ -1008,3 +1008,19 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 使用者下載並以手機瀏覽器開啟 v9-pro-20261102-scenario-fixed.html，檢查三劇本及多空條件檢查表的文字、卡片、換行、圖表／數字重疊。
 2. 依本次資料，應看到偏多未成立（Gamma Flip 缺值）、區間成立（PutWall 44000 < 現價 44920.14 < CallWall 48000）、偏空未成立（現價未跌破 PutWall）。若畫面與此不符即 FAIL，提供截圖修正。
 3. 手機 PASS 後再檢查下一個未完成 P0 區塊；未經授權不 merge／deploy。
+
+
+## 36. 2026-11-03 三劇本修正 CI／Artifact 驗證
+- Build HEAD c3a4e238e25e0f54c3c994c072c053622ac47782；branch 另含 Yahoo TWII 3mo lookback 調整，補足歷史 RSI14 回放資料，屬獨立提交。
+- Actions Run 41559674941 completed / success；Artifact 13196591720；Deploy skipped。
+- 三劇本契約測試、inline JS syntax、歷史 DATA_REPORT replay、correlation seed、Dashboard JSON build、Golden Fixture HTML／JS validation、Artifact upload 均 PASS。
+- Artifact 正確新版 p0/v9-pro-latest.html；資料 p0/data-20261102.json；manifest 日期 20261102。HTML 內嵌 JSON 與獨立 JSON 完全一致，T0 均為 2026-11-02。
+- T0：spot.close 44920.14；PutWall 44000；CallWall 48000；GammaWall、Flip 缺值。區間成立；偏多因 Flip 缺值不成立；偏空因現價仍高於 PutWall 不成立。舊程式可能顯示不符合觸發條件的路徑，已修正。
+- Chromium file:// 渲染遭 ERR_BLOCKED_BY_ADMINISTRATOR；桌面／手機實際畫面 NOT TESTED。HTML 抽取至 /mnt/data/scenario-artifact/p0/v9-pro-latest.html。
+- Pth() runtime 6 案例 PASS；CI／HTML syntax／Artifact data consistency PASS；手機視覺待使用者驗收。
+- 未 Merge／部署；Master／V8 未修改。
+
+### 下一步
+1. 使用者手機開啟新版 HTML，驗收三劇本條件顯示及排版。
+2. 檢查多空條件檢查表 Bias、因子權重及缺失因子與 JSON 一致。
+3. 手機視覺 PASS 後才結案；B 區 0.01 億元精度差仍列後續對帳。
