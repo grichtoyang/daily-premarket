@@ -72,11 +72,20 @@ class BuilderOptionTableTests(unittest.TestCase):
 
 
     def test_news_parser_keeps_first_event_and_original_links(self):
-        parsed = parse_data_report(ROOT / "data_reports" / "DATA_REPORT_20261030.md")
+        report = ROOT / "data_reports" / "DATA_REPORT_20261030.md"
+        source = report.read_text(encoding="utf-8")
+        first_title_line = next(line for line in source.splitlines() if line.startswith("- 事件1："))
+        first_source_line = next(
+            line for line in source.splitlines()
+            if line.startswith("  - 來源：") and "發布時間：" in line
+        )
+        expected_title = first_title_line.split("：", 1)[1].strip()
+        expected_time = first_source_line.split("發布時間：", 1)[1].split("；", 1)[0]
+        parsed = parse_data_report(report)
         self.assertEqual(len(parsed["news"]), 12)
-        self.assertIn("目標價一口氣砍掉530元", parsed["news"][0]["t"])
+        self.assertEqual(parsed["news"][0]["t"], expected_title)
         self.assertTrue(parsed["news"][0]["link"].startswith("https://"))
-        self.assertTrue(parsed["news"][0]["time"].startswith("2026-11-01T"))
+        self.assertTrue(parsed["news"][0]["time"].startswith(expected_time[:10]))
 
     def test_t0_filter_excludes_future_yahoo_and_dated_history(self):
         taipei = timezone(timedelta(hours=8))
