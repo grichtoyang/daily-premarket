@@ -746,3 +746,21 @@ P1 尚未開始。啟動前必須：
 - 保留數值精度待查：外資日盤 11.36－11.17 與淨額 +0.18 差 0.01 億元，可能是各欄獨立四捨五入；尚未取得同版原始未四捨五入值，故數值精度對帳 NOT TESTED，不判定錯誤。下一輪以原始精度確認。
 - 本次只驗收 B 區塊截圖範圍；其他區塊、其他手機尺寸、橫向模式、跨瀏覽器 NOT TESTED。未 merge／部署；Master／V8 未修改。
 - 下一步：B 區塊不再反覆修改；進入下一個未完成 P0 驗收項目，沿用資料來源、計算、HTML 注入、CI、Artifact 正確路徑、手機實機六層驗收。0.01 億元精度差列入數值對帳清單。
+
+
+## 19. 2026-11-03 下一區塊：三劇本路徑條件修正（進行中）
+- B 區塊格式修正已由使用者手機截圖驗收 PASS；本節轉查截圖下方「三劇本路徑」。
+- 原 Template Pth() 根因：偏多只要存在任一高於現價的 GammaWall／CallWall 即可顯示，未要求有效 Gamma Flip；偏空只要任一低於現價的 GammaWall／Flip 即可顯示，未要求現價低於 PutWall；因此觸發條件文字與路徑完整性不一致。
+- 修正後條件：偏多須有有效 Gamma Flip、現價高於 Flip、且至少一個有效上方壓力；區間須 PutWall < 現價 < CallWall；偏空須現價低於有效 PutWall，且至少一個有效下方支撐。缺必要價位時不繪製路徑。
+- 文案改為只陳述最新現價與關鍵位相對位置；「站穩／有效跌破」需後續價格行為確認，不冒稱單一現價已確認觸發。
+- Template commit f87dad314976ad6c4d26125f7a4c37d72f92b6b4；CI 測試工作流 commit 8d0fe6f9f5ab4780facbb9fc62f130dc7b409c3c；測試修正後 HEAD dca0dc9706407b5757d747f5cd608f7419dd86b9。
+- 新增 React Template／三劇本契約測試並接入 Workflow。最新 Run 41559500824：該測試步驟 PASS，含正式 inline JavaScript syntax check；實際 Pth() 六組情境案例於執行環境 6/6 PASS。
+- Run 41559500824 整體 FAIL，阻斷於既有 Replay real historical DATA_REPORTs：20261027 eligible=0、cumulative=0、expected=1；同段出現 SQLite init_db missing primary-key date 訊息。這與本次 Pth() 修改無關，需獨立釐清；後續 Dashboard build／Artifact 因此 skipped。
+- 三劇本修正目前：邏輯單元測試 PASS、正式 Template JS syntax PASS；整份 Workflow FAIL（歷史回放阻斷）；最新 Artifact／完整 Dashboard 注入／手機視覺 NOT TESTED，尚不可結案。
+- 未修改 V8／Master；未 merge／部署。Auditor 為單模型自我審查，非獨立多模型審核。
+
+### 下一步
+1. 先查清 history replay 為何在 20261027 eligible=0 並出現 DB schema 訊息；不以 continue-on-error 或跳過測試掩蓋。
+2. 修復／確認 CI 可完成後，檢查正式 Artifact 中 Pth() 是否使用 triggering branch Template，並核對 T0 現價、PutWall、CallWall、GammaWall、Flip 的來源值。
+3. 用代表性 fixtures 驗證三劇本：有效偏多／缺 Flip、區間有效／價位錯側、有效偏空／缺 PutWall、缺支撐及零／缺值。
+4. 再產出手機 Artifact，複驗三劇本卡片及多空條件檢查表；未完成前不結案、不部署。
