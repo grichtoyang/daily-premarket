@@ -66,7 +66,7 @@ jobs:
           margin = data["margin"]
           assert margin["borrowedSell"] == 36178.0, margin
           assert margin["borrowedSellDiff"] == -1273.0, margin
-          assert margin["borrowedSellDiffScope"] == "上櫃（上市 TWT93U 未取得）", margin
+          assert margin["borrowedSellDiffScope"] == "範圍未註明", margin
           options = data["options"]
           assert len(options["instOpt"]) >= 3
           assert options["gexStatus"] == "available", options
