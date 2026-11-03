@@ -1002,3 +1002,11 @@ P1 尚未開始。啟動前必須：
 - JSON `analysis.visible_block_count=42`，Builder `visible_block_count=42`；48 個 `analysis.cards`／`analysis_card_count` 是內部敘述卡，不是可見 UI 區塊。結構計數 PASS。
 - 42 區塊逐項資料鏈稽核仍 IN PROGRESS；本次沒有改動任何 Builder／Template／資料／UI 程式，也沒有 Merge／Deploy。
 - 下一步：按六頁清單逐項核對來源、DATA_REPORT、Builder、JSON、圖表與分析／判斷／操作；已驗收正確者凍結不動。
+
+
+## 2026-11-03 總覽 KPI 首輪資料鏈結果：期貨 OI 狀態矛盾
+- 六個直接資料 KPI（加權收盤 44,920.14、外資現貨 -1,124.7 億、TX 日盤 45,301、夜盤 44,433、OI PCR 0.57、Call Wall 48,000）DATA_REPORT → P0 JSON 對帳 PASS。
+- 外資期貨淨 OI 0 口為可疑值：三法人 OI 全 0，Builder 的 classify_futures_oi 已判定不納入方向判斷；但 V9Analyzer 仍把 foreign_fut 當 active factor，P0 JSON effective_weight=9.52381，confidence=high。
+- 確認 FAIL：可疑 OI 狀態沒有傳遞到 Bias 因子引擎，Bias 24 雖可由現行程式重現，但輸入有效性／confidence 標示不一致。離線反事實估算排除該因子後 Bias 約 21、coverage 約 77.9%（僅估算，非修正後正式輸出）。
+- 僅讀取與記錄，沒有改動程式／資料／UI。已 PASS 的區塊凍結，不重做。
+- 後續先完成其餘區塊稽核，最後彙整缺陷一次提出最小修正，避免反覆修補造成迴圈。
