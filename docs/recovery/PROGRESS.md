@@ -779,3 +779,15 @@ P1 尚未開始。啟動前必須：
 1. 下載 Run 41559674941 的 github-pages artifact，人工核對 HTML／JSON、Template branch/ref、T0 現價及 PutWall／CallWall／GammaWall／Flip。
 2. 使用者手機開啟同一份 HTML，逐項驗收三劇本卡片及多空條件檢查表，特別檢查長文字換行、數字／圖表重疊及缺值狀態。
 3. 手機驗收 PASS 後再更新結案狀態；未經使用者明確授權不 merge／deploy。
+
+
+## 20. 2026-11-03 Artifact 實際內容抽查
+- 下載 Run 41559674941 的 github-pages artifact 並解壓；確認 P0 產物在 p0/ 子目錄，p0/manifest.json 指向 20261102、data-20261102.json、v9-pro-20261102.html。artifact root HTML 是舊 Pages root，未誤用。
+- p0/v9-pro-latest.html 包含更新後 Pth()；注入資料為 2026-11-02，現貨 44920.14，PutWall 44000、CallWall 48000、GammaWall／Flip 缺值。
+- 對 Artifact 真正 HTML 的 Pth() 執行函式以實際資料執行 Node 檢查：偏多 blocked、區間 valid、偏空 blocked，與資料條件一致，PASS。
+- 已抽取手機複驗 HTML：/mnt/data/v9-pro-20261102-scenario-fixed.html，303,448 bytes，SHA-256 e22783b01067a0de641665012c48827d4f8144b827d28b5126ce82716addec63。
+- Artifact 結構／manifest／注入資料／實際路徑邏輯 PASS；手機視覺 NOT TESTED。未 merge／部署，Master／V8 未修改。
+
+### 下一步
+1. 使用者在手機瀏覽器開啟上述 HTML；應顯示偏多未成立、區間成立、偏空未成立。檢查三劇本卡片、條件表、字體換行、數字及圖表是否重疊。
+2. 手機畫面 PASS 後，繼續下一個未完成 P0 區塊；不 merge／deploy，除非使用者明確授權。
