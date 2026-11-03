@@ -1581,3 +1581,21 @@ Use an execution environment with the repository checked out and Node/Wrangler a
 
 ### 下一步（唯一）
 在可 checkout phase2-p0-ui-fixes 並有 Node.js 的環境，對 exact file workers/taifex-proxy_V1.4.js 執行 node --check。通過後才進行 Wrangler／部署前驗證；未通過前不得部署。
+
+
+## 2026-11-03 Worker V1.5 V8 語法解析補充驗證
+
+### 驗證方法與結果
+- 透過 GitHub connector 讀取 `phase2-p0-ui-fixes` 的 `workers/taifex-proxy_V1.4.js` exact source，blob SHA：`3f5fdfe3442a106aa21a74706e911f7970258056`；長度 132,720 characters。
+- source 只有一個 `export default`，沒有 static import。使用 V8 parser 對完整 source 進行語法解析；僅在記憶體副本將唯一 `export default` 改寫成等價的 `const __worker_default__ =`，以符合 script parser 入口。原始檔未修改。
+- V8 syntax parse：**PASS**。這是完整 source 的 V8 語法解析結果，但不得等同宣稱 `node --check`、ES module 原生檢查或 Cloudflare Workers runtime 已通過。
+
+### 仍未完成的驗證
+- 本地 Node.js 22.16.0 存在，但無法從 raw.githubusercontent.com 下載 exact source（DNS resolution failure），故 `node --check`：**BLOCKED／NOT EXECUTED**。
+- Wrangler／Cloudflare Workers runtime：**NOT TESTED**。
+- 真實 Worker endpoint 與 Python DATA_REPORT notes 整合：**NOT TESTED**。
+- Worker deploy：**NOT DONE**。
+- 本輪沒有修改任何程式、workflow、Worker 設定或部署。
+
+### 下一步
+在不部署的前提下，若可取得 Wrangler／Cloudflare 相容 runtime，先執行 Worker bundle／runtime validation；其後才可安排受控部署與 endpoint 整合驗證。不得把 V8 syntax parse PASS 當作 runtime PASS。
