@@ -1096,3 +1096,13 @@ P1 尚未開始。啟動前必須：
 - 比對資料完整性時，以已確認的完整全日版 DATA_REPORT（目前指定 2026-10-30）作為基準。未確認目標報告是日盤版或全日版前，不得把其缺欄位直接列為資料遺失。
 
 **程式依據（已讀取工作分支原始碼）：** `src/fetch_data.py` 的 CLI 說明指出手動 `--t0` 未指定 `--session` 時預設「全日」；未指定 `--t0` 時呼叫 `src.t0.resolve()` 自動判斷。全日夜盤查詢使用 T0 的下一個交易日。這確認了參數分支差異；但 2026-11-02 當次 dispatch 是否真的填入日期，仍須以該次 workflow run 的實際輸入／紀錄查證，不能僅憑報告缺夜盤推定。
+
+
+## 2026-11-03 1030／1102 DATA_REPORT 實檔與 Actions 複核
+- `phase2-p0-ui-fixes` 的 10/30 全日報告 SHA `665ae0ce957cbda372a1d70e1f06f0eea124ba11`：夜盤、三大法人 OI、前十大 OI 均有值。
+- `phase2-p0-ui-fixes` 的 11/02 全日報告 SHA `4add0443546bde87309fc1f13396f3a478e60bb0`（2026-11-03 08:55:11）：夜盤、三大法人 OI、前十大 OI 均有值。
+- `master` 的 11/02 全日報告 SHA `38fc2e8a5fe2578e6779ffc11e157fed3e76e8ff`（2026-11-03 12:32:18）：夜盤、OI 均有值；Actions run #98 `41578655028` success。
+- Actions run #97 `41556173914` 在 `phase2-p0-ui-fixes` 以 workflow_dispatch 執行，log 證實 `--t0 ""`，自動解析 T0=2026-11-02、session=全日；不能據此推定 11/02 14:35 舊日盤版 run #95 的輸入。
+- 舊分支 `fix/three-market-correlation-history` 的 11/02 14:35 日盤版 SHA `8ccd0dfc0f86f80e23253781bf923a533566df96` 有三法人 OI 全零及期貨行情沿用 10/30 數值。該版本不是 11/03 產出的全日版，不能混版比較。
+- 結論：目前 10/30／11/02 全日 DATA_REPORT 並未缺夜盤／OI；舊日盤版的 OI 零值仍是資料完整性缺陷。Worker `number()` 將空白／dash 轉 0 的風險已確認，但 11/02 原始 HTML 未取到，當次直接成因仍 NOT TESTED。
+- 本輪只讀驗證，無程式／DB／報告／Dashboard 修改，無 Merge／Deploy。下一步：在允許的工作分支對 OI parser 做局部 nullable 修正，並驗證 OI 有效性狀態能阻止零值污染 Bias、confidence 與 correlation；先不動通用 `number()`。
