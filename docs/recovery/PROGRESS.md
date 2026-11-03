@@ -1191,3 +1191,35 @@ P1 尚未開始。啟動前必須：
 - 因此在目前 repo 結構及工具權限下，無法安全地做 Wrangler validation；不應臨時新增設定或 workflow，因這會超出本輪三檔程式授權範圍並引入部署環境假設。
 - 最新驗證狀態維持：V8 full-source syntax parse **PASS**；Python GEX fallback 11 tests **PASS**；Node `--check` **BLOCKED**；Wrangler/runtime **BLOCKED／NOT TESTED**；真實 endpoint／DATA_REPORT notes **NOT TESTED**；deploy **NOT DONE**。
 - 本輪只讀 Git tree；未修改任何程式、設定、workflow 或部署。
+
+
+## 2026-11-03 Worker 版本管理修復：V1.4 還原、V1.5 獨立
+
+### 修復原因
+- 前次將 GEX failure diagnostics 修改直接提交到既有路徑 `workers/taifex-proxy_V1.4.js`，造成穩定版本路徑被新版內容佔用；此版本管理方式錯誤。
+- 正確策略是保留原 V1.4，另建 `workers/taifex-proxy_V1.5.js`，不得以 V1.5 覆蓋 V1.4。
+
+### GitHub 修復結果（branch: phase2-p0-ui-fixes）
+- 原始 V1.4 從 V1.5 修改前的歷史 commit `4f3a9afbaf48fe4c9ee6bd73804ef78e382a3291` 還原。
+- V1.4 路徑：`workers/taifex-proxy_V1.4.js`
+  - 已讀回 Blob SHA：`f6406554393f57b71f88eaf6fdb75ee73ae2803c`
+  - 與歷史版本 Blob SHA 完全一致；內容長度 131,250 characters。
+- V1.5 路徑：`workers/taifex-proxy_V1.5.js`
+  - 已讀回 Blob SHA：`3f5fdfe3442a106aa21a74706e911f7970258056`
+  - 與原先診斷版內容 Blob SHA 完全一致；內容長度 132,720 characters。
+- 建立 V1.5 commit：`2156f917eaf38af09fee110a4566e7b4c872ae26`。
+- 還原 V1.4 commit：`240d88a21d939daa94a63064f40ea0c12ca1711c`。
+- 修復後 branch head：`240d88a21d939daa94a63064f40ea0c12ca1711c`。
+- 兩個檔案已從 GitHub 重新讀回核對，版本內容與 Blob SHA 均符合預期。
+
+### 驗收狀態
+- 原始 V1.4 歷史版本還原：**PASS**（Blob SHA exact match）。
+- V1.5 診斷版獨立保存：**PASS**（Blob SHA exact match）。
+- V1.4／V1.5 路徑分離：**PASS**。
+- 本次沒有部署 Worker，沒有修改 Cloudflare Worker 線上版本。
+- V1.5 V8 syntax parse：沿用先前結果 **PASS**；Node `--check`：**BLOCKED／NOT EXECUTED**；Wrangler／Cloudflare runtime：**NOT TESTED**；真實 endpoint：**NOT TESTED**。
+- 部署前應明確選擇 V1.5 檔案；不得再以 V1.4 路徑作為新版部署來源。
+
+### 版本連結
+- [V1.4 原始穩定版](https://github.com/grichtoyang/daily-premarket/blob/phase2-p0-ui-fixes/workers/taifex-proxy_V1.4.js)
+- [V1.5 GEX 診斷版](https://github.com/grichtoyang/daily-premarket/blob/phase2-p0-ui-fixes/workers/taifex-proxy_V1.5.js)
