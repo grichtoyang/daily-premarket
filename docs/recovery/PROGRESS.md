@@ -1474,3 +1474,9 @@ P1 尚未開始。啟動前必須：
 1. 不再抽象討論「全面清查」；先完成 TWT93U 20261030 真實 response、TPEX S47 同日 JSON/CSV 對照、TWT72U 歷史取得與授權確認。
 2. 以上證據齊備後，修正資料契約、parser、build mapping 與專項 fixture tests；來源日期不符或未取得時 fail closed。
 3. 測試通過後才重建 20261030 DATA_REPORT；目前仍禁止重跑。
+## 2026-11-03｜資料來源取得可行性補查
+
+- 嘗試讀取 TWSE TWT93U 目標日期 JSON：`https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date=20261030`。Web 讀取回 Internal Error，容器端請求遇 DNS resolution failure；此為目前查詢環境 BLOCKED，不可據此宣稱官方 API 失效。20261030 原始 response 仍 NOT TESTED。
+- TPEX 官方歷史查詢頁 `sbl_hist10110.html` 提供日期查詢及「另存 CSV」介面（官方頁面搜尋結果可確認）；但 TPEX E-Shop 對 `Margin_SBL.csv` 列有每日訂閱商品，產製時間 22:00，內部 NT$1,000/月、外部 NT$1,500/月，且用途／再揭露限制依訂閱條款。公開查詢頁的 CSV 按鈕與訂閱商品授權邊界仍未釐清；不能直接把訂閱檔當成可免費自動化使用的來源。
+- 因此 TPEX S47 的官方欄位結構已確認，但 API property-to-column 精確 mapping 及 20261030 原始 CSV/JSON 同日對照仍 NOT TESTED；不得只憑 property 名稱改 parser。
+- 本輪沒有修改程式、DATA_REPORT 或 workflow，沒有重跑 10/30，沒有 merge/deploy。
