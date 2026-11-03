@@ -167,13 +167,13 @@ function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis}) {
   const currentReady=valid(current);
   const upper=[gamma,call].filter(x=>valid(x)&&currentReady&&x>current).sort((a,b)=>a-b)[0]??null;
   const lower=[gamma,flip].filter(x=>valid(x)&&currentReady&&x<current).sort((a,b)=>b-a)[0]??null;
-  const bull=valid(flip)&&currentReady&&current>flip&&upper!=null;
+  const bull=valid(flip)&&currentReady&&current>flip&&upper!=null&&!(valid(put)&&current<put);
   const range=valid(put)&&valid(call)&&currentReady&&put<current&&current<call;
   const bear=valid(put)&&currentReady&&current<put&&lower!=null;
   const position=!currentReady?"現價缺值":valid(put)&&valid(call)&&current>put&&current<call?"現價位於 Put Wall 與 Call Wall 之間":valid(put)&&current<put?"現價低於 Put Wall":valid(call)&&current>call?"現價高於 Call Wall":"現價與有效關鍵位的相對位置未能完整判定";
   const scenarioLook="加權現價 "+priceFmt(current,0)+"；Put Wall "+priceFmt(put,0)+"；Call Wall "+priceFmt(call,0)+"；Gamma Flip "+priceFmt(flip,0)+"；Gamma Wall "+priceFmt(gamma,0)+"。"+position+"。";
   const scenarioCompass="偏多價格條件："+(bull?"成立（現價高於有效 Flip，且上方有有效壓力位）":"未成立／資料不足（須有有效 Flip、現價高於 Flip，及上方有效價位）")+"；區間條件："+(range?"成立（Put Wall < 現價 < Call Wall）":"未成立／資料不足")+"；偏空價格條件："+(bear?"成立（現價低於 Put Wall，且有下方有效參考位）":"未成立／資料不足（須現價低於 Put Wall，且有下方有效參考位）")+"。這些是價位條件檢查，不代表突破已獲確認，也不是互斥的機率預測。";
-  const scenarioTarget=range?"目前價格仍在 Put／Call Wall 區間內，以區間觀察為主；等待靠近邊界後的價格反應。只有有效突破並回測守住，才提高順勢情境權重；未突破前不追價。":bull?"偏多價位條件具備，但仍須觀察上方壓力是否被有效突破並回測守住；未確認前不視為進場訊號。":bear?"偏空價位條件具備，但仍須觀察 Put Wall 跌破後反抽是否無法收復；未確認前不追空。":"目前必要價位或相對位置不足以形成完整交易情境；先補足有效關鍵位並等待價格確認，不以 Bias 分數代替觸發條件。";
+  const scenarioTarget=range?"目前價格仍在 Put／Call Wall 區間內，以區間觀察為主；等待靠近邊界後的價格反應。只有有效突破並回測守住，才提高順勢情境權重；未突破前不追價。":bear?"偏空價位條件具備，但仍須觀察 Put Wall 跌破後反抽是否無法收復；未確認前不追空。":bull?"偏多價位條件具備，但仍須觀察上方壓力是否被有效突破並回測守住；未確認前不視為進場訊號。":"目前必要價位或相對位置不足以形成完整交易情境；先補足有效關鍵位並等待價格確認，不以 Bias 分數代替觸發條件。";
   const details=Array.isArray(analysis?.factor_details)?analysis.factor_details:[];
   const active=details.filter(x=>x?.status==="active"&&num(x.contribution)!=null);
   const positive=active.filter(x=>num(x.contribution)>0).sort((a,b)=>num(b.contribution)-num(a.contribution));
