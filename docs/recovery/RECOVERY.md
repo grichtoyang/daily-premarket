@@ -1041,3 +1041,19 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 1. 使用者手機開啟 v9-pro-20261102-factor-contrib-fixed.html，確認圖表顯示中文因子名稱、紅綠正負方向貢獻，且 Bias 24 偏空不再搭配全正綠色權重圖。
 2. 新版手機 PASS 後，回頭對帳區塊 B 0.01 億元精度差及完整來源／單位；之後再做全頁最終驗收。
 3. 未經使用者明確授權不 merge／deploy。
+
+ 
+## 39. 2026-11-03 因子方向貢獻圖空白根因修正
+- 使用者實機驗收上一版 HTML：區塊標題、Bias 24 偏空及正負方向說明顯示正確，但因子圖繪圖區完全空白，手機驗收 FAIL。
+- 根因已定位：綜合分析頁 y2({data:e}) 解構為 `options:l`、`analysis:u`，但新因子圖仍從 `l.factor_details` 讀取；該欄位實際位於 `u.factor_details`。因此 filter 得到空陣列，Canvas 只畫背景網格，沒有因子列。
+- 已修正 `templates/v9-pro-react-template.html`：圖表 filter 改讀 `u.factor_details`；缺失因子中文名稱查找亦改讀 `u.factor_details`。不改變權重或 Bias 計算。
+- 更新 `tests/test_react_template_static.py`：測試明確要求圖表資料來源為 `u.factor_details`，避免再次錯用 options 物件。
+- 最新 CI Run 41561549286，commit c97b970dd29fc05664fbdb2b251b7f4ef6735f3e，整體 SUCCESS；新 HTML 產生成功，4 個 inline JS scripts 語法檢查 PASS，React template 靜態測試中的 test_bias_chart_uses_signed_factor_contributions_and_chinese_names PASS；Artifact 13196699558 上傳成功，Deploy job SKIPPED（工作分支）。
+- 已從本次 CI Artifact 13196699558 抽取 `p0/v9-pro-20261102.html`，確認生成 HTML 圖表程式讀取 `u.factor_details`，不再讀取錯誤的 `l.factor_details`。注入資料中有 14 個 active 且 contribution 為有限數值的因子；按絕對值排序前 8 項為：外資現貨 -7.1429、美股費半 -7.1429、夜盤 -4.7619、PCR -3.3333、現貨趨勢 -1.9345、投信 +1.7857、MACD -1.7857、Put Wall +0.8929。
+- 新版 HTML：`/mnt/data/v9-pro-20261102-factor-contrib-fixed-v2.html`，303,829 bytes，SHA-256 `0dc550e7a6adb19e324fa1ed7af7308605a614092c061d9beda8ce1dc886bf72`。
+- 狀態：程式根因修正 PASS；CI PASS；Artifact 內實際 HTML 取值來源與注入因子資料核對 PASS；實際手機新版畫面 NOT TESTED；未 merge／正式部署；Master／V8 未修改。
+ 
+### 下一步
+1. 請使用者手機開啟 fixed-v2 HTML，確認 8 個因子長條、中文標籤、正負顏色及數值均出現，且不重疊。
+2. 手機 PASS 後處理區塊 B 0.01 億元精度差，再進行完整 42 區塊最終驗收。
+3. 未經使用者明確授權不 merge／deploy。
