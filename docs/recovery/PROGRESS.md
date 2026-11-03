@@ -791,3 +791,19 @@ P1 尚未開始。啟動前必須：
 ### 下一步
 1. 使用者在手機瀏覽器開啟上述 HTML；應顯示偏多未成立、區間成立、偏空未成立。檢查三劇本卡片、條件表、字體換行、數字及圖表是否重疊。
 2. 手機畫面 PASS 後，繼續下一個未完成 P0 區塊；不 merge／deploy，除非使用者明確授權。
+
+
+## 20. 2026-11-03 三劇本修正 CI／Artifact 驗證
+- Build HEAD c3a4e238e25e0f54c3c994c072c053622ac47782；branch 另含 Yahoo TWII 3mo lookback 調整，補足歷史 RSI14 回放資料，屬獨立提交。
+- Actions Run 41559674941 completed / success；Artifact 13196591720；Deploy skipped。
+- 三劇本契約測試、inline JS syntax、歷史 DATA_REPORT replay、correlation seed、Dashboard JSON build、Golden Fixture HTML／JS validation、Artifact upload 均 PASS。
+- Artifact 正確新版 p0/v9-pro-latest.html；資料 p0/data-20261102.json；manifest 日期 20261102。HTML 內嵌 JSON 與獨立 JSON 完全一致，T0 均為 2026-11-02。
+- T0 輸入：spot.close=44920.14；PutWall=44000；CallWall=48000；GammaWall=null；Flip=null。區間成立；偏多因 Flip 缺值不成立；偏空因現價高於 PutWall 不成立。舊程式會錯誤顯示偏多／偏空延伸路徑，此次已抑制。
+- Chromium file:// 渲染遭 ERR_BLOCKED_BY_ADMINISTRATOR；桌面／手機實際畫面 NOT TESTED。HTML 抽取至 /mnt/data/scenario-artifact/p0/v9-pro-latest.html。
+- Pth() runtime 6 案例 PASS；CI／HTML syntax／Artifact source-data consistency PASS；桌面／手機視覺待使用者驗收。
+- 未 Merge／部署；Master／V8 未修改。
+
+### 下一步
+1. 使用者手機開啟新版 HTML，確認偏多與偏空條件未成立、區間路徑正常，文字沒有重疊／裁切。
+2. 同時檢查多空條件檢查表的 Bias、因子權重及缺失因子是否與 JSON 一致。
+3. 視覺 PASS 後再結案；B 區 0.01 億元精度差仍列後續對帳。
