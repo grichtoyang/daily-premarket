@@ -1561,3 +1561,23 @@ DATA-UI-05 的兩種手機 UI 狀態（樣本不足與合成有效矩陣）已�
 
 ### Next action
 Use an execution environment with the repository checked out and Node/Wrangler available to run syntax validation against the exact Worker file. Only after that passes should deployment be considered. Do not treat source review or Python regression tests as Worker runtime validation.
+
+
+## 2026-11-03 Worker V1.5 語法驗證途徑複核（本輪）
+
+### 既有 CI 能力盤點
+- .github/workflows/daily_data.yml：執行 Python daily-data fetch，沒有 Node／Worker syntax check。
+- .github/workflows/unit-contract-audit.yml：Python compileall 與 Python unittest，沒有 Worker syntax check。
+- .github/workflows/test-v9-ui-fixes.yml：雖安裝 Acorn／使用 Node 相關工具，但檢查對象是 React template；workflow paths 亦未包含 workers/taifex-proxy_V1.4.js，不能據此認定 Worker 已通過語法檢查。
+- 目前授權範圍只允許三個既定程式檔案；本輪不新增／修改 workflow 以擴大範圍。
+
+### 工具限制與狀態
+- 目前 GitHub connector 僅提供讀取／檔案更新等動作，沒有 workflow_dispatch 或遠端 shell 執行能力。
+- 本地環境無法解析 raw.githubusercontent.com，不能下載 exact Worker source，因此無法在本地對該檔執行 node --check。
+- Worker JavaScript syntax/runtime validation：**BLOCKED（未執行）**。
+- 真實 Worker endpoint 與 DATA_REPORT notes 整合：**NOT TESTED**。
+- Worker deployment：**NOT DONE**。
+- 本輪只讀 workflow 清單及內容；沒有修改任何程式、workflow、設定或部署。
+
+### 下一步（唯一）
+在可 checkout phase2-p0-ui-fixes 並有 Node.js 的環境，對 exact file workers/taifex-proxy_V1.4.js 執行 node --check。通過後才進行 Wrangler／部署前驗證；未通過前不得部署。
