@@ -1,4 +1,5 @@
 import unittest
+from collections import Counter
 from unittest.mock import patch
 
 from src.sources import spot_raw
@@ -18,6 +19,10 @@ class LiveBorrowedSourceProbeTests(unittest.TestCase):
         self.assertIsInstance(payload, dict, f"TWT72U response type: {type(payload).__name__}")
         print("TWT72U_LIVE_META", payload.get("stat"), payload.get("date"), len(payload.get("data") or []))
         print("TWT72U_LIVE_FIELDS", payload.get("fields"))
+        fields = payload.get("fields") or []
+        if "市場別" in fields:
+            market_index = fields.index("市場別")
+            print("TWT72U_MARKET_COUNTS", Counter(str(row[market_index]).strip() for row in payload.get("data", []) if len(row) > market_index))
         with patch("src.sources.spot_raw._get_json", return_value=payload):
             parsed = spot_raw.twse_twt72u_sbl(T0)
         self.assertTrue(parsed["date_ok"], parsed)
