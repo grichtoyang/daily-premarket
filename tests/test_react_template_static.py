@@ -238,9 +238,11 @@ console.log("scenario paths 6/6 PASS");
         ):
             self.assertIn(binding, self.html)
         self.assertNotIn("站上${g(l.gammaWall)}偏多，跌破${g(l.putWall)}追空", self.html)
-        start = self.html.index("function v9ProSynthesisAnalysis(")
+        helper_start = self.html.index("function v9ProCorrelationMatrixReady(")
+        start = self.html.index("function v9ProSynthesisAnalysis(", helper_start)
         end = self.html.index("function y2(", start)
-        function_source = self.html[start:end]
+        function_source = self.html[helper_start:end]
+        self.assertIn("chart:v9ProCorrelationMatrixReady(e.analysis.correlation?.labels,e.analysis.correlation?.matrix)", self.html)
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for synthesis narrative runtime tests")
         fixture = {
@@ -273,7 +275,29 @@ if(!out.scenarios.compass.includes("區間條件：成立")||!out.scenarios.comp
 if(!out.factors.look.includes("正向貢獻合計")||!out.factors.look.includes("外資現貨")) throw Error("factor contribution summary missing");
 if(!out.correlation.look.includes("現貨／外資現貨 +0.85")||!out.correlation.look.includes("現貨／費半 -0.64")) throw Error("strongest correlation pairs not identified");
 if(!out.trade.target.includes("區間內不追價")) throw Error("trade plan does not respect current range");
-console.log("synthesis narrative fixture PASS");
+
+// Missing night price inputs must not produce actionable text containing fake zero/missing levels.
+const missing=v9ProSynthesisAnalysis({day:{},night:{},futures:{},spot:{},options:{},analysis:{}});
+if(!missing.night.target.includes("夜盤低點或日盤收盤缺值／無效")||!missing.night.target.includes("暫不提供價位觸發條件")) throw Error("missing night price levels still produce a trigger");
+if(!missing.scenarios.compass.includes("資料不足")||!missing.trade.target.includes("先補齊有效關鍵位")) throw Error("missing key levels produce a directional trade plan");
+
+// Zero is a valid numeric flow/OI value, but not a valid Taiwan index price or option wall.
+const zero=JSON.parse(JSON.stringify(fixture));
+zero.day.c=0; zero.night.c=0; zero.night.l=0; zero.futures.foreign_night=0; zero.futures.foreign_oi=0;
+zero.spot.close=44920; zero.options.putWall=0; zero.options.callWall=48000;
+const zeroOut=v9ProSynthesisAnalysis(zero);
+if(!zeroOut.night.look.includes("日盤收 缺值")||!zeroOut.night.look.includes("外資夜盤淨交易 0 口")||!zeroOut.night.look.includes("外資期貨 OI 0 口")) throw Error("zero price/flow/OI semantics are inconsistent");
+if(!zeroOut.night.target.includes("暫不提供價位觸發條件")) throw Error("zero night low treated as a valid price level");
+if(!zeroOut.scenarios.look.includes("Put Wall 缺值")||zeroOut.scenarios.look.includes("現價位於 Put Wall 與 Call Wall 之間")) throw Error("zero Put Wall incorrectly treated as valid in narrative");
+if(zeroOut.trade.target.includes("區間內不追價")) throw Error("zero Put Wall incorrectly triggers range trade plan");
+
+// A malformed/non-square correlation matrix must not be described or drawn as a valid NxN heatmap.
+const malformed=JSON.parse(JSON.stringify(fixture));
+malformed.analysis.correlation={labels:["A","B","C"],matrix:[[1,0],[0,1]],desc:"invalid dimensions"};
+const malformedOut=v9ProSynthesisAnalysis(malformed);
+if(!malformedOut.correlation.look.includes("缺值或維度不一致")||malformedOut.correlation.look.includes("矩陣 3×3")) throw Error("malformed correlation matrix reported as valid");
+if(v9ProCorrelationMatrixReady(["A","B"],[[1,1.2],[1,1]])) throw Error("out-of-range correlation coefficient accepted");
+console.log("synthesis narrative actual + missing + zero + malformed matrix fixtures PASS");
 """
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
