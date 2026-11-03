@@ -6,7 +6,7 @@
   inst {foreign, trust, dealer, total} 單位億元
   margin {fin_yi, fin_chg_yi, s_bal, s_chg, ratio} 上市+上櫃合計；融資億元、融券張、維持率%
     (HiStock 金額口徑為主；失敗則官方逐股張數備援 → 融資改 unavailable)
-  sbl {bal, sale_bal, sale_chg}；借券餘額需 TWT72U，借券賣出餘額目前僅採已驗證上市 TWT93U
+  sbl {bal, sale_bal, sale_chg}；借券餘額 TWT72U，借券賣出餘額 TWT93U（上市）+ TPEx S47（上櫃）
   turnover {listed, otc, total} 單位億元
   unavailable[] / notes[] / sources{}
 """
@@ -244,7 +244,7 @@ def build(t0: str) -> dict:
     sources["margin_ratio"] = ratio_result["source"]
     notes.append(ratio_result["note"])
 
-    notes.append("上市 MI_MARGN / TWT96U 無日期欄，採用最新可得")
+    notes.append("上市 MI_MARGN 無日期欄，採用最新可得")
     for k in ("fin_yi", "fin_chg_yi", "s_bal", "s_chg", "ratio"):
         if margin[k] is None:
             unavailable.append(f"margin.{k}")
