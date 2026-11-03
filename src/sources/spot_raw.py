@@ -134,7 +134,7 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     if date8 is None:
         print(f"[WARN] TWT93U invalid requested date: {date_value!r}")
         return out
-    url = f"https://www.twse.com.tw/exchangeReport/TWT93U?response=json&date={date8}"
+    url = f"https://www.twse.com.tw/rwd/zh/marginTrading/TWT93U?response=json&date={date8}"
     j = _get_json(url)
     if not isinstance(j, dict):
         print(f"[WARN] TWT93U invalid response type: {type(j).__name__}")
@@ -187,6 +187,66 @@ def twse_twt93u_sbl(date_value: str) -> dict:
         "date_ok": True,
     }
 
+def twse_twt72u_sbl(date_value: str) -> dict:
+    """TWT72U（SLBNLB）借券餘額；以官方日期查詢及欄名定位彙總上市+上櫃股數。"""
+    date8 = _twse_date8(date_value)
+    out = {"bal": None, "prev_bal": None, "chg": None, "date_ok": False}
+    if date8 is None:
+        print(f"[WARN] TWT72U invalid requested date: {date_value!r}")
+        return out
+    url = (
+        "https://www.twse.com.tw/rwd/zh/lending/TWT72U"
+        f"?response=json&date={date8}&selectType=SLBNLB"
+    )
+    j = _get_json(url)
+    if not isinstance(j, dict) or j.get("stat") != "OK":
+        print(f"[WARN] TWT72U stat/type not OK: {j.get('stat') if isinstance(j, dict) else type(j).__name__!r}")
+        return out
+
+    actual_date = _twse_date8(j.get("date"))
+    if actual_date != date8:
+        print(f"[WARN] TWT72U date mismatch: requested={date8} actual={j.get('date')!r}")
+        return out
+    fields = j.get("fields") or []
+    data = j.get("data") or []
+    normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
+    symbol_idx = next((normalized[k] for k in ("證券代號", "股票代號", "代號") if k in normalized), None)
+    prev_idx = next((normalized[k] for k in ("前日借券餘額(1)股", "昨日借券餘額(股數)") if k in normalized), None)
+    bal_idx = next((normalized[k] for k in ("本日借券餘額股(4)=(1)+(2)-(3)", "今日借券餘額(股數)") if k in normalized), None)
+    if symbol_idx is None or prev_idx is None or bal_idx is None or not data:
+        print(f"[WARN] TWT72U required fields/data absent: fields={fields!r}")
+        return out
+
+    import re
+    total_prev = total_bal = 0.0
+    parsed = invalid = 0
+    for row in data:
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx) >= len(row):
+            invalid += 1
+            continue
+        code = str(row[symbol_idx] or "").strip().upper()
+        if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
+            continue  # skip market-total / note rows
+        prev = _num(row[prev_idx])
+        bal = _num(row[bal_idx])
+        if prev is None or bal is None:
+            invalid += 1
+            continue
+        total_prev += prev
+        total_bal += bal
+        parsed += 1
+    if not parsed:
+        print(f"[WARN] TWT72U no parseable stock rows: date={date8} total={len(data)} invalid={invalid}")
+        return out
+    print(f"[INFO] TWT72U parsed rows={parsed}/{len(data)} invalid_rows={invalid} date={date8}")
+    return {
+        "bal": total_bal,
+        "prev_bal": total_prev,
+        "chg": total_bal - total_prev,
+        "date_ok": True,
+    }
+
+
 # ---------- 上市成交 ----------
 
 def turnover_tw(roc: str) -> float | None:
@@ -233,30 +293,56 @@ def tpex_margin(roc: str) -> dict:
     return out
 
 def tpex_sbl(roc: str) -> dict:
+    """TPEx 官方信用額度總量管制餘額：依 S47 欄名取借券賣出前日／當日餘額。"""
     out = {"bal": None, "sale_bal": None, "sale_chg": None, "date_ok": False}
-    j = _get_json(f"{TPEX_API}/tpex_margin_sbl")
-    if not isinstance(j, list):
+    date8 = _twse_date8(roc)
+    if date8 is None:
+        print(f"[WARN] TPEX margin_sbl invalid requested date: {roc!r}")
+        return out
+    date_iso = f"{date8[:4]}/{date8[4:6]}/{date8[6:8]}"
+    url = f"https://www.tpex.org.tw/www/zh-tw/margin/sbl?response=json&date={date_iso}"
+    j = _get_json(url)
+    if not isinstance(j, dict):
         print(f"[WARN] TPEX margin_sbl invalid response type: {type(j).__name__}")
         return out
-    matched = 0
-    n = 0
-    bal = sale = sale_prev = 0.0
-    for row in j:
-        if not isinstance(row, dict):
+    tables = j.get("tables") or []
+    table = next((t for t in tables if isinstance(t, dict) and isinstance(t.get("fields"), list) and isinstance(t.get("data"), list)), None)
+    if table is None:
+        print(f"[WARN] TPEX margin_sbl missing tables/fields/data: keys={list(j)[:10]}")
+        return out
+    actual = _twse_date8(table.get("date") or j.get("date"))
+    if actual != date8:
+        print(f"[WARN] TPEX margin_sbl date mismatch: requested={date8} actual={table.get('date') or j.get('date')!r}")
+        return out
+    fields = table["fields"]
+    data = table["data"]
+    normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
+    symbol_idx = next((normalized[k] for k in ("股票代號", "證券代號", "代號") if k in normalized), None)
+    prev_idx = next((normalized[k] for k in ("借券賣出前日餘額", "借券前日餘額") if k in normalized), None)
+    bal_idx = next((normalized[k] for k in ("借券賣出當日餘額", "借券當日餘額", "借券賣出餘額") if k in normalized), None)
+    if symbol_idx is None or prev_idx is None or bal_idx is None:
+        print(f"[WARN] TPEX margin_sbl required S47 fields absent: fields={fields!r}")
+        return out
+    import re
+    total_prev = total_bal = 0.0
+    parsed = invalid = 0
+    for row in data:
+        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, bal_idx) >= len(row):
+            invalid += 1
             continue
-        if str(row.get("Date", "")).strip() != roc:
+        code = str(row[symbol_idx] or "").strip().upper()
+        if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
             continue
-        matched += 1
-        b = _num(row.get("SecuritiesBorrowingBalanceOfTheMarketDay"))
-        if b is None:
+        prev = _num(row[prev_idx])
+        bal = _num(row[bal_idx])
+        if prev is None or bal is None:
+            invalid += 1
             continue
-        n += 1
-        bal += b
-        sale += _num(row.get("SaleBalanceOfTheMarketDay")) or 0.0
-        sale_prev += _num(row.get("SaleBalancePreviousDay")) or 0.0
-    if n:
-        print(f"[INFO] TPEX margin_sbl parsed rows={n}/{matched} matched_date_rows={matched} total_rows={len(j)} date={roc}")
-        out = {"bal": bal, "sale_bal": sale, "sale_chg": sale - sale_prev, "date_ok": True}
-    else:
-        print(f"[WARN] TPEX margin_sbl no usable rows: date={roc} total_rows={len(j)} matched_date_rows={matched}")
-    return out
+        total_prev += prev
+        total_bal += bal
+        parsed += 1
+    if not parsed:
+        print(f"[WARN] TPEX margin_sbl no parseable stock rows: date={date8} total={len(data)} invalid={invalid}")
+        return out
+    print(f"[INFO] TPEX margin_sbl parsed rows={parsed}/{len(data)} date={date8}")
+    return {"bal": None, "sale_bal": total_bal, "sale_chg": total_bal - total_prev, "date_ok": True}
