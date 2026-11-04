@@ -1725,9 +1725,9 @@ P1 尚未開始。啟動前必須：
 ### 恢復內容與來源
 - 從 `fix/three-market-correlation-history` 的歷史實作選擇性恢復，沒有整條 merge：
   - Builder 分析函式來源：`aeb8fdb16fdfcbeeabc909db45ecdd76e2fa6b97`（後續以歷史分支最終版本為準）。
-  - UI 區塊來源：`d7bf6ef0828172254fa02c296ee12fc7f3813dbd)；資料 JSON 映射來源：`ce55c9b013e9ef0efc9ec4dfbcbad281e65b687c`。
+  - UI 區塊來源：`d7bf6ef0828172254fa02c296ee12fc7f3813dbd`；資料 JSON 映射來源：`ce55c9b013e9ef0efc9ec4dfbcbad281e65b687c`。
 - `scripts/v9_pro_builder.py` 恢復 `build_option_force_analysis`，含缺值保護、金額欄位遞推／合計一致性檢查、日夜盤法人主導者、雙邊金額失衡率，以及與獨立淨口數資料的方向背離檢查。
-- Builder 的 parsed options 與 final JSON 均新增 `instOptForceAnalysis)。
+- Builder 的 parsed options 與 final JSON 均新增 `instOptForceAnalysis`。
 - `templates/v9-pro-react-template.html` 恢復原區塊 B 的選擇權法人金額力道表、可橫向捲動樣式及資料驅動分析文字；沒有新增 Dashboard layout 或改動 42 區塊 registry。
 - 新增 `tests/test_builder_option_force_analysis.py`，涵蓋正常分析、金額／口數背離、缺值不轉零、不一致時停止方向結論、日淨－夜淨語義，以及既有 2026-11-02 DATA_REPORT 實際解析。
 - 更新 `.github/workflows/unit-contract-audit.yml`，將此測試納入正式 Unit Contract Audit。
