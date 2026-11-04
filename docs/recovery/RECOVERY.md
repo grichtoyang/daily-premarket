@@ -2023,3 +2023,16 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - correlation 目前只有 5 筆有效樣本，顯示時須保留小樣本／非因果／非預測限制。
 - 詳細來源、初次 FAIL 原因、修正 commit、測試 log 與 JSON blob SHA 見 PROGRESS.md 最新 correlation 段落。
 - 下一步只需盤點剩餘尚未恢復的歷史 UI／分析候選；不得重做 parser、option force、三市場、scenario、correlation 以上 PASS 項目。保持唯一工作主線，不開新分支、不 merge、不 deploy。
+
+ 
+## 2026-11-04 最新接續點｜因子分析 CI 修正與歷史差異稽核
+
+- 產品唯一主線 phase2-p0-ui-fixes 最新 HEAD：b7153a3199494a4f8004bea2dd23afbc828c25b9；程式修正 commit：243bc10952731450f69f773021d6a7dc656a1005。
+- 修正因子貢獻文字與 runtime test 不一致：正向／負向／淨貢獻合計只計算圖表實際顯示的有效前 8 項，先依圖表一位小數顯示值加總；分析文字只引用圖表可見因素，並明確說明可見子集合計不等於完整 17F 總貢獻。
+- Unit Contract Audit 41761016184 SUCCESS；UI Fixes Regression 41761016206 SUCCESS；Daily Premarket V9 Pro 41761016255 SUCCESS，Deploy SKIPPED。Browser audit 六頁 Desktop／Mobile 共 12 viewport 全部 PASS；artifact 13290800310。
+- Correlation replay 本輪再次 PASS：20261027、28、29、30、1102 五份真實 DATA_REPORT 全部 eligible，有限值且對稱 8×8 matrix。Daily build seed 五份報告成功，visible_blocks=42。
+- 最新 JSON blob 99df8ced5b412b00c22149d1bfeb66e1601f0102；HTML blob 6432e70a575358498d1febb7f9024c6db05d4e97；template blob d5fc77bc3d524a320e27f3107597db87077c3173。自動 build commit b7153a3 只更新 dashboards HTML aliases/index。
+- 已完成歷史分支差異稽核：Builder／主要三市場與 option force／correlation helpers 大多相同或只差空白；主線已有更完整的動態 synthesis、缺值保護及圖表可見數值限制。歷史分支來源層仍較舊，勿回退 P0 parser／borrowed semantics；不整條 merge。
+- 下一個實質未完成工作是 P4 分析品質：42 區塊 ID／資料欄位／analysis profile 對照表 BLOCKED；LLM runtime NOT IMPLEMENTED；95% 品質目標 NOT TESTED。依 docs/P4_EARLY_ANALYSIS_ENGINE_PLAN.md 先做 42 區塊映射與逐區塊 profile，不要宣稱已達 95%。
+- 全 42 區塊人工逐一檢查仍 NOT TESTED；自動 12 viewport browser audit PASS 不等於人工逐區塊品質驗收。
+- 嚴守：不建立／切換分支、不 merge、不 deploy；不修改 master、P0 base、V8 或 data_reports 樣本。
