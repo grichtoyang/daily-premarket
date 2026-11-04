@@ -15,16 +15,21 @@ class TWT93USourceTests(unittest.TestCase):
                 "當日還券", "當日調整", "當日餘額",
                 "次一營業日可限額", "備註",
             ],
-            "data": [["2330", "台積電", "1", "2", "3", "0", "4", "5",
-                      "100", "20", "10", "0", "110", "200", ""]],
+            "data": [
+                ["2330", "台積電", "1", "2", "3", "0", "4", "5",
+                 "100", "20", "10", "0", "110", "200", ""],
+                ["合計", "", "1", "2", "3", "0", "4", "5",
+                 "16691222049", "323013000", "218375860", "0",
+                 "16795859189", "200", ""],
+            ],
         }
         result = spot_raw.twse_twt93u_sbl("1151030")
         get_json.assert_called_once_with(
             "https://www.twse.com.tw/rwd/zh/marginTrading/TWT93U?response=json&date=20261030"
         )
-        self.assertEqual(result["prev_bal"], 100)
-        self.assertEqual(result["sale_bal"], 110)
-        self.assertEqual(result["sale_chg"], 10)
+        self.assertEqual(result["prev_bal"], 16691222049)
+        self.assertEqual(result["sale_bal"], 16795859189)
+        self.assertEqual(result["sale_chg"], 104637140)
         self.assertTrue(result["date_ok"])
 
     @patch("src.sources.spot_raw._get_json")
@@ -33,11 +38,12 @@ class TWT93USourceTests(unittest.TestCase):
             "stat": "OK", "date": "2026/10/30",
             "fields": ["名稱", "借券賣出當日餘額", "代號", "借券賣出前日餘額",
                        "當日賣出", "當日還券", "當日調整"],
-            "data": [["台積電", "110", "2330", "100", "20", "10", "0"]],
+            "data": [["", "16795859189", "合計", "16691222049",
+                      "323013000", "218375860", "0"]],
         }
         result = spot_raw.twse_twt93u_sbl("2026-10-30")
-        self.assertEqual(result["sale_bal"], 110)
-        self.assertEqual(result["sale_chg"], 10)
+        self.assertEqual(result["sale_bal"], 16795859189)
+        self.assertEqual(result["sale_chg"], 104637140)
 
     @patch("src.sources.spot_raw._get_json")
     def test_missing_semantic_fields_fails_closed(self, get_json):
@@ -83,18 +89,18 @@ class TWT72USourceTests(unittest.TestCase):
             "data": [
                 ["2330", "台積電", "1000", "200", "100", "1100", "600", "660000", "集中市場"],
                 ["6488", "環球晶", "2000", "300", "100", "2200", "500", "1100000", "櫃檯買賣中心"],
-                ["合計", "", "1000", "200", "100", "1100", "", "", "集中市場"],
-                ["合計", "", "2000", "300", "100", "2200", "", "", "櫃檯買賣中心"],
-                ["合計", "", "3000", "500", "200", "3300", "", "", "整體市場"],
+                ["合計", "", "16691413000", "500000000", "300000000", "16891413000", "", "", "集中市場"],
+                ["合計", "", "12914422000", "313411000", "304261000", "12923572000", "", "", "櫃檯買賣中心"],
+                ["合計", "", "29828535000", "813411000", "604261000", "30037685000", "", "", "整體市場"],
             ],
         }
         result = spot_raw.twse_twt72u_sbl("1151030")
         get_json.assert_called_once_with(
             "https://www.twse.com.tw/rwd/zh/lending/TWT72U?response=json&date=20261030&selectType=SLBNLB"
         )
-        self.assertEqual(result["prev_bal"], 3000)
-        self.assertEqual(result["bal"], 3300)
-        self.assertEqual(result["chg"], 300)
+        self.assertEqual(result["prev_bal"], 29828535000)
+        self.assertEqual(result["bal"], 30037685000)
+        self.assertEqual(result["chg"], 208150000)
         self.assertTrue(result["date_ok"])
 
     @patch("src.sources.spot_raw._get_json")
