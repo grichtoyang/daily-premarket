@@ -144,7 +144,7 @@ Error generating stack: `+u.message+`
   const previous=diff==null?"前結算漲跌資料不足":diff>0?"相對前結算上漲":diff<0?"相對前結算仍下跌":"相對前結算持平";
   const dayCompass=dayReady
     ? `${intraday}，${previous}${diff==null?"":` ${signed(diff)} 點（${signed(pct,2)}%）`}；日內開收與前結算漲跌採不同基準，不可混為單一方向。`
-    : "OHLC 不完整，日內方向判斷降級；不得以缺值補零。";
+    : "OHLC 資料不足或不完整，日內方向判斷降級；不得以缺值補零。";
   const dayTarget=dayReady
     ? `後續觀察是否有效突破日盤高點 ${fmt(h)} 點或跌破日盤低點 ${fmt(l)} 點，並確認突破後能否維持；單一日 K 不等同趨勢反轉。`
     : "待取得有效日盤 OHLC 後，再設定高低點觀察條件。";
@@ -163,9 +163,9 @@ Error generating stack: `+u.message+`
   const nightCompass=nightReady&&validPrice(c)
     ? `夜盤收盤${nc<c?"低於":nc>c?"高於":"接近"}日盤收盤；${nearLow?"收盤位於夜盤區間下緣":nearHigh?"收盤位於夜盤區間上緣":"收盤位於夜盤區間中段"}。${changeMismatch?"夜盤變化欄與夜盤收盤減日盤收盤不一致，應先核對來源欄位。":"夜盤價格結構有效，但不代表現貨開盤必然延續。"}`
     : "夜盤或日盤收盤缺值，無法比較兩個交易時段；不得推定夜盤方向。";
-  const nightTarget=nightReady
+  const nightTarget=nightReady&&validPrice(c)
     ? `以夜盤高點 ${fmt(nh)} 點與低點 ${fmt(nl)} 點作觀察區間；現貨開盤後確認價格能否收復日盤收盤 ${fmt(c)} 點，未確認前不把夜盤變化當成日盤方向預測。`
-    : "待取得有效夜盤 OHLC 與日盤收盤後，再設定跨時段確認條件。";
+    : "夜盤 OHLC 或日盤收盤資料不足，暫不設定跨時段價格觸發條件。";
 
   const foreign=valueOf(futures?.foreign_oi),trust=valueOf(futures?.trust_oi),dealer=valueOf(futures?.dealer_oi),top10=valueOf(futures?.top10);
   const oiComplete=[foreign,trust,dealer].every(v=>v!=null);
