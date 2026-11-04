@@ -1866,3 +1866,25 @@ P1 尚未開始。啟動前必須：
 - 文件 commits：profile map 4e32c32855665a0b1475753bd4777eea9756fe48；P4 plan status 8ecc6d334f6df9196883b2274abb611852c36cbd。產品分支最新 HEAD 8ecc6d334f6df9196883b2274abb611852c36cbd。
 - 本輪僅新增／更新規格文件，尚未把 42 profiles 接入 Builder 或 React；不可宣稱分析 runtime 已完成，也不可宣稱 95% 達標。
 - 下一步：逐項對照 profile 與目前 React template／Builder 的實際資料綁定，先選核心區塊（三市場法人、期貨籌碼、選擇權結構、相關性、交易計畫）作 profile-to-output 試點；不得一次改版或改動 42 區塊 layout。
+
+ 
+## 2026-11-04｜P4 期貨頁六區塊分析 Profile 試點
+
+- 依 docs/P4_ANALYSIS_PROFILE_MAP.md，先完成期貨頁六區塊中的五個獨立敘述（台指期日盤、台指期夜盤、期現貨價差、法人 OI、日夜法人交易）；既有「夜盤劇本」保留 v9ProSynthesisAnalysis 的價格／外資夜盤流量交叉判讀。未改六頁版面、圖表、資料來源或 Builder JSON schema。
+- 新增 template helper v9ProFuturesAnalysis，將日盤／夜盤 OHLC、前結算漲跌、基差、正逆價差、法人 OI 存量、外資日／夜盤淨交易流量分開分析。
+- 實際 2026-11-02 fixture 驗證：
+  - 日盤收盤高於開盤，但相較前結算仍下跌 44 點；分析明確區分兩種比較基準。
+  - 夜盤收盤低於日盤收盤，且收在夜盤區間下緣；不把夜盤走勢當作現貨開盤預測。
+  - 日盤正價差與夜盤跌勢同時存在；敘述明確禁止以正價差抵銷夜盤跌勢。
+  - 外資 OI -89,379 口、投信 +89,139 口、自營 +1,307 口、三大法人合計 +1,067 口、前十大 +14,239 口；明確指出法人分歧及前十大與外資方向相反。
+  - 外資日盤淨交易 +2,801 口、夜盤 -1,349 口；明確指出日夜流量反轉，且與 OI 存量分開解讀。
+- 所有分析數值取自該卡可見的圖表／表格欄位；OI 合計對應同卡表格「三大合計」列；缺值不補零，0 口仍是有效數值。若日盤收盤缺值，不建立夜盤收復日盤收盤的觸發條件。
+- 程式 commits：3b86ca1f182f407decb11de291d0eac2bc14c493（helper＋runtime test）、7a8b35b71dd2de2c659bb6ed7c4b13018eeac133（缺值 fallback 與測試修正）、aaee46124d6688e4cbef32fca34c69e9f693d8d7（fixture newline test fix）。
+- 驗收：UI Regression Run 41762406835 SUCCESS（React template 22 tests OK、17F contract OK）；Unit Contract Audit Run 41762406842 SUCCESS（含相關性 replay 5/5、template 22 tests OK）；Daily Premarket Run 41762406847 SUCCESS、Deploy SKIPPED。
+- Browser audit：Template commit 7a8b35b 的 Daily Run 41762276445 gate=True，六頁 Desktop／Mobile 共 12 viewport 全 PASS；Futures 頁可見文字已顯示日盤 OHLC 與「日內收高於開盤、相對前結算仍下跌」的動態敘述。後續 aaee commit 只改測試，不改 template；其 Daily Run browser audit gate=False 為預期。
+- 最新 template blob 47ae47f39b24fe4f7e4e4989ec1b592a71333136；test blob 0a5c14d635b87b9a5e586cbb046fcfaf25876c9d；JSON blob 99df8ced5b412b00c22149d1bfeb66e1601f0102；HTML blob bfd9a3cd299336469e6d781f363953cfd427b128。
+- 產品主線最新 HEAD aaee46124d6688e4cbef32fca34c69e9f693d8d7；無 deploy、無 merge、未修改 DATA_REPORT。
+
+### 下一個 P4 試點
+- 期貨頁試點已完成自動化驗收；下一個核心試點為選擇權結構（PCR／OI 分布／Wall、Flip、Max Pain／法人交易／GEX）。
+- 仍未接入 LLM runtime；本次是可重現的資料驅動分析，不得稱為 AI 模型已完成或 95% 品質達標。
