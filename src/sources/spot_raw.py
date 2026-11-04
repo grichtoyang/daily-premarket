@@ -224,7 +224,7 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     }
 
 def twse_twt72u_sbl(date_value: str) -> dict:
-    """TWT72U（SLBNLB）借券餘額；以官方日期查詢及欄名定位彙總上市+上櫃股數。"""
+    """TWT72U（SLBNLB）借券餘額；直接採用「整體市場」合計列。"""
     date8 = _twse_date8(date_value)
     out = {"bal": None, "prev_bal": None, "chg": None, "date_ok": False}
     if date8 is None:
@@ -262,7 +262,6 @@ def twse_twt72u_sbl(date_value: str) -> dict:
         row for row in reversed(data)
         if isinstance(row, (list, tuple))
         and max(symbol_idx, prev_idx, borrow_idx, return_idx, bal_idx, market_idx) < len(row)
-        and str(row[symbol_idx] or "").strip() == "合計"
         and str(row[market_idx] or "").strip() == "整體市場"
     ), None)
     if overall_row is None:
