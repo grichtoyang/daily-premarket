@@ -317,7 +317,8 @@ console.log("scenario paths 6/6 PASS");
 const out=v9ProSynthesisAnalysis(fixture);
 if(!out.night.compass.includes("背離")) throw Error("night flow/price divergence not identified");
 if(!out.scenarios.compass.includes("區間條件：成立")||!out.scenarios.compass.includes("偏多價格條件：未成立")) throw Error("scenario status not derived from levels");
-if(!out.factors.look.includes("正向貢獻合計")||!out.factors.look.includes("外資現貨")) throw Error("factor contribution summary missing");
+if(!out.factors.look.includes("正向貢獻合計 +1.8 分")||!out.factors.look.includes("負向貢獻合計 -9.0 分")||!out.factors.look.includes("可見項目淨貢獻 -7.2 分")||!out.factors.look.includes("外資現貨 -7.1")) throw Error("visible factor contribution summary does not match chart values");
+if(!out.factors.compass.includes("不可將可見子集合計當成全部 17 因子的總貢獻")) throw Error("visible factor subset limitation missing");
 if(!out.correlation.look.includes("現貨／外資現貨 +0.85")||!out.correlation.look.includes("現貨／費半 -0.64")) throw Error("strongest correlation pairs not identified");
 if(!out.trade.target.includes("區間內不追價")) throw Error("trade plan does not respect current range");
 
