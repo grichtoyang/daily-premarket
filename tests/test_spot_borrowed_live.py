@@ -14,7 +14,7 @@ class LiveBorrowedSourceProbeTests(unittest.TestCase):
     def test_live_twse_twt72u_history(self):
         url = (
             "https://www.twse.com.tw/rwd/zh/lending/TWT72U"
-            f"?response=json&date={DATE8}&selectType=SLBNLB"
+            f"?response=json&date={DATE8}"
         )
         payload = spot_raw._get_json(url)
         self.assertIsInstance(payload, dict, f"TWT72U response type: {type(payload).__name__}")
