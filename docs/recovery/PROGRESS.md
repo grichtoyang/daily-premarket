@@ -1828,3 +1828,32 @@ P1 尚未開始。啟動前必須：
 - Correlation replay／seed／8×8 matrix：PASS。
 - 全 42 區塊人工逐一視覺檢查：NOT TESTED；自動六分頁 Desktop／Mobile browser audit 已 PASS。
 - 後續只需針對剩餘歷史 UI／分析修正候選做選擇性恢復，不重做以上已通過項目。
+
+## 2026-11-04｜歷史分支差異收斂與因子分析 CI 修正
+
+### 歷史分支差異稽核
+- 比較產品主線 phase2-p0-ui-fixes（修正前 HEAD dc73d21cbaff9ca1802999a515ccbc0f1d27fad8）與歷史分支 fix/three-market-correlation-history（HEAD e678877bc076e157c948483d40f136e0f504303e）：tree 共 35 個路徑不同，其中程式／測試／workflow／文件 25 個。
+- Builder 關鍵函式 build_option_force_analysis、三市場四個 classifier、seed_correlation_history_for_dashboard、session_leaders、V9Analyzer、find_historical_similarity 均相同或只有空白差異；build_41_cards() 只有主線增加「跨市場訊號分歧」說明，未發現需整段移植的歷史 Builder 邏輯。
+- Template 比對：三劇本 Pth、圖表 mf、共用卡片 V 等核心元件相同；主線 y2／v2 已有動態 synthesis 分析、區塊樣式及資料缺值保護。歷史分支的因子文字計算 17 個有效因子總和，但圖表只顯示前 8 項；不能直接移植，否則會再次出現分析文字引用圖表看不到的數字。
+- 歷史分支來源層 src/fetch_data.py、src/sources/spot.py、spot_raw.py、taifex.py 與主線不同；歷史版仍有舊 TWT93U endpoint／固定列索引及 TWT96U 借券欄位混用風險。保留 P0 主線較新的資料來源與借券語義，不回退。
+- 主線獨有 workers/taifex-proxy_V1.5.js、借券 live／semantics tests 及 P0 parser 保護均保留。
+- 結論：已知歷史 UI／分析成果大多已選擇性吸收；本輪未發現值得整條 merge 或回退資料層的候選。後續不重做已 PASS 項目。
+
+### 因子貢獻敘述與 CI 缺陷
+- 主線 commit dc73d21cbaff9ca1802999a515ccbc0f1d27fad8 的 Unit Contract Audit Run 41759852834、UI Fixes Regression Run 41759852808 均 FAIL，原因是 synthesis runtime test 仍期待「正向貢獻合計」，但 template 已改成只列圖表前 8 項主要正負因素，造成測試契約與實際輸出不一致。
+- 修正 commit：243bc10952731450f69f773021d6a7dc656a1005。
+- 修改 templates/v9-pro-react-template.html 與 tests/test_react_template_static.py：正向／負向／淨貢獻合計只計算圖表實際顯示的有效前 8 項，且先依圖表顯示精度四捨五入至 1 位小數再加總；主要正負因素與最大絕對貢獻因素亦只引用圖表可見項。明確聲明可見子集合計不等於完整 17F 總貢獻，避免隱藏數字與過度推論。
+- 新增 runtime assertions：以 fixture 驗證正向合計 +1.8、負向合計 -9.0、可見淨貢獻 -7.2，均與圖表一位小數標籤一致；並驗證不得把可見子集合計說成全部 17 因子總貢獻。
+
+### 修正後驗收
+- Unit Contract Audit Run 41761016184 SUCCESS；test_synthesis_narratives_are_derived_from_live_data PASS；相關性 replay 以五份真實 DATA_REPORT 累積 5/5，輸出有限值、對稱 8×8 matrix；所有列出的單元測試均 OK。
+- UI Fixes Regression Run 41761016206 SUCCESS；21 tests 與 12 tests 均 OK，V9 17F／42 visible blocks contract OK。
+- Daily Premarket V9 Pro Run 41761016255 SUCCESS；seed 五份報告成功，JSON／HTML build 成功，browser audit gate=True；六頁 Desktop／Mobile 共 12 個 viewport 全部 PASS，Browser audit artifact ID 13290800310；Deploy SKIPPED。
+- 程式 commit 243bc10952731450f69f773021d6a7dc656a1005；自動 build commit b7153a3199494a4f8004bea2dd23afbc828c25b9（只更新 dashboards HTML aliases/index，沒有修改 DATA_REPORT）。
+- GitHub readback：template blob d5fc77bc3d524a320e27f3107597db87077c3173；test blob 8ca29acdfcd8004d3f26149f547848e8d84cedf0；JSON blob 99df8ced5b412b00c22149d1bfeb66e1601f0102；HTML blob 6432e70a575358498d1febb7f9024c6db05d4e97。
+- 產品主線最新 HEAD b7153a3199494a4f8004bea2dd23afbc828c25b9。未切換／建立分支，未 merge、未 deploy，未修改 DATA_REPORT。
+
+### 尚未完成
+- 42 個可見區塊人工逐一評分／視覺檢查仍 NOT TESTED；自動 Browser Audit 六頁 Desktop／Mobile 12 viewport PASS 不等於人工 42 區塊分析品質驗收。
+- docs/P4_EARLY_ANALYSIS_ENGINE_PLAN.md 已明確記錄：42 區塊完整 ID／資料欄位／profile 映射 BLOCKED／待完成；LLM analysis runtime NOT IMPLEMENTED；95% 分析品質目標 NOT TESTED。不可宣稱目前已達 95% AI 分析品質。
+- 下一步依 P4 計畫先完成 42 區塊對照表及分析 profile 盤點，再逐區塊改善；保留既有 17F 量化層、資料真實性及缺值防護，不推倒重寫，也不直接移植歷史分支引用全 17 因子隱藏總和的文字。
