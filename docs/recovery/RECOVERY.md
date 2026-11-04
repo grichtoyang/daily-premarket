@@ -2036,3 +2036,13 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 下一個實質未完成工作是 P4 分析品質：42 區塊 ID／資料欄位／analysis profile 對照表 BLOCKED；LLM runtime NOT IMPLEMENTED；95% 品質目標 NOT TESTED。依 docs/P4_EARLY_ANALYSIS_ENGINE_PLAN.md 先做 42 區塊映射與逐區塊 profile，不要宣稱已達 95%。
 - 全 42 區塊人工逐一檢查仍 NOT TESTED；自動 12 viewport browser audit PASS 不等於人工逐區塊品質驗收。
 - 嚴守：不建立／切換分支、不 merge、不 deploy；不修改 master、P0 base、V8 或 data_reports 樣本。
+
+ 
+## 2026-11-04 最新接續點｜P4 42 區塊 Profile 草案
+
+- 產品主線 phase2-p0-ui-fixes 最新 HEAD：8ecc6d334f6df9196883b2274abb611852c36cbd。
+- 42 區塊結構映射已存在於 docs/DASHBOARD_UNIT_MAP.md，列出 1–42 的頁籤、JSON path、DATA_REPORT 來源、單位及缺值規則；不需重做。
+- 新增 docs/P4_ANALYSIS_PROFILE_MAP.md：42 個獨立 profile 草案，包含必答問題、交叉驗證／反證、操作觀察及禁止推論。已檢查 42 rows／42 unique IDs／無缺號。
+- P4 plan 已更新：結構映射 PASS；profile 草案 DRAFTED；Profile → Builder／React 綁定 NOT IMPLEMENTED；LLM provider BLOCKED；AI runtime NOT IMPLEMENTED；42 區塊評分與 95% 目標 NOT TESTED。
+- 這一輪只有文件規格，未改 Builder／React／Dashboard layout，未部署。
+- 下一步直接逐項對照 42 profiles 與現有 React／Builder，先做五個核心區塊試點：三市場法人、期貨籌碼、選擇權結構、相關性、交易計畫。不可重做既有 42 區塊單位映射，也不可一次推倒重寫。
