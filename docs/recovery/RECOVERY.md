@@ -2000,3 +2000,14 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 全 42 區塊逐一人工視覺檢查仍 NOT TESTED；本輪已通過 template regression 與 browser audit。
 - 下一步直接恢復三市場分析卡深化與三劇本條件／資料有效性；相關性歷史 seed／workflow 另行處理。禁止新開分支、不整條 merge，不修改 master、P0 base、V8 或 data_reports 樣本。
 - 詳細 commit、blob SHA、測試狀態見 PROGRESS.md 最新「選擇權法人力道分析歷史成果恢復」段。
+
+
+## 2026-11-04 最新接續點｜三市場分析與三劇本已恢復
+
+- 產品主線 `phase2-p0-ui-fixes` 目前 HEAD：`a658dd90d073a8d84fb07afd229a781407dc6ebd`。該 HEAD 是 Daily Premarket build 自動產生的 dashboard HTML commit，parent 為程式碼 commit `df783b964a6289e578bb1d176391c5c5c0e05d0a`；只修改 dashboard aliases/index，沒有碰 master 或 DATA_REPORT。
+- 已恢復 Builder 四張三市場分析卡及分類 helpers；現貨金額、期貨／選擇權流量、期貨 OI 存量分開解讀。
+- 已恢復 React synthesis helper、日夜盤解讀、三劇本價格條件、交易計畫條件式敘述與 correlation matrix validation；只更新原有分析文字綁定，未替換整個 component、未改 layout。
+- Unit Contract Audit **41755176208 SUCCESS**；Browser Audit **41755176320 SUCCESS**；UI Fixes Regression **41755176398 SUCCESS**；Daily Premarket Build **41755176415 SUCCESS**，deploy **SKIPPED**。
+- 生成 JSON 回讀確認 `visible_block_count=42`，option-force analysis 可用；三市場卡已填入現貨、期貨、選擇權實際值。全 42 區塊人工逐一視覺檢查仍 NOT TESTED。
+- 詳細 commit、檔案 SHA、測試結果與歷史來源見 PROGRESS.md 的「三市場分析卡與情境條件恢復」。
+- 下一步：單獨恢復 correlation history seed／workflow／SQLite；先核對歷史 seed 的資料日期、樣本品質、workflow branch isolation 與 P0 保護，再實作。不重做已 PASS 的 parser、option-force、三市場 helper／cards、scenario helper。
