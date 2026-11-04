@@ -1762,3 +1762,38 @@ P1 尚未開始。啟動前必須：
 - 生成 JSON／HTML 含分析結果：**PASS（GitHub readback）**。
 - 全 42 區塊人工視覺逐一驗收：**NOT TESTED**。
 - 未完成的下一組歷史成果：三市場分析卡深化與三劇本條件／資料有效性恢復；之後再處理相關性歷史 seed／workflow。
+
+
+## 2026-11-04｜三市場分析卡與情境條件恢復
+
+### Builder（三市場四張分析卡）
+- 由歷史分支 commit `9c907d1b3919e24c3a62f87702197905e3f5e9c1` 選擇性恢復，未整條 merge。
+- 新增／恢復四個分類 helper：`classify_three_market`、`classify_futures_oi`、`classify_option_sessions`、`classify_spot_institutions`。
+- 恢復四張卡的證據與條件式解讀：`三市一致性`、`期現選方向對照`、`籌碼三市矩陣`、`主力意圖解碼`。
+- 明確區分現貨億元（買賣超金額）、期貨／選擇權口數（交易流量）、期貨 OI（部位存量）；不跨單位加總、不將單一 OI 快照當成新增交易、不從資料不足推定主力控盤意圖。
+- 新增 `tests/test_spot_institution_classification.py`、`tests/test_three_market_scenarios.py` 並納入 Unit Contract Audit。
+
+### React synthesis／三劇本條件
+- 從歷史 template 恢復 `v9ProCorrelationMatrixReady` 與 `v9ProSynthesisAnalysis`，只移植分析 helper 與既有區塊的 analysis 綁定，沒有替換整個 `y2` component，也沒有改變 Dashboard layout。
+- 恢復日夜盤價格／成交量與外資夜盤流量對照、三劇本價格條件（偏多／區間／偏空）、相關性矩陣品質檢查、交易計畫的條件式觀察。
+- 三劇本不輸出未回測機率；偏多條件要求現價高於有效 Flip 且上方有有效價位，偏空要求現價低於 Put Wall 且有下方有效參考位；區間需有效 Put／Call Wall 與現價關係成立。
+- 相關性矩陣須維度一致、數值有效且落在 -1 至 +1，否則不顯示熱圖。
+
+### Commits 與驗收
+- Builder 三市場 helpers／四張卡：`bc3348522fd827dbde8f95a64ce22c727138e7af`。
+- 三市場測試：`89e5e952a6efb7870aa9b25952258093e91d87c5`、`9d7432e84517b5378231ca937ea5adf739573294`。
+- Unit Contract workflow 納入測試：`df2e5d59467966454e18eeaa0bda8ae2379fd8bb`。
+- React synthesis／scenario helper：`df783b964a6289e578bb1d176391c5c5c0e05d0a`。
+- 最終程式 Unit Contract Audit Run **41755176208 SUCCESS**；內含三市場分類／scenario tests、option force analysis tests、borrowed parser tests、42 block contract、DATA_REPORT、React template 與 TAIFEX night regressions。
+- V9 Dashboard Browser Audit Run **41755176320 SUCCESS**；六分頁 Desktop／Mobile audit。
+- V9 UI Fixes Regression Run **41755176398 SUCCESS**。
+- Daily Premarket V9 Pro Run **41755176415 SUCCESS**；build、artifact upload 成功，deploy **SKIPPED**。
+- 自動 build commit：`a658dd90d073a8d84fb07afd229a781407dc6ebd`（parent `df783b9`），只修改三個 dashboard HTML aliases/index，沒有修改 DATA_REPORT 樣本、Builder、template 或 master。
+- 最終產品分支 HEAD：`a658dd90d073a8d84fb07afd229a781407dc6ebd`。
+- 生成的 `dashboards/data-20261102.json` blob SHA `57efd362922948cfd662f9e0564e952ad28e2474`；`dashboards/v9-pro-20261102.html` blob SHA `85605a2eb66ac3d43952da5d835343ccd8b47f24`，均已 GitHub 回讀。
+- JSON 顯示 `visible_block_count=42`；沒有增加 Dashboard 區塊或更換 layout。人工逐一檢查所有 42 區塊仍 **NOT TESTED**。
+
+### 下一步
+- 選擇權法人力道分析、三市場四卡、三市場分類與三劇本／synthesis 已恢復並通過目前自動測試。
+- 尚待恢復／整合：相關性歷史資料 seed／workflow／SQLite（單獨處理），以及歷史分支其餘 UI／分析修正候選。
+- 不要重做以上已通過測試的項目；若後續修改觸及相關檔案才做 targeted regression。保持唯一主線、不開新分支、不整條 merge。
