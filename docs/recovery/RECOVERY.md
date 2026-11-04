@@ -1966,3 +1966,14 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 下一步：先完成 P0 借券 parser 合計列 mapping／fixture／測試，再按功能群將三市場 UI／分析成果移植到 P0 fixes；correlation history workflow／SQLite 獨立處理。全程不改 master、P0 base、V8 或 data_reports 樣本，不 merge/deploy。
 - 最新 HEAD combined statuses 均空白，故兩分支最新 HEAD CI **NOT VERIFIED**；既有歷史 CI run 不可直接當作目前 HEAD 驗收。
 - 本輪未修改產品程式或資料，只更新 Recovery 文件；Auditor 為單一模型自我稽核，非獨立多模型審核。
+
+
+## 2026-11-04 最新接續點｜借券合計列 parser 已修改，測試待執行
+
+- 產品唯一工作主線仍為 `phase2-p0-ui-fixes`；目前 HEAD：`b0b9e2cb5140653062b8a7d03f23ca7fb5867562`。沒有建立／切換／合併／刪除分支。
+- `src/sources/spot_raw.py` 已改為 TWT93U 直接取最後「合計」列、TWT72U 直接取「整體市場」列，均以合計列自身的餘額遞推驗證，不再加總個股明細或市場小計。
+- TWT72U URL 已對齊使用者實測成功的 query，不再附加 selectType。
+- 已更新 semantic tests、source contract tests、live probe URL。詳細 commit、blob SHA、測試狀態及限制見 `PROGRESS.md` 的「2026-11-04｜借券 parser 合計列修正已提交」。
+- 目前程式與測試檔已 GitHub 回讀；**unit tests 尚未執行，CI NOT VERIFIED**。測試 fixture 是以使用者提供數值建立的合成 fixture，尚非完整原始 JSON fixture；完整 fields/data schema mapping 仍 NOT TESTED。
+- 不要重做 parser 盤點，也不要回復逐股加總。下一步直接執行指定兩個單元測試，修正失敗後再接續三市場歷史成果移植。
+- 不得重建 DATA_REPORT，除非授權邊界另行確認；不修改 master、P0 base、V8、workflow、data_reports 樣本或 Dashboard；不 merge/deploy。
