@@ -2046,3 +2046,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - P4 plan 已更新：結構映射 PASS；profile 草案 DRAFTED；Profile → Builder／React 綁定 NOT IMPLEMENTED；LLM provider BLOCKED；AI runtime NOT IMPLEMENTED；42 區塊評分與 95% 目標 NOT TESTED。
 - 這一輪只有文件規格，未改 Builder／React／Dashboard layout，未部署。
 - 下一步直接逐項對照 42 profiles 與現有 React／Builder，先做五個核心區塊試點：三市場法人、期貨籌碼、選擇權結構、相關性、交易計畫。不可重做既有 42 區塊單位映射，也不可一次推倒重寫。
+
+ 
+## 2026-11-04 最新接續點｜期貨頁分析 Profile 試點
+
+- 產品主線 phase2-p0-ui-fixes 最新 HEAD：aaee46124d6688e4cbef32fca34c69e9f693d8d7。
+- 新增 v9ProFuturesAnalysis，已將期貨頁日盤、夜盤、期現基差、法人 OI、日夜法人交易五張卡的分析改為資料驅動；夜盤劇本沿用既有跨時段價格／外資流量分析。
+- 敘述只使用卡片可見圖表／表格值，區分日內開收與前結算漲跌、OI 存量與日夜流量、日盤正價差與夜盤價格變化；缺值不補零，零值保留為有效數值。
+- UI Regression 41762406835 PASS；Unit Contract Audit 41762406842 PASS；Daily Premarket 41762406847 PASS，Deploy SKIPPED。
+- Template browser audit 在 7a8b35b template commit 的 Daily Run 41762276445 執行，六頁 Desktop／Mobile 12 viewport 全 PASS；Futures 頁動態敘述已出現在 browser visibleText。後續 aaee commit 只改測試，不改 template。
+- Recovery 詳細 fixture 數值、commit、blob、測試證據見 PROGRESS.md 的「P4 期貨頁六區塊分析 Profile 試點」。
+- 下一個核心 P4 試點：選擇權結構；勿重做已 PASS 的三市場、期貨、相關性、交易計畫與選擇權法人力道。保持不 merge、不 deploy、不改 master／P0 base／V8／DATA_REPORT。
+- AI runtime 仍 NOT IMPLEMENTED；42 區塊 profile 目前為 DRAFTED；95% 品質目標 NOT TESTED。
