@@ -2070,3 +2070,18 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 詳細選擇權實際 fixture、語義限制、commit／blob／CI 證據見 PROGRESS.md 的「P4 選擇權頁八區塊 Profile 試點」。
 - 下一步：處理總覽／現貨／重要市場 ID 01–21 及綜合分析 ID 38；先逐項對照目前 React／Builder 欄位，再接入獨立 profile。不得改 Dashboard layout 或重做已 PASS 的 20 個核心區塊。
 - 嚴守：不建立／切換分支、不 merge、不 deploy；不修改 master、P0 base、V8 或 data_reports 樣本。
+
+
+## 2026-11-04｜P4 ID 38 日夜盤劇本接入完成
+
+- 產品主線：`phase2-p0-ui-fixes`；程式提交：template `a434451ec354a53521d26bd055ca05041c37752d`、runtime test `f1b00a81ab42aaca980a5b39a63d917903a33c82`；後續 P4 文件提交：plan `e75682484342a5c16949d7c75701d8066063f723`、profile map `9a22d56a4963680608d2aea591fcaa0589f6c941`。
+- ID 38「綜合分析／日夜盤劇本」由原本固定文字改接既有 `v9ProSynthesisAnalysis.night`。分析取日盤／夜盤收盤、日夜成交量、外資夜盤淨交易及外資 OI；依日夜收盤差與外資流量辨識同向／背離，提供開盤收復／守住日盤收盤的條件觀察。
+- 移除原敘述引用但卡片未顯示的夜盤低點；新敘述不再使用 `night.l`，避免分析出現圖表／表格看不到的數字。日盤或夜盤收盤缺值／無效時不產生價位觸發；零值價格仍視為無效，外資流量／OI 的 0 仍是有效值。
+- 測試新增 ID 38 區塊綁定斷言，並更新實際、missing、zero、夜盤上漲／下跌 fixture 的 target 預期。
+- 驗收：Unit Contract Audit Run `41768827082` SUCCESS（React template regression tests completed SUCCESS；live borrowed sources SUCCESS）；UI Fixes Regression Run `41768827095` SUCCESS；Daily Premarket Run `41768827031` SUCCESS，20261102 Dashboard build 與 20261030 full-day fixture JavaScript validation SUCCESS，Deploy SKIPPED。
+- Browser Audit：template commit `a434451` 對應 Daily Run `41768820962`，gate=True，六頁 Desktop／Mobile 共 12 viewport 全 PASS、pageErrors=[]。該 run 最終因同時提交造成 generated dashboard push non-fast-forward 而整體 FAILURE；後續 Run `41768827031` build／history push SUCCESS，但因觸發 commit 只改 tests，browser gate 按 workflow 規則 SKIPPED。Browser PASS 與 workflow push failure 分開記錄，不混為整體 PASS。
+- 初次 Unit Audit Run `41768820878` 因測試仍期待舊 target 文案而 FAIL；已更新測試契約，後續 Run `41768827082` SUCCESS。初次 Daily Run `41768820962` 的 build/browser 成功，僅 generated dashboard push 因並行 commit 被拒；後續 Run `41768827031` 已成功推送生成檔。
+- 自動生成 dashboard commit：`83bbc1c2e1052161aad0aeb1950f3d6e6b48b76d`，只修改 dashboards/index.html、v9-pro-20261102.html、v9-pro-latest.html；未修改 DATA_REPORT。最新產品主線 HEAD 隨 P4 文件更新為 `9a22d56a4963680608d2aea591fcaa0589f6c941`。
+- Template blob `281843f8727a76f3b14394b6ba2465b8bfba6626`；test blob `267ca92425b429b8fa22c5494132efda0f2eaef1`。已 GitHub 回讀確認 ID 38 綁定及舊固定文字移除。
+- P4 runtime binding 更新為 21/42：原 20 個已驗收區塊不重做；ID 38 新增完成。下一步只處理 ID 01–21（總覽／現貨／重要市場），不重做 ID 22–42。
+- 未 merge、未 deploy；未修改 master、P0 base、V8 或 data_reports 樣本。LLM runtime NOT IMPLEMENTED；42 區塊人工品質評分與 95/100 目標仍 NOT TESTED。
