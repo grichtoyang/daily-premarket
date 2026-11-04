@@ -400,6 +400,53 @@ console.log("futures narratives actual + missing + zero fixtures PASS");
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("futures narratives actual + missing + zero fixtures PASS", result.stdout)
 
+    def test_options_analysis_narratives_are_derived_from_visible_data(self):
+        helper_start = self.html.index("function v9ProOptionsAnalysis(")
+        helper_end = self.html.index("function m2(", helper_start)
+        helper_source = self.html[helper_start:helper_end]
+        for card in ("pcr", "concentration", "callOi", "putOi", "walls", "institution", "top10", "gex"):
+            self.assertIn(f"analysis:optionsNarrative.{card}", self.html)
+
+        fixture = {
+            "spot": {"close": 44920.14},
+            "options": {
+                "callVol": 140350, "putVol": 135722, "callOi": 61578, "putOi": 34887, "pcr": 0.57,
+                "callWall": 48000, "putWall": 44000, "gammaWall": 46000, "flip": 44256.47, "maxPain": 44400,
+                "callOiDist": [["C1","48,000","4,503","7.31%","TAIFEX Proxy"],["C2","49,400","4,384","7.12%","TAIFEX Proxy"],["C3","44,500","2,534","4.12%","TAIFEX Proxy"]],
+                "putOiDist": [["P1","44,000","2,661","7.63%","TAIFEX Proxy"],["P2","43,000","2,543","7.29%","TAIFEX Proxy"],["P3","41,400","1,756","5.03%","TAIFEX Proxy"]],
+                "instOpt": [["外資","91,251","91,418","-167","52,192","52,770","-578","+411"],["投信","0","6,362","-6,362","0","0","+0","-6,362"],["自營商","79,677","72,278","+7,399","24,642","28,286","-3,644","+11,043"],["三大法人合計","170,928","170,058","+870","76,834","81,056","-4,222","+5,092"]],
+                "top10Call": [["買權多方 OI","10,357"],["買權空方 OI","13,230"],["買權多空淨 OI","-2,873"],["買權多空淨 OI 變化","-1,741"]],
+                "top10Put": [["賣權多方 OI","8,297"],["賣權空方 OI","10,337"],["賣權多空淨 OI","-2,040"],["賣權多空淨 OI 變化","+12"]],
+                "netGex1pct": 3510697647.65, "grossGex1pct": 16362020678.96, "gexDate": "2026-11-02", "gexStatus": "available",
+                "gexLevels": [{"strike":46000,"net_gex_1pct":458793202},{"strike":44500,"net_gex_1pct":453493668.97},{"strike":44000,"net_gex_1pct":-271383834.60}]
+            }
+        }
+        script = "const fixture=" + __import__("json").dumps(fixture, ensure_ascii=False) + ";" + chr(10) + helper_source + """
+const out=v9ProOptionsAnalysis(fixture);
+if(!out.pcr.look.includes("占比 50.8%")||!out.pcr.look.includes("占比 49.2%")||!out.pcr.compass.includes("OI PCR 低於 1")) throw Error("PCR/volume dimensions not separated");
+if(!out.concentration.look.includes("48,000 點 4,503 口")||!out.concentration.look.includes("44,000 點 2,661 口")) throw Error("main OI concentration not explained");
+if(!out.callOi.look.includes("49,400 點 4,384 口")||!out.callOi.compass.includes("高於現價")) throw Error("Call OI top strikes not aligned with spot");
+if(!out.putOi.look.includes("44,000 點 2,661 口")||!out.putOi.compass.includes("低於現價")) throw Error("Put OI top strikes not aligned with spot");
+if(!out.walls.compass.includes("Max Pain 僅是到期損益分布的磁吸參考")||!out.walls.compass.includes("不作為支撐")) throw Error("Max Pain incorrectly treated as support/target");
+if(!out.institution.compass.includes("日夜方向反轉")||!out.institution.look.includes("日盤三大法人合計 +870 口")||!out.institution.look.includes("夜盤合計 -4,222 口")) throw Error("options institution day/night divergence missing");
+if(!out.top10.look.includes("買權多空淨 OI -2,873 口")||!out.top10.look.includes("賣權多空淨 OI -2,040 口")||!out.top10.compass.includes("不是當日交易流量")) throw Error("top10 OI semantics missing");
+if(!out.gex.look.includes("Net GEX +3,510,697,648 NT$")||!out.gex.look.includes("最大正曝險 46,000 點 +458,793,202 NT$")||!out.gex.look.includes("最大負曝險 44,000 點 -271,383,835 NT$")) throw Error("GEX visible bars/totals not explained");
+if(!out.gex.compass.includes("不等於造市商真實持倉")) throw Error("GEX model limitation missing");
+
+const missing=v9ProOptionsAnalysis({options:{},spot:{}});
+if(!missing.pcr.compass.includes("成交量合計為零或資料不足")||!missing.institution.compass.includes("資料不足")||!missing.gex.compass.includes("資料不完整")) throw Error("missing options data produced a directional claim");
+if(missing.pcr.look.includes("0 口")||missing.top10.look.includes("0 口")) throw Error("missing options values were coerced to zero");
+
+const zero=v9ProOptionsAnalysis({options:{callVol:0,putVol:0,callOi:0,putOi:0,pcr:null,instOpt:[["外資","0","0","0","0","0","0","0"],["投信","0","0","0","0","0","0","0"],["自營商","0","0","0","0","0","0","0"],["三大法人合計","0","0","0","0","0","0","0"]]},spot:{close:44920}});
+if(!zero.pcr.compass.includes("成交量合計為零")||!zero.institution.compass.includes("其中一時段為零")) throw Error("zero options values treated as missing");
+console.log("options narratives actual + missing + zero fixtures PASS");
+"""
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node.js is required for options narrative runtime tests")
+        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("options narratives actual + missing + zero fixtures PASS", result.stdout)
+
     def test_trade_plan_keeps_max_pain_separate_from_support(self):
         self.assertIn('["磁吸參考",`${g(l.maxPain)}`]', self.html)
         self.assertNotIn('["支撐",`${g(l.putWall)} / ${g(l.maxPain)}`]', self.html)
