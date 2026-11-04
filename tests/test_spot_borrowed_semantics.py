@@ -18,7 +18,7 @@ class TWT93USourceTests(unittest.TestCase):
             "data": [
                 ["2330", "台積電", "1", "2", "3", "0", "4", "5",
                  "100", "20", "10", "0", "110", "200", ""],
-                ["合計", "", "1", "2", "3", "0", "4", "5",
+                ["", "合計", "1", "2", "3", "0", "4", "5",
                  "16691222049", "323013000", "218375860", "0",
                  "16795859189", "200", ""],
             ],
@@ -96,7 +96,7 @@ class TWT72USourceTests(unittest.TestCase):
         )
         self.assertEqual(result["prev_bal"], 29828535000)
         self.assertEqual(result["bal"], 30037685000)
-        self.assertEqual(result["chg"], 208150000)
+        self.assertEqual(result["chg"], 209150000)
         self.assertTrue(result["date_ok"])
 
     @patch("src.sources.spot_raw._get_json")
