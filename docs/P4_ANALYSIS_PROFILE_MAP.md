@@ -68,3 +68,23 @@
 - 以真實 DATA_REPORT 對 42 個區塊逐一評分：NOT TESTED。
 - LLM provider／runtime：NOT IMPLEMENTED。
 - 95/100 品質目標：NOT TESTED。
+
+ 
+## 2026-11-04 核心區塊 Runtime Binding 試點狀態
+
+### 已接入並有自動化驗收的 20 個 Profile
+- 期貨頁 22–27：日盤、夜盤、期現價差、法人 OI、日夜法人交易使用 v9ProFuturesAnalysis；夜盤劇本沿用既有價格／外資夜盤流量條件分析。
+- 選擇權頁 28–35：PCR、主要 OI 集中、Call OI Top10、Put OI Top10、Wall／Flip／Max Pain、法人交易、前十大交易人 OI、GEX 使用 v9ProOptionsAnalysis。
+- 綜合分析頁 36–37、39–42：三市場法人、選擇權法人力道、三劇本、17F 因子、相關性熱圖、交易計畫已有資料驅動分析與缺值／限制條件。
+- 期貨／選擇權新增 helper 都以可見圖表／表格值為敘述來源；缺值不補零、零值保留為有效值；不同單位與存量／流量不混算。
+- 自動化驗收：期貨 helper fixture 與 options helper fixture（實際、missing、zero）均已加入 test_react_template_static.py；最新 Unit Contract Audit 41763494591 SUCCESS，UI Fixes Regression 41763494945 SUCCESS；六頁 Desktop／Mobile 12 viewport 在 template commit 7e7fa9d 的 Daily Run 41763372720 PASS。
+
+### 尚待 Runtime Binding
+- ID 01–21：總覽、現貨及重要市場頁的逐卡 profile-to-output 綁定尚未完成。
+- ID 38：綜合分析頁「日夜盤劇本」仍使用原本固定文字，尚未接入獨立 profile。
+- 以上共 22 個 profile 尚待逐項對照及接入；不得以 20 個核心 profile 已完成，推論全部 42 個區塊已完成。
+
+### 驗收邊界
+- 20/42 是目前已接入的核心 profile 數量，不是人工品質評分。
+- 42 區塊逐一人工評分、資料邊界案例覆蓋及 95/100 品質目標仍 NOT TESTED。
+- LLM analysis runtime 仍 NOT IMPLEMENTED；目前實作是可重現的資料驅動分析規則。
