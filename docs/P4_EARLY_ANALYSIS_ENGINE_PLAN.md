@@ -94,11 +94,14 @@ Repository：`grichtoyang/daily-premarket`
 - 目前 `.github/workflows/daily-premarket-v9-pro.yml` 未發現 LLM provider API secret 注入或模型呼叫設定。這只代表尚未具備可確認的 Actions LLM 執行條件，不代表必須先導入 LLM 才能改善品質；先修復既有分析邏輯。
 - 目前資料輸出 schema 有既有 `analysis.cards`，優先相容現有 UI，不先重做前端。
 
-## 8. 狀態
+## 8. 狀態（2026-11-04 更新）
 
-- 計畫與驗收規格：已建立。
-- 42 區塊完整映射：BLOCKED／待完成逐頁模板盤點。
+- 計畫與驗收規格：PASS／已建立。
+- 42 區塊結構映射（ID、頁籤、JSON path、DATA_REPORT 來源、單位及缺值規則）：PASS／見 `docs/DASHBOARD_UNIT_MAP.md`，已列出 1–42。
+- 42 區塊逐項分析 profile 草案：DRAFTED／見 `docs/P4_ANALYSIS_PROFILE_MAP.md`，已定義每區塊必答問題、交叉驗證、操作觀察與禁止推論；尚未逐項核對 React／Builder 實際綁定。
+- Profile → Builder／React 綁定：NOT IMPLEMENTED。
 - LLM provider 與 Actions secret：BLOCKED／尚未設定。
 - AI analysis runtime：NOT IMPLEMENTED。
 - 核心區塊試點：NOT STARTED。
+- 42 區塊逐一品質評分：NOT TESTED。
 - 95% 品質目標：NOT TESTED。
