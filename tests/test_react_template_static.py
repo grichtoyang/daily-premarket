@@ -394,6 +394,8 @@ const zero=v9ProFuturesAnalysis({day:fixture.day,night:fixture.night,futures:{fo
 if(!zero.oi.look.includes("外資淨 OI 0 口")||!zero.flow.compass.includes("均為零")) throw Error("zero OI/flow was treated as missing");
 console.log("futures narratives actual + missing + zero fixtures PASS");
 """
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node.js is required for futures narrative runtime tests")
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("futures narratives actual + missing + zero fixtures PASS", result.stdout)
