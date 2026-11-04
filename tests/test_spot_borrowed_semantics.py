@@ -92,7 +92,7 @@ class TWT72USourceTests(unittest.TestCase):
         }
         result = spot_raw.twse_twt72u_sbl("1151030")
         get_json.assert_called_once_with(
-            "https://www.twse.com.tw/rwd/zh/lending/TWT72U?response=json&date=20261030&selectType=SLBNLB"
+            "https://www.twse.com.tw/rwd/zh/lending/TWT72U?response=json&date=20261030"
         )
         self.assertEqual(result["prev_bal"], 29828535000)
         self.assertEqual(result["bal"], 30037685000)
