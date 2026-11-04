@@ -8,7 +8,7 @@
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
-    "factors": "17F; active=12/17",
+    "factors": "17F; active=14/17",
     "db_mode": "db",
     "db_rows": 6,
     "output_path_rule": "dashboards/ 唯一",
@@ -2351,15 +2351,27 @@
     ]
   },
   "technical": {
-    "rsi": 22.73,
-    "macd": null,
-    "macd_signal": null,
-    "macd_hist": null,
-    "k": 20.17,
-    "d": 21.22,
+    "rsi": 35.95,
+    "macd": -455.73,
+    "macd_signal": -88.17,
+    "macd_hist": -367.55,
+    "k": 19.95,
+    "d": 20.65,
     "source": "yahoo",
     "valid": true,
     "closes": [
+      45511.48828125,
+      45848.8984375,
+      46288.0,
+      47180.75,
+      47718.83984375,
+      47800.171875,
+      48157.2890625,
+      48024.6015625,
+      47631.9609375,
+      47940.12890625,
+      48353.48828125,
+      48475.73828125,
       49712.0390625,
       49822.55078125,
       49806.37109375,
@@ -2380,6 +2392,18 @@
       44920.140625
     ],
     "highs": [
+      46009.8515625,
+      46077.8203125,
+      46874.83984375,
+      47180.75,
+      47750.98046875,
+      48601.53125,
+      48341.55859375,
+      48117.5390625,
+      48045.12890625,
+      48379.7109375,
+      48353.48828125,
+      48491.62109375,
       49770.66015625,
       49968.921875,
       49966.890625,
@@ -2400,6 +2424,18 @@
       45156.171875
     ],
     "lows": [
+      45491.96875,
+      45546.55859375,
+      45936.109375,
+      46449.55859375,
+      47207.30078125,
+      47800.171875,
+      47894.76953125,
+      47754.71875,
+      47573.08984375,
+      47767.48828125,
+      47893.421875,
+      48205.80859375,
       48574.94921875,
       49479.69140625,
       49567.51953125,
@@ -2421,8 +2457,8 @@
     ]
   },
   "analysis": {
-    "bias": 25,
-    "bias_score": 25,
+    "bias": 24,
+    "bias_score": 24,
     "factors": [
       [
         "現貨趨勢",
@@ -2454,39 +2490,43 @@
       ],
       [
         "PCR",
-        -4
+        -3
       ],
       [
         "Put Wall",
         1
       ],
       [
+        "均線乖離",
+        -1
+      ],
+      [
         "VIX",
         -1
       ],
       [
-        "RSI",
-        -1
+        "MACD",
+        -2
       ]
     ],
     "weights": {
-      "spot_trend": 13.75,
-      "foreign_spot": 15.0,
-      "foreign_fut": 10.0,
-      "trust": 6.25,
-      "basis": 2.5,
-      "night": 10.0,
-      "us_sox": 20.0,
-      "pcr": 8.75,
+      "spot_trend": 12.790698,
+      "foreign_spot": 13.953488,
+      "foreign_fut": 9.302326,
+      "trust": 5.813953,
+      "basis": 2.325581,
+      "night": 9.302326,
+      "us_sox": 18.604651,
+      "pcr": 8.139535,
       "gex": 0.0,
-      "put_wall": 3.75,
-      "adr": 3.75,
+      "put_wall": 3.488372,
+      "adr": 3.488372,
       "yield": 0.0,
       "volume": 0.0,
-      "ma_bias": 0.0,
-      "vix_factor": 2.5,
-      "rsi": 3.75,
-      "macd": 0.0
+      "ma_bias": 3.488372,
+      "vix_factor": 2.325581,
+      "rsi": 3.488372,
+      "macd": 3.488373
     },
     "factor_details": [
       {
@@ -2499,8 +2539,8 @@
         "source": "DATA_REPORT.spot.pct",
         "base_weight": 13,
         "adaptive_weight": 11,
-        "effective_weight": 13.75,
-        "contribution": -1.7188
+        "effective_weight": 12.790698,
+        "contribution": -1.5988
       },
       {
         "key": "foreign_spot",
@@ -2512,8 +2552,8 @@
         "source": "DATA_REPORT.inst.foreign",
         "base_weight": 12,
         "adaptive_weight": 12,
-        "effective_weight": 15.0,
-        "contribution": -6.0
+        "effective_weight": 13.953488,
+        "contribution": -5.5814
       },
       {
         "key": "foreign_fut",
@@ -2525,8 +2565,8 @@
         "source": "DATA_REPORT.futures.foreign_oi",
         "base_weight": 8,
         "adaptive_weight": 8,
-        "effective_weight": 10.0,
-        "contribution": -5.0
+        "effective_weight": 9.302326,
+        "contribution": -4.6512
       },
       {
         "key": "trust",
@@ -2538,8 +2578,8 @@
         "source": "DATA_REPORT.inst.trust",
         "base_weight": 5,
         "adaptive_weight": 5,
-        "effective_weight": 6.25,
-        "contribution": 1.875
+        "effective_weight": 5.813953,
+        "contribution": 1.7442
       },
       {
         "key": "basis",
@@ -2551,8 +2591,8 @@
         "source": "DATA_REPORT.tx.day.basis",
         "base_weight": 7,
         "adaptive_weight": 2,
-        "effective_weight": 2.5,
-        "contribution": -0.875
+        "effective_weight": 2.325581,
+        "contribution": -0.814
       },
       {
         "key": "night",
@@ -2564,8 +2604,8 @@
         "source": "DATA_REPORT.tx.night.pct",
         "base_weight": 8,
         "adaptive_weight": 8,
-        "effective_weight": 10.0,
-        "contribution": -5.0
+        "effective_weight": 9.302326,
+        "contribution": -4.6512
       },
       {
         "key": "us_sox",
@@ -2577,8 +2617,8 @@
         "source": "DATA_REPORT.usPct_full.SOX",
         "base_weight": 12,
         "adaptive_weight": 16,
-        "effective_weight": 20.0,
-        "contribution": -5.0
+        "effective_weight": 18.604651,
+        "contribution": -4.6512
       },
       {
         "key": "pcr",
@@ -2590,8 +2630,8 @@
         "source": "DATA_REPORT.options.pcr",
         "base_weight": 7,
         "adaptive_weight": 7,
-        "effective_weight": 8.75,
-        "contribution": -3.5
+        "effective_weight": 8.139535,
+        "contribution": -3.2558
       },
       {
         "key": "gex",
@@ -2616,8 +2656,8 @@
         "source": "DATA_REPORT.spot.close + DATA_REPORT.options.putWall",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.75,
-        "contribution": 0.9375
+        "effective_weight": 3.488372,
+        "contribution": 0.8721
       },
       {
         "key": "adr",
@@ -2629,7 +2669,7 @@
         "source": "DATA_REPORT.adrPct_full.TSM",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.75,
+        "effective_weight": 3.488372,
         "contribution": 0.0
       },
       {
@@ -2661,15 +2701,15 @@
       {
         "key": "ma_bias",
         "name": "均線乖離",
-        "raw_value": null,
-        "score": null,
-        "status": "disabled",
+        "raw_value": -5.58137589536738,
+        "score": -0.5,
+        "status": "active",
         "reason": "至少20筆有效收盤價，現價高於／低於SMA20",
         "source": "Yahoo/FinMind/SQLite closes SMA20",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 0.0,
-        "contribution": 0.0
+        "effective_weight": 3.488372,
+        "contribution": -0.8721
       },
       {
         "key": "vix_factor",
@@ -2681,64 +2721,62 @@
         "source": "DATA_REPORT.usPct_full.VIX.close",
         "base_weight": 2,
         "adaptive_weight": 2,
-        "effective_weight": 2.5,
-        "contribution": -0.625
+        "effective_weight": 2.325581,
+        "contribution": -0.5814
       },
       {
         "key": "rsi",
         "name": "RSI",
-        "raw_value": 22.73,
-        "score": -0.3,
+        "raw_value": 35.95,
+        "score": 0.0,
         "status": "active",
         "reason": "RSI14 超買超賣分級；缺值不以中性代替",
         "source": "Yahoo/FinMind/SQLite RSI14",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.75,
-        "contribution": -0.5625
+        "effective_weight": 3.488372,
+        "contribution": 0.0
       },
       {
         "key": "macd",
         "name": "MACD",
-        "raw_value": null,
-        "score": null,
-        "status": "disabled",
+        "raw_value": -367.55,
+        "score": -1.0,
+        "status": "active",
         "reason": "依 MACD histogram 正負及強度分級",
         "source": "Yahoo/FinMind/SQLite MACD histogram",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 0.0,
-        "contribution": 0.0
+        "effective_weight": 3.488373,
+        "contribution": -1.7442
       }
     ],
     "factor_quality": {
-      "active_count": 12,
+      "active_count": 14,
       "total_factors": 17,
-      "count_coverage_pct": 70.6,
-      "base_weight_coverage_pct": 79.8,
+      "count_coverage_pct": 82.4,
+      "base_weight_coverage_pct": 85.6,
       "base_weight_total": 104,
       "base_weight_unit": "relative_points",
       "weight_normalization": "active_factors_rescaled_to_100_percent",
       "effective_weight_total": 100.0,
-      "confidence": "medium",
+      "confidence": "high",
       "bias_reliable": true,
       "score_status": "calculated",
       "optimizer": "base_dynamic",
       "missing_factors": [
         "yield",
-        "volume",
-        "ma_bias",
-        "macd"
+        "volume"
       ],
       "disabled_factors": [
         "gex"
       ],
-      "inactive_count": 5
+      "inactive_count": 3
     },
     "regime": "偏空",
     "factor_str": "現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5",
     "look": "加權44,920 -0.65% 外資-735.2億 現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5 VIX21.1",
-    "compass": "25分偏空，Put Wall 44000.0；缺少價位時不推定防線",
+    "compass": "24分偏空，Put Wall 44000.0；缺少價位時不推定防線",
     "target": "Put Wall 44000.0；依有效價位及價格確認風險",
     "cards": {
       "DATA_REPORT 一致性檢查": {
@@ -2747,7 +2785,7 @@
         "target": "警告只標示資料衝突，不自動修改原始數據；請回查 DATA_REPORT 來源"
       },
       "Bias 盤前偏向": {
-        "bias": 25,
+        "bias": 24,
         "regime": "偏空",
         "factors": [
           [
@@ -2780,34 +2818,38 @@
           ],
           [
             "PCR",
-            -4
+            -3
           ],
           [
             "Put Wall",
             1
           ],
           [
+            "均線乖離",
+            -1
+          ],
+          [
             "VIX",
             -1
           ],
           [
-            "RSI",
-            -1
+            "MACD",
+            -2
           ]
         ],
         "factor_str": "現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5",
         "look": "加權44,920 -0.65% 外資-735.2億 現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5 VIX21.1",
-        "compass": "25分偏空，Put Wall 44000.0；缺少價位時不推定防線",
+        "compass": "24分偏空，Put Wall 44000.0；缺少價位時不推定防線",
         "target": "Put Wall 44000.0；依有效價位及價格確認風險"
       },
       "KPI 8宮格": {
-        "look": "KPI 8宮格：加權44,920.14點；漲跌幅-0.65%；外資-735.20億元；Bias25分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
-        "compass": "25分盤整／訊號混合；17F有效12/17；正向2、負向9、中性1、缺值4、有值停用1；有效權重100.0%；信心medium；費半有效權重20.00%；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
-        "target": "依Bias25分操作，盤整／訊號混合策略，44000.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析"
+        "look": "KPI 8宮格：加權44,920.14點；漲跌幅-0.65%；外資-735.20億元；Bias24分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
+        "compass": "24分盤整／訊號混合；17F有效14/17；正向2、負向10、中性2、缺值2、有值停用1；有效權重100.0%；信心high；費半有效權重18.60%；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
+        "target": "依Bias24分操作，盤整／訊號混合策略，44000.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析"
       },
       "大盤全景": {
-        "look": "加權44920.14點 -0.65% 漲跌518上447下，RSI 22.73 MACD unavailable",
-        "compass": "Bias25分，518上447下分歧",
+        "look": "加權44920.14點 -0.65% 漲跌518上447下，RSI 35.95 MACD -367.5500",
+        "compass": "Bias24分，518上447下分歧",
         "target": "觀察 Put Wall 44000.00 支撐"
       },
       "台指期 日夜": {
@@ -2836,32 +2878,32 @@
         "target": "依有效 Put Wall 44000.0 與 Flip 44256.47 觀察，缺值時不設定價位目標"
       },
       "盤前核心判斷": {
-        "look": "有效因子 12/17；正向 2 項、負向 9 項；Bias 25 分／盤整／訊號混合；現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5",
+        "look": "有效因子 14/17；正向 2 項、負向 10 項；Bias 24 分／盤整／訊號混合；現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5",
         "compass": "依當日有效因子與資料覆蓋判斷：未同時符合上述單日漲跌幅、外資現貨與 OI PCR 條件",
         "target": "依 盤整／訊號混合 與有效關鍵價位執行；未確認前不預設方向"
       },
       "三劇本": {
-        "look": "情境分析：Bias 25分、盤整／訊號混合；未建立經回測校準的機率模型，不提供悲觀／中性／樂觀機率",
+        "look": "情境分析：Bias 24分、盤整／訊號混合；未建立經回測校準的機率模型，不提供悲觀／中性／樂觀機率",
         "compass": "情境路徑僅作條件推演，不代表統計機率",
         "target": "觀察有效關鍵價位 44000.0；未確認突破／跌破前不啟動劇本"
       },
       "多空條件檢查表": {
-        "look": "17F有效12/17；正向2項、負向9項、缺失5項；資料覆蓋79.8%",
-        "compass": "有效因子權重已正規化；信心等級 medium；不以缺失因子推定方向",
-        "target": "Bias 25；資料可信度 medium；依有效因子與價格條件決策"
+        "look": "17F有效14/17；正向2項、負向10項、缺失3項；資料覆蓋85.6%",
+        "compass": "有效因子權重已正規化；信心等級 high；不以缺失因子推定方向",
+        "target": "Bias 24；資料可信度 high；依有效因子與價格條件決策"
       },
       "開盤前必核": {
-        "look": "KPI 8宮格：加權44,920.14點；漲跌幅-0.65%；外資-735.20億元；Bias25分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
-        "compass": "25分盤整／訊號混合；17F有效12/17；正向2、負向9、中性1、缺值4、有值停用1；有效權重100.0%；信心medium；費半有效權重20.00%；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
-        "target": "依Bias25分操作，盤整／訊號混合策略，44000.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析"
+        "look": "KPI 8宮格：加權44,920.14點；漲跌幅-0.65%；外資-735.20億元；Bias24分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
+        "compass": "24分盤整／訊號混合；17F有效14/17；正向2、負向10、中性2、缺值2、有值停用1；有效權重100.0%；信心high；費半有效權重18.60%；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
+        "target": "依Bias24分操作，盤整／訊號混合策略，44000.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析"
       },
       "AI 5面向": {
-        "look": "KPI 8宮格：加權44,920.14點；漲跌幅-0.65%；外資-735.20億元；Bias25分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
-        "compass": "25分盤整／訊號混合；17F有效12/17；正向2、負向9、中性1、缺值4、有值停用1；有效權重100.0%；信心medium；費半有效權重20.00%；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
-        "target": "依Bias25分操作，盤整／訊號混合策略，44000.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析"
+        "look": "KPI 8宮格：加權44,920.14點；漲跌幅-0.65%；外資-735.20億元；Bias24分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
+        "compass": "24分盤整／訊號混合；17F有效14/17；正向2、負向10、中性2、缺值2、有值停用1；有效權重100.0%；信心high；費半有效權重18.60%；SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析",
+        "target": "依Bias24分操作，盤整／訊號混合策略，44000.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共6筆），未啟用歷史相似分析"
       },
       "AI結論": {
-        "bias": 25,
+        "bias": 24,
         "regime": "偏空",
         "factors": [
           [
@@ -2894,28 +2936,32 @@
           ],
           [
             "PCR",
-            -4
+            -3
           ],
           [
             "Put Wall",
             1
           ],
           [
+            "均線乖離",
+            -1
+          ],
+          [
             "VIX",
             -1
           ],
           [
-            "RSI",
-            -1
+            "MACD",
+            -2
           ]
         ],
         "factor_str": "現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5",
         "look": "加權44,920 -0.65% 外資-735.2億 現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5 VIX21.1",
-        "compass": "25分偏空，Put Wall 44000.0；缺少價位時不推定防線",
+        "compass": "24分偏空，Put Wall 44000.0；缺少價位時不推定防線",
         "target": "Put Wall 44000.0；依有效價位及價格確認風險"
       },
       "交易計畫": {
-        "bias": 25,
+        "bias": 24,
         "regime": "偏空",
         "factors": [
           [
@@ -2948,24 +2994,28 @@
           ],
           [
             "PCR",
-            -4
+            -3
           ],
           [
             "Put Wall",
             1
           ],
           [
+            "均線乖離",
+            -1
+          ],
+          [
             "VIX",
             -1
           ],
           [
-            "RSI",
-            -1
+            "MACD",
+            -2
           ]
         ],
         "factor_str": "現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5",
         "look": "加權44,920 -0.65% 外資-735.2億 現貨趨勢-2 外資現貨-6 外資期貨-5 投信+2 基差-1 夜盤-5 VIX21.1",
-        "compass": "25分偏空，Put Wall 44000.0；缺少價位時不推定防線",
+        "compass": "24分偏空，Put Wall 44000.0；缺少價位時不推定防線",
         "target": "Put Wall 44000.0；依有效價位及價格確認風險"
       },
       "行事曆": {
@@ -3014,8 +3064,8 @@
         "target": "夜盤低44271.0為支撐"
       },
       "資金流向": {
-        "look": "加權44920.14點 -0.65% 漲跌518上447下，RSI 22.73 MACD unavailable",
-        "compass": "Bias25分，518上447下分歧",
+        "look": "加權44920.14點 -0.65% 漲跌518上447下，RSI 35.95 MACD -367.5500",
+        "compass": "Bias24分，518上447下分歧",
         "target": "觀察 Put Wall 44000.00 支撐"
       },
       "PCR 極低": {
@@ -3133,9 +3183,99 @@
     "analysis_card_count": 48,
     "visible_block_count": 42,
     "correlation": {
-      "labels": [],
-      "matrix": [],
-      "desc": "完整且通過資料品質檢查的歷史樣本 4/5 筆；累積足夠後顯示熱圖"
+      "labels": [
+        "大盤漲跌幅",
+        "外資現貨",
+        "外資期貨",
+        "選擇權 PCR",
+        "VIX",
+        "RSI",
+        "KD-K",
+        "KD-D"
+      ],
+      "matrix": [
+        [
+          1.0,
+          0.9476,
+          0.9517,
+          0.6935,
+          -0.6347,
+          0.6874,
+          -0.1936,
+          -0.6764
+        ],
+        [
+          0.9476,
+          1.0,
+          0.9932,
+          0.5343,
+          -0.779,
+          0.7159,
+          -0.3899,
+          -0.8221
+        ],
+        [
+          0.9517,
+          0.9932,
+          1.0,
+          0.4863,
+          -0.7654,
+          0.6727,
+          -0.4068,
+          -0.8246
+        ],
+        [
+          0.6935,
+          0.5343,
+          0.4863,
+          1.0,
+          -0.3311,
+          0.7299,
+          0.4493,
+          -0.0599
+        ],
+        [
+          -0.6347,
+          -0.779,
+          -0.7654,
+          -0.3311,
+          1.0,
+          -0.8646,
+          0.1369,
+          0.5123
+        ],
+        [
+          0.6874,
+          0.7159,
+          0.6727,
+          0.7299,
+          -0.8646,
+          1.0,
+          0.2506,
+          -0.2559
+        ],
+        [
+          -0.1936,
+          -0.3899,
+          -0.4068,
+          0.4493,
+          0.1369,
+          0.2506,
+          1.0,
+          0.8423
+        ],
+        [
+          -0.6764,
+          -0.8221,
+          -0.8246,
+          -0.0599,
+          0.5123,
+          -0.2559,
+          0.8423,
+          1.0
+        ]
+      ],
+      "desc": "Pearson 相關係數｜完整有效樣本 5 筆｜最近 60 筆"
     },
     "levels": [
       {
