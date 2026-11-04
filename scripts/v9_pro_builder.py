@@ -63,7 +63,7 @@ def _filter_history_to_t0(records, t0_date):
 def fetch_yahoo_twii_30d(t0_date=None):
     try:
         import requests
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/^TWII?range=1mo&interval=1d"
+        url = "https://query1.finance.yahoo.com/v8/finance/chart/^TWII?range=3mo&interval=1d"
         headers = {"User-Agent": "Mozilla/5.0"}
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code != 200:
