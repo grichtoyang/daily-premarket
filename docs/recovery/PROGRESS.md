@@ -1664,3 +1664,43 @@ P1 尚未開始。啟動前必須：
 - 兩分支最新 HEAD CI：**NOT VERIFIED（combined statuses 為空）**。
 - 本輪未修改任何產品程式、DATA_REPORT、workflow、樣本或 Dashboard；未 merge／deploy。Recovery 文件更新除外。
 - Auditor 為單一模型自我稽核，非獨立多模型審核。
+
+
+## 2026-11-04｜借券 parser 合計列修正已提交（尚待執行測試）
+
+### 工作主線與修改範圍
+- 唯一產品工作分支：`phase2-p0-ui-fixes`；修改前確認 HEAD 為 `8317dcb359b5629cf073c144068339322e89884a`。
+- 未建立、切換、合併或刪除任何分支；未修改 master、P0 base、V8、workflow、DATA_REPORT、data_reports 樣本或 Dashboard。
+- 本次只修改 `src/sources/spot_raw.py` 與借券 parser 相關測試。
+
+### 實際修改
+- TWT93U：改為依既有 fields 欄名 mapping 定位最後一筆「合計」列，驗證該列前日餘額 + 當日賣出 - 當日還券 + 當日調整 = 當日餘額；直接回傳合計列，不再加總個股明細。
+- TWT72U：改為直接定位「市場別=整體市場」列，驗證前日餘額 + 本日借券 - 本日還券 = 今日餘額；直接回傳整體市場合計列，不再加總個股或市場小計。
+- TWT72U URL 改為使用者實測成功的原始 query：`/rwd/zh/lending/TWT72U?response=json&date=YYYYMMDD`，不再額外附加 `selectType=SLBNLB`。
+- 更新語義測試 fixture：TWT93U 使用使用者提供的 2026-10-30 合計數值；TWT72U 使用使用者提供的整體市場餘額及遞推數值。這些是合成測試 fixture，並非完整原始 JSON fixture；完整 fields/data 原始回應尚未取得。
+- 更新來源契約測試的 parser 診斷字串，以及 live probe 的 TWT72U URL。
+
+### Commits（均在既定主線）
+- Parser 合計列邏輯：`818cf6a80ff879f3d6f879370773758197d1bc02`
+- TWT93U/TWT72U semantic tests：`428b8ec18737766988976b536fc09851c3fab981`
+- TWT72U fixture 精簡為整體市場列：`ce9d746b9f2d74299f42bbf562d9458a6052938a`
+- 借券來源契約測試更新：`dc0150eef8fb8a7a264ad3b677907ff10cdb72c0`
+- TWT72U URL 對齊使用者實測 query：`f0515a798dc85526f307966f53fc120d4f280dd7`
+- semantic/live test URL 更新：`c0cc0754b5bc7974358a6ad906f0beec5faaeb6d`、`3c246660355aa01697b2f29d6256248ef32f5ea7`
+- TWT72U aggregate selector 放寬為只依「整體市場」標籤定位：`b0b9e2cb5140653062b8a7d03f23ca7fb5867562`
+- 最終工作分支 HEAD：`b0b9e2cb5140653062b8a7d03f23ca7fb5867562`。
+
+### 回讀與驗收
+- GitHub 回讀已確認 parser 與三份測試檔案包含預期修改；最終 parser blob SHA：`9ed97c220bfc69595c2b883b8bb24fcaed5201bf`。
+- TWT93U 合計列程式邏輯：**CODE REVIEW PASS**；實際新版 JSON fields 名稱對應：**NOT TESTED**。
+- TWT72U 整體市場列程式邏輯：**CODE REVIEW PASS**；實際新版 JSON fields/data 完整 schema：**NOT TESTED**。
+- 合成 fixture 的預期值與使用者截圖數值：**PASS（算術核對）**。
+- Python unit tests／live API tests：**NOT TESTED**（目前本輪未執行測試環境）。
+- 最新 HEAD combined status：空 statuses，CI **NOT VERIFIED**。
+- DATA_REPORT 重建、GitHub Actions 自動化授權邊界：**NOT DONE／BLOCKED**；不得因 parser 修改就啟動歷史報告重建。
+- Auditor：單一模型自我稽核，非獨立多模型審核。
+
+### 下一步（保持收斂）
+1. 執行 `tests/test_spot_borrowed_semantics.py` 與 `tests/test_fetch_data_borrowed_sources.py`，修正任何失敗。
+2. 若可取得使用者原始 JSON 檔，將完整 fields/data 作為真實 fixture，驗證 parser mapping；不可把合成 fixture 當成原始 JSON。
+3. 通過後再進入既定的三市場分析／選擇權法人力道成果移植；不重做已驗證的 P0 資料層。
