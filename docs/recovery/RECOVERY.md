@@ -1954,3 +1954,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 助手獨立 HTTP 抓取：**BLOCKED（工具限制）**
 - 程式接入／CI／DATA_REPORT 重建：**NOT DONE**
 - 免費自動化授權邊界：**BLOCKED／待確認；不得因此推薦付費方案**
+
+
+## 2026-11-04 最新接手補充｜分支主線與移植決策
+
+- 維持原案：主線 `phase2-p0-ui-fixes`，三市場分支 `fix/three-market-correlation-history` 作選擇性移植來源，不整條 merge。
+- P0 HEAD `8317dcb359b5629cf073c144068339322e89884a`；三市場 HEAD `e678877bc076e157c948483d40f136e0f504303e`；共同祖先 `d5443eacb29b7b0824306de4d1b126b9281210b5`。P0 ahead 59、三市場 ahead 105；兩分支 diverged。
+- 三市場分支已完成多項值得移植的工作：三市場分析卡、三劇本條件觸發、選擇權法人力道、live synthesis narrative、方向一致性與資料有效性判斷、單位／精度修正、相關性歷史 seed。詳見 PROGRESS.md 的 2026-11-04 分支盤點。
+- 不以三市場分支為 base 的關鍵理由：該分支仍有舊 TWT93U endpoint／固定索引／逐股加總，且舊 spot mapping 將 TWT96U 與 TPEx 值併入借券餘額；P0 fixes 已有較正確的資料指標分離與新版 RWD parser，應保留。
+- 但 P0 fixes 借券 parser 尚未符合使用者最新指定：TWT93U 直接取最後「合計」列；TWT72U 直接取「整體市場」合計列。現有測試仍以個股加總為契約，必須修正並加入真實 JSON fixture；不可宣稱此項 PASS。
+- 下一步：先完成 P0 借券 parser 合計列 mapping／fixture／測試，再按功能群將三市場 UI／分析成果移植到 P0 fixes；correlation history workflow／SQLite 獨立處理。全程不改 master、P0 base、V8 或 data_reports 樣本，不 merge/deploy。
+- 最新 HEAD combined statuses 均空白，故兩分支最新 HEAD CI **NOT VERIFIED**；既有歷史 CI run 不可直接當作目前 HEAD 驗收。
+- 本輪未修改產品程式或資料，只更新 Recovery 文件；Auditor 為單一模型自我稽核，非獨立多模型審核。
