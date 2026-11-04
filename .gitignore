@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 .streamlit/secrets.toml
 logs/
+dashboards/v9_pro_history.db

@@ -1858,6 +1858,117 @@ def run_17f_self_tests():
         traceback.print_exc()
         return 1
 
+def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports", db_path="dashboards/v9_pro_history.db", lookback=5):
+    """Seed the build-local V9 history DB from committed dated DATA_REPORTs before dashboard generation."""
+    cutoff=_t0_iso_date(as_of_date)
+    if not cutoff:
+        raise ValueError(f"Invalid seed cutoff date: {as_of_date!r}")
+    paths=sorted(pathlib.Path(report_dir).glob("DATA_REPORT_*.md"))
+    selected=[]
+    for path in paths:
+        match=re.search(r"DATA_REPORT_(\d{8})\.md$",path.name)
+        if not match:
+            continue
+        report_date=_t0_iso_date(match.group(1))
+        if report_date and report_date<=cutoff:
+            selected.append((report_date,path))
+    selected=selected[-int(lookback):]
+    if not selected:
+        raise FileNotFoundError(f"No dated DATA_REPORTs found in {report_dir} up to {cutoff}")
+    for report_date,path in selected:
+        parsed=parse_data_report(path)
+        actual=_t0_iso_date(parsed.get("meta",{}).get("t0_date"))
+        if actual!=report_date:
+            raise ValueError(f"DATA_REPORT date mismatch: {path} declares {actual}")
+        tech=fetch_technical_indicators_with_fallback(parsed["meta"]["t0_date"])
+        analyzer=V9Analyzer(parsed,tech)
+        bias,_,_=analyzer.calculate_bias()
+        corr_values = {
+            "spot_pct": analyzer.signals.get("spot_pct"),
+            "foreign_spot": analyzer.signals.get("foreign"),
+            "foreign_fut": analyzer.signals.get("foreign_futures"),
+            "pcr": analyzer.signals.get("pcr"),
+            "vix": analyzer.signals.get("vix"),
+            "rsi": tech.get("rsi"), "k": tech.get("k"), "d": tech.get("d")
+        }
+        print(f"[CORRELATION SEED] {report_date} eligibility fields: {corr_values}")
+        # Replace any row created earlier in this same build; the normal daily path may have
+        # stored an incomplete row before historical inputs were fully reconstructed.
+        seed_conn=init_db(db_path)
+        if not seed_conn:
+            raise RuntimeError(f"Could not open correlation seed DB for {report_date}")
+        seed_conn.execute("DELETE FROM v9_pro_history WHERE date=?", (report_date,))
+        seed_conn.commit()
+        seed_conn.close()
+        if not save_today_to_db(bias,analyzer.signals,tech,report_date.replace("-",""),db_path):
+            raise RuntimeError(f"Could not seed correlation history from {path}")
+        print(f"[CORRELATION SEED] {report_date}: saved/verified")
+    corr=calculate_historical_correlation(db_path,min_samples=5,lookback=lookback,as_of_date=cutoff)
+    print(f"[CORRELATION SEED] Dashboard history: {corr['desc']}")
+    return corr
+
+
+def run_historical_correlation_replay(report_dir="data_reports", dates=None):
+    """Replay real dated DATA_REPORTs into a temporary V9 DB and verify 0/5 -> 5/5 accumulation."""
+    import tempfile
+    dates = dates or ["20261027", "20261028", "20261029", "20261030", "20261102"]
+    with tempfile.TemporaryDirectory(prefix="v9-correlation-replay-") as tmp:
+        db_path=str(pathlib.Path(tmp)/"v9_pro_history.db")
+        print("[CORRELATION REPLAY] Temporary DB only; production history is untouched.")
+        for date in dates:
+            report_path=pathlib.Path(report_dir)/f"DATA_REPORT_{date}.md"
+            if not report_path.is_file():
+                raise FileNotFoundError(f"Historical DATA_REPORT missing: {report_path}")
+            parsed=parse_data_report(report_path)
+            report_date=str(parsed.get("meta",{}).get("t0_date") or "").replace("-","")
+            if report_date!=date:
+                raise ValueError(f"Report date mismatch: requested {date}, report T0={report_date}")
+            tech=fetch_technical_indicators_with_fallback(parsed["meta"]["t0_date"])
+            analyzer=V9Analyzer(parsed,tech)
+            bias,_,_=analyzer.calculate_bias()
+            if not save_today_to_db(bias,analyzer.signals,tech,date,db_path):
+                raise RuntimeError(f"Could not save historical sample {date}")
+            conn=sqlite3.connect(db_path)
+            row=conn.execute(
+                "SELECT correlation_eligible FROM v9_pro_history WHERE date=?",
+                (datetime.strptime(date,"%Y%m%d").strftime("%Y-%m-%d"),)
+            ).fetchone()
+            eligible_count=conn.execute(
+                "SELECT COUNT(*) FROM v9_pro_history WHERE correlation_eligible=1"
+            ).fetchone()[0]
+            conn.close()
+            expected_count=dates.index(date)+1
+            if not row or row[0]!=1 or eligible_count!=expected_count:
+                raise AssertionError(f"Historical sample accumulation mismatch on {date}: eligible={row[0] if row else 'missing'}, cumulative={eligible_count}, expected={expected_count}")
+            corr=calculate_historical_correlation(db_path,min_samples=5,as_of_date=date)
+            print(f"[CORRELATION REPLAY] {date}: eligible={row[0]}; cumulative={eligible_count}/5; {corr['desc']}")
+        conn=sqlite3.connect(db_path)
+        final_count=conn.execute(
+            "SELECT COUNT(*) FROM v9_pro_history WHERE correlation_eligible=1"
+        ).fetchone()[0]
+        dates_saved=conn.execute(
+            "SELECT date FROM v9_pro_history WHERE correlation_eligible=1 ORDER BY date"
+        ).fetchall()
+        conn.close()
+        final=calculate_historical_correlation(db_path,min_samples=5,as_of_date=dates[-1])
+        matrix=final.get("matrix") or []
+        if final_count!=5 or not matrix or len(final.get("labels",[]))<2:
+            raise AssertionError(
+                f"Historical correlation replay failed: {final_count}/5 eligible samples; {final.get('desc')}"
+            )
+        if len(matrix)!=len(final["labels"]) or any(len(row)!=len(final["labels"]) for row in matrix):
+            raise AssertionError("Correlation matrix dimensions do not match labels")
+        if any(value is None or not math.isfinite(float(value)) for row in matrix for value in row):
+            raise AssertionError("Correlation matrix contains null or non-finite values")
+        for i in range(len(matrix)):
+            if abs(matrix[i][i]-1.0)>1e-4:
+                raise AssertionError(f"Correlation diagonal is not 1.0 at index {i}")
+            for j in range(len(matrix)):
+                if abs(matrix[i][j]-matrix[j][i])>1e-4:
+                    raise AssertionError(f"Correlation matrix is not symmetric at ({i},{j})")
+        print(f"[CORRELATION REPLAY] PASS: {final_count}/5 real dated reports; dates={[x[0] for x in dates_saved]}; finite symmetric matrix={len(final['labels'])}x{len(final['labels'])}")
+    return 0
+
 def main():
     parser=argparse.ArgumentParser(description="V9 Pro Builder 17F + SQLite + 41 cards + data.json only - Skill daily-premarket-analysis-v9-pro")
     parser.add_argument('--data_report', default=None, help="path to DATA_REPORT md")
@@ -1865,9 +1976,18 @@ def main():
     parser.add_argument('--date', default=None, help="YYYYMMDD")
     parser.add_argument('--golden', default='templates/v9-pro-react-template.html', help="golden template path (for reference, v9 no longer injects)")
     parser.add_argument('--self-test', action='store_true', help="run fast offline 17F scoring tests and exit")
+    parser.add_argument('--history-replay', action='store_true', help="replay five real historical DATA_REPORTs and verify correlation accumulation in a temporary DB")
+    parser.add_argument('--seed-correlation-history', action='store_true', help="seed build-local SQLite correlation history from dated DATA_REPORTs")
     args=parser.parse_args()
     if args.self_test:
         return run_17f_self_tests()
+    if args.history_replay:
+        return run_historical_correlation_replay()
+    if args.seed_correlation_history:
+        if not args.date:
+            raise ValueError('--seed-correlation-history requires --date YYYYMMDD')
+        corr=seed_correlation_history_for_dashboard(args.date)
+        return 0 if corr.get('matrix') else 2
     date_str=args.date.strip() if args.date else ""
     if date_str and (len(date_str)!=8 or not date_str.isdigit()):
         raise ValueError(f"Invalid --date {date_str!r}; expected YYYYMMDD")

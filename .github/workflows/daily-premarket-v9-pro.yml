@@ -112,6 +112,13 @@ jobs:
           set -euo pipefail
           python -m unittest discover -s tests -p "test_taifex_gamma_fallback.py" -v
 
+      - name: Seed dashboard correlation history from dated DATA_REPORTs
+        run: |
+          set -euo pipefail
+          if ! python scripts/v9_pro_builder.py --seed-correlation-history --date "${DATE}"; then
+            echo "::warning::Correlation history seed unavailable; dashboard build continues with heatmap marked unavailable."
+          fi
+
       - name: Build dashboard data
         run: |
           set -euo pipefail
