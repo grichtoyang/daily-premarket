@@ -376,7 +376,7 @@ console.log("synthesis narrative actual + missing + zero + malformed + reverse f
             "night": {"o": 45227, "h": 45487, "l": 44271, "c": 44310, "diff": -917, "pct": -2.03, "vol": 38487, "change": -946},
             "futures": {"foreign_oi": -89379, "trust_oi": 89139, "dealer_oi": 1307, "top10": 14239, "foreign_day": 2801, "foreign_night": -1349}
         }
-        script = "const fixture=" + __import__("json").dumps(fixture, ensure_ascii=False) + ";\\n" + helper_source + """
+        script = "const fixture=" + __import__("json").dumps(fixture, ensure_ascii=False) + ";" + chr(10) + helper_source + """
 const out=v9ProFuturesAnalysis(fixture);
 if(!out.day.compass.includes("日內收高於開盤")||!out.day.compass.includes("相對前結算仍下跌 -44 點")) throw Error("day session failed to distinguish open-close from previous settlement");
 if(!out.night.compass.includes("夜盤收盤低於日盤收盤")||!out.night.compass.includes("收盤位於夜盤區間下緣")) throw Error("night session structure not identified");
