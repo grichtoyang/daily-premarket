@@ -2011,3 +2011,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 生成 JSON 回讀確認 `visible_block_count=42`，option-force analysis 可用；三市場卡已填入現貨、期貨、選擇權實際值。全 42 區塊人工逐一視覺檢查仍 NOT TESTED。
 - 詳細 commit、檔案 SHA、測試結果與歷史來源見 PROGRESS.md 的「三市場分析卡與情境條件恢復」。
 - 下一步：單獨恢復 correlation history seed／workflow／SQLite；先核對歷史 seed 的資料日期、樣本品質、workflow branch isolation 與 P0 保護，再實作。不重做已 PASS 的 parser、option-force、三市場 helper／cards、scenario helper。
+
+
+## 2026-11-04 最新接續點｜Correlation history 已恢復
+
+- 產品唯一主線 `phase2-p0-ui-fixes` 最新 HEAD：`4fb002951f463d5964f3c88970ddf78497ecaba9`。
+- 已恢復 correlation seed／replay 函式、CLI 與 daily workflow seed step。Yahoo 技術指標來源從 P0 原先的 `1mo` 恢復為歷史版本 `3mo`，解決部分日期僅 14 筆、RSI 缺值的問題。
+- P0 實際五份 DATA_REPORT replay **PASS**：五筆 eligible，有限值且對稱的 8×8 Pearson matrix。Daily build seed **PASS**，2026-11-02 JSON 回讀確認 8×8 matrix 與 42 個可見區塊。
+- Unit Audit **41756154308 SUCCESS**；Daily Build **41756154307 SUCCESS**（deploy SKIPPED）；UI Regression **41756154315 SUCCESS**。
+- SQLite DB 是 build-local，由五份 DATA_REPORT 每次重建；已加入 .gitignore 並從分支移除 tracked DB，最新 tree 不含 `dashboards/v9_pro_history.db`。不要將 SQLite DB 重新加入 Git。
+- correlation 目前只有 5 筆有效樣本，顯示時須保留小樣本／非因果／非預測限制。
+- 詳細來源、初次 FAIL 原因、修正 commit、測試 log 與 JSON blob SHA 見 PROGRESS.md 最新 correlation 段落。
+- 下一步只需盤點剩餘尚未恢復的歷史 UI／分析候選；不得重做 parser、option force、三市場、scenario、correlation 以上 PASS 項目。保持唯一工作主線，不開新分支、不 merge、不 deploy。
