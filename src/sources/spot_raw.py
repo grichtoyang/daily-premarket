@@ -191,37 +191,35 @@ def twse_twt93u_sbl(date_value: str) -> dict:
         print(f"[WARN] TWT93U required lending fields absent: fields={fields!r}")
         return out
 
-    import re
-    total_prev = total_bal = 0.0
-    parsed = 0
-    invalid = 0
-    for row in data:
-        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, sell_idx, return_idx, adjust_idx, bal_idx) >= len(row):
-            invalid += 1
-            continue
-        code = str(row[symbol_idx] or "").strip().upper()
-        if not re.fullmatch(r"[0-9A-Z]{4,6}", code):
-            continue
-        prev = _num(row[prev_idx])
-        sold = _num(row[sell_idx])
-        returned = _num(row[return_idx])
-        adjusted = _num(row[adjust_idx])
-        bal = _num(row[bal_idx])
-        if prev is None or sold is None or returned is None or adjusted is None or bal is None or abs((prev + sold - returned + adjusted) - bal) > 1e-6:
-            invalid += 1
-            continue
-        total_prev += prev
-        total_bal += bal
-        parsed += 1
-
-    if not parsed:
-        print(f"[WARN] TWT93U no parseable lending rows: date={date8} total={len(data)} invalid={invalid}")
+    # Use the official final "合計" row only. Individual securities are detail rows
+    # and must never be summed together with (or instead of) the market aggregate.
+    total_row = next((
+        row for row in reversed(data)
+        if isinstance(row, (list, tuple))
+        and max(symbol_idx, prev_idx, sell_idx, return_idx, adjust_idx, bal_idx) < len(row)
+        and str(row[symbol_idx] or "").strip() == "合計"
+    ), None)
+    if total_row is None:
+        print(f"[WARN] TWT93U official 合計 row absent: date={date8}")
         return out
-    print(f"[INFO] TWT93U parsed rows={parsed}/{len(data)} invalid_rows={invalid} date={date8}")
+
+    prev = _num(total_row[prev_idx])
+    sold = _num(total_row[sell_idx])
+    returned = _num(total_row[return_idx])
+    adjusted = _num(total_row[adjust_idx])
+    bal = _num(total_row[bal_idx])
+    if any(value is None for value in (prev, sold, returned, adjusted, bal)):
+        print(f"[WARN] TWT93U official 合計 row contains invalid values: date={date8} row={total_row!r}")
+        return out
+    if abs((prev + sold - returned + adjusted) - bal) > 1e-6:
+        print(f"[WARN] TWT93U official 合計 row roll-forward mismatch: date={date8}")
+        return out
+
+    print(f"[INFO] TWT93U official 合計 row accepted date={date8}")
     return {
-        "sale_bal": total_bal,
-        "sale_chg": total_bal - total_prev,
-        "prev_bal": total_prev,
+        "sale_bal": bal,
+        "sale_chg": bal - prev,
+        "prev_bal": prev,
         "date_ok": True,
     }
 
@@ -258,55 +256,31 @@ def twse_twt72u_sbl(date_value: str) -> dict:
         print(f"[WARN] TWT72U required fields/data absent: fields={fields!r}")
         return out
 
-    import re
-    stock_market_names = ("集中市場", "櫃檯買賣中心")
-    market_sums = {name: [0.0, 0.0, 0] for name in stock_market_names}
-    market_totals = {}
-    overall_total = None
-    invalid = 0
-    for row in data:
-        if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, borrow_idx, return_idx, bal_idx, market_idx) >= len(row):
-            invalid += 1
-            continue
-        market_name = str(row[market_idx] or "").strip()
-        code = str(row[symbol_idx] or "").strip().upper()
-        prev = _num(row[prev_idx])
-        borrowed = _num(row[borrow_idx])
-        returned = _num(row[return_idx])
-        bal = _num(row[bal_idx])
-        if prev is None or borrowed is None or returned is None or bal is None or abs((prev + borrowed - returned) - bal) > 1e-6:
-            invalid += 1
-            continue
-        if code == "合計" and market_name in stock_market_names:
-            market_totals[market_name] = (prev, bal)
-            continue
-        if market_name == "整體市場":
-            overall_total = (prev, bal)
-            continue
-        if market_name not in market_sums or not re.fullmatch(r"[0-9A-Z]{4,6}", code):
-            invalid += 1
-            continue
-        market_sums[market_name][0] += prev
-        market_sums[market_name][1] += bal
-        market_sums[market_name][2] += 1
+    # The official "整體市場" 合計 row is the all-market source of truth.
+    # Do not reconstruct it by adding individual securities or market subtotals.
+    overall_row = next((
+        row for row in reversed(data)
+        if isinstance(row, (list, tuple))
+        and max(symbol_idx, prev_idx, borrow_idx, return_idx, bal_idx, market_idx) < len(row)
+        and str(row[symbol_idx] or "").strip() == "合計"
+        and str(row[market_idx] or "").strip() == "整體市場"
+    ), None)
+    if overall_row is None:
+        print(f"[WARN] TWT72U 整體市場合計 row absent: date={date8}")
+        return out
 
-    if invalid or any(market_sums[name][2] == 0 for name in stock_market_names):
-        print(f"[WARN] TWT72U incomplete stock rows: date={date8} invalid={invalid} market_sums={market_sums}")
+    total_prev = _num(overall_row[prev_idx])
+    borrowed = _num(overall_row[borrow_idx])
+    returned = _num(overall_row[return_idx])
+    total_bal = _num(overall_row[bal_idx])
+    if any(value is None for value in (total_prev, borrowed, returned, total_bal)):
+        print(f"[WARN] TWT72U 整體市場合計 row contains invalid values: date={date8}")
         return out
-    for name in stock_market_names:
-        if name not in market_totals or (
-            market_sums[name][0] != market_totals[name][0]
-            or market_sums[name][1] != market_totals[name][1]
-        ):
-            print(f"[WARN] TWT72U market subtotal mismatch: market={name} stocks={market_sums[name]} subtotal={market_totals.get(name)}")
-            return out
-    total_prev = sum(market_sums[name][0] for name in stock_market_names)
-    total_bal = sum(market_sums[name][1] for name in stock_market_names)
-    if overall_total != (total_prev, total_bal):
-        print(f"[WARN] TWT72U overall subtotal mismatch: stocks={(total_prev, total_bal)} overall={overall_total}")
+    if abs((total_prev + borrowed - returned) - total_bal) > 1e-6:
+        print(f"[WARN] TWT72U 整體市場合計 row roll-forward mismatch: date={date8}")
         return out
-    parsed = sum(market_sums[name][2] for name in stock_market_names)
-    print(f"[INFO] TWT72U parsed rows={parsed} listed={market_sums['集中市場'][2]} otc={market_sums['櫃檯買賣中心'][2]} subtotal_checks=PASS date={date8}")
+
+    print(f"[INFO] TWT72U official 整體市場合計 row accepted date={date8}")
     return {
         "bal": total_bal,
         "prev_bal": total_prev,
