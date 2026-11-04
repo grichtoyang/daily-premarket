@@ -1857,3 +1857,12 @@ P1 尚未開始。啟動前必須：
 - 42 個可見區塊人工逐一評分／視覺檢查仍 NOT TESTED；自動 Browser Audit 六頁 Desktop／Mobile 12 viewport PASS 不等於人工 42 區塊分析品質驗收。
 - docs/P4_EARLY_ANALYSIS_ENGINE_PLAN.md 已明確記錄：42 區塊完整 ID／資料欄位／profile 映射 BLOCKED／待完成；LLM analysis runtime NOT IMPLEMENTED；95% 分析品質目標 NOT TESTED。不可宣稱目前已達 95% AI 分析品質。
 - 下一步依 P4 計畫先完成 42 區塊對照表及分析 profile 盤點，再逐區塊改善；保留既有 17F 量化層、資料真實性及缺值防護，不推倒重寫，也不直接移植歷史分支引用全 17 因子隱藏總和的文字。
+
+## 2026-11-04｜P4 42 區塊 Profile 盤點啟動
+
+- 重新檢查發現 42 區塊的結構資料映射並非空白：現有 docs/DASHBOARD_UNIT_MAP.md 已列出 1–42 的頁籤、JSON path、DATA_REPORT 來源、單位及缺值規則。因此修正 P4 計畫原先「42 區塊完整映射 BLOCKED」的過時狀態。
+- 新增 docs/P4_ANALYSIS_PROFILE_MAP.md，建立 42 個獨立分析 profile 草案；每個 profile 都有必答分析問題、交叉驗證／反證、操作觀察與禁止推論。程式檢查確認 42 rows、42 unique IDs、無缺號。
+- 更新 docs/P4_EARLY_ANALYSIS_ENGINE_PLAN.md：結構映射 PASS；42 個 profile 草案 DRAFTED；Profile → Builder／React 綁定 NOT IMPLEMENTED；LLM provider BLOCKED；AI runtime NOT IMPLEMENTED；42 區塊逐一評分及 95% 品質目標 NOT TESTED。
+- 文件 commits：profile map 4e32c32855665a0b1475753bd4777eea9756fe48；P4 plan status 8ecc6d334f6df9196883b2274abb611852c36cbd。產品分支最新 HEAD 8ecc6d334f6df9196883b2274abb611852c36cbd。
+- 本輪僅新增／更新規格文件，尚未把 42 profiles 接入 Builder 或 React；不可宣稱分析 runtime 已完成，也不可宣稱 95% 達標。
+- 下一步：逐項對照 profile 與目前 React template／Builder 的實際資料綁定，先選核心區塊（三市場法人、期貨籌碼、選擇權結構、相關性、交易計畫）作 profile-to-output 試點；不得一次改版或改動 42 區塊 layout。
