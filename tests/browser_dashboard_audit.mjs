@@ -7,46 +7,80 @@ const outDir = process.env.AUDIT_OUT || "artifacts/dashboard-browser-audit";
 if (!fs.existsSync(htmlPath)) throw new Error(`Dashboard HTML not found: ${htmlPath}`);
 fs.mkdirSync(outDir, { recursive: true });
 
-const tabs = ["總覽", "現貨", "重要市場", "期貨", "選擇權", "綜合分析"];
+const tabs = [
+  { label: "總覽", key: "overview" },
+  { label: "現貨", key: "spot" },
+  { label: "重要市場", key: "markets" },
+  { label: "期貨", key: "futures" },
+  { label: "選擇權", key: "options" },
+  { label: "綜合分析", key: "synthesis" }
+];
 const errors = [];
 const results = [];
+let fatal = null;
 const browser = await chromium.launch({ headless: true });
 try {
   for (const viewport of [{ name: "desktop", width: 1440, height: 1000 }, { name: "mobile", width: 390, height: 844 }]) {
     const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
     page.on("pageerror", error => errors.push(`${viewport.name}: ${error.message}`));
+    page.on("console", message => {
+      if (message.type() === "error") errors.push(`${viewport.name} console: ${message.text()}`);
+    });
     await page.goto("file://" + path.resolve(htmlPath), { waitUntil: "domcontentloaded" });
     await page.waitForSelector("#root", { state: "attached" });
-    await page.waitForFunction(() => document.querySelector("#root")?.innerText?.trim().length > 0, null, { timeout: 30000 });
+    await page.waitForFunction(() => document.querySelector("#main-content")?.innerText?.trim().length > 0, null, { timeout: 30000 });
 
-    for (const tab of tabs) {
-      const button = page.locator("button").filter({ hasText: tab }).first();
+    for (let index = 0; index < tabs.length; index++) {
+      const tab = tabs[index];
+      const button = page.locator(`button[data-tab="${tab.key}"]`);
       await button.waitFor({ state: "visible", timeout: 15000 });
+      const beforePulse = await page.locator("#main-content").getAttribute("data-pulse");
       await button.click();
-      await page.waitForTimeout(250);
+      try {
+        await page.waitForFunction(({ key, beforePulse }) => {
+          const nav = document.querySelector(`button[data-tab="${key}"]`);
+          const main = document.querySelector("#main-content");
+          const pulse = main?.getAttribute("data-pulse");
+          const text = main?.innerText?.trim() || "";
+          const canvases = [...(main?.querySelectorAll("canvas") || [])]
+            .filter(c => c.getBoundingClientRect().width > 0 && c.getBoundingClientRect().height > 0).length;
+          return nav?.getAttribute("data-active") === "1" &&
+            pulse !== beforePulse && text.length >= 100 && canvases >= 1;
+        }, { key: tab.key, beforePulse }, { timeout: 10000 });
+      } catch (error) {
+        const state = await page.evaluate(() => ({
+          activeTab: [...document.querySelectorAll("button[data-tab]")].find(b => b.getAttribute("data-active") === "1")?.getAttribute("data-tab") || null,
+          pulse: document.querySelector("#main-content")?.getAttribute("data-pulse") || null,
+          mainTextLength: document.querySelector("#main-content")?.innerText?.trim().length ?? 0,
+          canvases: document.querySelectorAll("#main-content canvas").length,
+          visibleText: document.querySelector("#main-content")?.innerText?.slice(0, 240) ?? ""
+        }));
+        throw new Error(`${viewport.name} / ${tab.label}: tab content did not become ready; state=${JSON.stringify(state)}; pageErrors=${errors.join(" | ")}; cause=${error.message}`);
+      }
       const state = await page.evaluate(() => ({
         width: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
-        rootTextLength: document.querySelector("#root")?.innerText?.trim().length ?? 0,
-        canvases: [...document.querySelectorAll("canvas")].filter(c => c.getBoundingClientRect().width > 0 && c.getBoundingClientRect().height > 0).length,
-        visibleText: document.querySelector("#root")?.innerText?.slice(0, 240) ?? ""
+        rootTextLength: document.querySelector("#main-content")?.innerText?.trim().length ?? 0,
+        canvases: [...document.querySelectorAll("#main-content canvas")].filter(c => c.getBoundingClientRect().width > 0 && c.getBoundingClientRect().height > 0).length,
+        visibleText: document.querySelector("#main-content")?.innerText?.slice(0, 240) ?? ""
       }));
-      if (state.rootTextLength < 100) throw new Error(`${viewport.name} / ${tab}: dashboard content unexpectedly empty`);
       if (state.documentWidth > viewport.width + 1 || state.bodyWidth > viewport.width + 1) {
-        throw new Error(`${viewport.name} / ${tab}: horizontal overflow document=${state.documentWidth}, body=${state.bodyWidth}, viewport=${viewport.width}`);
+        throw new Error(`${viewport.name} / ${tab.label}: horizontal overflow document=${state.documentWidth}, body=${state.bodyWidth}, viewport=${viewport.width}`);
       }
-      if (state.canvases < 1) throw new Error(`${viewport.name} / ${tab}: no visible chart canvas`);
-      const safeTab = tabs.indexOf(tab) + 1;
-      await page.screenshot({ path: path.join(outDir, `${viewport.name}-${safeTab}.png`), fullPage: true });
-      results.push({ viewport: viewport.name, tab, ...state, status: "PASS" });
+      if (state.canvases < 1) throw new Error(`${viewport.name} / ${tab.label}: no visible chart canvas`);
+      await page.screenshot({ path: path.join(outDir, `${viewport.name}-${index + 1}.png`), fullPage: true });
+      results.push({ viewport: viewport.name, tab: tab.label, ...state, status: "PASS" });
     }
     await page.close();
   }
+} catch (error) {
+  fatal = error;
 } finally {
   await browser.close();
 }
-const report = { html: htmlPath, tabs, results, pageErrors: errors, status: errors.length ? "FAIL" : "PASS" };
+const report = { html: htmlPath, tabs: tabs.map(t => t.label), results, pageErrors: errors, failure: fatal?.message || null, status: fatal || errors.length ? "FAIL" : "PASS" };
 fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2));
-if (errors.length) throw new Error("Browser page errors: " + errors.join("; "));
+if (fatal) throw fatal;
+if (errors.length) throw new Error("Browser page or console errors: " + errors.join("; "));
 console.log(JSON.stringify(report, null, 2));

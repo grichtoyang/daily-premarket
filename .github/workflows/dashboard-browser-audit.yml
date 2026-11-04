@@ -8,7 +8,6 @@ on:
       - '.github/workflows/dashboard-browser-audit.yml'
       - 'tests/browser_dashboard_audit.mjs'
       - 'dashboards/v9-pro-*.html'
-      - 'templates/v9-pro-react-template.html'
   workflow_dispatch:
 
 permissions:
@@ -21,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-node@v4
         with:
