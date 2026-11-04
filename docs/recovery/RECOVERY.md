@@ -2058,3 +2058,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - Recovery 詳細 fixture 數值、commit、blob、測試證據見 PROGRESS.md 的「P4 期貨頁六區塊分析 Profile 試點」。
 - 下一個核心 P4 試點：選擇權結構；勿重做已 PASS 的三市場、期貨、相關性、交易計畫與選擇權法人力道。保持不 merge、不 deploy、不改 master／P0 base／V8／DATA_REPORT。
 - AI runtime 仍 NOT IMPLEMENTED；42 區塊 profile 目前為 DRAFTED；95% 品質目標 NOT TESTED。
+
+ 
+## 2026-11-04 最新接續點｜選擇權頁 Profile 試點完成
+
+- 產品主線 phase2-p0-ui-fixes 最新 HEAD：5b31daf471ec44a505d9055291d54b6f1290a5cb。
+- 新增 v9ProOptionsAnalysis，已接入選擇權頁全部 8 張卡（ID 28–35）：PCR、OI 集中、Call／Put OI Top10、Wall／Flip／Max Pain、法人日夜交易、前十大交易人 OI、GEX。
+- 期貨頁 ID 22–27、選擇權頁 ID 28–35、綜合分析 ID 36–37／39–42 已接入資料驅動 profile，合計 20/42。ID 01–21 及 ID 38 尚待接入。
+- Unit Contract Audit 41763494591 PASS；UI Fixes Regression 41763494945 PASS；Daily Premarket 41763494658 PASS，Deploy SKIPPED。Template commit 7e7fa9d 的 Browser Audit 41763372720 六頁 Desktop／Mobile 12 viewport 全 PASS。
+- 最新 P4 profile map／plan 已更新：結構映射 42/42 PASS；profile 草案 42/42 DRAFTED；runtime binding 20/42 PARTIAL；LLM runtime NOT IMPLEMENTED；人工逐區塊品質評分及 95% 目標 NOT TESTED。
+- 詳細選擇權實際 fixture、語義限制、commit／blob／CI 證據見 PROGRESS.md 的「P4 選擇權頁八區塊 Profile 試點」。
+- 下一步：處理總覽／現貨／重要市場 ID 01–21 及綜合分析 ID 38；先逐項對照目前 React／Builder 欄位，再接入獨立 profile。不得改 Dashboard layout 或重做已 PASS 的 20 個核心區塊。
+- 嚴守：不建立／切換分支、不 merge、不 deploy；不修改 master、P0 base、V8 或 data_reports 樣本。
