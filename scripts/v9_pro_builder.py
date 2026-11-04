@@ -1311,6 +1311,54 @@ def build_history_status_text(historical, db_status):
     return f"SQLite已啟用；{filled}筆歷史樣本可用，但本次未取得相似分析結果"
 
 
+def classify_three_market(values):
+    """Classify spot/futures/options direction only when all three flows are valid."""
+    if len(values) != 3 or any(value is None for value in values):
+        return "三市場資料不完整，不能判定一致性"
+    nums = [float(value) for value in values]
+    if all(value > 0 for value in nums):
+        return "三市場一致偏多"
+    if all(value < 0 for value in nums):
+        return "三市場一致偏空"
+    return "三市場方向分歧"
+
+def classify_futures_oi(values):
+    """Assess whether the three institutional futures OI snapshot is usable."""
+    if len(values) != 3:
+        return "期貨淨 OI 欄位不完整，不能判定快照可信度", False
+    nums = []
+    for value in values:
+        try:
+            number = float(value)
+            nums.append(number if math.isfinite(number) else None)
+        except (TypeError, ValueError):
+            nums.append(None)
+    if all(value == 0 for value in nums):
+        return "三法人淨 OI 全為 0，視為可疑快照，不納入方向判斷", True
+    if any(value is None for value in nums):
+        return "期貨淨 OI 有缺值，僅採可用欄位", False
+    return "期貨淨 OI 可讀取；仍與日盤交易流量分開解讀", False
+
+def classify_option_sessions(day, night):
+    if day is None or night is None:
+        return "日夜資料不足"
+    if day * night > 0:
+        return "日夜同向"
+    if day * night < 0:
+        return "日夜方向分歧"
+    return "至少一盤中性"
+
+def classify_spot_institutions(values):
+    """Classify three spot-institution net flows without treating missing data as disagreement."""
+    if len(values) != 3 or any(value is None for value in values):
+        return "現貨三法人資料不足，不能完整判定方向"
+    numeric = [float(value) for value in values]
+    if all(value > 0 for value in numeric):
+        return "三法人現貨同向買超"
+    if all(value < 0 for value in numeric):
+        return "三法人現貨同向賣超"
+    return "現貨三法人方向分歧"
+
 def build_41_cards(analyzer, parsed, historical, db_status):
     bias=analyzer.bias_score; regime=analyzer.gen_bias_card()['regime']; factors=analyzer.bias_factors; s=analyzer.signals; weights=analyzer.weights
     factor_str=" ".join([f"{n}{v:+d}" for n,v in factors[:6]])
@@ -1363,22 +1411,37 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     option_foreign_day=signed_table_value(opt_foreign_row,3)
     option_foreign_night=signed_table_value(opt_foreign_row,6)
     option_day_dir=direction(option_foreign_day); option_night_dir=direction(option_foreign_night)
-    if option_foreign_day is not None and option_foreign_night is not None:
-        option_session_text=('日夜同向' if option_foreign_day*option_foreign_night>0 else '日夜方向分歧' if option_foreign_day*option_foreign_night<0 else '至少一盤中性')
-    else:
-        option_session_text='日夜資料不足'
-    three_market_values=[foreign,foreign_day,option_foreign_day]
-    if all(value is not None for value in three_market_values):
-        three_market_text=('三市場一致偏多' if all(value>0 for value in three_market_values) else '三市場一致偏空' if all(value<0 for value in three_market_values) else '三市場方向分歧／含中性')
-    else:
-        three_market_text='三市場資料不足，不能判定一致性'
+    option_session_text=classify_option_sessions(option_foreign_day, option_foreign_night)
+    # 三市場解析：分開現貨金額、期貨/選擇權交易流量與 OI 存量，避免跨口徑直接比較。
     spot_inst_values=[parsed.get('inst',{}).get(key) for key in ('foreign','trust','dealer')]
-    if all(value is not None for value in spot_inst_values) and all(float(value)>0 for value in spot_inst_values):
-        spot_inst_text='三法人現貨同向買超'
-    elif all(value is not None for value in spot_inst_values) and all(float(value)<0 for value in spot_inst_values):
-        spot_inst_text='三法人現貨同向賣超'
-    else:
-        spot_inst_text='現貨三法人方向分歧／資料不足'
+    three_market_values=[foreign,foreign_day,option_foreign_day]
+    three_market_text=classify_three_market(three_market_values)
+    futures_oi_values=[parsed.get('futures',{}).get(key) for key in ('foreign_oi','trust_oi','dealer_oi')]
+    futures_oi_status, futures_oi_all_zero=classify_futures_oi(futures_oi_values)
+    opt_trust_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='投信'),None)
+    opt_dealer_row=next((row for row in opt_inst_rows if row and str(row[0]).strip()=='自營商'),None)
+    option_trust_day=signed_table_value(opt_trust_row,3)
+    option_dealer_day=signed_table_value(opt_dealer_row,3)
+    def signed_text(value, unit, digits=0):
+        return "資料不足" if value is None else f"{value:+,.{digits}f}{unit}"
+    three_market_look=(
+        f"現貨外資 {signed_text(foreign,'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、"
+        f"自營商 {signed_text(spot_inst_values[2],'億元',1)}；"
+        f"期貨外資日盤淨交易 {signed_text(foreign_day,'口')}；"
+        f"選擇權外資日盤 {signed_text(option_foreign_day,'口')}／夜盤 {signed_text(option_foreign_night,'口')}"
+    )
+    three_market_compass=(
+        f"{three_market_text}：外資現貨{direction(foreign)}、期貨日盤流量{direction(foreign_day)}、"
+        f"選擇權日盤流量{option_day_dir}。{futures_oi_status}。"
+        f"選擇權同業別日盤：投信 {signed_text(option_trust_day,'口')}、自營商 {signed_text(option_dealer_day,'口')}。"
+        f"現貨與衍生品是不同市場/口徑，不能把金額與口數相加。"
+    )
+    three_market_target=(
+        "下一交易日先核對期貨法人 OI 是否恢復有效；在此之前以日盤淨交易量作流量觀察。"
+        "若外資現貨賣超收斂、期貨日盤流量轉弱或翻空、選擇權日盤淨流量仍偏空，才視為賣壓延續；"
+        "若期貨與選擇權流量轉同向且現貨賣超收斂，再確認分歧是否收斂。未收斂前不追單。"
+    )
+    spot_inst_text=classify_spot_institutions(spot_inst_values)
     hist_str=build_history_status_text(historical,db_status)
     factor_quality_summary=build_factor_quality_summary(analyzer)
 
@@ -1425,10 +1488,71 @@ def build_41_cards(analyzer, parsed, historical, db_status):
         '行事曆': news_card,
         '法人籌碼': {"look": f"外資現貨 {display(foreign)}億元（{direction(foreign)}）；期貨淨 OI {display(foreign_fut,0)}口；投信 {display(parsed['inst'].get('trust'))}億元；自營商 {display(parsed['inst'].get('dealer'))}億元", "compass": f"現貨外資 {direction(foreign)}、投信 {direction(parsed['inst'].get('trust'))}；依實際數值呈現，不預設對作", "target": f"觀察外資現貨後續變化；Put Wall {put_wall_text}僅為價位參考"},
         '主力三市透視': {"look": f"三市場外資方向：現貨 {direction(foreign)}；期貨日盤淨交易 {direction(foreign_day)}；選擇權日盤淨交易 {option_day_dir}", "compass": three_market_text, "target": "三市場需同時觀察存量與流量；方向分歧時不宣稱主力一致"},
-        '三市一致性': {"look": f"期現選外資方向：現貨 {direction(foreign)}；期貨日盤 {direction(foreign_day)}；選擇權日盤 {option_day_dir}、夜盤 {option_night_dir}", "compass": three_market_text, "target": "若三市場方向分歧，等待訊號收斂；不將單一市場部位視為整體方向"},
-        '期現選方向對照': {"look": f"現貨外資 {display(foreign)}億元；期貨日盤淨交易 {display(foreign_day,0)}口；選擇權日盤淨交易 {display(option_foreign_day,0)}口；OI PCR {pcr_text}倍", "compass": three_market_text, "target": f"Put Wall {put_wall_text}為價位參考；PCR 僅為 OI 比值"},
-        '籌碼三市矩陣': {"look": f"現貨法人買賣超：外資 {display(spot_inst_values[0])}億元；投信 {display(spot_inst_values[1])}億元；自營 {display(spot_inst_values[2])}億元", "compass": spot_inst_text, "target": "比較三法人買賣超方向與金額，不預設投信必然撐盤"},
-        '主力意圖解碼': {"look": f"主力部位：外資期貨淨 OI {foreign_fut if foreign_fut is not None else 'unavailable'}口；投信現貨 {parsed['inst']['trust']} 億元", "compass": "僅呈現法人部位，不將單一市場部位解讀為控盤", "target": "搭配現貨、期貨、選擇權三市場方向與變化判斷"},
+        '三市一致性': {
+            "look": (
+                f"外資跨市場方向檢查：現貨 {signed_text(foreign,'億元',1)}；期貨日盤淨交易 {signed_text(foreign_day,'口')}；"
+                f"選擇權日盤 {signed_text(option_foreign_day,'口')}、夜盤 {signed_text(option_foreign_night,'口')}。"
+                f"期貨 OI {display(foreign_fut,0)}口；{futures_oi_status}"
+            ),
+            "compass": (
+                f"一致性判定：現貨{direction(foreign)}、期貨流量{direction(foreign_day)}、選擇權日盤流量{direction(option_foreign_day)}。"
+                f"{three_market_text}。目前不是三市場同向訊號；且期貨 OI {('無效，不能用來確認存量方向' if futures_oi_all_zero else '仍須與前期有效快照比較，單一存量值不代表新增買賣') }。"
+            ),
+            "target": (
+                "升級為偏多共識：外資現貨由賣轉買或賣超顯著收斂，且期貨與選擇權日盤流量連續同向偏多；"
+                "升級為偏空共識：現貨賣超延續，且期貨與選擇權流量同步偏空。"
+                "任一市場缺值或期貨 OI 快照異常時，標記為『共識未成立』，不以缺值補方向。"
+            )
+        },
+        '期現選方向對照': {
+            "look": (
+                f"方向對照（不同單位不可加總）：現貨外資 {signed_text(foreign,'億元',1)}；"
+                f"期貨日盤淨交易 {signed_text(foreign_day,'口')}；選擇權外資日盤 {signed_text(option_foreign_day,'口')}、"
+                f"夜盤 {signed_text(option_foreign_night,'口')}；PCR（OI 比值）{pcr_text}倍；Put Wall {put_wall_text}。"
+            ),
+            "compass": (
+                f"期貨流量與選擇權日盤流量：{('同向偏多' if foreign_day is not None and option_foreign_day is not None and foreign_day>0 and option_foreign_day>0 else '同向偏空' if foreign_day is not None and option_foreign_day is not None and foreign_day<0 and option_foreign_day<0 else '未形成同向訊號')}。"
+                f"PCR 反映 Put／Call 未平倉量相對結構，不等於當日買賣方向；Put Wall 是履約價集中區，不是保證支撐。"
+                f"因此現有數據若流量背離，應判為訊號衝突，而非用 PCR 抵銷交易流量。"
+            ),
+            "target": (
+                f"若期貨與選擇權流量連續同向，才列為短線方向候選；仍須等現貨外資賣壓收斂／買超確認。"
+                f"價格接近 Put Wall {put_wall_text}時，觀察是否止跌並重新站回，不因觸及價位直接進場；跌破且反彈無法收復，才提高下行風險評估。"
+            )
+        },
+        '籌碼三市矩陣': {
+            "look": (
+                f"現貨法人淨買賣（億元）：外資 {signed_text(spot_inst_values[0],'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、自營商 {signed_text(spot_inst_values[2],'億元',1)}。"
+                f"選擇權日盤淨交易（口）：外資 {signed_text(option_foreign_day,'口')}、投信 {signed_text(option_trust_day,'口')}、自營商 {signed_text(option_dealer_day,'口')}。"
+            ),
+            "compass": (
+                f"現貨三法人：{spot_inst_text}。選擇權三法人流量：外資{direction(option_foreign_day)}、投信{direction(option_trust_day)}、自營商{direction(option_dealer_day)}。"
+                f"交叉觀察：投信現貨{direction(spot_inst_values[1])}但選擇權{direction(option_trust_day)}；"
+                f"自營商現貨{direction(spot_inst_values[2])}但選擇權{direction(option_dealer_day)}。"
+                f"這是不同市場的方向配置差異，口數與億元不可相加，也不能直接視為避險等值。"
+            ),
+            "target": (
+                "下一交易日逐法人追蹤：投信現貨買超是否延續、選擇權賣方／買方流量是否反轉；"
+                "自營商若現貨與選擇權持續反向，先視為跨市場配置或避險可能性，未取得部位方向與 Delta 前不判定淨曝險。"
+                "外資現貨賣壓若擴大且選擇權流量同步偏空，才提高整體籌碼偏空權重。"
+            )
+        },
+        '主力意圖解碼': {
+            "look": (
+                f"可觀察證據：外資現貨 {signed_text(foreign,'億元',1)}；期貨日盤淨交易 {signed_text(foreign_day,'口')}；"
+                f"期貨淨 OI {display(foreign_fut,0)}口（{'可疑快照，不採用' if futures_oi_all_zero else '存量，須與前期比較'}）；"
+                f"選擇權日盤 {signed_text(option_foreign_day,'口')}、夜盤 {signed_text(option_foreign_night,'口')}。"
+            ),
+            "compass": (
+                f"證據支持的描述：外資在現貨、期貨流量、選擇權流量之間呈現方向分歧。{futures_oi_status}。"
+                "目前沒有足夠資料判斷選擇權交易是買方主動、賣方承接或避險組合，也沒有足夠證據推定主力正在控盤、誘多或出貨。"
+            ),
+            "target": (
+                "意圖判讀的最低追加證據：期貨有效 OI 的連續變化、選擇權逐履約價買賣權 OI 與主動買賣流、"
+                "以及現貨法人連續日買賣超。若三類證據連續同向，才提高方向性意圖的可信度；"
+                "在資料未齊前只報告『流量分歧／意圖未明』，不採取主力意圖型交易。"
+            )
+        },
         '夜盤劇本': {"look": f"夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '台指夜盤劇本': {"look": f"台指夜盤收盤{parsed['tx']['night']['c']}點；變化{parsed['tx']['night']['change']}點；基差{parsed['tx']['day']['basis']}點", "compass": f"夜盤{parsed['tx']['night']['pct']}% {regime_label}", "target": f"夜盤低{parsed['tx']['night']['l']}為支撐"},
         '資金流向': spot_card,
