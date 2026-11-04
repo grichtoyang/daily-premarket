@@ -430,6 +430,7 @@ console.log("scenario paths 6/6 PASS");
 
     def test_synthesis_narratives_are_derived_from_live_data(self):
         self.assertIn("function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis})", self.html)
+        self.assertIn('function v2({data:e}){let{tx:n,futures:r}=e;const narrative=v9ProSynthesisAnalysis({day:n.day,night:n.night,futures:r,spot:e.spot,options:e.options,analysis:e.analysis});', self.html)
         for binding in (
             "analysis:narrative.night", "analysis:narrative.scenarios",
             "analysis:narrative.factors", "analysis:narrative.correlation",

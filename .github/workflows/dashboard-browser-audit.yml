@@ -1,13 +1,6 @@
 name: V9 Dashboard Browser Audit
 
 on:
-  push:
-    branches:
-      - phase2-p0-ui-fixes
-    paths:
-      - '.github/workflows/dashboard-browser-audit.yml'
-      - 'tests/browser_dashboard_audit.mjs'
-      - 'dashboards/v9-pro-*.html'
   workflow_dispatch:
 
 permissions:

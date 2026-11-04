@@ -212,6 +212,55 @@ jobs:
           python tests/validate_react_html_js.py "dashboards/v9-pro-${DATE}.html"
           python tests/validate_react_html_js.py dashboards/test-fixtures/v9-pro-20261030-full-day.html
 
+      - name: Setup Node for conditional browser audit
+        if: ${{ github.event_name == 'workflow_dispatch' ||
+          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
+          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
+          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright for conditional browser audit
+        if: ${{ github.event_name == 'workflow_dispatch' ||
+          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
+          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
+          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run six-tab Desktop and Mobile browser audit on freshly built HTML
+        if: ${{ github.event_name == 'workflow_dispatch' ||
+          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
+          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
+          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        env:
+          AUDIT_OUT: artifacts/dashboard-browser-audit
+        run: |
+          DASHBOARD_HTML="dashboards/v9-pro-${DATE}.html" node tests/browser_dashboard_audit.mjs
+
+      - name: Upload fresh-build browser audit evidence
+        if: always() && ${{ github.event_name == 'workflow_dispatch' ||
+          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
+          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
+          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
+          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: v9-dashboard-browser-audit-${{ github.run_id }}
+          path: artifacts/dashboard-browser-audit/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Commit generated dashboard history
         if: github.ref == 'refs/heads/phase2-p0-data-quality' || github.ref == 'refs/heads/phase2-p0-ui-fixes'
         run: |
