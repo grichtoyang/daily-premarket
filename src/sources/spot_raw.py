@@ -183,6 +183,7 @@ def twse_twt93u_sbl(date_value: str) -> dict:
     # semantic labels. Never fall back to positional indices.
     normalized = {str(name).strip().replace(" ", ""): i for i, name in enumerate(fields)}
     symbol_idx = next((normalized[name] for name in ("證券代號", "股票代號", "代號") if name in normalized), None)
+    name_idx = normalized.get("名稱")
     prev_idx, bal_idx = _borrowed_short_field_pair(fields)
     sell_idx = next((normalized[k] for k in ("當日賣出", "借券賣出當日賣出") if k in normalized), None)
     return_idx = next((normalized[k] for k in ("當日還券", "借券賣出當日還券") if k in normalized), None)
@@ -197,7 +198,10 @@ def twse_twt93u_sbl(date_value: str) -> dict:
         row for row in reversed(data)
         if isinstance(row, (list, tuple))
         and max(symbol_idx, prev_idx, sell_idx, return_idx, adjust_idx, bal_idx) < len(row)
-        and str(row[symbol_idx] or "").strip() == "合計"
+        and (
+            str(row[symbol_idx] or "").strip() == "合計"
+            or (name_idx is not None and str(row[name_idx] or "").strip() == "合計")
+        )
     ), None)
     if total_row is None:
         print(f"[WARN] TWT93U official 合計 row absent: date={date8}")
