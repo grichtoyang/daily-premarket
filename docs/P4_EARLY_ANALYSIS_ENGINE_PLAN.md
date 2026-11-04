@@ -98,10 +98,10 @@ Repository：`grichtoyang/daily-premarket`
 
 - 計畫與驗收規格：PASS／已建立。
 - 42 區塊結構映射（ID、頁籤、JSON path、DATA_REPORT 來源、單位及缺值規則）：PASS／見 `docs/DASHBOARD_UNIT_MAP.md`，已列出 1–42。
-- 42 區塊逐項分析 profile 草案：DRAFTED／見 `docs/P4_ANALYSIS_PROFILE_MAP.md`，已定義每區塊必答問題、交叉驗證、操作觀察與禁止推論；尚未逐項核對 React／Builder 實際綁定。
-- Profile → Builder／React 綁定：NOT IMPLEMENTED。
+- 42 區塊逐項分析 profile 草案：DRAFTED／見 `docs/P4_ANALYSIS_PROFILE_MAP.md`，42 個 profile 均已定義必答問題、交叉驗證、操作觀察與禁止推論。
+- Profile → Builder／React 綁定：PARTIAL／20 of 42；已接入 22–27、28–35、36–37、39–42。尚未接入 01–21 及 38。
+- 核心期貨頁與選擇權頁試點：PASS／v9ProFuturesAnalysis、v9ProOptionsAnalysis 已有實際／missing／zero runtime fixtures 與 CI 驗收。
 - LLM provider 與 Actions secret：BLOCKED／尚未設定。
-- AI analysis runtime：NOT IMPLEMENTED。
-- 核心區塊試點：NOT STARTED。
+- AI analysis runtime：NOT IMPLEMENTED；現有實作為 deterministic data-driven profiles。
 - 42 區塊逐一品質評分：NOT TESTED。
 - 95% 品質目標：NOT TESTED。
