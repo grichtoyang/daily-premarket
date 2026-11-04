@@ -277,6 +277,11 @@ console.log("scenario paths 6/6 PASS");
     def test_synthesis_narratives_are_derived_from_live_data(self):
         self.assertIn("function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis})", self.html)
         self.assertIn('function v2({data:e}){let{tx:n,futures:r}=e;const narrative=v9ProSynthesisAnalysis({day:n.day,night:n.night,futures:r,spot:e.spot,options:e.options,analysis:e.analysis});', self.html)
+        night_block_start = self.html.index('title:"區塊C 日夜盤劇本"')
+        night_block_end = self.html.index('title:"三劇本路徑"', night_block_start)
+        night_block = self.html[night_block_start:night_block_end]
+        self.assertIn("analysis:narrative.night", night_block)
+        self.assertNotIn("收盤價 日${g(o.day.c)}夜", night_block)
         for binding in (
             "analysis:narrative.night", "analysis:narrative.scenarios",
             "analysis:narrative.factors", "analysis:narrative.correlation",
@@ -325,18 +330,18 @@ if(!out.trade.target.includes("區間內不追價")) throw Error("trade plan doe
 
 // Missing night price inputs must not produce actionable text containing fake zero/missing levels.
 const missing=v9ProSynthesisAnalysis({day:{},night:{},futures:{},spot:{},options:{},analysis:{}});
-if(!missing.night.target.includes("缺值／無效")||!missing.night.target.includes("暫不提供價位觸發條件")) throw Error("missing night price levels still produce a trigger");
+if(!missing.night.target.includes("收盤缺值／無效")||!missing.night.target.includes("暫不提供價位觸發條件")) throw Error("missing day/night closes still produce a trigger");
 if(!missing.scenarios.compass.includes("資料不足")||!missing.trade.target.includes("先補齊有效關鍵位")) throw Error("missing key levels produce a directional trade plan");
 
 // The price-action target must reverse with night-session direction, not remain bearish.
 const upNight=JSON.parse(JSON.stringify(fixture));
 upNight.night.c=45500; upNight.night.l=45000; upNight.futures.foreign_night=-1200;
 const upNightOut=v9ProSynthesisAnalysis(upNight);
-if(!upNightOut.night.target.includes("夜盤偏強訊號")||upNightOut.night.target.includes("夜盤弱勢才獲得")) throw Error("positive night move still receives bearish target wording");
+if(!upNightOut.night.target.includes("夜盤收盤高於日盤收盤")||upNightOut.night.target.includes("夜盤收盤低於日盤收盤")) throw Error("positive night move still receives bearish target wording");
 const downNight=JSON.parse(JSON.stringify(fixture));
 downNight.night.c=43000; downNight.night.l=42000; downNight.futures.foreign_night=-1200;
 const downNightOut=v9ProSynthesisAnalysis(downNight);
-if(!downNightOut.night.target.includes("夜盤弱勢才獲得進一步價格確認")) throw Error("negative night move missing bearish confirmation conditions");
+if(!downNightOut.night.target.includes("夜盤收盤低於日盤收盤")||!downNightOut.night.target.includes("收復日盤收盤")) throw Error("negative night move missing bearish confirmation conditions");
 
 // Zero is a valid numeric flow/OI value, but not a valid Taiwan index price or option wall.
 const zero=JSON.parse(JSON.stringify(fixture));
@@ -344,7 +349,7 @@ zero.day.c=0; zero.night.c=0; zero.night.l=0; zero.futures.foreign_night=0; zero
 zero.spot.close=44920; zero.options.putWall=0; zero.options.callWall=48000;
 const zeroOut=v9ProSynthesisAnalysis(zero);
 if(!zeroOut.night.look.includes("日盤收 缺值")||!zeroOut.night.look.includes("外資夜盤淨交易 0 口")||!zeroOut.night.look.includes("外資期貨 OI 0 口")) throw Error("zero price/flow/OI semantics are inconsistent");
-if(!zeroOut.night.target.includes("暫不提供價位觸發條件")) throw Error("zero night low treated as a valid price level");
+if(!zeroOut.night.target.includes("暫不提供價位觸發條件")) throw Error("zero close treated as a valid price level");
 if(!zeroOut.scenarios.look.includes("Put Wall 缺值")||zeroOut.scenarios.look.includes("現價位於 Put Wall 與 Call Wall 之間")) throw Error("zero Put Wall incorrectly treated as valid in narrative");
 if(zeroOut.trade.target.includes("區間內不追價")) throw Error("zero Put Wall incorrectly triggers range trade plan");
 
