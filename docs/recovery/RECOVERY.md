@@ -1988,3 +1988,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 完整原始 JSON fixture 仍未建立；目前通過的是依使用者實測數值建立的合成 semantic fixture，加上 live API probe。
 - 不需重做借券 parser；下一步按既定計畫移植三市場分析卡／三劇本／選擇權法人力道／synthesis。不得擴大範圍或建立新分支。
 - DATA_REPORT 重建與 TWSE 自動化授權仍 NOT DONE／BLOCKED；master、P0 base、V8、data_reports 樣本未修改。
+
+
+## 2026-11-04 最新接續點｜選擇權法人力道分析已恢復
+
+- 產品主線仍為 `phase2-p0-ui-fixes`，目前 HEAD `466182c83e861f94e5696115308e215da9bf829c`。未建立或切換分支。
+- 已從三市場歷史分支選擇性恢復選擇權法人力道分析：Builder `build_option_force_analysis`、final JSON `instOptForceAnalysis`、原區塊 B 金額力道 UI／分析文字／表格樣式，並新增單元測試及納入 Unit Contract Audit。
+- Unit Contract Audit Run **41754523955 SUCCESS**；Live borrowed sources 同 Run SUCCESS；Daily Premarket V9 Pro Run **41754523920 SUCCESS**（build/artifact PASS，deploy SKIPPED）。UI Fixes Regression Run **41754377688 SUCCESS**、Dashboard Browser Audit Run **41754377599 SUCCESS**。
+- GitHub 回讀生成的 `dashboards/data-20261102.json`／HTML，確認 `instOptForceAnalysis.status=available` 及分析文字已進入輸出。自動 build 只新增 dashboard history commit `466182c`，沒有修改 DATA_REPORT 樣本或 master。
+- 夜盤失衡率測試按 P0 現有 DATA_REPORT 的實際值修正為 -2.85%（夜盤淨額 -0.41 億元／雙邊金額 14.41 億元），不是歷史分支舊測試預期 -3.75%。
+- 全 42 區塊逐一人工視覺檢查仍 NOT TESTED；本輪已通過 template regression 與 browser audit。
+- 下一步直接恢復三市場分析卡深化與三劇本條件／資料有效性；相關性歷史 seed／workflow 另行處理。禁止新開分支、不整條 merge，不修改 master、P0 base、V8 或 data_reports 樣本。
+- 詳細 commit、blob SHA、測試狀態見 PROGRESS.md 最新「選擇權法人力道分析歷史成果恢復」段。
