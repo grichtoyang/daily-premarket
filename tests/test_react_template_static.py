@@ -364,6 +364,40 @@ console.log("synthesis narrative actual + missing + zero + malformed + reverse f
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS", result.stdout)
 
+    def test_futures_analysis_narratives_are_derived_from_live_data(self):
+        helper_start = self.html.index("function v9ProFuturesAnalysis(")
+        helper_end = self.html.index("function v2(", helper_start)
+        helper_source = self.html[helper_start:helper_end]
+        for card in ("day", "night", "basis", "oi", "flow"):
+            self.assertIn(f"analysis:futuresNarrative.{card}", self.html)
+
+        fixture = {
+            "day": {"o": 45000, "h": 45332, "l": 44700, "c": 45256, "diff": -44, "pct": -0.10, "vol": 52221, "basis": 335.86, "prem": 0.75},
+            "night": {"o": 45227, "h": 45487, "l": 44271, "c": 44310, "diff": -917, "pct": -2.03, "vol": 38487, "change": -946},
+            "futures": {"foreign_oi": -89379, "trust_oi": 89139, "dealer_oi": 1307, "top10": 14239, "foreign_day": 2801, "foreign_night": -1349}
+        }
+        script = "const fixture=" + __import__("json").dumps(fixture, ensure_ascii=False) + ";\\n" + helper_source + """
+const out=v9ProFuturesAnalysis(fixture);
+if(!out.day.compass.includes("日內收高於開盤")||!out.day.compass.includes("相對前結算仍下跌 -44 點")) throw Error("day session failed to distinguish open-close from previous settlement");
+if(!out.night.compass.includes("夜盤收盤低於日盤收盤")||!out.night.compass.includes("收盤位於夜盤區間下緣")) throw Error("night session structure not identified");
+if(!out.basis.compass.includes("正價差")||!out.basis.compass.includes("不能抵銷夜盤跌勢")) throw Error("positive basis incorrectly overrides night decline");
+if(!out.oi.look.includes("三大法人合計 +1,067 口")||!out.oi.compass.includes("法人部位分歧")) throw Error("institutional OI split/total not explained");
+if(!out.flow.compass.includes("日夜流量方向反轉")||!out.flow.compass.includes("外資淨 OI 存量偏空")) throw Error("day/night flow divergence not explained separately from OI");
+
+// Missing values must stay unavailable and never be converted to zero.
+const missing=v9ProFuturesAnalysis({day:{},night:{},futures:{}});
+if(!missing.day.compass.includes("資料不足")||!missing.oi.compass.includes("資料不足")||!missing.flow.compass.includes("資料不足")) throw Error("missing futures fields produce directional claims");
+if(missing.oi.look.includes("0 口")||missing.flow.look.includes("0 口")) throw Error("missing futures fields were coerced to zero");
+
+// Zero is a valid OI/flow value, distinct from missing data.
+const zero=v9ProFuturesAnalysis({day:fixture.day,night:fixture.night,futures:{foreign_oi:0,trust_oi:0,dealer_oi:0,top10:0,foreign_day:0,foreign_night:0}});
+if(!zero.oi.look.includes("外資淨 OI 0 口")||!zero.flow.compass.includes("均為零")) throw Error("zero OI/flow was treated as missing");
+console.log("futures narratives actual + missing + zero fixtures PASS");
+"""
+        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("futures narratives actual + missing + zero fixtures PASS", result.stdout)
+
     def test_trade_plan_keeps_max_pain_separate_from_support(self):
         self.assertIn('["磁吸參考",`${g(l.maxPain)}`]', self.html)
         self.assertNotIn('["支撐",`${g(l.putWall)} / ${g(l.maxPain)}`]', self.html)
