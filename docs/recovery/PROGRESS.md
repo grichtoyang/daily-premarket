@@ -1797,3 +1797,34 @@ P1 尚未開始。啟動前必須：
 - 選擇權法人力道分析、三市場四卡、三市場分類與三劇本／synthesis 已恢復並通過目前自動測試。
 - 尚待恢復／整合：相關性歷史資料 seed／workflow／SQLite（單獨處理），以及歷史分支其餘 UI／分析修正候選。
 - 不要重做以上已通過測試的項目；若後續修改觸及相關檔案才做 targeted regression。保持唯一主線、不開新分支、不整條 merge。
+
+
+## 2026-11-04｜Correlation history seed 已恢復並通過 P0 實際報告驗收
+
+### 實際問題與修正
+- 首輪 P0 Unit Contract Audit Run `41755904315` **FAIL**：`fetch_yahoo_twii_30d` 在 P0 分支使用 Yahoo `range=1mo`，部分歷史日期僅取得 14 筆，RSI=None，導致第一筆歷史樣本 `correlation_eligible=0)，五筆 replay 無法累積。
+- 比對歷史分支後確認該函式差異只有 Yahoo range：歷史版本為 `3mo`，P0 版本為 `1mo`。已將 P0 恢復為 `range=3mo&interval=1d`，不降低 correlation eligibility 門檻。
+- 修正 commit：`1a49f9a15dc45dddb6c0c7a1a322d1d79ad832e8`。
+- 已恢復 `seed_correlation_history_for_dashboard`、`run_historical_correlation_replay)、CLI `--seed-correlation-history`／`--history-replay`。
+- Daily workflow 在 Builder 前 seed 最近五份已提交、日期不晚於 T0 的 DATA_REPORT；seed 不可用時只發 warning，dashboard 繼續建置並保持 heatmap unavailable，不讓單一分析欄位阻斷整份 dashboard。
+- Unit Contract Audit 執行 `--history-replay`：用暫存 DB、實際 P0 branch 五份歷史 DATA_REPORT 驗證逐日累積；不寫入正式 DB、不修改 data_reports。
+- `.gitignore` 加入 `dashboards/v9_pro_history.db`；確認 DB 由每次 build 從 DATA_REPORT 重建，不應作為持久化輸出。曾由 build 自動 commit 的 tracked DB 已從 P0 branch 刪除，避免後續生成 commit 持續改動 SQLite；刪除 commit：`4fb002951f463d5964f3c88970ddf78497ecaba9`。
+
+### P0 實際驗收
+- Unit Contract Audit Run **41756154308 SUCCESS**：Replay 五筆實際 P0 DATA_REPORT（20261027、20261028、20261029、20261030、20261102），五筆皆 `correlation_eligible=1)，最終有限值、對稱的 **8×8 Pearson matrix**，PASS。
+- Daily Premarket V9 Pro Run **41756154307 SUCCESS**：seed 最近五份報告成功；輸出 `Pearson 相關係數｜完整有效樣本 5 筆｜最近 5 筆`；Builder／JSON／HTML build 成功；Deploy **SKIPPED**。
+- V9 UI Fixes Regression Run **41756154315 SUCCESS**。
+- 2026-11-02 dashboard JSON 回讀 blob SHA：`556a9d076a8eb83ca974a2199bf496ef1c24cca2`；`analysis.correlation.labels` 8 項、matrix 8×8，`visible_block_count=42`。
+- Daily build 產生 commit：`d298ff039a463d94b8740f48f60d11064cf9c4e3`；只修改 dashboards JSON／HTML aliases 及當時被追蹤的 SQLite DB。其後 DB 移除 commit `4fb002951f463d5964f3c88970ddf78497ecaba9`；最新 tree 確認 `dashboards/v9_pro_history.db` 不再追蹤，下一次 build 仍可由 seed 重建。
+- 最新產品分支 HEAD：`4fb002951f463d5964f3c88970ddf78497ecaba9`。
+- 目前 correlation heatmap 只有 5 筆有效樣本；係數僅作探索性歷史共變參考，不代表因果或下一交易日預測。增加樣本需後續 DATA_REPORT 累積。
+- DATA_REPORT 樣本均未修改；seed/replay 僅讀取資料。
+
+### 本輪恢復項目狀態
+- TWT93U／TWT72U 合計列 parser：PASS。
+- 選擇權法人力道 Builder／UI／分析：PASS。
+- 三市場分類／四張分析卡：PASS。
+- 三劇本／synthesis／交易條件：PASS。
+- Correlation replay／seed／8×8 matrix：PASS。
+- 全 42 區塊人工逐一視覺檢查：NOT TESTED；自動六分頁 Desktop／Mobile browser audit 已 PASS。
+- 後續只需針對剩餘歷史 UI／分析修正候選做選擇性恢復，不重做以上已通過項目。
