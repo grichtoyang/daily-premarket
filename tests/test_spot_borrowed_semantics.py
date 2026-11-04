@@ -79,7 +79,7 @@ class TWT93USourceTests(unittest.TestCase):
 
 class TWT72USourceTests(unittest.TestCase):
     @patch("src.sources.spot_raw._get_json")
-    def test_twt72u_uses_dated_slbnlb_and_sums_stock_rows(self, get_json):
+    def test_twt72u_uses_official_overall_market_total_row(self, get_json):
         get_json.return_value = {
             "stat": "OK", "date": "115/10/30",
             "fields": ["證券代號", "證券名稱", "前日借券餘額(1)股",
@@ -87,10 +87,6 @@ class TWT72USourceTests(unittest.TestCase):
                        "本日借券餘額股(4)=(1)+(2)-(3)",
                        "本日收盤價(5)單位：元", "借券餘額市值單位：元(6)=(4)*(5)", "市場別"],
             "data": [
-                ["2330", "台積電", "1000", "200", "100", "1100", "600", "660000", "集中市場"],
-                ["6488", "環球晶", "2000", "300", "100", "2200", "500", "1100000", "櫃檯買賣中心"],
-                ["合計", "", "16691413000", "500000000", "300000000", "16891413000", "", "", "集中市場"],
-                ["合計", "", "12914422000", "313411000", "304261000", "12923572000", "", "", "櫃檯買賣中心"],
                 ["合計", "", "29828535000", "813411000", "604261000", "30037685000", "", "", "整體市場"],
             ],
         }
