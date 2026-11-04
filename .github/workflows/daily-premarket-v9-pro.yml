@@ -212,48 +212,52 @@ jobs:
           python tests/validate_react_html_js.py "dashboards/v9-pro-${DATE}.html"
           python tests/validate_react_html_js.py dashboards/test-fixtures/v9-pro-20261030-full-day.html
 
+      - name: Decide whether to run full browser audit
+        id: browser_gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python3 <<'PY'
+          import json, os
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as source:
+              event = json.load(source)
+          head = event.get("head_commit") or {}
+          changed = set((head.get("added") or []) + (head.get("modified") or []) + (head.get("removed") or []))
+          trigger_paths = {
+              "templates/v9-pro-react-template.html",
+              "scripts/v9_pro_builder.py",
+              ".github/workflows/daily-premarket-v9-pro.yml",
+              "tests/browser_dashboard_audit.mjs",
+              "tests/validate_react_html_js.py",
+          }
+          should_run = os.environ["EVENT_NAME"] == "workflow_dispatch" or bool(changed & trigger_paths)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"run={'true' if should_run else 'false'}\\n")
+          print(f"Browser audit gate: {should_run}; changed paths: {sorted(changed)}")
+          PY
+
       - name: Setup Node for conditional browser audit
-        if: ${{ github.event_name == 'workflow_dispatch' ||
-          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
-          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
-          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        if: steps.browser_gate.outputs.run == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Playwright for conditional browser audit
-        if: ${{ github.event_name == 'workflow_dispatch' ||
-          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
-          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
-          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        if: steps.browser_gate.outputs.run == 'true'
         run: |
           npm init -y
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
       - name: Run six-tab Desktop and Mobile browser audit on freshly built HTML
-        if: ${{ github.event_name == 'workflow_dispatch' ||
-          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
-          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
-          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        if: steps.browser_gate.outputs.run == 'true'
         env:
           AUDIT_OUT: artifacts/dashboard-browser-audit
         run: |
           DASHBOARD_HTML="dashboards/v9-pro-${DATE}.html" node tests/browser_dashboard_audit.mjs
 
       - name: Upload fresh-build browser audit evidence
-        if: always() && ${{ github.event_name == 'workflow_dispatch' ||
-          contains(join(github.event.head_commit.modified, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.added, ','), 'templates/v9-pro-react-template.html') ||
-          contains(join(github.event.head_commit.modified, ','), 'scripts/v9_pro_builder.py') ||
-          contains(join(github.event.head_commit.modified, ','), '.github/workflows/daily-premarket-v9-pro.yml') ||
-          contains(join(github.event.head_commit.modified, ','), 'tests/browser_dashboard_audit.mjs') }}
+        if: always() && steps.browser_gate.outputs.run == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: v9-dashboard-browser-audit-${{ github.run_id }}
