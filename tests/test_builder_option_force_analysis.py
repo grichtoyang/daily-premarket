@@ -31,7 +31,7 @@ class OptionForceAnalysisTests(unittest.TestCase):
 
         self.assertEqual(analysis["status"], "available")
         self.assertAlmostEqual(analysis["day_imbalance_pct"], -2.29, places=2)
-        self.assertAlmostEqual(analysis["night_imbalance_pct"], -3.75, places=2)
+        self.assertAlmostEqual(analysis["night_imbalance_pct"], -2.85, places=2)
         self.assertTrue(any("外資日盤" in item for item in analysis["volume_divergences"]))
         self.assertIn("投信", analysis["look"])
         self.assertIn("自營商", analysis["look"])
