@@ -1704,3 +1704,17 @@ P1 尚未開始。啟動前必須：
 1. 執行 `tests/test_spot_borrowed_semantics.py` 與 `tests/test_fetch_data_borrowed_sources.py`，修正任何失敗。
 2. 若可取得使用者原始 JSON 檔，將完整 fields/data 作為真實 fixture，驗證 parser mapping；不可把合成 fixture 當成原始 JSON。
 3. 通過後再進入既定的三市場分析／選擇權法人力道成果移植；不重做已驗證的 P0 資料層。
+
+
+### 2026-11-04｜CI 失敗修正與重跑結果（追加）
+- 首次驗收在 commit `b0b9e2cb5140653062b8a7d03f23ca7fb5867562` 發現兩個實際缺陷：
+  1. TWT93U live payload 的「合計」標籤位於 `名稱` 欄，不在 `代號` 欄；parser 原先只查代號欄，導致 live test FAIL。
+  2. TWT72U 測試預期值手算錯誤；正確淨增減為 813,411,000 - 604,261,000 = **209,150,000 股**，不是 208,150,000。
+- 修正：TWT93U 現可在「代號」或「名稱」欄辨識「合計」；semantic fixture 改為覆蓋「名稱」欄合計標籤；TWT72U 測試改為正確淨增減。
+- 修正 commits：`dcacecdeeb214f7069af02cecc483cb56be10656`（TWT93U label mapping）、`00a5adb2ca6b55f7728b88b7ae182fa4b81a05de`（semantic fixture／TWT72U arithmetic assertion）。
+- 最終工作分支 HEAD：`00a5adb2ca6b55f7728b88b7ae182fa4b81a05de`。
+- Unit Contract Audit Run **41754077116 SUCCESS**：Python compile、borrowed source semantic tests、Dashboard unit contract、DATA_REPORT／field semantics、React template、TAIFEX night unavailable regressions 全部成功。
+- Live borrowed sources job（同一 Run 41754077116）**SUCCESS**：TWT72U、TWT93U、TPEx S47 2026-10-30 live probe 全部通過。
+- Daily Premarket V9 Pro Run **41754077121 SUCCESS**：build 成功、artifact 上傳成功；deploy job **SKIPPED**。Workflow log 顯示產生的 dashboard 沒有變更（No dashboard changes to commit），沒有對 master push；生成 commit 的保護條件只允許 P0 branches。
+- 因為前一輪已存在失敗 Run（41753942232），不可刪除或隱藏失敗歷史；最終 HEAD 的最新驗收以 Run 41754077116／41754077121 為準。
+- 最終狀態：TWT93U/TWT72U parser 語義與 live source probe **PASS**；DATA_REPORT 歷史重建與資料自動化授權仍 **NOT DONE／BLOCKED**；完整原始 JSON fixture 仍 **NOT TESTED**。
