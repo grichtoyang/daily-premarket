@@ -1888,3 +1888,26 @@ P1 尚未開始。啟動前必須：
 ### 下一個 P4 試點
 - 期貨頁試點已完成自動化驗收；下一個核心試點為選擇權結構（PCR／OI 分布／Wall、Flip、Max Pain／法人交易／GEX）。
 - 仍未接入 LLM runtime；本次是可重現的資料驅動分析，不得稱為 AI 模型已完成或 95% 品質達標。
+
+ 
+## 2026-11-04｜P4 選擇權頁八區塊 Profile 試點
+
+- 新增 v9ProOptionsAnalysis，將選擇權頁 8 張卡全部改為資料驅動分析：PCR／成交量結構、主要 OI 集中、Call OI Top10、Put OI Top10、Wall／Flip／Max Pain、法人日夜交易、前十大交易人 OI、履約價 GEX。
+- PCR：以實際 Call／Put 成交量計算占比，與 OI PCR 分開解讀；核對 PCR 欄位與 Put OI／Call OI 重算值。
+- OI 分布：引用圖表前三大履約價、口數及占比，並比較現價位置；不把集中 OI 直接當支撐／壓力，不在缺少同到期月份前值時推論增減。
+- Wall／Flip／Max Pain：區分各價位；Max Pain 明確只作到期損益分布磁吸參考，不作支撐、壓力或價格目標。
+- 法人交易：分開日盤／夜盤淨交易口數與法人分項；不與契約金額或 OI 存量混算。
+- 前十大交易人 OI：分別呈現 Call／Put 多方、空方、淨 OI；說明淨 OI 是未平倉部位差，不是當日流量，跨到期月份不得直接比較變化。
+- GEX：敘述只取圖表顯示的前 16 大絕對值履約價，指出最大正／負曝險與 Net／Gross GEX；明確說明模型估值不等於造市商真實持倉或市場方向預測。
+- 2026-11-02 fixture 實測：Call／Put 成交量占比 50.8%／49.2%，OI PCR 0.57；Call OI 最大 48,000 點 4,503 口（7.31%），Put OI 最大 44,000 點 2,661 口（7.63%）；現價 44,920.14；法人日盤合計 +870 口、夜盤 -4,222 口；前十大 Call／Put 淨 OI -2,873／-2,040 口；Net／Gross GEX +3,510,697,648／+16,362,020,679 NT$；圖表最大正曝險 46,000 點 +458,793,202 NT$、最大負曝險 44,000 點 -271,383,835 NT$。
+- Runtime tests 覆蓋實際 fixture、缺值及零值，確認缺值不補零、零值不誤判缺值、GEX／OI／成交量不跨語義。
+- 程式 commit 8782ff2a0aac3d5867d4d4752553c750943b887c；PCR／Top10 文案及測試契約修正 commit 7e7fa9d6009edefae6cef5e2a675982d13dce457、5ed470d40a4cbd0ccdf7afa2fbeeff873ee5e847。
+- 驗收：Unit Contract Audit 41763494591 SUCCESS（含 options runtime test、23 template tests、correlation replay 5/5）；UI Fixes Regression 41763494945 SUCCESS（23 tests、12 tests、17F／42 visible blocks contract OK）；Daily Premarket 41763494658 SUCCESS，Deploy SKIPPED。
+- Browser Audit：template commit 7e7fa9d 的 Daily Run 41763372720 gate=True，六頁 Desktop／Mobile 共 12 viewport 全 PASS；選擇權頁 Desktop／Mobile 均 PASS，畫面文字已呈現動態 PCR 成交量占比。
+- GitHub readback：template blob 9790c9564163f554261443efd2a678cca5dd967a；test blob 5b8dd9a02e84e3ceabfe4510f361ed5c38b1aea2；JSON blob 99df8ced5b412b00c22149d1bfeb66e1601f0102；HTML blob 62120258c9578b46f8e762b0711f839c85679192。
+- P4 profile binding 現況更新為 20/42：22–27、28–35、36–37、39–42 已接入；01–21 與 38 尚待接入。profile map 與 P4 plan 已更新。
+- 產品主線最新 HEAD 5b31daf471ec44a505d9055291d54b6f1290a5cb。未 merge、未 deploy、未修改 DATA_REPORT。
+
+### P4 後續工作
+- 下一步處理 ID 01–21（總覽／現貨／重要市場）及 ID 38（日夜盤劇本），先做資料綁定盤點再逐頁接入。
+- LLM analysis runtime 仍 NOT IMPLEMENTED；42 區塊人工品質評分及 95% 目標仍 NOT TESTED。
