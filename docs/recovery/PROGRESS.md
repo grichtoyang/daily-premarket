@@ -1718,3 +1718,47 @@ P1 尚未開始。啟動前必須：
 - Daily Premarket V9 Pro Run **41754077121 SUCCESS**：build 成功、artifact 上傳成功；deploy job **SKIPPED**。Workflow log 顯示產生的 dashboard 沒有變更（No dashboard changes to commit），沒有對 master push；生成 commit 的保護條件只允許 P0 branches。
 - 因為前一輪已存在失敗 Run（41753942232），不可刪除或隱藏失敗歷史；最終 HEAD 的最新驗收以 Run 41754077116／41754077121 為準。
 - 最終狀態：TWT93U/TWT72U parser 語義與 live source probe **PASS**；DATA_REPORT 歷史重建與資料自動化授權仍 **NOT DONE／BLOCKED**；完整原始 JSON fixture 仍 **NOT TESTED**。
+
+
+## 2026-11-04｜選擇權法人力道分析歷史成果恢復
+
+### 恢復內容與來源
+- 從 `fix/three-market-correlation-history` 的歷史實作選擇性恢復，沒有整條 merge：
+  - Builder 分析函式來源：`aeb8fdb16fdfcbeeabc909db45ecdd76e2fa6b97`（後續以歷史分支最終版本為準）。
+  - UI 區塊來源：`d7bf6ef0828172254fa02c296ee12fc7f3813dbd)；資料 JSON 映射來源：`ce55c9b013e9ef0efc9ec4dfbcbad281e65b687c`。
+- `scripts/v9_pro_builder.py` 恢復 `build_option_force_analysis`，含缺值保護、金額欄位遞推／合計一致性檢查、日夜盤法人主導者、雙邊金額失衡率，以及與獨立淨口數資料的方向背離檢查。
+- Builder 的 parsed options 與 final JSON 均新增 `instOptForceAnalysis)。
+- `templates/v9-pro-react-template.html` 恢復原區塊 B 的選擇權法人金額力道表、可橫向捲動樣式及資料驅動分析文字；沒有新增 Dashboard layout 或改動 42 區塊 registry。
+- 新增 `tests/test_builder_option_force_analysis.py`，涵蓋正常分析、金額／口數背離、缺值不轉零、不一致時停止方向結論、日淨－夜淨語義，以及既有 2026-11-02 DATA_REPORT 實際解析。
+- 更新 `.github/workflows/unit-contract-audit.yml`，將此測試納入正式 Unit Contract Audit。
+
+### 修正測試預期值的證據
+- 歷史測試原先預期夜盤失衡率 -3.75%，但 P0 fixes 的既有 `DATA_REPORT_20261102.md` 法人力道表為夜盤多方 7.00、空方 7.41、淨額 -0.41 億元；依公式 `-0.41 / (7.00 + 7.41) * 100`，正確值為 **-2.85%**。
+- 已按 P0 fixes 現有 DATA_REPORT 實際值調整測試預期；沒有修改 DATA_REPORT 樣本。
+
+### Commits 與最終分支狀態
+- Builder 分析邏輯與 JSON：`a8984267718f0c39f840500a1b849b07bfcabb29`。
+- React UI 區塊與 CSS：`7f1d5edca0033f980da503163fa1b2508c8317a4`。
+- 恢復分析測試：`ed8d4ee652b021a0f5177a67bea4c61476184b7e`。
+- CI 加入測試：`0a8e36bcecbc6c819560746b09614215f35d3f22`。
+- 測試預期值修正：`ab53d93020f4a3d5b225521fb81a1bff95dcd482`。
+- Daily Premarket build 自動產生 dashboard commit：`466182c83e861f94e5696115308e215da9bf829c`（parent 為 ab53d930；僅修改 `dashboards/index.html`、`dashboards/v9-pro-20261102.html)、`dashboards/v9-pro-latest.html)，未修改 DATA_REPORT。
+- 目前分支 HEAD：`466182c83e861f94e5696115308e215da9bf829c`。
+
+### 驗收證據
+- Unit Contract Audit Run **41754523955 SUCCESS**（含新 option-force 測試、borrowed parser tests、42 區塊 contract、DATA_REPORT tests、React template tests、TAIFEX night unavailable tests）。
+- Live borrowed sources job 同一 Run **SUCCESS**。
+- Daily Premarket V9 Pro Run **41754523920 SUCCESS**；build／artifact upload 成功，deploy **SKIPPED**。
+- V9 UI Fixes Regression Run **41754377688 SUCCESS**；V9 Dashboard Browser Audit Run **41754377599 SUCCESS**（針對恢復後的 React template commit）。
+- 生成的 `dashboards/data-20261102.json` GitHub 回讀 blob SHA `53a44f7552f787079643cd7dcc72a96280fe0597`；其中 `options.instOptForceAnalysis.status=available`，分析文字包含可追溯至法人金額表及法人淨口數表的值。
+- 生成 HTML 回讀 blob SHA `512da9759071c2d19ec5092211f6036acd1a65d9`；確認包含恢復後區塊標題及動態分析文字。
+- Browser/UI test 已通過，但本輪沒有人工逐像素檢查所有 42 區塊；完整全版面人工驗收 **NOT TESTED**。
+- 歷史 P0 fixes 版本的 2026-11-02 dashboard 由 Builder 重新產生，這是既有報告的 build 測試，不代表重建或修改 DATA_REPORT 樣本。
+
+### 狀態
+- 選擇權法人力道 Builder 資料鏈：**PASS**。
+- 選擇權法人力道 UI／分析文字：**PASS（template regression + browser audit）**。
+- 新增分析單元測試：**PASS**。
+- 生成 JSON／HTML 含分析結果：**PASS（GitHub readback）**。
+- 全 42 區塊人工視覺逐一驗收：**NOT TESTED**。
+- 未完成的下一組歷史成果：三市場分析卡深化與三劇本條件／資料有效性恢復；之後再處理相關性歷史 seed／workflow。
