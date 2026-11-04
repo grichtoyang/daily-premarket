@@ -17,6 +17,7 @@ on:
       - 'skills/daily-premarket-analysis-v9-pro-skill.md'
       - 'tests/test_dashboard_unit_contract.py'
       - 'tests/test_builder_option_tables.py'
+      - 'tests/test_builder_option_force_analysis.py'
       - 'tests/test_react_template_static.py'
       - 'tests/test_taifex_night_unavailable_summary.py'
       - 'tests/test_fetch_data_borrowed_sources.py'
@@ -61,7 +62,9 @@ jobs:
       - name: Run Dashboard unit contract tests
         run: python -m unittest discover -s tests -p 'test_dashboard_unit_contract.py' -v
       - name: Run DATA_REPORT and field-semantic regression tests
-        run: python -m unittest discover -s tests -p 'test_builder_option_tables.py' -v
+        run: |
+          python -m unittest discover -s tests -p 'test_builder_option_tables.py' -v
+          python -m unittest discover -s tests -p 'test_builder_option_force_analysis.py' -v
       - name: Run React template regression tests
         run: python -m unittest discover -s tests -p 'test_react_template_static.py' -v
       - name: Run TAIFEX night unavailable summary regression tests
