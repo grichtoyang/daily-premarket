@@ -232,7 +232,7 @@ def twse_twt72u_sbl(date_value: str) -> dict:
         return out
     url = (
         "https://www.twse.com.tw/rwd/zh/lending/TWT72U"
-        f"?response=json&date={date8}&selectType=SLBNLB"
+        f"?response=json&date={date8}"
     )
     j = _get_json(url)
     if not isinstance(j, dict) or j.get("stat") != "OK":
