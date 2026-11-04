@@ -223,6 +223,8 @@ jobs:
               event = json.load(source)
           head = event.get("head_commit") or {}
           changed = set((head.get("added") or []) + (head.get("modified") or []) + (head.get("removed") or []))
+          for commit in (event.get("commits") or []):
+              changed.update((commit.get("added") or []) + (commit.get("modified") or []) + (commit.get("removed") or []))
           trigger_paths = {
               "templates/v9-pro-react-template.html",
               "scripts/v9_pro_builder.py",
@@ -232,7 +234,7 @@ jobs:
           }
           should_run = os.environ["EVENT_NAME"] == "workflow_dispatch" or bool(changed & trigger_paths)
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write(f"run={'true' if should_run else 'false'}\\n")
+              output.write(f"run={'true' if should_run else 'false'}\n")
           print(f"Browser audit gate: {should_run}; changed paths: {sorted(changed)}")
           PY
 
