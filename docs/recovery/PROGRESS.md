@@ -1622,3 +1622,45 @@ P1 尚未開始。啟動前必須：
 - 助手獨立 HTTP 抓取：**BLOCKED（工具限制）**
 - 程式接入／CI／DATA_REPORT 重建：**NOT DONE**
 - 免費自動化授權邊界：**BLOCKED／待確認；不得因此推薦付費方案**
+
+
+## 2026-11-04｜分支策略確認與三市場成果移植盤點（唯讀）
+
+### 分支關係（GitHub compare 實測）
+- 維持原案：以 `phase2-p0-ui-fixes` 為主線，選擇性移植 `fix/three-market-correlation-history` 的已完成成果；不整條 merge。
+- P0 fixes HEAD：`8317dcb359b5629cf073c144068339322e89884a`。
+- 三市場分支 HEAD：`e678877bc076e157c948483d40f136e0f504303e`。
+- 共同祖先：`d5443eacb29b7b0824306de4d1b126b9281210b5`。
+- P0 fixes 相對共同祖先 ahead 59 commits；三市場分支 ahead 105 commits；兩分支已 diverged。
+- 兩分支 HEAD 的 combined status 均回傳空 statuses；本輪不能據此宣稱 HEAD CI PASS。既有 CI run 證據仍按各自歷史 commit／Run ID 記錄，不可轉嫁成最新 HEAD 的 CI 結果。
+
+### 三市場分支應保留評估的功能群
+- 三市場法人方向一致性／分歧解讀、四個分析卡深化及主力意圖證據界線（例如 commit `9c907d1b3919e24c3a62f87702197905e3f5e9c1`）。
+- 三劇本價位觸發、方向衝突防護、夜盤方向判斷及合成情境資料有效性（例如 `7fd3e2d4e91acde2ecf587938c4432723f360b41`、`caa6eab52d26e4642ee69bfc9382427b405d8625`）。
+- 選擇權法人力道分析端到端資料流與 UI（例如 `d7bf6ef0828172254fa02c296ee12fc7f3813dbd`、`aeb8fdb16f`、`ce55c9b013`）。
+- 即時 Dashboard 資料衍生的 synthesis narrative（`bfafaec57521744d91e52a2dc49d87a2175350a1`）。
+- 三市場圖表單位、金額精度、夜盤成交量單位、Max Pain 與支撐位語義修正。
+- 相關性歷史資料 seed 與 workflow build 前執行（`32566de3a79b7f2f69acb4e0bf4d1cfe5f43c9db`）；此群會觸及 workflow／SQLite，需獨立驗收，不與 UI patch 綁定。
+- 上述僅是移植候選功能群，不代表已移植或已在 P0 branch 驗證。
+
+### 為何不以三市場分支為新 base
+- 三市場分支的 `src/sources/spot_raw.py` 仍使用舊 TWT93U `/exchangeReport/TWT93U` 路徑及固定 row index，並逐筆加總；其 `spot.py` 仍將 TWT96U 可借券賣出限額與 TPEx 欄位併入借券餘額。這與目前已確認的借券指標定義及 P0 fixes 已完成的資料層修正不相容。
+- P0 fixes 的 `spot.py` 已分離 TWT72U 借券餘額、TWT93U 上市借券賣出餘額、TPEx S47 上櫃借券賣出餘額，並排除 TWT96U；應保留這條資料層主線。
+- P0 fixes 的 `spot_raw.py` 已使用新版 RWD 路徑、response date 驗證與 fields 欄名定位；但目前 parser／測試仍以個股列加總及小計對帳為主要邏輯，尚未落實使用者 2026-11-04 最新指定的合計列取值規則。TWT93U 應直接取最後「合計」列；TWT72U 應直接取「整體市場」合計列，不再逐筆加總。故借券 parser 仍需後續最小修正及真實 JSON fixture 驗證。
+- 現有 P0 tests 的 TWT93U fixture 以個股列作為預期；TWT72U test 名稱及 fixture 明確測試 stock rows sum + subtotal reconciliation。這些測試契約需跟著最新合計列語義更新，不能沿用舊測試作 PASS。
+
+### 移植執行順序（尚未寫入程式）
+1. 保留 P0 fixes 資料層、Worker、DATA_REPORT 保護及授權註記。
+2. 先移植／重做三市場分析卡、三劇本、選擇權法人力道及 synthesis narrative；每一功能群連同必要測試一起移植，並確認分析文字只引用圖表可見或可追溯的數值。
+3. 單獨處理 correlation history seed／workflow／SQLite，不與前述 UI 功能一併改動。
+4. 最後做完整 React template syntax、42 區塊、版面重疊、Builder JSON、DATA_REPORT 相容性回歸。
+5. data_reports 樣本不修改；不 merge／deploy；master、P0 base、V8 不動。
+
+### 本輪驗收標記
+- 分支 HEAD／共同祖先／ahead 數：**PASS（GitHub compare）**。
+- 三市場功能群識別：**PASS（commit message + 部分關鍵 diff/file read）**；完整逐檔依賴盤點仍未結束。
+- 三市場分支不適合作為資料層 base：**PASS（spot_raw.py、spot.py 實際程式檢查）**。
+- P0 借券 parser 符合最新合計列規則：**FAIL（目前仍以個股列加總／對帳）**。
+- 兩分支最新 HEAD CI：**NOT VERIFIED（combined statuses 為空）**。
+- 本輪未修改任何產品程式、DATA_REPORT、workflow、樣本或 Dashboard；未 merge／deploy。Recovery 文件更新除外。
+- Auditor 為單一模型自我稽核，非獨立多模型審核。
