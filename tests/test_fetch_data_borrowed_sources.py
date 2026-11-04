@@ -21,7 +21,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
     def test_raw_borrowed_parsers_emit_diagnostics_when_unavailable(self):
         source = (ROOT / "src/sources/spot_raw.py").read_text(encoding="utf-8")
         self.assertIn("[WARN] TWT93U", source)
-        self.assertIn("[INFO] TWT93U parsed rows=", source)
+        self.assertIn("TWT93U official 合計 row accepted", source)
         self.assertIn("[WARN] TPEX margin_sbl", source)
         self.assertIn("[INFO] TPEX margin_sbl parsed rows=", source)
 
