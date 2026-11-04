@@ -1977,3 +1977,14 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - 目前程式與測試檔已 GitHub 回讀；**unit tests 尚未執行，CI NOT VERIFIED**。測試 fixture 是以使用者提供數值建立的合成 fixture，尚非完整原始 JSON fixture；完整 fields/data schema mapping 仍 NOT TESTED。
 - 不要重做 parser 盤點，也不要回復逐股加總。下一步直接執行指定兩個單元測試，修正失敗後再接續三市場歷史成果移植。
 - 不得重建 DATA_REPORT，除非授權邊界另行確認；不修改 master、P0 base、V8、workflow、data_reports 樣本或 Dashboard；不 merge/deploy。
+
+
+## 2026-11-04｜借券 parser 最終 HEAD 驗收更新
+
+- 最新 `phase2-p0-ui-fixes` HEAD：`00a5adb2ca6b55f7728b88b7ae182fa4b81a05de`。
+- 首輪 CI 找出並修正：TWT93U 合計標籤實際位於「名稱」欄；TWT72U 測試淨增減正確值為 209,150,000 股。
+- 最終 Unit Contract Audit Run **41754077116 SUCCESS**；TWT72U／TWT93U／TPEx S47 live probe **SUCCESS**。
+- Daily Premarket V9 Pro Run **41754077121 SUCCESS**；build／artifact 成功，deploy **SKIPPED**。Workflow log 顯示沒有 dashboard changes to commit，未對 master push。
+- 完整原始 JSON fixture 仍未建立；目前通過的是依使用者實測數值建立的合成 semantic fixture，加上 live API probe。
+- 不需重做借券 parser；下一步按既定計畫移植三市場分析卡／三劇本／選擇權法人力道／synthesis。不得擴大範圍或建立新分支。
+- DATA_REPORT 重建與 TWSE 自動化授權仍 NOT DONE／BLOCKED；master、P0 base、V8、data_reports 樣本未修改。
