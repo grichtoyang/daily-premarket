@@ -39,13 +39,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
 
-      - name: Checkout master dashboard source
+      - name: Checkout master dashboard source for Pages root only
         uses: actions/checkout@v4
         with:
           ref: master
           path: master-site
+
+      - name: Verify V9 Pro build template comes from triggering commit
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          actual_head="$(git rev-parse HEAD)"
+          if [ "$actual_head" != "$EXPECTED_SHA" ]; then
+            echo "Build checkout does not match triggering commit"
+            echo "expected=$EXPECTED_SHA actual=$actual_head"
+            exit 1
+          fi
+          template_path="templates/v9-pro-react-template.html"
+          test -s "$template_path"
+          tracked_template_sha="$(git rev-parse "${EXPECTED_SHA}:$template_path")"
+          worktree_template_sha="$(git hash-object "$template_path")"
+          if [ "$tracked_template_sha" != "$worktree_template_sha" ]; then
+            echo "V9 Pro template differs from the triggering commit"
+            exit 1
+          fi
+          master_head="$(git -C master-site rev-parse HEAD)"
+          master_template_sha="$(git -C master-site rev-parse "HEAD:$template_path")"
+          echo "V9_PRO_BUILD_COMMIT=$actual_head"
+          echo "V9_PRO_TEMPLATE_BLOB=$tracked_template_sha"
+          echo "MASTER_PAGES_ROOT_COMMIT=$master_head"
+          echo "MASTER_TEMPLATE_BLOB=$master_template_sha"
+          echo "Verified: V9 Pro build uses the triggering commit template; master-site is reserved for the Pages root."
 
       - uses: actions/setup-python@v5
         with:
@@ -164,6 +191,26 @@ jobs:
           printf '{"date":"%s","data":"data-%s.json","html":"v9-pro-%s.html"}\n' "${DATE}" "${DATE}" "${DATE}" > dashboards/manifest.json
           test -s dashboards/index.html
           ls -lh dashboards/
+
+      - name: Build 20261030 full-day golden fixture and validate HTML JavaScript
+        run: |
+          set -euo pipefail
+          mkdir -p dashboards/test-fixtures
+          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261030.md --out dashboards/test-fixtures/data-20261030.json --date 20261030
+          python3 <<'PY'
+          import json, pathlib
+          template = pathlib.Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
+          data_obj = json.loads(pathlib.Path("dashboards/test-fixtures/data-20261030.json").read_text(encoding="utf-8"))
+          if data_obj.get("meta", {}).get("date") != "2026-10-30":
+              raise SystemExit("Golden fixture T0 mismatch")
+          data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          html = template.replace("</head>", f"<script>window.DASHBOARD_DATA={data};</script>\\n</head>", 1)
+          out = pathlib.Path("dashboards/test-fixtures/v9-pro-20261030-full-day.html")
+          out.write_text(html, encoding="utf-8")
+          print(f"Golden fixture generated: {out} ({out.stat().st_size} bytes)")
+          PY
+          python tests/validate_react_html_js.py "dashboards/v9-pro-${DATE}.html"
+          python tests/validate_react_html_js.py dashboards/test-fixtures/v9-pro-20261030-full-day.html
 
       - name: Commit generated dashboard history
         if: github.ref == 'refs/heads/phase2-p0-data-quality' || github.ref == 'refs/heads/phase2-p0-ui-fixes'

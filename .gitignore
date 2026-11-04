@@ -4,3 +4,4 @@ __pycache__/
 .streamlit/secrets.toml
 logs/
 dashboards/v9_pro_history.db
+dashboards/test-fixtures/
