@@ -624,6 +624,204 @@ def parse_margin_ratio_provenance(report_text, t0_date):
             "source_detail":source_cell or None,"source_date":source_date,
             "is_t0":bool(ratio is not None and status=="estimated_t0" and source_date==t0_date)}
 
+def _option_force_number(value):
+    """Parse a displayed option-force value without converting missing data to zero."""
+    if value is None:
+        return None
+    raw = str(value).strip().replace(",", "")
+    if raw.lower() in {"", "unavailable", "n/a", "--", "—", "null", "none"}:
+        return None
+    try:
+        number = float(raw)
+        return number if math.isfinite(number) else None
+    except (TypeError, ValueError):
+        return None
+
+
+def build_option_force_analysis(force_rows, volume_rows=None):
+    """Build a transparent, deterministic interpretation of TXO directional contract amounts.
+
+    Bullish proxy = bought-call contract amount + sold-put contract amount.
+    Bearish proxy = sold-call contract amount + bought-put contract amount.
+    This is not net premium cash flow or open interest.
+    """
+    unavailable = {
+        "status": "unavailable",
+        "look": "選擇權法人多空力道金額資料不足或欄位不完整，暫停法人方向判讀。",
+        "compass": "目前無法確認日盤、夜盤多空力道及法人主導者；不可用缺值代替零值。",
+        "target": "先確認 TAIFEX Proxy 原始欄位、資料日期及七欄表格完整性，再恢復方向分析。",
+        "method": "多方契約金額＝買 Call＋賣 Put；空方契約金額＝賣 Call＋買 Put。這是方向分類代理值，不等同淨權利金現金流或未平倉 OI；來源「日淨－夜淨」是兩個時段淨額相減，不是日對日變化或持倉變化。"
+    }
+    if not isinstance(force_rows, list):
+        return unavailable
+
+    by_name = {}
+    for row in force_rows:
+        if isinstance(row, (list, tuple)) and row:
+            by_name[str(row[0]).strip()] = row
+    names = ("外資", "投信", "自營商")
+    total_name = "三大法人合計"
+    required_names = (*names, total_name)
+    if any(name not in by_name or len(by_name[name]) < 8 for name in required_names):
+        return unavailable
+
+    parsed = {}
+    for name in required_names:
+        row = by_name[name]
+        values = [_option_force_number(row[i]) for i in range(1, 8)]
+        if any(value is None for value in values):
+            return unavailable
+        parsed[name] = {
+            "day_bull": values[0], "day_bear": values[1], "day_net": values[2],
+            "night_bull": values[3], "night_bear": values[4], "night_net": values[5],
+            "day_minus_night": values[6]
+        }
+
+    # DATA_REPORT values are rounded to two decimals; allow at most two cents
+    # of display-rounding difference when checking independently rounded columns.
+    tolerance = 0.021
+    warnings = []
+    for name, item in parsed.items():
+        if abs(item["day_net"] - (item["day_bull"] - item["day_bear"])) > tolerance:
+            warnings.append(f"{name} 日淨額與多空分項不一致")
+        if abs(item["night_net"] - (item["night_bull"] - item["night_bear"])) > tolerance:
+            warnings.append(f"{name} 夜淨額與多空分項不一致")
+        if abs(item["day_minus_night"] - (item["day_net"] - item["night_net"])) > tolerance:
+            warnings.append(f"{name} 日淨－夜淨欄位不一致")
+
+    for session in ("day", "night"):
+        if abs(
+            parsed[total_name][f"{session}_net"]
+            - sum(parsed[name][f"{session}_net"] for name in names)
+        ) > tolerance:
+            warnings.append(f"三大法人合計 {session} 淨額與分法人加總不一致")
+
+    if warnings:
+        result = dict(unavailable)
+        result["status"] = "inconsistent"
+        result["compass"] = "資料一致性檢查未通過：" + "；".join(warnings) + "。暫停方向結論，先修復來源或報表欄位。"
+        result["target"] = "檢查來源原始金額、千元轉億元換算及未四捨五入前的淨額計算；通過後再恢復分析。"
+        return result
+
+    def fmt(value, signed=False):
+        return f"{value:+.2f}" if signed else f"{value:.2f}"
+
+    def session_leaders(session):
+        net_key = f"{session}_net"
+        bullish = [(name, parsed[name][net_key]) for name in names if parsed[name][net_key] > 0]
+        bearish = [(name, parsed[name][net_key]) for name in names if parsed[name][net_key] < 0]
+        strongest_bear = min(bearish, key=lambda item: item[1]) if bearish else None
+        strongest_bull = max(bullish, key=lambda item: item[1]) if bullish else None
+        return strongest_bear, strongest_bull
+
+    day_total = parsed[total_name]
+    day_gross = day_total["day_bull"] + day_total["day_bear"]
+    night_gross = day_total["night_bull"] + day_total["night_bear"]
+    day_imbalance = day_total["day_net"] / day_gross * 100 if day_gross > 0 else None
+    night_imbalance = day_total["night_net"] / night_gross * 100 if night_gross > 0 else None
+
+    day_bear, day_bull = session_leaders("day")
+    night_bear, night_bull = session_leaders("night")
+    day_lead = (
+        f"主要空方為{day_bear[0]}（{fmt(day_bear[1], True)} 億元）" if day_bear
+        else "日盤沒有法人呈現負淨額"
+    )
+    day_offset = (
+        f"{day_bull[0]}（{fmt(day_bull[1], True)} 億元）提供最大多方抵銷" if day_bull
+        else "日盤沒有法人呈現正淨額抵銷"
+    )
+    night_lead = (
+        f"主要空方為{night_bear[0]}（{fmt(night_bear[1], True)} 億元）" if night_bear
+        else "夜盤沒有法人呈現負淨額"
+    )
+    night_offset = (
+        f"{night_bull[0]}（{fmt(night_bull[1], True)} 億元）提供最大多方抵銷" if night_bull
+        else "夜盤沒有法人呈現正淨額抵銷"
+    )
+    day_delta = day_total["day_minus_night"]
+    look = (
+        f"日盤：{day_lead}；{day_offset}；三大法人淨額 {fmt(day_total['day_net'], True)} 億元。"
+        f"夜盤：{night_lead}；{night_offset}；三大法人淨額 {fmt(day_total['night_net'], True)} 億元。"
+        f"來源日淨－夜淨差 {fmt(day_delta, True)} 億元（日盤淨額較夜盤低 {fmt(abs(day_delta))} 億元；"
+        "此為兩個時段數值相減，不代表日對日變化）。"
+    )
+
+    # Compare the amount-based directional proxy with the independent net-volume
+    # table from Block A. A mismatch is a useful warning, not a reason to overwrite either source.
+    volume_by_name = {}
+    if isinstance(volume_rows, list):
+        for row in volume_rows:
+            if isinstance(row, (list, tuple)) and len(row) >= 7:
+                volume_by_name[str(row[0]).strip()] = row
+    divergences = []
+    concordant = []
+    neutral = []
+    volume_complete = all(name in volume_by_name for name in names)
+    if volume_complete:
+        for name in names:
+            for session, amount_key, volume_index in (
+                ("日盤", "day_net", 3), ("夜盤", "night_net", 6)
+            ):
+                amount_net = parsed[name][amount_key]
+                volume_net = _option_force_number(volume_by_name[name][volume_index])
+                if volume_net is None:
+                    volume_complete = False
+                    continue
+                if amount_net * volume_net < 0:
+                    divergences.append(
+                        f"{name}{session}金額 {fmt(amount_net, True)} 億元、口數 {volume_net:+,.0f} 口方向背離"
+                    )
+                elif amount_net == 0 or volume_net == 0:
+                    neutral.append(f"{name}{session}")
+                else:
+                    concordant.append(f"{name}{session}")
+
+    def imbalance_text(value):
+        return f"{value:+.1f}%" if value is not None else "unavailable"
+
+    direction_text = (
+        "日、夜盤淨額均偏空" if day_total["day_net"] < 0 and day_total["night_net"] < 0
+        else "日、夜盤淨額均偏多" if day_total["day_net"] > 0 and day_total["night_net"] > 0
+        else "日、夜盤淨額方向不同或至少一盤接近平衡"
+    )
+    if volume_complete:
+        volume_summary = f"口數對照：{len(concordant)} 組同向、{len(divergences)} 組背離、{len(neutral)} 組中性"
+        if divergences:
+            volume_summary += "；" + "；".join(divergences)
+    else:
+        volume_summary = "口數對照資料不完整，未作方向一致性推論"
+    compass = (
+        f"{direction_text}，但淨額／多空雙邊金額合計，日盤 {imbalance_text(day_imbalance)}、"
+        f"夜盤 {imbalance_text(night_imbalance)}，顯示淨差相對雙邊交易金額有限，不宜解讀為強烈單邊；"
+        f"{volume_summary}。"
+    )
+    target = (
+        "後續優先追蹤金額與口數背離是否收斂，以及主要空方法人是否延續；"
+        "只有金額、口數方向持續一致，並獲價格與期貨籌碼同步確認，才提高方向判讀權重。"
+        "背離未解除前，不單憑本區塊追多或追空。"
+    )
+    if divergences:
+        target = (
+            "優先追蹤" + "；".join(divergences) +
+            "是否收斂，並觀察主要空方法人是否延續；只有金額、口數方向持續一致，"
+            "且獲價格與期貨籌碼同步確認，才提高方向判讀權重。背離未解除前，不單憑本區塊追多或追空。"
+        )
+
+    return {
+        "status": "available" if volume_complete else "partial",
+        "look": look,
+        "compass": compass,
+        "target": target,
+        "method": unavailable["method"],
+        "day_imbalance_pct": round(day_imbalance, 2) if day_imbalance is not None else None,
+        "night_imbalance_pct": round(night_imbalance, 2) if night_imbalance is not None else None,
+        "day_minus_night": day_delta,
+        "volume_divergences": divergences,
+        "volume_concordant": concordant,
+        "volume_neutral": neutral,
+        "checks": {"force_rows": len(required_names), "volume_rows_complete": volume_complete, "warnings": warnings}
+    }
+
 def parse_data_report(report_path):
     text = pathlib.Path(report_path).read_text(encoding='utf-8', errors='ignore')
     def get_value(pattern, default=None, is_float=True):
@@ -835,7 +1033,7 @@ def parse_data_report(report_path):
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
         'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
-        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'top10Call': opt_top10_call, 'top10Put': opt_top10_put},
+        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'instOptForceAnalysis': build_option_force_analysis(opt_inst_force_table, opt_inst_table), 'top10Call': opt_top10_call, 'top10Put': opt_top10_put},
         'news': news_events,
     }
 
@@ -1318,7 +1516,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'pcr': parsed['options']['pcr'], 'callWall': parsed['options']['callWall'], 'putWall': parsed['options']['putWall'], 'gammaWall': parsed['options']['gammaWall'], 'flip': parsed['options']['flip'], 'maxPain': parsed['options']['maxPain'],
             'netGex1pct': parsed['options']['netGex1pct'], 'grossGex1pct': parsed['options']['grossGex1pct'], 'gexLevels': parsed['options']['gexLevels'], 'gexDate': parsed['options']['gexDate'], 'gexStatus': parsed['options']['gexStatus'],
             'callOiDist': parsed['options']['callOiDist'], 'putOiDist': parsed['options']['putOiDist'], 'instOpt': parsed['options']['instOpt'],
-            'instOptForce': parsed['options']['instOptForce'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put']
+            'instOptForce': parsed['options']['instOptForce'], 'instOptForceAnalysis': parsed['options']['instOptForceAnalysis'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put']
         },
         'markets': markets, 'marketPct': marketPct,
         'technical': {'rsi': tech.get('rsi'), 'macd': tech.get('macd'), 'macd_signal': tech.get('macd_signal'), 'macd_hist': tech.get('macd_hist'), 'k': tech.get('k'), 'd': tech.get('d'), 'source': tech.get('source'), 'valid': tech.get('valid'), 'closes': tech.get('closes',[])[-30:], 'highs': tech.get('highs',[])[-30:], 'lows': tech.get('lows',[])[-30:]},
