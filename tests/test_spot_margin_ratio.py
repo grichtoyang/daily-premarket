@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from src.sources import spot, spot_raw, twse, twse_proxy
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
+from src.fetch_data import _sbl_status_line
 
 
 T0 = "2026-10-30"
@@ -16,6 +17,20 @@ def self_built_result(ratio=171.747):
         "price_date_min": "20260402", "price_date_max": "20261030",
     }
 
+
+class SblReportStatusOutputTests(unittest.TestCase):
+    def test_complete_status_is_written_explicitly(self):
+        self.assertEqual(_sbl_status_line("借券賣出餘額", "complete"), "- 借券賣出餘額完整性：`complete`")
+
+    def test_partial_status_is_written_explicitly(self):
+        self.assertEqual(_sbl_status_line("借券賣出餘額", "partial"), "- 借券賣出餘額完整性：`partial`")
+
+    def test_unavailable_status_is_written_explicitly(self):
+        self.assertEqual(_sbl_status_line("借券賣出餘額", "unavailable"), "- 借券賣出餘額完整性：`unavailable`")
+
+    def test_missing_or_unknown_status_fails_closed(self):
+        self.assertEqual(_sbl_status_line("借券賣出餘額", None), "- 借券賣出餘額完整性：`unavailable`")
+        self.assertEqual(_sbl_status_line("借券賣出餘額", "unknown"), "- 借券賣出餘額完整性：`unavailable`")
 
 class SpotMarginRatioPolicyTests(unittest.TestCase):
     @patch("src.sources.spot.blave_maint_ratio.get")
