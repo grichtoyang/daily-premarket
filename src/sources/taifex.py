@@ -185,6 +185,30 @@ def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
     return result, notes
 
 
+def _complete_sum(values) -> int | float | None:
+    """Sum only a non-empty collection of complete, non-None values."""
+    values = list(values)
+    if not values or any(value is None for value in values):
+        return None
+    return sum(values)
+
+
+def _complete_ratio(numerator, denominator):
+    """Return a ratio only when both complete aggregates exist and denominator is non-zero."""
+    return numerator / denominator if numerator is not None and denominator not in (None, 0) else None
+
+
+def _oi_distribution(rows: list, limit: int = 10) -> list[dict]:
+    """Preserve row OI; calculate percentages only with a complete non-empty denominator."""
+    total = _complete_sum(row.get("open_interest") for row in rows)
+    top = sorted(rows, key=lambda row: row.get("open_interest") if row.get("open_interest") is not None else 0,
+                 reverse=True)[:limit]
+    return [{"strike": row.get("strike"), "oi": row.get("open_interest"),
+             "pct": round(row["open_interest"] / total * 100, 2)
+             if total is not None and row.get("open_interest") is not None else None}
+            for row in top]
+
+
 def _rows(payload: dict | None) -> list:
     d = (payload or {}).get("data")
     return d if isinstance(d, list) else []
@@ -527,11 +551,13 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                      "d_long": _diff(cur.get("long_oi"), pr.get("long_oi")),
                      "d_short": _diff(cur.get("short_oi"), pr.get("short_oi")),
                      "d_net": _diff(net, pr.get("net_oi"))}
-    tot = lambda f: sum(v[f] for v in fut_oi.values() if v[f] is not None)
-    fut_oi["total"] = {"long": tot("long"), "short": tot("short"), "net": tot("net"),
-                       "d_long": tot("d_long"), "d_short": tot("d_short"), "d_net": tot("d_net")}
-    if fut_oi["foreign"]["long"] is None:
-        notes.append("法人 OI 未取得")
+    _inst_oi = [fut_oi[k] for k in ("foreign", "investment_trust", "dealer")]
+    fut_oi["total"] = {
+        field: _complete_sum(row[field] for row in _inst_oi)
+        for field in ("long", "short", "net", "d_long", "d_short", "d_net")
+    }
+    if any(value is None for row in _inst_oi for value in row.values()):
+        notes.append("期貨三大法人 OI 部分欄位缺值；對應合計標 unavailable")
 
     # ---------- 期貨 5：日夜盤法人交易 ----------
     day_t = _by_inst(_rows(P["futures-institutional"]))
@@ -571,14 +597,16 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     pc = [r for r in chain if r.get("contract_month") == prim_month] if prim_month else chain
     calls = [r for r in pc if r.get("type") == "call"]
     puts = [r for r in pc if r.get("type") == "put"]
-    c_vol = sum(r.get("total_volume") or 0 for r in calls)
-    p_vol = sum(r.get("total_volume") or 0 for r in puts)
-    c_oi = sum(r.get("open_interest") or 0 for r in calls)
-    p_oi = sum(r.get("open_interest") or 0 for r in puts)
+    c_vol = _complete_sum(r.get("total_volume") for r in calls)
+    p_vol = _complete_sum(r.get("total_volume") for r in puts)
+    c_oi = _complete_sum(r.get("open_interest") for r in calls)
+    p_oi = _complete_sum(r.get("open_interest") for r in puts)
     opt_tot = {"expiry": prim_month, "c_vol": c_vol, "p_vol": p_vol, "c_oi": c_oi, "p_oi": p_oi,
-               "vol_ratio": c_vol / p_vol if p_vol else None,
-               "oi_ratio": c_oi / p_oi if p_oi else None,
-               "pc_ratio": p_oi / c_oi if c_oi else None}
+               "vol_ratio": _complete_ratio(c_vol, p_vol),
+               "oi_ratio": _complete_ratio(c_oi, p_oi),
+               "pc_ratio": _complete_ratio(p_oi, c_oi)}
+    if any(value is None for value in (c_vol, p_vol, c_oi, p_oi)):
+        notes.append("選擇權 chain 總量或 OI 缺值／不完整；對應合計與比例標 unavailable")
     def top_oi(rows, n=3):
         return sorted(rows, key=lambda r: r.get("open_interest") or 0, reverse=True)[:n]
     tc, tp = top_oi(calls), top_oi(puts)
@@ -587,13 +615,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 "c_max": (tc[0].get("strike"), tc[0].get("open_interest")) if tc else (None, None),
                 "p_max": (tp[0].get("strike"), tp[0].get("open_interest")) if tp else (None, None)}
     # OI 分布明細 Top10 (機器可讀，Dashboard 繪圖用)
-    def _dist(rows):
-        tot = sum(r.get("open_interest") or 0 for r in rows)
-        top = sorted(rows, key=lambda r: r.get("open_interest") or 0, reverse=True)[:10]
-        return [{"strike": r.get("strike"), "oi": r.get("open_interest"),
-                 "pct": round((r.get("open_interest") or 0) / tot * 100, 2) if tot else None}
-                for r in top]
-    opt_dist = {"expiry": prim_month, "call": _dist(calls), "put": _dist(puts)}
+    opt_dist = {"expiry": prim_month, "call": _oi_distribution(calls), "put": _oi_distribution(puts)}
     if not chain:
         notes.append("選擇權 chain 未取得，總量/OI/集中區 unavailable")
 
