@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from src.sources import spot, spot_raw, twse, twse_proxy
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
-from src.fetch_data import _sbl_status_line, _sbl_publication_line
+from src.fetch_data import _sbl_status_line, _sbl_publication_line, _sbl_market_table
 
 
 T0 = "2026-10-30"
@@ -18,6 +18,24 @@ def self_built_result(ratio=171.747):
         "stale_price_security_count": 4,
         "price_date_min": "20260402", "price_date_max": "20261030",
     }
+
+
+class SblMarketReportTests(unittest.TestCase):
+    def test_report_shows_listed_otc_and_combined_values_separately(self):
+        table = _sbl_market_table({
+            "listed_sale_bal": 1200, "otc_sale_bal": 300, "sale_bal": 1500,
+            "listed_sale_chg": 100, "otc_sale_chg": -20, "sale_chg": 80,
+        })
+        self.assertIn("| 借券賣出餘額 | 1,200 | 300 | 1,500 | 張 |", table)
+        self.assertIn("| 借券賣出增減 | 100 | -20 | 80 | 張 |", table)
+
+    def test_missing_market_is_not_filled_from_combined_value(self):
+        table = _sbl_market_table({
+            "listed_sale_bal": 1200, "otc_sale_bal": None, "sale_bal": 1200,
+            "listed_sale_chg": 100, "otc_sale_chg": None, "sale_chg": 100,
+        })
+        self.assertIn("| 借券賣出餘額 | 1,200 | unavailable | 1,200 | 張 |", table)
+        self.assertIn("| 借券賣出增減 | 100 | unavailable | 100 | 張 |", table)
 
 
 class SblReportStatusOutputTests(unittest.TestCase):

@@ -90,6 +90,14 @@ def _sbl_status_line(label: str, status: str | None) -> str:
     value = status if status in {"complete", "partial", "unavailable"} else "unavailable"
     return f"- {label}完整性：`{value}`"
 
+def _sbl_market_table(sb: dict) -> str:
+    """Render listed, OTC, and combined borrowed-short figures without hiding market splits."""
+    return _tbl([
+        ("借券賣出餘額", _fi(sb.get("listed_sale_bal")), _fi(sb.get("otc_sale_bal")), _fi(sb.get("sale_bal")), "張"),
+        ("借券賣出增減", _fi(sb.get("listed_sale_chg")), _fi(sb.get("otc_sale_chg")), _fi(sb.get("sale_chg")), "張"),
+    ], ("項目", "上市", "上櫃", "兩者合計", "單位"))
+
+
 def _tbl(rows: list[tuple], headers: tuple) -> str:
     lines = ["| " + " | ".join(headers) + " |", "|" + "|".join(["---"] * len(headers)) + "|"]
     for r in rows:
@@ -536,9 +544,13 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWT93U 與上櫃 tpex_margin_sbl，缺值市場不納入加總。")
     A("")
-    A(_tbl([("借券餘額", _fi(sb["bal"]), "張", SRC_SBL_BAL),
-            ("借券賣出餘額", _fi(sb["sale_bal"]), "張", SRC_SBL_SALE_BAL),
-            ("借券賣出增減", _fi(sb["sale_chg"]), "張", SRC_SBL_SALE_CHG)], ("項目", "數值", "單位", "資料來源")))
+    A(_tbl([("整體市場借券餘額", _fi(sb["bal"]), "張", SRC_SBL_BAL)],
+           ("項目", "數值", "單位", "資料來源")))
+    A("")
+    A(_sbl_market_table(sb))
+    A("")
+    A(f"- 上市來源：{_src.get('sbl_sale_bal_listed', 'unavailable')}；增減來源：{_src.get('sbl_sale_chg_listed', 'unavailable')}")
+    A(f"- 上櫃來源：{_src.get('sbl_sale_bal_otc', 'unavailable')}；增減來源：{_src.get('sbl_sale_chg_otc', 'unavailable')}")
     A(_sbl_status_line("借券賣出餘額", (sb.get("status") or {}).get("sale_bal")))
     A(_sbl_status_line("借券賣出增減", (sb.get("status") or {}).get("sale_chg")))
     A(_sbl_publication_line("TWSE TWT93U（上市）", (sb.get("publication") or {}).get("twse_twt93u")))

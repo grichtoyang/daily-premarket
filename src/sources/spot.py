@@ -285,7 +285,9 @@ def build(t0: str) -> dict:
     _sale, _sale_status = _complete_market_sum(_tw_sale, _tp_sale)
     _schg, _schg_status = _complete_market_sum(_tw_schg, _tp_schg)
     sbl = {
-        "bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg,
+        "bal": sbl_bal,
+        "listed_sale_bal": _tw_sale, "otc_sale_bal": _tp_sale, "sale_bal": _sale,
+        "listed_sale_chg": _tw_schg, "otc_sale_chg": _tp_schg, "sale_chg": _schg,
         "status": {"sale_bal": _sale_status, "sale_chg": _schg_status},
         "publication": {"twse_twt93u": tw93.get("publication"), "tpex_s47": tp_sbl.get("publication")},
     }
@@ -295,6 +297,10 @@ def build(t0: str) -> dict:
         available = [name for name, value in parts if value is not None]
         return " + ".join(available) if available else "unavailable"
     sources["sbl_bal"] = "TWSE TWT72U（SLBNLB；上市+上櫃）" if sbl_bal is not None else "unavailable"
+    sources["sbl_sale_bal_listed"] = "TWSE TWT93U（上市）" if _tw_sale is not None else "unavailable"
+    sources["sbl_sale_bal_otc"] = "TPEx S47（上櫃）" if _tp_sale is not None else "unavailable"
+    sources["sbl_sale_chg_listed"] = "TWSE TWT93U（上市）" if _tw_schg is not None else "unavailable"
+    sources["sbl_sale_chg_otc"] = "TPEx S47（上櫃）" if _tp_schg is not None else "unavailable"
     sources["sbl_sale_bal"] = _sbl_scope(
         ("TWSE TWT93U（上市）", _tw_sale), ("TPEX S47（上櫃）", _tp_sale))
     sources["sbl_sale_chg"] = _sbl_scope(
