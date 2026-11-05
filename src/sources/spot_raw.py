@@ -374,6 +374,8 @@ def tpex_sbl(roc: str) -> dict:
     total_prev = total_bal = 0.0
     parsed = invalid = 0
     for row in data:
+        # A structurally malformed row cannot safely be classified as a non-stock
+        # summary row, so reject the market aggregate instead of silently skipping it.
         if not isinstance(row, (list, tuple)) or max(symbol_idx, prev_idx, sell_idx, return_idx, adjust_idx, bal_idx) >= len(row):
             invalid += 1
             continue
@@ -391,8 +393,8 @@ def tpex_sbl(roc: str) -> dict:
         total_prev += prev
         total_bal += bal
         parsed += 1
-    if not parsed:
-        print(f"[WARN] TPEX margin_sbl no parseable stock rows: date={date8} total={len(data)} invalid={invalid}")
+    if not parsed or invalid:
+        print(f"[WARN] TPEX margin_sbl rejected incomplete stock rows: date={date8} parsed={parsed} total={len(data)} invalid={invalid}")
         return out
     print(f"[INFO] TPEX margin_sbl parsed rows={parsed}/{len(data)} date={date8}")
     return {"bal": None, "sale_bal": total_bal, "sale_chg": total_bal - total_prev, "date_ok": True}
