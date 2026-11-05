@@ -582,8 +582,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A("")
         A("**資料來源：** `Yahoo Finance Chart API` (API 優先；失敗標 unavailable，不推估)")
         A("")
-        A(_tbl([(n, q["symbol"], _f2(q["price"]), _f2(q["change"]), _pct(q["pct"]), "Yahoo Finance Chart API") for n, q in rows],
-               ("項目", "Yahoo Finance 代號", col, "漲跌點", "漲跌幅", "資料來源")))
+        A(_tbl([(n, q["symbol"], _f2(q["price"]), _f2(q["change"]), _pct(q["pct"]), q.get("date") or MISSING, "Yahoo Finance Chart API") for n, q in rows],
+               ("項目", "Yahoo Finance 代號", col, "漲跌點", "漲跌幅", "資料日期（交易所時區）", "資料來源")))
         A("")
     y = treasury.get_yields()
     num += 1
@@ -591,11 +591,11 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** `U.S. Treasury Fiscal Data API` (失敗時備援 Treasury yield.xml 與 `Yahoo Finance`)")
     A("")
-    A(_tbl([("美國 2 年期殖利率", "2 Yr", _f2(y["2Y"]["yield"]), _f2(y["2Y"]["chg"]), y["2Y"]["source"]),
-            ("美國 10 年期殖利率", "10 Yr", _f2(y["10Y"]["yield"]), _f2(y["10Y"]["chg"]), y["10Y"]["source"]),
-            ("美國 20 年期殖利率", "20 Yr", _f2(y["20Y"]["yield"]), _f2(y["20Y"]["chg"]), y["20Y"]["source"]),
-            ("美國 30 年期殖利率", "30 Yr", _f2(y["30Y"]["yield"]), _f2(y["30Y"]["chg"]), y["30Y"]["source"])],
-           ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料來源")))
+    A(_tbl([("美國 2 年期殖利率", "2 Yr", _f2(y["2Y"]["yield"]), _f2(y["2Y"]["chg"]), y["2Y"].get("date") or MISSING, y["2Y"]["source"]),
+            ("美國 10 年期殖利率", "10 Yr", _f2(y["10Y"]["yield"]), _f2(y["10Y"]["chg"]), y["10Y"].get("date") or MISSING, y["10Y"]["source"]),
+            ("美國 20 年期殖利率", "20 Yr", _f2(y["20Y"]["yield"]), _f2(y["20Y"]["chg"]), y["20Y"].get("date") or MISSING, y["20Y"]["source"]),
+            ("美國 30 年期殖利率", "30 Yr", _f2(y["30Y"]["yield"]), _f2(y["30Y"]["chg"]), y["30Y"].get("date") or MISSING, y["30Y"]["source"])],
+           ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料日期", "資料來源")))
     A("")
     for group in ["主要匯率", "台灣相關ADR", "原油黃金Bitcoin"]:
         num += 1
