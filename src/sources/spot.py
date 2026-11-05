@@ -39,6 +39,10 @@ def _complete_market_sum(listed, otc):
     return listed + otc, "complete"
 
 
+def _partial_coverage_note(field: str) -> str:
+    return f"[partial] {field}僅取得單一市場；不提供不完整的合計數值"
+
+
 SELF_BUILT_RATIO_TIMEOUT = 10
 BLAVE_RATIO_TIMEOUT = 3
 
@@ -303,12 +307,12 @@ def build(t0: str) -> dict:
         notes.append("借券賣出增減市場覆蓋不完整；來源欄已明確標示實際取得市場")
     if _sale_status == "partial":
         partial.append("sbl.sale_bal")
-        notes.append("借券賣出餘額僅取得單一市場；不提供不完整的合計數值")
+        notes.append(_partial_coverage_note("借券賣出餘額"))
     elif _sale_status == "unavailable":
         unavailable.append("sbl.sale_bal")
     if _schg_status == "partial":
         partial.append("sbl.sale_chg")
-        notes.append("借券賣出增減僅取得單一市場；不提供不完整的合計數值")
+        notes.append(_partial_coverage_note("借券賣出增減"))
     elif _schg_status == "unavailable":
         unavailable.append("sbl.sale_chg")
 
