@@ -1,8 +1,11 @@
 import unittest
 from datetime import datetime
 from unittest.mock import patch
+import sys
+import tempfile
+from pathlib import Path
 
-from src import t0
+from src import t0, fetch_data
 
 
 class _CalendarResponse:
@@ -63,6 +66,20 @@ class T0CalendarFailClosedTests(unittest.TestCase):
         self.assertEqual(result, {
             "t0": "2026-11-05", "session": "全日", "slot": "evening"
         })
+
+
+    @patch("src.t0.resolve", side_effect=RuntimeError("calendar API unavailable"))
+    def test_fetch_data_stops_before_creating_report_when_calendar_fails(self, _resolve):
+        with tempfile.TemporaryDirectory() as tmp:
+            report_dir = Path(tmp) / "data_reports"
+            with patch.object(fetch_data, "OUT_DIR", report_dir), \
+                 patch.object(fetch_data, "build") as build, \
+                 patch.object(sys, "argv", ["fetch_data.py"]):
+                with self.assertRaisesRegex(RuntimeError, "calendar API unavailable"):
+                    fetch_data.main()
+            self.assertFalse(report_dir.exists())
+            build.assert_not_called()
+
 
 
 if __name__ == "__main__":
