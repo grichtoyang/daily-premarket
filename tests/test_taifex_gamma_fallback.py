@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 from src.sources.taifex import (
     BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status,
-    _sync_gamma_unavailable, _valid_gex_levels,
+    _sync_gamma_unavailable, _valid_gex_levels, _complete_sum, _complete_ratio, _oi_distribution,
 )
 
 
@@ -164,10 +164,6 @@ class CompleteAggregateContractTests(unittest.TestCase):
 
     def test_empty_oi_distribution_is_empty(self):
         self.assertEqual(_oi_distribution([]), [])
-
-
-if __name__ == "__main__":
-    unittest.main()
 
 
 if __name__ == "__main__":
