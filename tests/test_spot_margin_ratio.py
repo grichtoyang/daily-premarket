@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from src.sources import spot, spot_raw, twse, twse_proxy, us_market
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
-from src.fetch_data import (_add3, _sbl_status_line, _sbl_publication_line, _sbl_market_table,
+from src.fetch_data import (_add3, _f2s, _sbl_status_line, _sbl_publication_line, _sbl_market_table,
                             _market_quote_table, _treasury_yield_table)
 
 
@@ -461,6 +461,9 @@ class CompleteThreePartyAggregateTests(unittest.TestCase):
 
     def test_all_values_missing_makes_total_unavailable(self):
         self.assertIsNone(_add3(None, None, None))
+
+    def test_incomplete_total_renders_as_unavailable(self):
+        self.assertEqual(_f2s(_add3(1000, 500, None)), "unavailable")
 
 
 if __name__ == "__main__":
