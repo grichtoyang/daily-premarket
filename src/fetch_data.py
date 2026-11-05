@@ -59,8 +59,10 @@ def _f2s(v) -> str:  # signed 口數/價差 (整數無小數，其餘2位)
         return MISSING
 
 def _add3(a, b, c):
-    r = _add2(a, b)
-    return _add2(r, c)
+    """Return a complete three-party total; never present a partial sum as the total."""
+    if any(value is None for value in (a, b, c)):
+        return None
+    return a + b + c
 
 def _add2(a, b):
     if a is None:
