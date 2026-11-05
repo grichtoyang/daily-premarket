@@ -77,14 +77,14 @@ def _pct(v) -> str:
 
 
 def _sbl_publication_line(market: str, metadata: dict | None) -> str:
-    """Show documented schedule separately from observed production timestamp."""
+    """Render scheduled update, observed query time, and source-reported production time separately."""
     meta = metadata if isinstance(metadata, dict) else {}
     data_date = meta.get("data_date") or MISSING
     expected = meta.get("expected_time") or MISSING
     actual = meta.get("production_time") or MISSING
-    status = meta.get("status") if meta.get("status") in {"published", "pending", "unknown"} else "unknown"
-    return f"- {market}：資料日期：`{data_date}`；官方預定產製：`{expected}`；實際產製時間：`{actual}`；發布狀態：`{status}`"
-
+    checked = meta.get("checked_at") or MISSING
+    status = meta.get("status") if meta.get("status") in {"published", "pending", "available_after_schedule", "unknown"} else "unknown"
+    return f"- {market}：資料日期：`{data_date}`；最後預定更新：`{expected}`；來源回報產製時間：`{actual}`；本次查詢時間：`{checked}`；狀態：`{status}`"
 def _sbl_status_line(label: str, status: str | None) -> str:
     """Render an explicit, fail-closed market-coverage status for SBL aggregates."""
     value = status if status in {"complete", "partial", "unavailable"} else "unavailable"
