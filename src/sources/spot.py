@@ -222,7 +222,7 @@ def build(t0: str) -> dict:
             unavailable.append(f"institutional.{k}")
     else:
         sources["institutional"] = "twse-proxy /institutional" if inst.get("via") == "proxy" else "TWSE RWD BFI82U"
- 
+
     # ---- 融資融券 (HiStock 金額口徑為主：融資億元/融券張) ----
     hs = histock.get(t0)
     mtw = spot_raw.margin_tw()

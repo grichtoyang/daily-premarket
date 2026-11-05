@@ -10,7 +10,7 @@ TWSE_PROXY = "https://twse-proxy.grichtoyang.workers.dev"
 
 def _normalize_date8(value) -> str:
     """Normalize Gregorian YYYYMMDD/ISO or ROC YYY/MM/DD dates to YYYYMMDD."""
-    digits = re.sub(r"\\D", "", str(value or ""))
+    digits = re.sub(r"\D", "", str(value or ""))
     if len(digits) == 8:
         return digits
     if len(digits) == 7:
