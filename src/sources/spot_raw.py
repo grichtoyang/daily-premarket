@@ -125,7 +125,7 @@ def _sbl_publication_metadata(date_value: str, expected_time: str, actual_time: 
     import re
     if actual_time is not None:
         value = str(actual_time).strip()
-        if re.fullmatch(r"(?:[01]\\d|2[0-3])[0-5]\\d", value):
+        if re.fullmatch(r"(?:[01]\d|2[0-3])[0-5]\d", value):
             result["production_time"] = value
             if value >= expected_time.replace(":", ""):
                 result["status"] = "published"
