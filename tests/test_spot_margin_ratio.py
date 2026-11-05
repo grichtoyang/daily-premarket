@@ -1,9 +1,11 @@
 import unittest
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
 from src.sources import spot, spot_raw, twse, twse_proxy
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
-from src.fetch_data import _sbl_status_line
+from src.fetch_data import _sbl_status_line, _sbl_publication_line
 
 
 T0 = "2026-10-30"
@@ -31,6 +33,33 @@ class SblReportStatusOutputTests(unittest.TestCase):
     def test_missing_or_unknown_status_fails_closed(self):
         self.assertEqual(_sbl_status_line("借券賣出餘額", None), "- 借券賣出餘額完整性：`unavailable`")
         self.assertEqual(_sbl_status_line("借券賣出餘額", "unknown"), "- 借券賣出餘額完整性：`unavailable`")
+
+class SblPublicationStatusTests(unittest.TestCase):
+    TAIPEI = ZoneInfo("Asia/Taipei")
+
+    def test_tpex_is_pending_before_official_production_time(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:00", now=datetime(2026, 11, 5, 21, 59, tzinfo=self.TAIPEI))
+        self.assertEqual(result["status"], "pending")
+        self.assertIsNone(result["production_time"])
+
+    def test_twse_is_pending_before_official_production_time(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "23:30", now=datetime(2026, 11, 5, 23, 29, tzinfo=self.TAIPEI))
+        self.assertEqual(result["status"], "pending")
+
+    def test_status_is_unknown_after_schedule_without_observed_timestamp(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:00", now=datetime(2026, 11, 5, 22, 1, tzinfo=self.TAIPEI))
+        self.assertEqual(result["status"], "unknown")
+        self.assertIsNone(result["production_time"])
+
+    def test_explicit_valid_production_time_confirms_published(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:00", actual_time="2205")
+        self.assertEqual(result["status"], "published")
+        self.assertEqual(result["production_time"], "2205")
+
+    def test_report_line_does_not_conflate_schedule_with_actual_time(self):
+        line = _sbl_publication_line("TPEx S47", {"data_date": "20261105", "expected_time": "22:00", "production_time": None, "status": "unknown"})
+        self.assertIn("實際產製時間：`unavailable`", line)
+        self.assertIn("發布狀態：`unknown`", line)
 
 class SpotMarginRatioPolicyTests(unittest.TestCase):
     @patch("src.sources.spot.blave_maint_ratio.get")
