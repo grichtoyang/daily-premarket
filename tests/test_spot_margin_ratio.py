@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from src.sources import spot, twse
+from src.sources import spot, twse, twse_proxy
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
 
 
@@ -154,6 +154,78 @@ class InstitutionalDateValidationTests(unittest.TestCase):
         self.assertFalse(spot._institutional_matches_t0({"date": "", "foreign": 1}, "20261105"))
         self.assertFalse(spot._institutional_matches_t0({"date": "20261104", "foreign": 1}, "20261105"))
         self.assertTrue(spot._institutional_matches_t0({"date": "2026/11/05", "foreign": 1}, "20261105"))
+
+
+class TaiexUpstreamDateValidationTests(unittest.TestCase):
+    @patch("src.sources.twse_proxy.requests.get")
+    def test_proxy_accepts_matching_ind_and_ms_dates(self, get):
+        response = _Response({
+            "ok": True,
+            "date": "2026-11-05",
+            "endpoints": {
+                "IND": {"date_valid": True, "actual_date": "2026/11/05"},
+                "MS": {"date_valid": True, "actual_date": "2026/11/05"},
+            },
+            "data": {"taiex": {"close": "27000"}, "market_statistics": {"data": []},
+                     "advance_decline": {"data": []}},
+        })
+        response.raise_for_status = lambda: None
+        get.return_value = response
+        result = twse_proxy.fetch("20261105")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["data"]["taiex"]["close"], "27000")
+
+    @patch("src.sources.twse_proxy.requests.get")
+    def test_proxy_rejects_missing_or_mismatched_ind_date(self, get):
+        for metadata in (
+            {"date_valid": True, "actual_date": None},
+            {"date_valid": False, "actual_date": "2026/11/04"},
+        ):
+            response = _Response({
+                "ok": True, "endpoints": {"IND": metadata},
+                "data": {"taiex": {"close": "27000"}},
+            })
+            response.raise_for_status = lambda: None
+            get.return_value = response
+            self.assertIsNone(twse_proxy.fetch("20261105"))
+
+    @patch("src.sources.twse_proxy.requests.get")
+    def test_proxy_keeps_ind_but_nulls_ms_when_ms_date_is_invalid(self, get):
+        response = _Response({
+            "ok": True,
+            "endpoints": {
+                "IND": {"date_valid": True, "actual_date": "2026/11/05"},
+                "MS": {"date_valid": False, "actual_date": "2026/11/04"},
+            },
+            "data": {"taiex": {"close": "27000"}, "market_statistics": {"data": [1]},
+                     "advance_decline": {"data": [1]}},
+        })
+        response.raise_for_status = lambda: None
+        get.return_value = response
+        result = twse_proxy.fetch("20261105")
+        self.assertIsNotNone(result)
+        self.assertIsNone(result["data"]["market_statistics"])
+        self.assertIsNone(result["data"]["advance_decline"])
+
+    @patch("src.sources.twse_proxy.requests.get")
+    def test_official_fallback_rejects_wrong_actual_date(self, get):
+        response = _Response({"date": "2026/11/04", "tables": []})
+        response.raise_for_status = lambda: None
+        get.return_value = response
+        result = twse_proxy.official_ind_taiex("20261105")
+        self.assertEqual(result, {"close": None, "change": None, "pct": None})
+
+    @patch("src.sources.twse_proxy.requests.get")
+    def test_official_fallback_accepts_matching_actual_date(self, get):
+        response = _Response({
+            "date": "2026/11/05",
+            "tables": [{"data": [["發行量加權股價指數", "27000", "<p>+</p>", "100", "0.37%"]]}],
+        })
+        response.raise_for_status = lambda: None
+        get.return_value = response
+        result = twse_proxy.official_ind_taiex("20261105")
+        self.assertEqual(result["close"], 27000.0)
+        self.assertEqual(result["change"], 100.0)
 
 
 if __name__ == "__main__":
