@@ -186,7 +186,7 @@ def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
 
 
 def _complete_sum(values) -> int | float | None:
-    """Sum only a non-empty collection of complete, non-None values."""
+    """Sum only a non-empty collection of complete, non-None values; zero remains valid."""
     values = list(values)
     if not values or any(value is None for value in values):
         return None
