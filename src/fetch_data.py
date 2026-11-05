@@ -76,6 +76,15 @@ def _pct(v) -> str:
     return f"{float(v):+.2f}" if v is not None else MISSING
 
 
+def _sbl_publication_line(market: str, metadata: dict | None) -> str:
+    """Show documented schedule separately from observed production timestamp."""
+    meta = metadata if isinstance(metadata, dict) else {}
+    data_date = meta.get("data_date") or MISSING
+    expected = meta.get("expected_time") or MISSING
+    actual = meta.get("production_time") or MISSING
+    status = meta.get("status") if meta.get("status") in {"published", "pending", "unknown"} else "unknown"
+    return f"- {market}：資料日期：`{data_date}`；官方預定產製：`{expected}`；實際產製時間：`{actual}`；發布狀態：`{status}`"
+
 def _sbl_status_line(label: str, status: str | None) -> str:
     """Render an explicit, fail-closed market-coverage status for SBL aggregates."""
     value = status if status in {"complete", "partial", "unavailable"} else "unavailable"
@@ -532,6 +541,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("借券賣出增減", _fi(sb["sale_chg"]), "張", SRC_SBL_SALE_CHG)], ("項目", "數值", "單位", "資料來源")))
     A(_sbl_status_line("借券賣出餘額", (sb.get("status") or {}).get("sale_bal")))
     A(_sbl_status_line("借券賣出增減", (sb.get("status") or {}).get("sale_chg")))
+    A(_sbl_publication_line("TWSE TWT93U（上市）", (sb.get("publication") or {}).get("twse_twt93u")))
+    A(_sbl_publication_line("TPEx S47（上櫃）", (sb.get("publication") or {}).get("tpex_s47")))
     A("")
     A("### 6. 市場成交結構")
     A("")
