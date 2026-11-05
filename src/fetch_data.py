@@ -1237,16 +1237,13 @@ def main() -> None:
         if not session:
             session = "全日"
     else:
-        try:
-            from src.t0 import resolve as _resolve
-            _r = _resolve()
-            t0 = _r.get("t0") or last_weekday(date.fromisoformat(report_date)).isoformat()
-            if not session:
-                session = _r.get("session") or "全日"
-        except Exception:
-            t0 = last_weekday(date.fromisoformat(report_date)).isoformat()
-            if not session:
-                session = "全日"
+        from src.t0 import resolve as _resolve
+        _r = _resolve()
+        if not _r.get("t0"):
+            raise RuntimeError("T0 自動判定未回傳有效交易日，停止產報")
+        t0 = _r["t0"]
+        if not session:
+            session = _r["session"]
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"DATA_REPORT_{t0.replace('-', '')}.md"
     _t_start = time.perf_counter()
