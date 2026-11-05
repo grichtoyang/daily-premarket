@@ -75,6 +75,12 @@ def _diff2(a, b):
 def _pct(v) -> str:
     return f"{float(v):+.2f}" if v is not None else MISSING
 
+
+def _sbl_status_line(label: str, status: str | None) -> str:
+    """Render an explicit, fail-closed market-coverage status for SBL aggregates."""
+    value = status if status in {"complete", "partial", "unavailable"} else "unavailable"
+    return f"- {label}完整性：`{value}`"
+
 def _tbl(rows: list[tuple], headers: tuple) -> str:
     lines = ["| " + " | ".join(headers) + " |", "|" + "|".join(["---"] * len(headers)) + "|"]
     for r in rows:
@@ -524,6 +530,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(_tbl([("借券餘額", _fi(sb["bal"]), "張", SRC_SBL_BAL),
             ("借券賣出餘額", _fi(sb["sale_bal"]), "張", SRC_SBL_SALE_BAL),
             ("借券賣出增減", _fi(sb["sale_chg"]), "張", SRC_SBL_SALE_CHG)], ("項目", "數值", "單位", "資料來源")))
+    A(_sbl_status_line("借券賣出餘額", (sb.get("status") or {}).get("sale_bal")))
+    A(_sbl_status_line("借券賣出增減", (sb.get("status") or {}).get("sale_chg")))
     A("")
     A("### 6. 市場成交結構")
     A("")
