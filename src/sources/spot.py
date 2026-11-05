@@ -287,6 +287,7 @@ def build(t0: str) -> dict:
     sbl = {
         "bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg,
         "status": {"sale_bal": _sale_status, "sale_chg": _schg_status},
+        "publication": {"twse_twt93u": tw93.get("publication"), "tpex_s47": tp_sbl.get("publication")},
     }
     partial: list[str] = []
 
