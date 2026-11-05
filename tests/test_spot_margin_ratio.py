@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from src.sources import spot, spot_raw, twse, twse_proxy, us_market
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
-from src.fetch_data import (_sbl_status_line, _sbl_publication_line, _sbl_market_table,
+from src.fetch_data import (_add3, _sbl_status_line, _sbl_publication_line, _sbl_market_table,
                             _market_quote_table, _treasury_yield_table)
 
 
@@ -444,6 +444,23 @@ class MarketReportDateTests(unittest.TestCase):
         self.assertEqual(table.count("2026-11-04"), 2)
         self.assertIn("2026-11-03", table)
         self.assertIn("unavailable", table)
+
+
+class CompleteThreePartyAggregateTests(unittest.TestCase):
+    def test_all_three_values_are_summed(self):
+        self.assertEqual(_add3(1000, 500, -200), 1300)
+
+    def test_missing_foreign_value_makes_total_unavailable(self):
+        self.assertIsNone(_add3(None, 500, -200))
+
+    def test_missing_investment_trust_value_makes_total_unavailable(self):
+        self.assertIsNone(_add3(1000, None, -200))
+
+    def test_missing_dealer_value_makes_total_unavailable(self):
+        self.assertIsNone(_add3(1000, 500, None))
+
+    def test_all_values_missing_makes_total_unavailable(self):
+        self.assertIsNone(_add3(None, None, None))
 
 
 if __name__ == "__main__":
