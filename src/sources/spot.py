@@ -30,6 +30,15 @@ def _add(a, b):
     return a + b
 
 
+def _complete_market_sum(listed, otc):
+    """Return a total only when both markets are present, with explicit coverage status."""
+    if listed is None and otc is None:
+        return None, "unavailable"
+    if listed is None or otc is None:
+        return None, "partial"
+    return listed + otc, "complete"
+
+
 SELF_BUILT_RATIO_TIMEOUT = 10
 BLAVE_RATIO_TIMEOUT = 3
 
@@ -269,9 +278,13 @@ def build(t0: str) -> dict:
     _tp_sale = tp_sbl["sale_bal"] / 1000 if tp_sbl["sale_bal"] is not None else None
     _tw_schg = tw93["sale_chg"] / 1000 if tw93["sale_chg"] is not None else None
     _tp_schg = tp_sbl["sale_chg"] / 1000 if tp_sbl["sale_chg"] is not None else None
-    _sale = _add(_tw_sale, _tp_sale)
-    _schg = _add(_tw_schg, _tp_schg)
-    sbl = {"bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg}
+    _sale, _sale_status = _complete_market_sum(_tw_sale, _tp_sale)
+    _schg, _schg_status = _complete_market_sum(_tw_schg, _tp_schg)
+    sbl = {
+        "bal": sbl_bal, "sale_bal": _sale, "sale_chg": _schg,
+        "status": {"sale_bal": _sale_status, "sale_chg": _schg_status},
+    }
+    partial: list[str] = []
 
     def _sbl_scope(*parts):
         available = [name for name, value in parts if value is not None]
@@ -288,9 +301,15 @@ def build(t0: str) -> dict:
         notes.append("借券賣出餘額市場覆蓋不完整；來源欄已明確標示實際取得市場")
     if _tw_schg is None or _tp_schg is None:
         notes.append("借券賣出增減市場覆蓋不完整；來源欄已明確標示實際取得市場")
-    if sbl["sale_bal"] is None:
+    if _sale_status == "partial":
+        partial.append("sbl.sale_bal")
+        notes.append("借券賣出餘額僅取得單一市場；不提供不完整的合計數值")
+    elif _sale_status == "unavailable":
         unavailable.append("sbl.sale_bal")
-    if sbl["sale_chg"] is None:
+    if _schg_status == "partial":
+        partial.append("sbl.sale_chg")
+        notes.append("借券賣出增減僅取得單一市場；不提供不完整的合計數值")
+    elif _schg_status == "unavailable":
         unavailable.append("sbl.sale_chg")
 
     # ---- 成交結構 (億元) ----
@@ -305,4 +324,5 @@ def build(t0: str) -> dict:
             "inst": {"foreign": inst.get("foreign"), "trust": inst.get("trust"),
                      "dealer": inst.get("dealer"), "total": inst.get("total")},
             "margin": margin, "sbl": sbl, "turnover": turnover,
-            "unavailable": unavailable, "notes": notes, "sources": sources}
+            "unavailable": unavailable, "partial": partial,
+            "notes": notes, "sources": sources}
