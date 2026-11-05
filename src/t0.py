@@ -29,7 +29,7 @@ def _roc_to_iso(roc: str) -> str:
 
 
 def load_closed(year: int, timeout: int = 20) -> set[str]:
-    """回傳該年休市日 ISO set。API 失敗回空集 (退為週末判斷)。
+    """回傳該年休市日 ISO set。API 失敗回空集並設定 _LAST_CAL_ERROR；呼叫端必須檢查錯誤，不得把空集合當成全年無休市日。
     失敗原因記在 _LAST_CAL_ERROR，resolve() 轉為 cal_fail 大聲揭露。
     F2：同 year 命中快取時直接回傳（回傳副本，維持「每次拿到新 set」的舊語意），
     並同樣把 _LAST_CAL_ERROR 清空——否則前一次失敗的錯誤字串會外洩到這次呼叫者。"""
@@ -53,7 +53,7 @@ def load_closed(year: int, timeout: int = 20) -> set[str]:
         return closed
     except Exception as e:  # noqa: BLE001
         _LAST_CAL_ERROR = str(e)[:160]
-        print(f"[WARN] 休市日曆失敗，退為週末判斷：{e}")
+        print(f"[ERROR] 休市日曆失敗；呼叫端必須停止交易日自動判定：{e}")
         return set()
 
 
@@ -79,6 +79,8 @@ def resolve(now: datetime | None = None) -> dict:
     today = now.date()
     closed = load_closed(today.year)
     cal_fail = bool(_LAST_CAL_ERROR)
+    if cal_fail:
+        raise RuntimeError(f"交易日曆不可用，拒絕自動判定 T0：{_LAST_CAL_ERROR}")
     today_open = is_trading_day(today, closed)
     day_closed = now.hour > 13 or (now.hour == 13 and now.minute >= 45)
     if not today_open:
@@ -106,6 +108,8 @@ def slot_params(slot: str, sched_iso: str, closed: set[str] | None = None) -> di
     sched = date.fromisoformat(sched_iso)
     if closed is None:
         closed = load_closed(sched.year)
+        if _LAST_CAL_ERROR:
+            raise RuntimeError(f"交易日曆不可用，拒絕自動判定 slot={slot}：{_LAST_CAL_ERROR}")
     if slot == "evening" and is_trading_day(sched, closed):
         return {"t0": sched.isoformat(), "session": "日盤", "slot": slot}
     t0 = prev_trading_day(sched, closed)
