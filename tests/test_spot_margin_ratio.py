@@ -135,7 +135,7 @@ class InstitutionalDateValidationTests(unittest.TestCase):
     def test_rwd_rejects_mismatched_date(self, fetch, _proxy):
         fetch.return_value = _Response({
             "stat": "OK", "date": "2026/11/04",
-            "data": [["外資及陸資", "", "", "100"]],
+            "data": [["外資及陸資", "", "", "100,000,000"]],
         })
         self.assertEqual(twse.get_institutional("20261105"), {})
 
