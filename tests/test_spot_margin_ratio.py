@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
@@ -112,7 +112,9 @@ class SpotMarginRatioPolicyTests(unittest.TestCase):
         get_blave.assert_called_once_with(T0, timeout=BLAVE_RATIO_TIMEOUT)
         self.assertEqual(result["ratio"], 171.747)
         self.assertIn("TWSE 上市自建估算", result["source"])
+        self.assertIn("當日暫估", result["source"])
         self.assertIn("Blave 同 T0 交叉驗證", result["source"])
+        self.assertIn("PASS", result["source"])
         self.assertIn("0.007 個百分點", result["source"])
 
     @patch("src.sources.spot.blave_maint_ratio.get")
@@ -182,6 +184,23 @@ class _Response:
 
     def json(self):
         return self.payload
+
+    def raise_for_status(self):
+        return None
+
+
+def yahoo_payload(timestamp, exchange_timezone):
+    return {
+        "chart": {
+            "result": [{
+                "meta": {"exchangeTimezoneName": exchange_timezone},
+                "timestamp": [timestamp],
+                "indicators": {"quote": [{
+                    "open": [100.0], "high": [102.0], "low": [99.0], "close": [101.0]
+                }]}
+            }]
+        }
+    }
 
 
 class InstitutionalDateValidationTests(unittest.TestCase):
@@ -368,10 +387,6 @@ class TpexSblCompletenessTests(unittest.TestCase):
         self.assertEqual(result["sale_bal"], 115.0)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class YahooExchangeTimezoneTests(unittest.TestCase):
     def test_quote_uses_exchange_timezone_not_utc_date(self):
         timestamp = int(datetime(2026, 11, 5, 0, 30, tzinfo=timezone.utc).timestamp())
@@ -428,3 +443,7 @@ class MarketReportDateTests(unittest.TestCase):
         self.assertEqual(table.count("2026-11-04"), 2)
         self.assertIn("2026-11-03", table)
         self.assertIn("unavailable", table)
+
+
+if __name__ == "__main__":
+    unittest.main()
