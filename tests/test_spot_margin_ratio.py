@@ -228,5 +228,20 @@ class TaiexUpstreamDateValidationTests(unittest.TestCase):
         self.assertEqual(result["change"], 100.0)
 
 
+
+class BorrowedSecuritiesMarketAggregationTests(unittest.TestCase):
+    def test_both_markets_present_returns_complete_sum(self):
+        self.assertEqual(spot._complete_market_sum(100.0, 25.0), (125.0, "complete"))
+
+    def test_listed_only_is_partial_and_has_no_combined_value(self):
+        self.assertEqual(spot._complete_market_sum(100.0, None), (None, "partial"))
+
+    def test_otc_only_is_partial_and_has_no_combined_value(self):
+        self.assertEqual(spot._complete_market_sum(None, 25.0), (None, "partial"))
+
+    def test_both_markets_missing_is_unavailable(self):
+        self.assertEqual(spot._complete_market_sum(None, None), (None, "unavailable"))
+
+
 if __name__ == "__main__":
     unittest.main()
