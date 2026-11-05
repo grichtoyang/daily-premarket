@@ -243,5 +243,11 @@ class BorrowedSecuritiesMarketAggregationTests(unittest.TestCase):
         self.assertEqual(spot._complete_market_sum(None, None), (None, "unavailable"))
 
 
+    def test_partial_coverage_note_has_explicit_status_marker(self):
+        self.assertEqual(
+            spot._partial_coverage_note("借券賣出餘額"),
+            "[partial] 借券賣出餘額僅取得單一市場；不提供不完整的合計數值",
+        )
+
 if __name__ == "__main__":
     unittest.main()
