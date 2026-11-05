@@ -1,11 +1,25 @@
 """TWSE 證交所：加權指數 (OpenAPI) + 三大法人 (RWD JSON)，免 Key。"""
 from __future__ import annotations
 from datetime import datetime
+import re
 from src.utils import fetch_with_retry as _fetch
 
 MI_INDEX_URL = "https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX"
 BFI82U_URL = "https://www.twse.com.tw/rwd/zh/fund/BFI82U"
 TWSE_PROXY = "https://twse-proxy.grichtoyang.workers.dev"
+
+def _normalize_date8(value) -> str:
+    """Normalize Gregorian YYYYMMDD/ISO or ROC YYY/MM/DD dates to YYYYMMDD."""
+    digits = re.sub(r"\\D", "", str(value or ""))
+    if len(digits) == 8:
+        return digits
+    if len(digits) == 7:
+        try:
+            return f"{int(digits[:3]) + 1911:04d}{digits[3:]}"
+        except ValueError:
+            return ""
+    return ""
+
 
 def _proxy_institutional(date8: str) -> dict | None:
     """twse-proxy /institutional (V1.1+)。未部署/失敗回 None，由呼叫端走 RWD 備援。"""
@@ -22,9 +36,12 @@ def _proxy_institutional(date8: str) -> dict | None:
         if not isinstance(j, dict) or j.get("ok") is not True:
             return None
         d = j.get("data") or {}
-        if d.get("foreign") is None:
+        requested_date = _normalize_date8(date8)
+        actual_date = _normalize_date8(j.get("actual_date"))
+        if (d.get("foreign") is None or not requested_date or not actual_date
+                or actual_date != requested_date or j.get("date_mismatch") is True):
             return None
-        return {"date": str(j.get("actual_date", "")).replace("-", ""), "foreign": d.get("foreign"),
+        return {"date": actual_date, "foreign": d.get("foreign"),
                 "trust": d.get("investment_trust"), "dealer": d.get("dealer"),
                 "total": d.get("total"), "via": "proxy"}
     except Exception as e:  # noqa: BLE001
@@ -79,7 +96,11 @@ def get_institutional(query_date: str = "") -> dict:
             print(f"[WARN] BFI82U stat={j.get('stat')}")
             return {}
         # fields: 證券商..., data rows: 自營商/投信/外資...
-        date = j.get("date", "")
+        date = _normalize_date8(j.get("date"))
+        requested_date = _normalize_date8(query_date) if query_date else ""
+        if query_date and (not date or not requested_date or date != requested_date):
+            print(f"[WARN] BFI82U date mismatch: requested={requested_date or query_date}, actual={date or 'missing'}")
+            return {}
         foreign = trust = dealer = None
         for row in j.get("data", []):
             name = row[0] if row else ""

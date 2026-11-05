@@ -13,6 +13,15 @@
 from __future__ import annotations
 from src.sources import twse, twse_proxy, spot_raw, finmind, histock, listed_maint_ratio, blave_maint_ratio
 
+def _institutional_matches_t0(inst: dict, date8: str) -> bool:
+    return (
+        isinstance(inst, dict)
+        and inst.get("foreign") is not None
+        and twse._normalize_date8(inst.get("date")) == twse._normalize_date8(date8)
+        and bool(twse._normalize_date8(date8))
+    )
+
+
 def _add(a, b):
     if a is None:
         return b
@@ -204,15 +213,16 @@ def build(t0: str) -> dict:
 
     # ---- 三大法人 (億元) ----
     inst = twse.get_institutional(query_date=date8)
+    if inst.get("foreign") is not None and not _institutional_matches_t0(inst, date8):
+        notes.append(f"三大法人資料日期缺失或不符 T0（回傳 {inst.get('date') or 'missing'}，要求 {date8}），拒絕採用")
+        inst = {}
     if inst.get("foreign") is None:
         notes.append("三大法人未取得")
         for k in ("foreign", "trust", "dealer", "total"):
             unavailable.append(f"institutional.{k}")
     else:
         sources["institutional"] = "twse-proxy /institutional" if inst.get("via") == "proxy" else "TWSE RWD BFI82U"
-        if inst.get("date") and inst["date"] != date8:
-            notes.append(f"三大法人回傳日期 {inst['date']} (T0 {date8})，採用最新可得")
-
+ 
     # ---- 融資融券 (HiStock 金額口徑為主：融資億元/融券張) ----
     hs = histock.get(t0)
     mtw = spot_raw.margin_tw()
