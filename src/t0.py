@@ -30,7 +30,7 @@ def _roc_to_iso(roc: str) -> str:
 
 def load_closed(year: int, timeout: int = 20) -> set[str]:
     """回傳該年休市日 ISO set。API 失敗回空集並設定 _LAST_CAL_ERROR；呼叫端必須檢查錯誤，不得把空集合當成全年無休市日。
-    失敗原因記在 _LAST_CAL_ERROR，resolve() 轉為 cal_fail 大聲揭露。
+    失敗原因記在 _LAST_CAL_ERROR；resolve() 與 slot_params() 必須 fail-closed 並停止自動判定。
     F2：同 year 命中快取時直接回傳（回傳副本，維持「每次拿到新 set」的舊語意），
     並同樣把 _LAST_CAL_ERROR 清空——否則前一次失敗的錯誤字串會外洩到這次呼叫者。"""
     global _LAST_CAL_ERROR
