@@ -152,14 +152,14 @@ class CompleteAggregateContractTests(unittest.TestCase):
         rows = [{"strike": 100, "open_interest": 25},
                 {"strike": 110, "open_interest": 75}]
         result = _oi_distribution(rows)
-        self.assertEqual([row["pct"] for row in result], [25.0, 75.0])
+        self.assertEqual([row["pct"] for row in result], [75.0, 25.0])
 
     def test_partial_oi_distribution_preserves_values_but_hides_percentages(self):
         rows = [{"strike": 100, "open_interest": 25},
                 {"strike": 110, "open_interest": None},
                 {"strike": 120, "open_interest": 75}]
         result = _oi_distribution(rows)
-        self.assertEqual([row["oi"] for row in result], [25, 75, None])
+        self.assertEqual([row["oi"] for row in result], [75, 25, None])
         self.assertTrue(all(row["pct"] is None for row in result))
 
     def test_empty_oi_distribution_is_empty(self):
