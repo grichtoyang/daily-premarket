@@ -37,29 +37,36 @@ class SblReportStatusOutputTests(unittest.TestCase):
 class SblPublicationStatusTests(unittest.TestCase):
     TAIPEI = ZoneInfo("Asia/Taipei")
 
-    def test_tpex_is_pending_before_official_production_time(self):
-        result = spot_raw._sbl_publication_metadata("20261105", "22:00", now=datetime(2026, 11, 5, 21, 59, tzinfo=self.TAIPEI))
+    def test_tpex_pending_before_final_public_page_update(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:30", now=datetime(2026, 11, 5, 22, 29, tzinfo=self.TAIPEI))
         self.assertEqual(result["status"], "pending")
         self.assertIsNone(result["production_time"])
 
-    def test_twse_is_pending_before_official_production_time(self):
+    def test_twse_pending_before_official_production_time(self):
         result = spot_raw._sbl_publication_metadata("20261105", "23:30", now=datetime(2026, 11, 5, 23, 29, tzinfo=self.TAIPEI))
         self.assertEqual(result["status"], "pending")
 
-    def test_status_is_unknown_after_schedule_without_observed_timestamp(self):
-        result = spot_raw._sbl_publication_metadata("20261105", "22:00", now=datetime(2026, 11, 5, 22, 1, tzinfo=self.TAIPEI))
+    def test_after_schedule_without_valid_data_remains_unknown(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:30", now=datetime(2026, 11, 5, 22, 31, tzinfo=self.TAIPEI))
         self.assertEqual(result["status"], "unknown")
         self.assertIsNone(result["production_time"])
 
-    def test_explicit_valid_production_time_confirms_published(self):
-        result = spot_raw._sbl_publication_metadata("20261105", "22:00", actual_time="2205")
-        self.assertEqual(result["status"], "published")
-        self.assertEqual(result["production_time"], "2205")
+    def test_matching_data_observed_after_schedule_is_not_claimed_as_published(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:30", now=datetime(2026, 11, 5, 22, 31, tzinfo=self.TAIPEI), data_available=True)
+        self.assertEqual(result["status"], "available_after_schedule")
+        self.assertEqual(result["checked_at"], "2026-11-05T22:31:00+08:00")
+        self.assertIsNone(result["production_time"])
 
-    def test_report_line_does_not_conflate_schedule_with_actual_time(self):
-        line = _sbl_publication_line("TPEx S47", {"data_date": "20261105", "expected_time": "22:00", "production_time": None, "status": "unknown"})
-        self.assertIn("實際產製時間：`unavailable`", line)
-        self.assertIn("發布狀態：`unknown`", line)
+    def test_explicit_source_production_time_confirms_published(self):
+        result = spot_raw._sbl_publication_metadata("20261105", "22:30", actual_time="2235")
+        self.assertEqual(result["status"], "published")
+        self.assertEqual(result["production_time"], "2235")
+
+    def test_report_line_separates_source_time_from_query_time(self):
+        line = _sbl_publication_line("TPEx S47", {"data_date": "20261105", "expected_time": "22:30", "production_time": None, "checked_at": "2026-11-05T22:31:00+08:00", "status": "available_after_schedule"})
+        self.assertIn("來源回報產製時間：`unavailable`", line)
+        self.assertIn("本次查詢時間：`2026-11-05T22:31:00+08:00`", line)
+        self.assertIn("狀態：`available_after_schedule`", line)
 
 class SpotMarginRatioPolicyTests(unittest.TestCase):
     @patch("src.sources.spot.blave_maint_ratio.get")
