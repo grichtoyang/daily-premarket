@@ -68,6 +68,10 @@ def _add3(a, b, c):
 def _diff2(a, b):
     return a - b if a is not None and b is not None else None
 
+def _prefer_not_none(primary, fallback):
+    """Use fallback only when primary is None; zero is a valid observed value."""
+    return fallback if primary is None else primary
+
 def _pct(v) -> str:
     return f"{float(v):+.2f}" if v is not None else MISSING
 
@@ -659,7 +663,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("收盤價", _fi(d["close"]), SRC_FX), ("漲跌點數", _f2s(d["change"]), SRC_FX),
             ("漲跌幅", _pct(d["pct"]), SRC_FX),
             # 日盤行情只取 regular_volume；total 含前夜盤，會與 §三.7.1 日盤成交量矛盾（2026-10-22 修正）
-            ("成交量", _fi(d.get("vol_day") if d.get("vol_day") is not None else d.get("vol")), SRC_FX),
+            ("成交量", _fi(_prefer_not_none(d.get("vol_day"), d.get("vol"))), SRC_FX),
             ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", SRC_FX)],
            ("項目", "數值", "資料來源")))
     A("")
