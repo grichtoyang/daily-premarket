@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from src.sources import spot, twse, twse_proxy
+from src.sources import spot, spot_raw, twse, twse_proxy
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
 
 
@@ -248,6 +248,41 @@ class BorrowedSecuritiesMarketAggregationTests(unittest.TestCase):
             spot._partial_coverage_note("借券賣出餘額"),
             "[partial] 借券賣出餘額僅取得單一市場；不提供不完整的合計數值",
         )
+
+class TpexSblCompletenessTests(unittest.TestCase):
+    FIELDS = ["股票代號", "前日餘額", "當日賣出", "當日還券", "當日調整數額", "當日餘額"]
+
+    def _run(self, rows):
+        payload = {"tables": [{"date": "115/11/05", "fields": self.FIELDS, "data": rows}]}
+        with patch("src.sources.spot_raw._get_json", return_value=payload):
+            return spot_raw.tpex_sbl("1151105")
+
+    def test_all_stock_rows_valid_returns_complete_total(self):
+        result = self._run([["2330", "100", "20", "5", "0", "115"], ["2317", "50", "10", "2", "0", "58"]])
+        self.assertTrue(result["date_ok"])
+        self.assertEqual(result["sale_bal"], 173.0)
+        self.assertEqual(result["sale_chg"], 23.0)
+
+    def test_one_stock_missing_required_value_rejects_whole_total(self):
+        result = self._run([["2330", "100", "20", "5", "0", "115"], ["2317", "50", "", "2", "0", "48"]])
+        self.assertFalse(result["date_ok"])
+        self.assertIsNone(result["sale_bal"])
+
+    def test_one_stock_roll_forward_mismatch_rejects_whole_total(self):
+        result = self._run([["2330", "100", "20", "5", "0", "999"]])
+        self.assertFalse(result["date_ok"])
+        self.assertIsNone(result["sale_bal"])
+
+    def test_all_stock_rows_invalid_returns_unavailable(self):
+        result = self._run([["2330", "100", "20", "5", "0", "999"], ["2317", "50", "", "2", "0", "48"]])
+        self.assertFalse(result["date_ok"])
+        self.assertIsNone(result["sale_bal"])
+
+    def test_non_stock_summary_row_is_excluded(self):
+        result = self._run([["2330", "100", "20", "5", "0", "115"], ["合計", "100", "20", "5", "0", "115"]])
+        self.assertTrue(result["date_ok"])
+        self.assertEqual(result["sale_bal"], 115.0)
+
 
 if __name__ == "__main__":
     unittest.main()
