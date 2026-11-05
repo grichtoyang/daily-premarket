@@ -86,6 +86,21 @@ class SblPublicationStatusTests(unittest.TestCase):
         self.assertIn("本次查詢時間：`2026-11-05T22:31:00+08:00`", line)
         self.assertIn("狀態：`available_after_schedule`", line)
 
+class MarginRatioCrossCheckThresholdTests(unittest.TestCase):
+    def test_difference_below_one_percentage_point_passes(self):
+        result = spot._ratio_cross_check(155.93, 155.74)
+        self.assertIn("差異 0.190 個百分點", result)
+        self.assertIn("PASS", result)
+
+    def test_difference_equal_to_one_percentage_point_fails(self):
+        result = spot._ratio_cross_check(155.93, 154.93)
+        self.assertIn("FAIL", result)
+
+    def test_difference_above_one_percentage_point_fails(self):
+        result = spot._ratio_cross_check(155.93, 154.92)
+        self.assertIn("FAIL", result)
+
+
 class SpotMarginRatioPolicyTests(unittest.TestCase):
     @patch("src.sources.spot.blave_maint_ratio.get")
     @patch("src.sources.spot.listed_maint_ratio.get")
