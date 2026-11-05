@@ -5,8 +5,18 @@ change/pct 由最近兩根日K收盤計算 (不依賴 meta 漲跌欄)。
 """
 from __future__ import annotations
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import requests
 from src.utils import HEADERS
+
+def _exchange_date(timestamp: int | float, timezone_name: str | None) -> str:
+    """Convert Yahoo's UNIX timestamp using the instrument's exchange timezone."""
+    try:
+        tz = ZoneInfo(timezone_name) if timezone_name else timezone.utc
+    except (ZoneInfoNotFoundError, ValueError, TypeError):
+        tz = timezone.utc
+    return datetime.fromtimestamp(timestamp, tz=tz).strftime("%Y-%m-%d")
+
 
 GROUPS: dict[str, list[tuple[str, str]]] = {
     "美股指數": [("S&P 500", "^GSPC"), ("Nasdaq Composite", "^IXIC"), ("Nasdaq 100", "^NDX"),
@@ -24,7 +34,7 @@ GROUPS: dict[str, list[tuple[str, str]]] = {
 def quote(sym: str) -> dict:
     out = {"symbol": sym, "price": None, "change": None, "pct": None, "date": None,
            "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-           "source": "Yahoo Finance Chart API", "ok": False}
+           "exchange_timezone": None, "source": "Yahoo Finance Chart API", "ok": False}
     try:
         r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1mo",
                          headers={**HEADERS, "Accept": "application/json"}, timeout=20)
@@ -33,13 +43,16 @@ def quote(sym: str) -> dict:
         if not res:
             return out
         ts = res.get("timestamp") or []
+        meta = res.get("meta") or {}
+        exchange_timezone = meta.get("exchangeTimezoneName")
+        out["exchange_timezone"] = exchange_timezone
         closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
         pts = [(t, c) for t, c in zip(ts, closes) if c is not None]
         if len(pts) < 1:
             return out
         last_t, last_c = pts[-1]
         out["price"] = last_c
-        out["date"] = datetime.fromtimestamp(last_t, tz=timezone.utc).strftime("%Y-%m-%d")
+        out["date"] = _exchange_date(last_t, exchange_timezone)
         if len(pts) >= 2:
             prev_c = pts[-2][1]
             out["change"] = last_c - prev_c
@@ -65,7 +78,8 @@ def get_all() -> dict:
 
 def ohlc(sym: str) -> dict:
     """最近一根日K的 open/high/low/close/date。失敗回 ok=False。"""
-    out = {"open": None, "high": None, "low": None, "close": None, "date": None, "ok": False}
+    out = {"open": None, "high": None, "low": None, "close": None, "date": None,
+           "exchange_timezone": None, "ok": False}
     try:
         r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=5d",
                          headers={**HEADERS, "Accept": "application/json"}, timeout=20)
@@ -74,17 +88,18 @@ def ohlc(sym: str) -> dict:
         if not res:
             return out
         ts = res.get("timestamp") or []
+        meta = res.get("meta") or {}
+        exchange_timezone = meta.get("exchangeTimezoneName")
         q = ((res.get("indicators") or {}).get("quote") or [{}])[0]
         n = len(ts)
         for i in range(n - 1, -1, -1):
             c = (q.get("close") or [None] * n)[i]
             if c is None:
                 continue
-            import datetime as _dt
             out = {"open": (q.get("open") or [None] * n)[i], "high": (q.get("high") or [None] * n)[i],
                    "low": (q.get("low") or [None] * n)[i], "close": c,
-                   "date": _dt.datetime.fromtimestamp(ts[i], tz=_dt.timezone.utc).strftime("%Y-%m-%d"),
-                   "ok": True}
+                   "date": _exchange_date(ts[i], exchange_timezone),
+                   "exchange_timezone": exchange_timezone, "ok": True}
             break
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] yahoo ohlc {sym} failed: {e}")
