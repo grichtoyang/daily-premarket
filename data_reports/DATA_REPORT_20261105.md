@@ -70,8 +70,8 @@
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
-| 融資餘額 | unavailable | 億元 | HiStock |
-| 融資增減 | unavailable | 億元 | HiStock |
+| 融資餘額 | 7,604.5 | 億元 | HiStock |
+| 融資增減 | -274.2 | 億元 | HiStock |
 | 融券餘額 | 246,812 | 張 | HiStock |
 | 融券增減 | -10,370 | 張 | HiStock |
 | 融資維持率 | unavailable | % | unavailable（TWSE 自建、Blave、同 T0 人工輸入皆不可用） |
@@ -85,6 +85,8 @@
 | 借券餘額 | 31,935,921 | 張 | TWSE TWT72U（SLBNLB；上市+上櫃） |
 | 借券賣出餘額 | 20,053,370 | 張 | TWSE TWT93U（上市） + TPEX S47（上櫃） |
 | 借券賣出增減 | 320,786 | 張 | TWSE TWT93U（上市） + TPEX S47（上櫃） |
+- 借券賣出餘額完整性：`complete`
+- 借券賣出增減完整性：`complete`
 
 ### 6. 市場成交結構
 
@@ -628,7 +630,8 @@
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
 - 資料日期：2026-11-05；資料時間：2026-11-05 20:45:58；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 未取得欄位 (5)：margin.fin_yi, margin.fin_chg_yi, margin.ratio, options.chain_oi_change, options.wall_change
+- 註記：同 T0 穩定：42 格新舊皆有值，沿用前版（不再靜默覆寫）
+- 未取得欄位 (3)：margin.ratio, options.chain_oi_change, options.wall_change
 - 註記：法人交易量變化無昨日交易端點，標 unavailable
 - 註記：跨到期換月（舊202611W1→新202611F1），日對日 OI/Walls 變化不適用
 
@@ -641,7 +644,7 @@
 - listed_breadth：`twse-proxy`
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
-- margin_short：`TWSE MI_MARGN + TPEX margin_balance (張)`
+- margin：`HiStock 上市+上櫃融資融券 (金額口徑)`
 - margin_ratio：`unavailable（TWSE 自建、Blave、同 T0 人工輸入皆不可用）`
 - sbl_bal：`TWSE TWT72U（SLBNLB；上市+上櫃）`
 - sbl_sale_bal：`TWSE TWT93U（上市） + TPEX S47（上櫃）`
@@ -649,8 +652,6 @@
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：HiStock 未取得，融資餘額/增減標 unavailable (官方逐股加總僅有張數)
-- 註記：融券沿用官方逐股加總 (張)
 - 註記：上市融資維持率 unavailable；自建計算：ValueError: listed securities missing T0 close: ['1589']；Blave：exact T0 2026-11-05 not found。不影響其他融資融券欄位、DATA_REPORT、JSON 與 Dashboard 產出。
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
 - 本報告僅整理資料，不提供交易判斷。
