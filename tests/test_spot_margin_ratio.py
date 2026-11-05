@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 from src.sources import spot, spot_raw, twse, twse_proxy, us_market
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
-from src.fetch_data import (_sbl_status_line, _sbl_publication_line, _sbl_market_table,\n                            _market_quote_table, _treasury_yield_table)
+from src.fetch_data import (_sbl_status_line, _sbl_publication_line, _sbl_market_table,
+                            _market_quote_table, _treasury_yield_table)
 
 
 T0 = "2026-10-30"
