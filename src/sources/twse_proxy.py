@@ -29,6 +29,28 @@ def fetch(date8: str, timeout: int = 30) -> dict | None:
         r.raise_for_status()
         j = r.json()
         if isinstance(j, dict) and j.get("ok") is True:
+            def compact(value):
+                return re.sub(r"[^0-9]", "", str(value or ""))
+            endpoints = j.get("endpoints") or {}
+            ind = endpoints.get("IND") or {}
+            # V1.2 才提供上游實際日期；舊版或缺日期一律不接受。
+            if (
+                ind.get("date_valid") is not True
+                or compact(ind.get("actual_date")) != date8
+            ):
+                print("[WARN] twse-proxy IND upstream date missing or mismatched")
+                return None
+            data = j.get("data") or {}
+            ms = endpoints.get("MS") or {}
+            if (
+                ms.get("date_valid") is not True
+                or compact(ms.get("actual_date")) != date8
+            ):
+                # IND/TAIEX 可用，但 MS 衍生資料必須獨立標為不可用。
+                data["market_statistics"] = None
+                data["advance_decline"] = None
+                j["data"] = data
+                print("[WARN] twse-proxy MS upstream date missing or mismatched")
             return j
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] twse-proxy failed: {e}")
@@ -102,19 +124,26 @@ def official_ind_taiex(date8: str, timeout: int = 20) -> dict:
     """備援：MI_INDEX?date=&type=IND。回傳 {close, change, pct} (無開高低)。"""
     out = {"close": None, "change": None, "pct": None}
     try:
-        r = requests.get(f"{MI_INDEX}?date={date8}&type=IND", headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
+        url = f"https://www.twse.com.tw/exchangeReport/MI_INDEX?response=json&date={date8}&type=IND"
+        r = requests.get(url, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
         r.raise_for_status()
-        for row in r.json():
-            if row.get("指數") == "發行量加權股價指數":
-                sign = str(row.get("漲跌", "")).strip()
-                chg = _num(row.get("漲跌點數"))
-                pct = _num(row.get("漲跌百分比"))
-                if chg is not None and sign == "-":
-                    chg = -abs(chg)
-                if chg is not None and pct is not None:
-                    pct = abs(pct) if chg >= 0 else -abs(pct)
-                out = {"close": _num(row.get("收盤指數")), "change": chg, "pct": pct}
-                break
+        payload = r.json()
+        actual_date = re.sub(r"[^0-9]", "", str(payload.get("date") or "")) if isinstance(payload, dict) else ""
+        if actual_date != date8:
+            print(f"[WARN] MI_INDEX fallback date mismatch: actual={actual_date or 'missing'} requested={date8}")
+            return out
+        for table in payload.get("tables") or []:
+            for row in table.get("data") or []:
+                if row and row[0] == "發行量加權股價指數":
+                    sign = str(row[2] if len(row) > 2 else "").strip()
+                    chg = _num(row[3] if len(row) > 3 else None)
+                    pct = _num(row[4] if len(row) > 4 else None)
+                    if chg is not None and "-" in sign:
+                        chg = -abs(chg)
+                    if chg is not None and pct is not None:
+                        pct = abs(pct) if chg >= 0 else -abs(pct)
+                    out = {"close": _num(row[1] if len(row) > 1 else None), "change": chg, "pct": pct}
+                    return out
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] MI_INDEX fallback failed: {e}")
     return out
