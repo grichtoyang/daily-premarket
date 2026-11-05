@@ -45,6 +45,15 @@ def _partial_coverage_note(field: str) -> str:
 
 SELF_BUILT_RATIO_TIMEOUT = 10
 BLAVE_RATIO_TIMEOUT = 3
+BLAVE_CROSS_CHECK_MAX_DIFF_PP = 1.0
+
+
+def _ratio_cross_check(self_ratio: float, blave_ratio: float) -> str:
+    """PASS only when two same-T0 listed-market estimates differ by <1 percentage point."""
+    diff = abs(self_ratio - blave_ratio)
+    status = "PASS" if diff < BLAVE_CROSS_CHECK_MAX_DIFF_PP else "FAIL"
+    return (f"Blave 同 T0 交叉驗證 {blave_ratio:.4f}%；差異 {diff:.3f} 個百分點；"
+            f"門檻 <{BLAVE_CROSS_CHECK_MAX_DIFF_PP:.2f} 個百分點；{status}")
 
 
 def _valid_ratio(result, t0: str) -> float | None:
@@ -88,7 +97,7 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
         price_max = self_result.get("price_date_max")
         if blave_ratio is not None:
             diff = abs(self_ratio - blave_ratio)
-            cross_check = f"Blave 同 T0 交叉驗證 {blave_ratio:.4f}%，差異 {diff:.3f} 個百分點"
+            cross_check = _ratio_cross_check(self_ratio, blave_ratio)
         else:
             cross_check = f"Blave 交叉驗證未取得（{blave_reason}）；不影響自建值"
         price_note = (
@@ -96,14 +105,14 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
             + (f"（價格日期 {price_min} 至 {price_max}）" if stale_count and price_min and price_max else "")
         )
         source = (
-            f"TWSE 上市自建估算（資料日期：{t0}；估值 {financed_count} 檔；"
+            f"TWSE 上市自建估算（當日暫估；資料日期：{t0}；估值 {financed_count} 檔；"
             f"{price_note}；{cross_check}）"
         )
         return {
             "ratio": round(self_ratio, 4),
             "source": source,
             "note": (
-                f"上市市場維持率以 TWSE 自建計算為主；{price_note}。"
+                f"上市市場維持率為當日暫估，以 TWSE 自建計算為主；{price_note}。"
                 f"{cross_check}。Blave 不可用不影響 DATA_REPORT 產出。"
             ),
         }
@@ -111,8 +120,8 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
     if blave_ratio is not None:
         return {
             "ratio": round(blave_ratio, 4),
-            "source": f"Blave 上市市場融資維持率估算（資料日期：{t0}；自建計算備援）",
-            "note": f"TWSE 自建計算未成功（{self_reason}）；改用 Blave 同 T0 數值（{t0}）。",
+            "source": f"Blave 上市市場融資維持率估算（當日暫估；資料日期：{t0}；自建計算備援）",
+            "note": f"上市市場維持率為當日暫估；TWSE 自建計算未成功（{self_reason}）；改用 Blave 同 T0 數值（{t0}）。",
         }
 
     manual_date = str(values.get("MANUAL_LISTED_MARGIN_RATIO_DATE", "")).strip()
@@ -124,9 +133,9 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
     if manual_date == t0 and manual_ratio is not None and 50 < manual_ratio < 500:
         return {
             "ratio": round(manual_ratio, 4),
-            "source": f"人工輸入（MANUAL_LISTED_MARGIN_RATIO；資料日期：{t0}）",
+            "source": f"人工輸入（當日暫估；MANUAL_LISTED_MARGIN_RATIO；資料日期：{t0}）",
             "note": (
-                f"TWSE 自建計算未成功（{self_reason}）；Blave 備援未取得（{blave_reason}）；"
+                f"上市市場維持率為當日暫估；TWSE 自建計算未成功（{self_reason}）；Blave 備援未取得（{blave_reason}）；"
                 f"最後採用同 T0 人工輸入（資料日期：{t0}）。"
             ),
         }
