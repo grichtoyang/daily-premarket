@@ -116,16 +116,16 @@ def sbl_tw() -> dict:
     return out
 
 
-def _sbl_publication_metadata(date_value: str, expected_time: str, actual_time: str | None = None, now: datetime | None = None) -> dict:
-    """Return conservative publication metadata; never infer publication from date alone."""
+def _sbl_publication_metadata(date_value: str, expected_time: str, actual_time: str | None = None, now: datetime | None = None, data_available: bool = False) -> dict:
+    """Separate scheduled update, observed query time, and source-reported production time."""
     date8 = _twse_date8(date_value)
-    result = {"data_date": date8, "expected_time": expected_time, "production_time": None, "status": "unknown"}
+    result = {"data_date": date8, "expected_time": expected_time, "production_time": None, "checked_at": None, "status": "unknown"}
     if date8 is None:
         return result
     import re
     if actual_time is not None:
         value = str(actual_time).strip()
-        if re.fullmatch(r"(?:[01]\d|2[0-3])[0-5]\d", value):
+        if re.fullmatch(r"(?:[01]\\d|2[0-3])[0-5]\\d", value):
             result["production_time"] = value
             if value >= expected_time.replace(":", ""):
                 result["status"] = "published"
@@ -136,8 +136,12 @@ def _sbl_publication_metadata(date_value: str, expected_time: str, actual_time: 
         current = current.replace(tzinfo=taipei)
     else:
         current = current.astimezone(taipei)
-    if current.strftime("%Y%m%d") == date8 and current.strftime("%H%M") < expected_time.replace(":", ""):
-        result["status"] = "pending"
+    result["checked_at"] = current.isoformat(timespec="seconds")
+    if current.strftime("%Y%m%d") == date8:
+        if current.strftime("%H%M") < expected_time.replace(":", ""):
+            result["status"] = "pending"
+        elif data_available:
+            result["status"] = "available_after_schedule"
     return result
 
 def _twse_date8(date_value: str) -> str | None:
@@ -251,7 +255,7 @@ def twse_twt93u_sbl(date_value: str) -> dict:
         "sale_chg": bal - prev,
         "prev_bal": prev,
         "date_ok": True,
-        "publication": out["publication"],
+        "publication": _sbl_publication_metadata(date_value, "23:30", data_available=True),
     }
 
 def twse_twt72u_sbl(date_value: str) -> dict:
@@ -366,7 +370,7 @@ def tpex_margin(roc: str) -> dict:
 
 def tpex_sbl(roc: str) -> dict:
     """TPEx 官方信用額度總量管制餘額：依 S47 欄名取借券賣出前日／當日餘額。"""
-    out = {"bal": None, "sale_bal": None, "sale_chg": None, "date_ok": False, "publication": _sbl_publication_metadata(roc, "22:00")}
+    out = {"bal": None, "sale_bal": None, "sale_chg": None, "date_ok": False, "publication": _sbl_publication_metadata(roc, "22:30")}
     date8 = _twse_date8(roc)
     if date8 is None:
         print(f"[WARN] TPEX margin_sbl invalid requested date: {roc!r}")
@@ -424,4 +428,4 @@ def tpex_sbl(roc: str) -> dict:
         print(f"[WARN] TPEX margin_sbl rejected incomplete stock rows: date={date8} parsed={parsed} total={len(data)} invalid={invalid}")
         return out
     print(f"[INFO] TPEX margin_sbl parsed rows={parsed}/{len(data)} date={date8}")
-    return {"bal": None, "sale_bal": total_bal, "sale_chg": total_bal - total_prev, "date_ok": True, "publication": out["publication"]}
+    return {"bal": None, "sale_bal": total_bal, "sale_chg": total_bal - total_prev, "date_ok": True, "publication": _sbl_publication_metadata(roc, "22:30", data_available=True)}
