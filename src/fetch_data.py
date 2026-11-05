@@ -64,12 +64,6 @@ def _add3(a, b, c):
         return None
     return a + b + c
 
-def _add2(a, b):
-    if a is None:
-        return b
-    if b is None:
-        return a
-    return a + b
 
 def _diff2(a, b):
     return a - b if a is not None and b is not None else None
