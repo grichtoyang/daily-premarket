@@ -6,10 +6,23 @@ from unittest.mock import patch
 from src.sources import spot, spot_raw, twse, twse_proxy, us_market
 from src.sources.spot import _get_margin_ratio, SELF_BUILT_RATIO_TIMEOUT, BLAVE_RATIO_TIMEOUT
 from src.fetch_data import (_add3, _f2s, _sbl_status_line, _sbl_publication_line, _sbl_market_table,
-                            _market_quote_table, _treasury_yield_table)
+                            _market_quote_table, _treasury_yield_table, _prefer_not_none, _fi)
 
 
 T0 = "2026-10-30"
+
+
+class FuturesVolumeFallbackTests(unittest.TestCase):
+    def test_zero_day_volume_is_preserved_instead_of_using_total_volume(self):
+        value = _prefer_not_none(0, 12500)
+        self.assertEqual(value, 0)
+        self.assertEqual(_fi(value), "0")
+
+    def test_missing_day_volume_uses_total_volume_fallback(self):
+        self.assertEqual(_prefer_not_none(None, 12500), 12500)
+
+    def test_missing_both_volume_values_stays_missing(self):
+        self.assertIsNone(_prefer_not_none(None, None))
 
 
 def self_built_result(ratio=171.747):
