@@ -42,6 +42,13 @@ def _complete_market_sum(listed, otc):
 def _partial_coverage_note(field: str) -> str:
     return f"[partial] {field}僅取得單一市場；不提供不完整的合計數值"
 
+def _turnover_values(listed_turnover_yuan, otc_turnover_yi):
+    """Return turnover values without treating one market as the combined total."""
+    listed_yi = (listed_turnover_yuan / 1e8
+                 if listed_turnover_yuan is not None else None)
+    total, status = _complete_market_sum(listed_yi, otc_turnover_yi)
+    return {"listed": listed_yi, "otc": otc_turnover_yi, "total": total}, status
+
 
 def _optional_float(value):
     """Parse a present numeric value while preserving a legitimate zero."""
@@ -205,7 +212,7 @@ def build(t0: str) -> dict:
     if fm["ok"]:
         taiex.update({"open": fm["open"], "high": fm["high"], "low": fm["low"]})
         sources["taiex_ohlc"] = "FinMind TaiwanStockPrice TAIEX"
-        if fm["money_yuan"] and listed_turnover_yuan is None:
+        if fm["money_yuan"] is not None and listed_turnover_yuan is None:
             listed_turnover_yuan = fm["money_yuan"]
             sources["listed_turnover"] = "FinMind Trading_money"
     else:
@@ -363,12 +370,15 @@ def build(t0: str) -> dict:
         unavailable.append("sbl.sale_chg")
 
     # ---- 成交結構 (億元) ----
-    listed_yi = listed_turnover_yuan / 1e8 if listed_turnover_yuan else None
-    turnover = {"listed": listed_yi, "otc": otc_turnover_yi,
-                "total": _add(listed_yi, otc_turnover_yi)}
-    for k in ("listed", "otc", "total"):
+    turnover, turnover_status = _turnover_values(listed_turnover_yuan, otc_turnover_yi)
+    for k in ("listed", "otc"):
         if turnover[k] is None:
             unavailable.append(f"turnover.{k}")
+    if turnover_status == "partial":
+        partial.append("turnover.total")
+        notes.append(_partial_coverage_note("成交金額合計"))
+    elif turnover_status == "unavailable":
+        unavailable.append("turnover.total")
 
     return {"taiex": taiex, "listed_breadth": lb, "otc_breadth": ob,
             "inst": {"foreign": inst.get("foreign"), "trust": inst.get("trust"),
