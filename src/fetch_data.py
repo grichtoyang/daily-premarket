@@ -844,7 +844,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A(_tbl([("交易日期", fx['trade_date'], SRC_FX),
             ("到期月份／到期日", _ot['expiry'] or MISSING, SRC_FX),
-            ("資料更新時間", now, "本機"),
+            ("報告產製時間", now, "本機"),
             ("日盤／夜盤標記", "日盤收盤後資料", SRC_FX)],
            ("項目", "數值", "資料來源")))
     A("")
