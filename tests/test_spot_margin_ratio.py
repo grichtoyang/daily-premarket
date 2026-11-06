@@ -479,5 +479,54 @@ class CompleteThreePartyAggregateTests(unittest.TestCase):
         self.assertEqual(_f2s(_add3(1000, 500, None)), "unavailable")
 
 
+
+
+class SpotAggregateAndZeroValueContractTests(unittest.TestCase):
+    def test_margin_totals_require_both_markets_for_each_field(self):
+        listed = {"fin_yi": 100.0, "fin_chg_yi": 5.0, "short_bal": 20, "short_chg": 2}
+        otc = {"fin_yi": 30.0, "fin_chg_yi": -1.0, "short_bal": 7, "short_chg": -1}
+        totals, statuses = spot._margin_market_totals(listed, otc)
+        self.assertEqual(totals, {"fin_yi": 130.0, "fin_chg_yi": 4.0, "s_bal": 27, "s_chg": 1})
+        self.assertTrue(all(status == "complete" for status in statuses.values()))
+
+    def test_missing_otc_market_never_returns_listed_as_combined_total(self):
+        listed = {"fin_yi": 100.0, "fin_chg_yi": 5.0, "short_bal": 20, "short_chg": 2}
+        totals, statuses = spot._margin_market_totals(listed, None)
+        self.assertTrue(all(value is None for value in totals.values()))
+        self.assertTrue(all(status == "partial" for status in statuses.values()))
+
+    def test_missing_field_invalidates_only_that_combined_field(self):
+        listed = {"fin_yi": 100.0, "fin_chg_yi": None, "short_bal": 20, "short_chg": 2}
+        otc = {"fin_yi": 30.0, "fin_chg_yi": 1.0, "short_bal": 7, "short_chg": -1}
+        totals, statuses = spot._margin_market_totals(listed, otc)
+        self.assertEqual(totals["fin_yi"], 130.0)
+        self.assertIsNone(totals["fin_chg_yi"])
+        self.assertEqual(statuses["fin_chg_yi"], "partial")
+        self.assertEqual(totals["s_bal"], 27)
+
+    def test_both_market_fields_missing_are_unavailable(self):
+        totals, statuses = spot._margin_market_totals({"fin_yi": None}, {"fin_yi": None})
+        self.assertIsNone(totals["fin_yi"])
+        self.assertEqual(statuses["fin_yi"], "unavailable")
+
+    def test_real_zero_is_preserved_in_margin_aggregation(self):
+        totals, statuses = spot._margin_market_totals(
+            {"fin_yi": 0, "fin_chg_yi": 0, "short_bal": 0, "short_chg": 0},
+            {"fin_yi": 0, "fin_chg_yi": 0, "short_bal": 0, "short_chg": 0})
+        self.assertEqual(set(totals.values()), {0})
+        self.assertTrue(all(status == "complete" for status in statuses.values()))
+
+    def test_tpex_numeric_zero_is_not_converted_to_missing(self):
+        for value in (0, "0", 0.0):
+            self.assertEqual(spot._optional_float(value), 0.0)
+
+    def test_tpex_missing_or_blank_value_remains_unavailable(self):
+        for value in (None, ""):
+            self.assertIsNone(spot._optional_float(value))
+
+    def test_tpex_comma_formatted_value_is_parsed(self):
+        self.assertEqual(spot._optional_float("1,234"), 1234.0)
+
+
 if __name__ == "__main__":
     unittest.main()
