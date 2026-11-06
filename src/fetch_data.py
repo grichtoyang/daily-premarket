@@ -290,7 +290,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
       已發布報告的 T0 被重跑時 DATA 不得被破壞）：
        · 維持率列：本次 unavailable 時不得沿用前版數值；由表格合併的 T0 缺值特例處理。
       · 同盤別重跑（Case A：週五全日已發布，週一早上又是同 T0 同盤別）→ 新聞
-        凍結沿用前版（否則被換成週一的新聞）、標頭四行凍結、資料時間行凍結。
+        凍結沿用前版（否則被換成週一的新聞）、標頭四行凍結、報告產製時間行凍結。
       · 盤別升級（Case B：前版日盤 → 本次全日）→ 新聞與標頭、資料時間都允許
         更新；這是每日盤前報告的正規路徑（週二早上的報告＝週一全日＋週二盤前
         新聞），凍結等於讓每天早上的報告只拿到前一晚的新聞。
@@ -841,7 +841,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     _ot, _oc, _op, _w = fx["opt_tot"], fx["opt_conc"], fx["opt_pos"], fx["walls"]
     _od = fx.get("opt_dist") or {"call": [], "put": []}
-    A("### 1．選擇權交易日期、到期日與資料時間")
+    A("### 1．選擇權交易日期、到期日與報告產製時間")
     A("")
     A(_tbl([("交易日期", fx['trade_date'], SRC_FX),
             ("到期月份／到期日", _ot['expiry'] or MISSING, SRC_FX),
