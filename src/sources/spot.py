@@ -182,6 +182,7 @@ def build(t0: str) -> dict:
     unavailable: list[str] = []
     notes: list[str] = []
     sources: dict = {}
+    partial: list[str] = []
 
     # ---- twse-proxy ----
     listed_turnover_yuan = None  # 後續 FinMind/proxy/FMTQIK 依序填入
@@ -292,12 +293,11 @@ def build(t0: str) -> dict:
             margin["s_chg"] = _add(mtw["schg"], mtp["schg"])
             notes.append("融券沿用官方逐股加總 (張)")
             sources["margin_short"] = "TWSE MI_MARGN + TPEX margin_balance (張)"
-    for field, status in margin_status.items():
-        if status == "partial":
-            partial.append(f"margin.{field}")
-            notes.append(_partial_coverage_note(f"融資融券 {field}"))
-        elif status == "unavailable":
-            unavailable.append(f"margin.{field}")
+    if L is not None or O is not None:
+        for field, status in margin_status.items():
+            if status == "partial":
+                partial.append(f"margin.{field}")
+                notes.append(_partial_coverage_note(f"融資融券 {field}"))
     # ---- 上市大盤融資維持率：TWSE 自建主引擎 → Blave 交叉驗證／備援 → 同 T0 人工最後備援 ----
     ratio_result = _get_margin_ratio(t0)
     margin["ratio"] = ratio_result["ratio"]
@@ -328,8 +328,6 @@ def build(t0: str) -> dict:
         "status": {"sale_bal": _sale_status, "sale_chg": _schg_status},
         "publication": {"twse_twt93u": tw93.get("publication"), "tpex_s47": tp_sbl.get("publication")},
     }
-    partial: list[str] = []
-
     def _sbl_scope(*parts):
         available = [name for name, value in parts if value is not None]
         return " + ".join(available) if available else "unavailable"
