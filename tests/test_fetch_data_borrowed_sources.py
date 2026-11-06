@@ -164,6 +164,8 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             'A(f"- 資料日期：{t0}；報告產製時間：{now}；時區：`Asia/Taipei`")',
             source,
         )
+        self.assertIn("選擇權交易日期、到期日與報告產製時間", source)
+        self.assertNotIn("選擇權交易日期、到期日與資料時間", source)
         old = "- 資料日期：2026-11-06；資料時間：2026-11-06 08:00:00；時區：`Asia/Taipei`"
         new = "- 資料日期：2026-11-06；報告產製時間：2026-11-06 09:00:00；時區：`Asia/Taipei`"
         frozen = _freeze_src_time(old, new)
