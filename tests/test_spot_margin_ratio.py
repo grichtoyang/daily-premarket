@@ -530,3 +530,104 @@ class SpotAggregateAndZeroValueContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TurnoverCompleteSumTests(unittest.TestCase):
+    def test_both_markets_are_summed(self):
+        values, status = spot._turnover_values(120000000, 3.5)
+        self.assertEqual(values, {"listed": 1.2, "otc": 3.5, "total": 4.7})
+        self.assertEqual(status, "complete")
+
+    def test_one_market_missing_does_not_masquerade_as_total(self):
+        values, status = spot._turnover_values(120000000, None)
+        self.assertEqual(values["listed"], 1.2)
+        self.assertIsNone(values["total"])
+        self.assertEqual(status, "partial")
+
+    def test_real_zero_turnover_is_preserved(self):
+        values, status = spot._turnover_values(0, 0)
+        self.assertEqual(values, {"listed": 0.0, "otc": 0, "total": 0.0})
+        self.assertEqual(status, "complete")
+
+    def test_both_markets_missing_is_unavailable(self):
+        values, status = spot._turnover_values(None, None)
+        self.assertIsNone(values["total"])
+        self.assertEqual(status, "unavailable")
+
+
+class OfficialMarginRowCompletenessTests(unittest.TestCase):
+    TWSE_FIELDS = ("融資今日餘額", "融資買進", "融資賣出",
+                   "融券今日餘額", "融券買進", "融券賣出")
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_twse_complete_rows_sum_balances_and_changes(self, get_json):
+        get_json.return_value = [
+            dict(zip(self.TWSE_FIELDS, ("100", "20", "5", "30", "2", "7"))),
+            dict(zip(self.TWSE_FIELDS, ("200", "10", "3", "40", "1", "4"))),
+        ]
+        self.assertEqual(spot_raw.margin_tw(),
+                         {"bal": 300.0, "chg": 22.0, "sbal": 70.0, "schg": 8.0})
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_twse_missing_flow_field_invalidates_only_that_aggregate(self, get_json):
+        get_json.return_value = [
+            dict(zip(self.TWSE_FIELDS, ("100", "20", "5", "30", "2", "7"))),
+            dict(zip(self.TWSE_FIELDS, ("200", "", "3", "40", "1", "4"))),
+        ]
+        result = spot_raw.margin_tw()
+        self.assertEqual(result["bal"], 300.0)
+        self.assertIsNone(result["chg"])
+        self.assertEqual(result["sbal"], 70.0)
+        self.assertEqual(result["schg"], 8.0)
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_twse_missing_short_balance_is_not_zero(self, get_json):
+        get_json.return_value = [
+            dict(zip(self.TWSE_FIELDS, ("100", "20", "5", "", "2", "7"))),
+        ]
+        result = spot_raw.margin_tw()
+        self.assertEqual(result["bal"], 100.0)
+        self.assertIsNone(result["sbal"])
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_twse_legitimate_zero_is_preserved(self, get_json):
+        get_json.return_value = [dict(zip(self.TWSE_FIELDS, ("0", "0", "0", "0", "0", "0")))]
+        self.assertEqual(spot_raw.margin_tw(),
+                         {"bal": 0.0, "chg": 0.0, "sbal": 0.0, "schg": 0.0})
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_tpex_complete_rows_sum_only_requested_date(self, get_json):
+        keys = ("Date", "MarginPurchaseBalance", "MarginPurchase", "MarginSales",
+                "ShortSaleBalance", "ShortSale", "ShortConvering")
+        get_json.return_value = [
+            dict(zip(keys, ("115/11/05", "100", "20", "5", "30", "7", "2"))),
+            dict(zip(keys, ("115/11/05", "200", "10", "3", "40", "4", "1"))),
+            dict(zip(keys, ("115/11/04", "999", "999", "0", "999", "0", "0"))),
+        ]
+        self.assertEqual(spot_raw.tpex_margin("115/11/05"),
+                         {"bal": 300.0, "chg": 22.0, "sbal": 70.0, "schg": 8.0, "date_ok": True})
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_tpex_missing_field_invalidates_only_that_aggregate(self, get_json):
+        keys = ("Date", "MarginPurchaseBalance", "MarginPurchase", "MarginSales",
+                "ShortSaleBalance", "ShortSale", "ShortConvering")
+        get_json.return_value = [
+            dict(zip(keys, ("115/11/05", "100", "20", "5", "30", "7", "2"))),
+            dict(zip(keys, ("115/11/05", "200", "", "3", "40", "4", "1"))),
+        ]
+        result = spot_raw.tpex_margin("115/11/05")
+        self.assertTrue(result["date_ok"])
+        self.assertEqual(result["bal"], 300.0)
+        self.assertIsNone(result["chg"])
+        self.assertEqual(result["sbal"], 70.0)
+        self.assertEqual(result["schg"], 8.0)
+
+    @patch("src.sources.spot_raw._get_json")
+    def test_tpex_legitimate_zero_is_preserved(self, get_json):
+        keys = ("Date", "MarginPurchaseBalance", "MarginPurchase", "MarginSales",
+                "ShortSaleBalance", "ShortSale", "ShortConvering")
+        get_json.return_value = [
+            dict(zip(keys, ("115/11/05", "0", "0", "0", "0", "0", "0")))
+        ]
+        self.assertEqual(spot_raw.tpex_margin("115/11/05"),
+                         {"bal": 0.0, "chg": 0.0, "sbal": 0.0, "schg": 0.0, "date_ok": True})
