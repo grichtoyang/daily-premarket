@@ -156,6 +156,20 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('("報告產製時間", now, "本機")', source)
         self.assertNotIn('("資料更新時間", now, "本機")', source)
 
+    def test_taifex_report_generation_timestamp_label_and_legacy_freeze(self):
+        from src.fetch_data import _freeze_src_time
+
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn(
+            'A(f"- 資料日期：{t0}；報告產製時間：{now}；時區：`Asia/Taipei`")',
+            source,
+        )
+        old = "- 資料日期：2026-11-06；資料時間：2026-11-06 08:00:00；時區：`Asia/Taipei`"
+        new = "- 資料日期：2026-11-06；報告產製時間：2026-11-06 09:00:00；時區：`Asia/Taipei`"
+        frozen = _freeze_src_time(old, new)
+        self.assertIn("報告產製時間：2026-11-06 08:00:00", frozen)
+        self.assertNotIn("資料時間：", frozen)
+
 
 if __name__ == "__main__":
     unittest.main()
