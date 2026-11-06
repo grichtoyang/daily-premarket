@@ -202,14 +202,15 @@ def _freeze_news(old_text: str, new_text: str) -> str:
     return "\n".join(nl[:ns[0]] + seg + nl[ns[1]:])
 
 
-_SRC_TIME_PAT = r"^(\s*-\s*資料日期：.*?；資料時間：)([^；]*)(；.*)$"
+_SRC_TIME_PAT = r"^(\\s*-\\s*資料日期：.*?；(?:資料時間|報告產製時間)：)([^；]*)(；.*)$"
 
 
 def _freeze_src_time(old_text: str, new_text: str) -> str:
-    """protect 模式（Case A 同盤別重跑）：`四.資料來源` 的資料時間沿用前版。
+    """protect 模式（Case A 同盤別重跑）：`四.資料來源` 的報告產製時間沿用前版。
 
-    `- 資料日期：…；資料時間：<本次抓取時間>` 的「資料時間」就是本次抓取時間，
-    性質與標頭的「資料產出時間」相同。若不凍結，同盤別重跑必然逐字不同 →
+    舊報告的「資料時間」與新報告的「報告產製時間」均代表報告產製時間，
+    性質與標頭的「資料產出時間」相同。兼容舊標籤，避免既有報告重跑時失去凍結。
+    若不凍結，同盤別重跑必然逐字不同 →
     sha 漂移＋無意義 commit，main() 的「不寫檔」等於白做。
     只換時間值（資料日期／時區等其餘部分不動）；前版無此行不補行（補行屬改寫）。
     """
@@ -1153,7 +1154,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 16．資料來源、時間、時區與狀態")
     A("")
     A("- 資料來源：TAIFEX 經 Cloudflare Worker Proxy")
-    A(f"- 資料日期：{t0}；資料時間：{now}；時區：`Asia/Taipei`")
+    A(f"- 資料日期：{t0}；報告產製時間：{now}；時區：`Asia/Taipei`")
     A("- 日盤／夜盤標記：日盤收盤後 + 夜盤盤後")
     _snap = fx.get("snapchg", {})
     _snap_unav = []
