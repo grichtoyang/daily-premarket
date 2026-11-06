@@ -30,6 +30,25 @@ def _num(v):
     except ValueError:
         return None
 
+def _complete_row_sum(rows: list[dict], field: str):
+    """Sum a field only when every eligible source row contains a valid value."""
+    if not rows:
+        return None
+    values = [_num(row.get(field)) for row in rows]
+    if any(value is None for value in values):
+        return None
+    return sum(values)
+
+def _complete_row_delta(rows: list[dict], positive_field: str, negative_field: str):
+    """Sum positive minus negative flows only when both fields are complete per row."""
+    if not rows:
+        return None
+    positive = [_num(row.get(positive_field)) for row in rows]
+    negative = [_num(row.get(negative_field)) for row in rows]
+    if any(value is None for value in positive + negative):
+        return None
+    return sum(positive) - sum(negative)
+
 def _get_json(url: str, timeout: int = 40):
     try:
         r = requests.get(url, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
@@ -76,23 +95,17 @@ def margin_tw() -> dict:
     out = {"bal": None, "chg": None, "sbal": None, "schg": None}
     if not isinstance(j, list):
         return out
-    bal = chg_b = chg_s = sbal = sb_b = sb_s = 0.0
-    has = False
-    for row in j:
-        b = _num(row.get("融資今日餘額"))
-        if b is None:
-            continue
-        has = True
-        bal += b
-        bb, ss = _num(row.get("融資買進")), _num(row.get("融資賣出"))
-        chg_b += bb or 0.0
-        chg_s += ss or 0.0
-        sb = _num(row.get("融券今日餘額")) or 0.0
-        sbal += sb
-        sb_b += _num(row.get("融券買進")) or 0.0
-        sb_s += _num(row.get("融券賣出")) or 0.0
-    if has:
-        out = {"bal": bal, "chg": chg_b - chg_s, "sbal": sbal, "schg": sb_s - sb_b}
+    fields = ("融資今日餘額", "融資買進", "融資賣出",
+              "融券今日餘額", "融券買進", "融券賣出")
+    rows = [row for row in j if isinstance(row, dict)
+            and any(_num(row.get(field)) is not None for field in fields)]
+    if rows:
+        out = {
+            "bal": _complete_row_sum(rows, "融資今日餘額"),
+            "chg": _complete_row_delta(rows, "融資買進", "融資賣出"),
+            "sbal": _complete_row_sum(rows, "融券今日餘額"),
+            "schg": _complete_row_delta(rows, "融券賣出", "融券買進"),
+        }
     return out
 
 # ---------- 借券 ----------
@@ -351,21 +364,19 @@ def tpex_margin(roc: str) -> dict:
     j = _get_json(f"{TPEX_API}/tpex_mainboard_margin_balance")
     if not isinstance(j, list):
         return out
-    bal = chg = sbal = schg = 0.0
-    n = 0
-    for row in j:
-        if str(row.get("Date", "")) != roc:
-            continue
-        b = _num(row.get("MarginPurchaseBalance"))
-        if b is None:
-            continue
-        n += 1
-        bal += b
-        chg += (_num(row.get("MarginPurchase")) or 0.0) - (_num(row.get("MarginSales")) or 0.0)
-        sbal += _num(row.get("ShortSaleBalance")) or 0.0
-        schg += (_num(row.get("ShortSale")) or 0.0) - (_num(row.get("ShortConvering")) or 0.0)
-    if n:
-        out = {"bal": bal, "chg": chg, "sbal": sbal, "schg": schg, "date_ok": True}
+    fields = ("MarginPurchaseBalance", "MarginPurchase", "MarginSales",
+              "ShortSaleBalance", "ShortSale", "ShortConvering")
+    rows = [row for row in j if isinstance(row, dict)
+            and str(row.get("Date", "")) == roc
+            and any(_num(row.get(field)) is not None for field in fields)]
+    if rows:
+        out = {
+            "bal": _complete_row_sum(rows, "MarginPurchaseBalance"),
+            "chg": _complete_row_delta(rows, "MarginPurchase", "MarginSales"),
+            "sbal": _complete_row_sum(rows, "ShortSaleBalance"),
+            "schg": _complete_row_delta(rows, "ShortSale", "ShortConvering"),
+            "date_ok": True,
+        }
     return out
 
 def tpex_sbl(roc: str) -> dict:
