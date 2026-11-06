@@ -46,5 +46,34 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertNotIn("SRC_SBL)", source)
 
 
+    def test_partial_only_coverage_status(self):
+        from src.fetch_data import _coverage_status_lines
+        self.assertEqual(_coverage_status_lines(["spot.margin_a"], []), [
+            "- 部分取得欄位 (1)：spot.margin_a",
+            "- 未取得欄位 (0)：無",
+        ])
+
+    def test_unavailable_only_coverage_status(self):
+        from src.fetch_data import _coverage_status_lines
+        self.assertEqual(_coverage_status_lines([], ["futures.oi"]), [
+            "- 部分取得欄位 (0)：無",
+            "- 未取得欄位 (1)：futures.oi",
+        ])
+
+    def test_partial_and_unavailable_coverage_status(self):
+        from src.fetch_data import _coverage_status_lines
+        self.assertEqual(_coverage_status_lines(["spot.margin_a"], ["futures.oi"]), [
+            "- 部分取得欄位 (1)：spot.margin_a",
+            "- 未取得欄位 (1)：futures.oi",
+        ])
+
+    def test_neither_coverage_status(self):
+        from src.fetch_data import _coverage_status_lines
+        self.assertEqual(_coverage_status_lines([], []), [
+            "- 部分取得欄位 (0)：無",
+            "- 未取得欄位 (0)：無",
+        ])
+
+
 if __name__ == "__main__":
     unittest.main()
