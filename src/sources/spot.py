@@ -289,8 +289,12 @@ def build(t0: str) -> dict:
     else:
         notes.append("HiStock 未取得，融資餘額/增減標 unavailable (官方逐股加總僅有張數)")
         if mtw["sbal"] is not None or mtp["sbal"] is not None:
-            margin["s_bal"] = _add(mtw["sbal"], mtp["sbal"])
-            margin["s_chg"] = _add(mtw["schg"], mtp["schg"])
+            margin["s_bal"], s_bal_status = _complete_market_sum(mtw["sbal"], mtp["sbal"])
+            margin["s_chg"], s_chg_status = _complete_market_sum(mtw["schg"], mtp["schg"])
+            for field, status in (("s_bal", s_bal_status), ("s_chg", s_chg_status)):
+                if status == "partial":
+                    partial.append(f"margin.{field}")
+                    notes.append(_partial_coverage_note(f"官方融券 {field}"))
             notes.append("融券沿用官方逐股加總 (張)")
             sources["margin_short"] = "TWSE MI_MARGN + TPEX margin_balance (張)"
     if L is not None or O is not None:
