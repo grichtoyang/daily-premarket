@@ -528,10 +528,6 @@ class SpotAggregateAndZeroValueContractTests(unittest.TestCase):
         self.assertEqual(spot._optional_float("1,234"), 1234.0)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TurnoverCompleteSumTests(unittest.TestCase):
     def test_both_markets_are_summed(self):
         values, status = spot._turnover_values(120000000, 3.5)
@@ -631,3 +627,9 @@ class OfficialMarginRowCompletenessTests(unittest.TestCase):
         ]
         self.assertEqual(spot_raw.tpex_margin("115/11/05"),
                          {"bal": 0.0, "chg": 0.0, "sbal": 0.0, "schg": 0.0, "date_ok": True})
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
