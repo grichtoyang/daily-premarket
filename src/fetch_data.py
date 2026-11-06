@@ -108,13 +108,14 @@ def _sbl_market_table(sb: dict) -> str:
 
 
 def _market_quote_table(rows: list[tuple], column_label: str) -> str:
-    """Render Yahoo quotes with the date belonging to each instrument's exchange timezone."""
+    """Render quote date, retrieval timestamp, and exchange timezone as distinct metadata."""
     return _tbl([
         (name, q["symbol"], _f2(q["price"]), _f2(q["change"]), _pct(q["pct"]),
-         q.get("date") or MISSING, "Yahoo Finance Chart API")
+         q.get("date") or MISSING, q.get("retrieved_at") or MISSING,
+         q.get("exchange_timezone") or MISSING, q.get("source") or "Yahoo Finance Chart API")
         for name, q in rows
     ], ("項目", "Yahoo Finance 代號", column_label, "漲跌點", "漲跌幅",
-        "資料日期（交易所時區）", "資料來源"))
+        "資料日期（交易所時區）", "擷取時間（UTC）", "交易所時區", "資料來源"))
 
 
 def _treasury_yield_table(yields: dict) -> str:
