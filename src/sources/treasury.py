@@ -5,7 +5,13 @@
 - 日變化單位：百分點
 """
 from __future__ import annotations
+from datetime import datetime, timezone
 from src.sources.us_market import quote
+
+
+def _retrieved_at() -> str:
+    """Return the UTC timestamp when the upstream response was received."""
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 CANDIDATES = [
     "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v2/accounting/od/daily_treasury_yield_curve?sort=-record_date&page[size]=3",
@@ -21,6 +27,7 @@ def _treasury() -> dict | None:
             r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=20)
             if r.status_code != 200:
                 continue
+            retrieved_at = _retrieved_at()
             rows = r.json().get("data") or []
             if len(rows) < 1:
                 continue
@@ -43,7 +50,8 @@ def _treasury() -> dict | None:
             ):
                 v, p = y(last, *keys), y(prev, *keys)
                 out[label] = {"yield": v, "chg": (v - p) if v is not None and p is not None else None,
-                              "date": last.get("record_date"), "source": "U.S. Treasury FiscalData API", "ok": v is not None}
+                              "date": last.get("record_date"), "retrieved_at": retrieved_at,
+                              "source": "U.S. Treasury FiscalData API", "ok": v is not None}
             if any(v["ok"] for v in out.values()):
                 return out
         except Exception as e:  # noqa: BLE001
@@ -59,6 +67,7 @@ def _xml_yield(field: str):
     try:
         r = requests.get(YIELD_XML, headers={**HEADERS, "Accept": "application/xml"}, timeout=30)
         r.raise_for_status()
+        retrieved_at = _retrieved_at()
         bodies = re.findall(r"<G_NEW_DATE>(.*?)</G_NEW_DATE>", r.text, re.S)
         rows = []
         for b in bodies:
@@ -73,10 +82,12 @@ def _xml_yield(field: str):
             first = rows[-1]
             prev = rows[-2] if len(rows) > 1 else rows[-1]
             return {"yield": first[1], "chg": first[1] - prev[1], "date": first[0],
+                    "retrieved_at": retrieved_at,
                     "source": f"U.S. Treasury yield.xml（{field} 備援）", "ok": True}
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] treasury xml {field} failed: {e}")
-    return {"yield": None, "chg": None, "date": None, "source": "unavailable", "ok": False}
+    return {"yield": None, "chg": None, "date": None, "retrieved_at": None,
+            "source": "unavailable", "ok": False}
 
 def get_yields() -> dict:
     """{2Y/10Y/20Y/30Y: {yield, chg(百分點), date, source, ok}}。"""
@@ -88,5 +99,6 @@ def get_yields() -> dict:
     for label, sym in (("10Y", "^TNX"), ("30Y", "^TYX")):
         q = quote(sym)
         out[label] = {"yield": q["price"], "chg": q["change"], "date": q["date"],
+                      "retrieved_at": q.get("retrieved_at"),
                       "source": "Yahoo Finance (備援)", "ok": q["ok"]}
     return out
