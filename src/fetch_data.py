@@ -58,6 +58,15 @@ def _f2s(v) -> str:  # signed 口數/價差 (整數無小數，其餘2位)
     except (ValueError, TypeError):
         return MISSING
 
+def _coverage_status_lines(partial: list[str], unavailable: list[str]) -> list[str]:
+    """Render partial and unavailable fields as separate, explicit DATA_REPORT lists."""
+    partial_fields = list(partial or [])
+    unavailable_fields = list(unavailable or [])
+    return [
+        f"- 部分取得欄位 ({len(partial_fields)})：{', '.join(partial_fields) if partial_fields else '無'}",
+        f"- 未取得欄位 ({len(unavailable_fields)})：{', '.join(unavailable_fields) if unavailable_fields else '無'}",
+    ]
+
 def _add3(a, b, c):
     """Return a complete three-party total; never present a partial sum as the total."""
     if any(value is None for value in (a, b, c)):
@@ -1158,8 +1167,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     if _opt_t10chg_missing:
         _snap_unav.append("options.top10_change")
     _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
-    A(f"- 未取得欄位 ({len(_all_unav)})：{', '.join(_all_unav) if _all_unav else '無'}")
-    for nn in fx["notes"]:
+    for _coverage_line in _coverage_status_lines(s.get("partial", []), _all_unav):
+        A(_coverage_line)
         A(f"- 註記：{nn}")
     A("")
     A("## 五、資料來源、時間與完整性")
