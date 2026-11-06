@@ -91,5 +91,67 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         ])
 
 
+    def test_treasury_api_and_xml_records_include_utc_retrieval_timestamp(self):
+        from datetime import datetime
+        from src.sources import treasury
+        from unittest.mock import patch
+
+        class Response:
+            status_code = 200
+            text = "<ROOT><G_NEW_DATE><BID_CURVE_DATE>11/05/2026</BID_CURVE_DATE><BC_2YEAR>3.5</BC_2YEAR></G_NEW_DATE></ROOT>"
+
+            def json(self):
+                return {"data": [
+                    {"record_date": "2026-11-05", "2 Yr": "3.5", "10 Yr": "4.1",
+                     "20 Yr": "4.6", "30 Yr": "4.7"},
+                    {"record_date": "2026-11-04", "2 Yr": "3.4", "10 Yr": "4.0",
+                     "20 Yr": "4.5", "30 Yr": "4.6"},
+                ]}
+
+            def raise_for_status(self):
+                return None
+
+        with patch("requests.get", return_value=Response()):
+            api = treasury._treasury()
+            xml = treasury._xml_yield("BC_2YEAR")
+
+        for item in list(api.values()) + [xml]:
+            self.assertIsNotNone(datetime.fromisoformat(item["retrieved_at"]))
+            self.assertIsNotNone(item["date"])
+
+    def test_treasury_yahoo_fallback_preserves_source_retrieval_timestamp(self):
+        from src.sources import treasury
+        from unittest.mock import patch
+
+        quote_data = {
+            "price": 4.2, "change": 0.1, "date": "2026-11-05",
+            "retrieved_at": "2026-11-06T00:30:00+00:00", "ok": True,
+        }
+        with patch.object(treasury, "_treasury", return_value=None), \\
+             patch.object(treasury, "_xml_yield", return_value={
+                 "yield": 3.5, "chg": 0.1, "date": "2026-11-05",
+                 "retrieved_at": "2026-11-06T00:20:00+00:00",
+                 "source": "Treasury XML", "ok": True,
+             }), \\
+             patch.object(treasury, "quote", return_value=quote_data):
+            result = treasury.get_yields()
+
+        self.assertEqual(result["10Y"]["retrieved_at"], quote_data["retrieved_at"])
+        self.assertEqual(result["2Y"]["retrieved_at"], "2026-11-06T00:20:00+00:00")
+
+    def test_treasury_yield_table_displays_per_tenor_retrieval_timestamp(self):
+        from src.fetch_data import _treasury_yield_table
+        yields = {
+            key: {"yield": 4.0, "chg": 0.1, "date": "2026-11-05",
+                  "retrieved_at": f"2026-11-06T00:{minute}:00+00:00",
+                  "source": "U.S. Treasury FiscalData API"}
+            for key, minute in (("2Y", "01"), ("10Y", "02"), ("20Y", "03"), ("30Y", "04"))
+        }
+        table = _treasury_yield_table(yields)
+        self.assertIn("擷取時間（UTC）", table)
+        for minute in ("01", "02", "03", "04"):
+            self.assertIn(f"2026-11-06T00:{minute}:00+00:00", table)
+
+
 if __name__ == "__main__":
     unittest.main()
