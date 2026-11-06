@@ -119,14 +119,14 @@ def _market_quote_table(rows: list[tuple], column_label: str) -> str:
 
 
 def _treasury_yield_table(yields: dict) -> str:
-    """Render each Treasury tenor with its own source data date."""
+    """Render each Treasury tenor with its own source data date and UTC retrieval time."""
     return _tbl([
         (f"美國 {label} 年期殖利率", api_label, _f2(yields[key]["yield"]),
-         _f2(yields[key]["chg"]), yields[key].get("date") or MISSING,
+         _f2(yields[key]["chg"]), yields[key].get("date") or MISSING, yields[key].get("retrieved_at") or MISSING,
          yields[key]["source"])
         for key, label, api_label in (("2Y", "2", "2 Yr"), ("10Y", "10", "10 Yr"),
                                       ("20Y", "20", "20 Yr"), ("30Y", "30", "30 Yr"))
-    ], ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料日期", "資料來源"))
+    ], ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料日期", "擷取時間（UTC）", "資料來源"))
 
 
 def _tbl(rows: list[tuple], headers: tuple) -> str:
