@@ -43,6 +43,33 @@ def _partial_coverage_note(field: str) -> str:
     return f"[partial] {field}僅取得單一市場；不提供不完整的合計數值"
 
 
+def _optional_float(value):
+    """Parse a present numeric value while preserving a legitimate zero."""
+    if value is None or value == "":
+        return None
+    try:
+        return float(str(value).replace(",", ""))
+    except (TypeError, ValueError):
+        return None
+
+
+def _margin_market_totals(listed: dict | None, otc: dict | None) -> tuple[dict, dict]:
+    """Build listed+OTC margin totals; never expose a one-sided value as a combined total."""
+    fields = {
+        "fin_yi": ("fin_yi", "fin_yi"),
+        "fin_chg_yi": ("fin_chg_yi", "fin_chg_yi"),
+        "s_bal": ("short_bal", "short_bal"),
+        "s_chg": ("short_chg", "short_chg"),
+    }
+    totals, statuses = {}, {}
+    for output, (listed_key, otc_key) in fields.items():
+        value, status = _complete_market_sum(
+            (listed or {}).get(listed_key), (otc or {}).get(otc_key)
+        )
+        totals[output], statuses[output] = value, status
+    return totals, statuses
+
+
 SELF_BUILT_RATIO_TIMEOUT = 10
 BLAVE_RATIO_TIMEOUT = 3
 BLAVE_CROSS_CHECK_MAX_DIFF_PP = 1.0
@@ -219,13 +246,14 @@ def build(t0: str) -> dict:
     hl = spot_raw.tpex_highlight(roc)
     if hl["row"] is not None and hl["date_ok"]:
         row = hl["row"]
-        ob = {"up": float(row["PriceRiseCompanyNumbers"]) if row.get("PriceRiseCompanyNumbers") else None,
-              "down": float(row["PriceDeclineCompanyNumbers"]) if row.get("PriceDeclineCompanyNumbers") else None,
-              "flat": float(row["PriceFlatCompanyNumbers"]) if row.get("PriceFlatCompanyNumbers") else None,
-              "limit_up": float(row["LimitUpCompanyNumbers"]) if row.get("LimitUpCompanyNumbers") else None,
-              "limit_down": float(row["LimitDownCompanyNumbers"]) if row.get("LimitDownCompanyNumbers") else None}
-        if row.get("DailyTradingValue"):
-            otc_turnover_yi = float(str(row["DailyTradingValue"]).replace(",", "")) / 100  # 百萬元→億元
+        ob = {"up": _optional_float(row.get("PriceRiseCompanyNumbers")),
+              "down": _optional_float(row.get("PriceDeclineCompanyNumbers")),
+              "flat": _optional_float(row.get("PriceFlatCompanyNumbers")),
+              "limit_up": _optional_float(row.get("LimitUpCompanyNumbers")),
+              "limit_down": _optional_float(row.get("LimitDownCompanyNumbers"))}
+        otc_turnover_value = _optional_float(row.get("DailyTradingValue"))
+        if otc_turnover_value is not None:
+            otc_turnover_yi = otc_turnover_value / 100  # 百萬元→億元
         sources["otc"] = "TPEX OpenAPI tpex_mainborad_highlight"
     else:
         notes.append(f"上櫃 highlight 日期不符或缺值 (回傳 {(hl['row'] or {}).get('Date')}, T0={roc})")
@@ -250,19 +278,13 @@ def build(t0: str) -> dict:
     mtw = spot_raw.margin_tw()
     mtp = spot_raw.tpex_margin(roc)
     margin = {"fin_yi": None, "fin_chg_yi": None, "s_bal": None, "s_chg": None, "ratio": None}
-    if hs["listed"] is not None and hs["otc"] is not None:
-        L, O = hs["listed"], hs["otc"]
-        margin = {"fin_yi": (L["fin_yi"] or 0) + (O["fin_yi"] or 0),
-                  "fin_chg_yi": _add(L["fin_chg_yi"], O["fin_chg_yi"]),
-                  "s_bal": _add(L["short_bal"], O["short_bal"]),
-                  "s_chg": _add(L["short_chg"], O["short_chg"]), "ratio": None}
-        sources["margin"] = "HiStock 上市+上櫃融資融券 (金額口徑)"
-    elif hs["listed"] is not None or hs["otc"] is not None:
-        one = hs["listed"] or hs["otc"]
-        margin = {"fin_yi": one["fin_yi"], "fin_chg_yi": one["fin_chg_yi"],
-                  "s_bal": one["short_bal"], "s_chg": one["short_chg"], "ratio": None}
-        sources["margin"] = "HiStock (僅上市或上櫃)"
-        notes.append("HiStock 僅取上市/上櫃單邊，另一邊日期不符")
+    L, O = hs.get("listed"), hs.get("otc")
+    margin_totals, margin_status = _margin_market_totals(L, O)
+    margin = {**margin_totals, "ratio": None}
+    if L is not None or O is not None:
+        sources["margin"] = "HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)"
+        if L is None or O is None:
+            notes.append("HiStock 僅取得單一市場；不將單邊值冒充上市+上櫃合計")
     else:
         notes.append("HiStock 未取得，融資餘額/增減標 unavailable (官方逐股加總僅有張數)")
         if mtw["sbal"] is not None or mtp["sbal"] is not None:
@@ -270,6 +292,12 @@ def build(t0: str) -> dict:
             margin["s_chg"] = _add(mtw["schg"], mtp["schg"])
             notes.append("融券沿用官方逐股加總 (張)")
             sources["margin_short"] = "TWSE MI_MARGN + TPEX margin_balance (張)"
+    for field, status in margin_status.items():
+        if status == "partial":
+            partial.append(f"margin.{field}")
+            notes.append(_partial_coverage_note(f"融資融券 {field}"))
+        elif status == "unavailable":
+            unavailable.append(f"margin.{field}")
     # ---- 上市大盤融資維持率：TWSE 自建主引擎 → Blave 交叉驗證／備援 → 同 T0 人工最後備援 ----
     ratio_result = _get_margin_ratio(t0)
     margin["ratio"] = ratio_result["ratio"]
