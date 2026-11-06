@@ -46,6 +46,22 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertNotIn("SRC_SBL)", source)
 
 
+    def test_market_quote_table_includes_data_and_retrieval_metadata(self):
+        from src.fetch_data import _market_quote_table
+        table = _market_quote_table([
+            ("S&P 500", {
+                "symbol": "^GSPC", "price": 6000, "change": 12, "pct": 0.2,
+                "date": "2026-11-05", "retrieved_at": "2026-11-06T00:30:00+00:00",
+                "exchange_timezone": "America/New_York", "source": "Yahoo Finance Chart API",
+            })
+        ], "收盤／最新值")
+        self.assertIn("資料日期（交易所時區）", table)
+        self.assertIn("擷取時間（UTC）", table)
+        self.assertIn("交易所時區", table)
+        self.assertIn("2026-11-05", table)
+        self.assertIn("2026-11-06T00:30:00+00:00", table)
+        self.assertIn("America/New_York", table)
+
     def test_partial_only_coverage_status(self):
         from src.fetch_data import _coverage_status_lines
         self.assertEqual(_coverage_status_lines(["spot.margin_a"], []), [
