@@ -202,7 +202,7 @@ def _freeze_news(old_text: str, new_text: str) -> str:
     return "\n".join(nl[:ns[0]] + seg + nl[ns[1]:])
 
 
-_SRC_TIME_PAT = r"^(\\s*-\\s*資料日期：.*?；(?:資料時間|報告產製時間)：)([^；]*)(；.*)$"
+_SRC_TIME_PAT = r"^(\s*-\s*資料日期：.*?；(?:資料時間|報告產製時間)：)([^；]*)(；.*)$"
 
 
 def _freeze_src_time(old_text: str, new_text: str) -> str:
