@@ -151,5 +151,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             self.assertIn(f"2026-11-06T00:{minute}:00+00:00", table)
 
 
+    def test_options_timestamp_is_labeled_as_report_generation_time(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('("報告產製時間", now, "本機")', source)
+        self.assertNotIn('("資料更新時間", now, "本機")', source)
+
+
 if __name__ == "__main__":
     unittest.main()
