@@ -251,6 +251,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('_pt_tot_src = SRC_FX if all(v is not None for v in (', source)
         self.assertIn('_t10c_src if _t10c["buy"] is not None else MISSING', source)
         self.assertIn('_t10p_src if _t10p["sell"] is not None else MISSING', source)
+        self.assertIn("來源：{SRC_FX if fx['oi_chg'] is not None else MISSING}", source)
 
 
 if __name__ == "__main__":
