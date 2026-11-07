@@ -854,16 +854,16 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 2．Call 總成交量、OI、OI 增減")
     A("")
     _ch = (_sg.get("chain") or {})
-    A(_tbl([("Call 總成交量", _fi(_ot['c_vol']), SRC_FX),
-            ("Call 總未平倉量 OI", _fi(_ot['c_oi']), SRC_FX),
+    A(_tbl([("Call 總成交量", _fi(_ot['c_vol']), SRC_FX if _ot['c_vol'] is not None else MISSING),
+            ("Call 總未平倉量 OI", _fi(_ot['c_oi']), SRC_FX if _ot['c_oi'] is not None else MISSING),
             ("Call OI 增減" + (f" ({_sdate}→{t0})" if _ch.get("c_chg") is not None else ""),
              _f2s(_ch.get("c_chg")), SRC_SNAP if _ch.get("c_chg") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 3．Put 總成交量、OI、OI 增減")
     A("")
-    A(_tbl([("Put 總成交量", _fi(_ot['p_vol']), SRC_FX),
-            ("Put 總未平倉量 OI", _fi(_ot['p_oi']), SRC_FX),
+    A(_tbl([("Put 總成交量", _fi(_ot['p_vol']), SRC_FX if _ot['p_vol'] is not None else MISSING),
+            ("Put 總未平倉量 OI", _fi(_ot['p_oi']), SRC_FX if _ot['p_oi'] is not None else MISSING),
             ("Put OI 增減" + (f" ({_sdate}→{t0})" if _ch.get("p_chg") is not None else ""),
              _f2s(_ch.get("p_chg")), SRC_SNAP if _ch.get("p_chg") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
@@ -872,9 +872,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     _pch = taifex_official.putcall_history()
     _pc_rows = [
-        ("Call／Put 成交量比例", _f2(_ot['vol_ratio']), "倍", SRC_FX),
-        ("Call／Put 未平倉量比例", _f2(_ot['oi_ratio']), "倍", SRC_FX),
-        ("Put／Call Ratio", _f2(_ot['pc_ratio']), "倍", SRC_FX),
+        ("Call／Put 成交量比例", _f2(_ot['vol_ratio']), "倍", SRC_FX if _ot['vol_ratio'] is not None else MISSING),
+        ("Call／Put 未平倉量比例", _f2(_ot['oi_ratio']), "倍", SRC_FX if _ot['oi_ratio'] is not None else MISSING),
+        ("Put／Call Ratio", _f2(_ot['pc_ratio']), "倍", SRC_FX if _ot['pc_ratio'] is not None else MISSING),
     ]
     _pch_rows = _pch.get("rows") or []
     _pch_src = "TAIFEX Proxy" if _pch.get("via") == "proxy" else SRC_FX_OFF
