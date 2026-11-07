@@ -1376,7 +1376,7 @@ def _validate_data_report_text(text: str, t0: str) -> None:
     missing = [section for section in required_sections if section not in lines]
     if missing:
         raise ValueError("DATA_REPORT 缺少必要章節：" + "、".join(missing))
-    if "\\x00" in text or len(text.strip()) < 1000:
+    if "\x00" in text or len(text.strip()) < 1000:
         raise ValueError("DATA_REPORT 內容為空或明顯不完整")
 
 
@@ -1406,7 +1406,7 @@ def _atomic_write_data_report(out: Path, text: str, t0: str) -> None:
 def validate_data_report_file(path: str | Path) -> None:
     """Workflow-facing validation of a report using its canonical filename T0."""
     report_path = Path(path)
-    match = __import__("re").fullmatch(r"DATA_REPORT_(\\d{8})\\.md", report_path.name)
+    match = __import__("re").fullmatch(r"DATA_REPORT_(\d{8})\.md", report_path.name)
     if not match:
         raise ValueError(f"非標準 DATA_REPORT 檔名：{report_path.name}")
     raw = match.group(1)
