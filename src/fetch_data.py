@@ -688,8 +688,10 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("收盤價", _fi(n["close"]), _nvia if n["close"] is not None else _nmiss),
             ("漲跌點數", _f2s(n["change"]), _nvia if n["change"] is not None else _nmiss),
             ("漲跌幅", _pct(n["pct"]), _nvia if n["pct"] is not None else _nmiss),
-            ("成交量", _fi(n["vol"]), SRC_FX), ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}", _nvia if n["high"] is not None else _nmiss),
-            ("結算價", _fi(n["settle"]), SRC_FX), ("未平倉量", _fi(n["oi"]), SRC_FX)],
+            ("成交量", _fi(n["vol"]), _nvia if n["vol"] is not None else _nmiss),
+            ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}", _nvia if n["high"] is not None else _nmiss),
+            ("結算價", _fi(n["settle"]), _nvia if n["settle"] is not None else _nmiss),
+            ("未平倉量", _fi(n["oi"]), _nvia if n["oi"] is not None else _nmiss)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 3．法人台指期多空未平倉部位")
