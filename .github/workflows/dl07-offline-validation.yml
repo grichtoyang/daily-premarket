@@ -120,28 +120,32 @@ jobs:
       - name: Run V9 Pro 17F offline self-tests
         run: python scripts/v9_pro_builder.py --self-test
 
-      - name: Rebuild historical DATA_REPORT fixtures into runner temp storage
+      - name: Rebuild historical DATA_REPORT fixtures in an isolated workspace
         env:
-          OUTPUT_DIR: ${{ runner.temp }}/dl07-history
+          WORKSPACE: ${{ runner.temp }}/dl07-workspace
         run: |
           set -euo pipefail
-          mkdir -p "$OUTPUT_DIR"
-          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261030.md --out "$OUTPUT_DIR/data-20261030.json" --date 20261030
-          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261102.md --out "$OUTPUT_DIR/data-20261102.json" --date 20261102
-          python -m json.tool "$OUTPUT_DIR/data-20261030.json" > /dev/null
-          python -m json.tool "$OUTPUT_DIR/data-20261102.json" > /dev/null
+          mkdir -p "$WORKSPACE"
+          git archive "$GITHUB_SHA" | tar -x -C "$WORKSPACE"
+          cd "$WORKSPACE"
+          mkdir -p dashboards
+          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261030.md --out dashboards/data-20261030.json --date 20261030
+          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261102.md --out dashboards/data-20261102.json --date 20261102
+          python -m json.tool dashboards/data-20261030.json > /dev/null
+          python -m json.tool dashboards/data-20261102.json > /dev/null
 
       - name: Inject historical JSON into temporary HTML and validate JavaScript
         env:
-          OUTPUT_DIR: ${{ runner.temp }}/dl07-history
+          WORKSPACE: ${{ runner.temp }}/dl07-workspace
         run: |
           set -euo pipefail
+          cd "$WORKSPACE"
           python3 <<'PY'
           import json
           import os
           from pathlib import Path
 
-          output = Path(os.environ["OUTPUT_DIR"])
+          output = Path("dashboards")
           template = Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
           if "var vf=window.DASHBOARD_DATA;" not in template:
               raise SystemExit("React template must consume injected data only")
@@ -168,8 +172,8 @@ jobs:
                   raise SystemExit(f"Injection failed for {date}")
               print(f"PASS: historical JSON and HTML fixture {date} ({html_path.stat().st_size} bytes)")
           PY
-          python tests/validate_react_html_js.py "$OUTPUT_DIR/v9-pro-20261030.html"
-          python tests/validate_react_html_js.py "$OUTPUT_DIR/v9-pro-20261102.html"
+          python tests/validate_react_html_js.py dashboards/v9-pro-20261030.html
+          python tests/validate_react_html_js.py dashboards/v9-pro-20261102.html
 
       - name: Confirm repository fixtures were not modified
         run: |
