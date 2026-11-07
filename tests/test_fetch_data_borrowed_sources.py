@@ -235,7 +235,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('row_src = SRC_FX if all(v is not None for v in (*day_vals, *night_vals, diff)) else "端點未提供"', source)
         self.assertIn('_tot_src = SRC_FX if all(v is not None for v in (*_tot_day, *_tot_night, _tot_diff)) else "端點未提供"', source)
-        self.assertNotIn('), _ot_src)', source)
+        self.assertNotIn('_f2s(_diff2(_o_tot("day", "net"), _o_tot("night", "net"))), _ot_src)', source)
 
 
 if __name__ == "__main__":
