@@ -564,5 +564,72 @@ class DataReportTurnoverAndUnitContractTests(unittest.TestCase):
         self.assertIn("日變化（百分點）", table)
 
 
+class OptionsChainOiChangeContractTests(unittest.TestCase):
+    def setUp(self):
+        from src.sources.taifex import _options_chain_oi_change
+        self.calculate = _options_chain_oi_change
+        self.previous = [
+            {"contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+             "strike": 27000, "type": "call", "open_interest": 100},
+            {"contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+             "strike": 27000, "type": "put", "open_interest": 200},
+            {"contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+             "strike": 27100, "type": "call", "open_interest": 50},
+        ]
+        self.current = [
+            {"contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+             "strike": 27000, "type": "call", "open_interest": 110},
+            {"contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+             "strike": 27000, "type": "put", "open_interest": 180},
+            {"contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+             "strike": 27100, "type": "call", "open_interest": 45},
+        ]
+
+    def test_complete_aligned_chains_calculate_call_put_deltas_and_concentrations(self):
+        result = self.calculate(self.current, self.previous, "202611W2")
+        self.assertEqual(result["c_chg"], 5)
+        self.assertEqual(result["p_chg"], -20)
+        self.assertEqual(result["c_up"], {"strike": 27000, "type": "call", "d_oi": 10})
+        self.assertEqual(result["c_dn"], {"strike": 27100, "type": "call", "d_oi": -5})
+        self.assertEqual(result["p_dn"], {"strike": 27000, "type": "put", "d_oi": -20})
+
+    def test_missing_current_or_previous_oi_is_unavailable_not_zero(self):
+        current_missing = [dict(row) for row in self.current]
+        current_missing[0]["open_interest"] = None
+        previous_missing = [dict(row) for row in self.previous]
+        previous_missing[1]["open_interest"] = None
+        self.assertIsNone(self.calculate(current_missing, self.previous, "202611W2"))
+        self.assertIsNone(self.calculate(self.current, previous_missing, "202611W2"))
+
+    def test_missing_or_extra_contract_is_unavailable(self):
+        self.assertIsNone(self.calculate(self.current[:-1], self.previous, "202611W2"))
+        extra = self.current + [{
+            "contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
+            "strike": 27200, "type": "call", "open_interest": 0,
+        }]
+        self.assertIsNone(self.calculate(extra, self.previous, "202611W2"))
+
+    def test_duplicate_contract_identity_is_unavailable(self):
+        duplicate = self.current + [dict(self.current[0])]
+        self.assertIsNone(self.calculate(duplicate, self.previous, "202611W2"))
+
+    def test_zero_oi_is_valid_and_other_expiries_are_excluded(self):
+        current = [dict(row) for row in self.current]
+        previous = [dict(row) for row in self.previous]
+        current[0]["open_interest"] = 0
+        previous[0]["open_interest"] = 0
+        current.append({
+            "contract_month": "202612W3", "contract_expiry_date": "2026-12-16",
+            "strike": 27000, "type": "call", "open_interest": 999,
+        })
+        previous.append({
+            "contract_month": "202612W3", "contract_expiry_date": "2026-12-16",
+            "strike": 27000, "type": "call", "open_interest": 1,
+        })
+        result = self.calculate(current, previous, "202611W2")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["c_chg"], -5)
+
+
 if __name__ == "__main__":
     unittest.main()
