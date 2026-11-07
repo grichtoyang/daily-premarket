@@ -1358,6 +1358,62 @@ def _should_protect_existing_data_report(data_report_exists: bool, force_rewrite
     return bool(data_report_exists and not force_rewrite)
 
 
+def _validate_data_report_text(text: str, t0: str) -> None:
+    """Reject incomplete or mismatched reports before they can replace a published file."""
+    import re
+
+    expected_name = f"DATA_REPORT_{t0.replace('-', '')}"
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != f"# {expected_name}":
+        raise ValueError("DATA_REPORT 標題或 T0 檔名不符")
+    if f"- T0 交易日期：`{t0}`" not in lines:
+        raise ValueError("DATA_REPORT 缺少或不符合 T0 交易日期")
+    required_sections = (
+        "## 一、現貨", "## 二、重要市場", "## 三、期貨",
+        "## 四、選擇權", "## 五、資料來源、時間與完整性",
+        "## 六、期現選方向對照",
+    )
+    missing = [section for section in required_sections if section not in lines]
+    if missing:
+        raise ValueError("DATA_REPORT 缺少必要章節：" + "、".join(missing))
+    if "\\x00" in text or len(text.strip()) < 1000:
+        raise ValueError("DATA_REPORT 內容為空或明顯不完整")
+
+
+def _atomic_write_data_report(out: Path, text: str, t0: str) -> None:
+    """Validate a same-directory temporary file, then atomically replace the target."""
+    import tempfile
+
+    _validate_data_report_text(text, t0)
+    fd, temp_name = tempfile.mkstemp(prefix=f".{out.name}.", suffix=".tmp", dir=out.parent)
+    temp_path = Path(temp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        staged_text = temp_path.read_text(encoding="utf-8")
+        _validate_data_report_text(staged_text, t0)
+        os.replace(temp_path, out)
+    except Exception:
+        try:
+            temp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+
+
+def validate_data_report_file(path: str | Path) -> None:
+    """Workflow-facing validation of a report using its canonical filename T0."""
+    report_path = Path(path)
+    match = __import__("re").fullmatch(r"DATA_REPORT_(\\d{8})\\.md", report_path.name)
+    if not match:
+        raise ValueError(f"非標準 DATA_REPORT 檔名：{report_path.name}")
+    raw = match.group(1)
+    t0 = f"{raw[:4]}-{raw[4:6]}-{raw[6:]}"
+    _validate_data_report_text(report_path.read_text(encoding="utf-8"), t0)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default="", help="報告日期 YYYY-MM-DD，預設今天 (Asia/Taipei)")
@@ -1415,13 +1471,16 @@ def main() -> None:
             if _filled:
                 print(f"[INFO] 同 T0 保護：沿用前版 {_filled} 格有值")
             if protect and new_text == old_text:
+                _validate_data_report_text(old_text, t0)
                 print("[SKIP] 同 T0 保護：合併結果與前版完全相同，不寫檔（DATA sha 不變）")
+                print(f"[OK] report_path={out}", flush=True)
                 return
         except Exception as e:  # noqa: BLE001
-            print(f"[WARN] 同 T0 合併失敗，採本次全新寫入：{e}")
-    out.write_text(new_text, encoding="utf-8")
+            raise RuntimeError(f"同 T0 合併失敗，為保護既有報告而停止寫入：{e}") from e
+    _atomic_write_data_report(out, new_text, t0)
     print(f"[TIMING] total={time.perf_counter() - _t_start:.1f}s", flush=True)
     print(f"[OK] wrote {out} (report_date={report_date}, t0={t0}, session={session})")
+    print(f"[OK] report_path={out}", flush=True)
 
 if __name__ == "__main__":
     main()
