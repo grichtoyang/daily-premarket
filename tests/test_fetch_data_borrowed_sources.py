@@ -238,6 +238,13 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertNotIn('_f2s(_diff2(_o_tot("day", "net"), _o_tot("night", "net"))), _ot_src)', source)
 
     def test_market_combo_source_label_tracks_available_source_families(self):
+        from src.fetch_data import _market_combo_source_label
+
+        self.assertEqual(_market_combo_source_label(None, (None, None)), "unavailable")
+        self.assertEqual(_market_combo_source_label(0, (None, None)), "twse-proxy")
+        self.assertEqual(_market_combo_source_label(None, (0, None)), "TAIFEX Proxy")
+        self.assertEqual(_market_combo_source_label(0, (None, 0)), "twse-proxy／TAIFEX Proxy")
+
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('def _market_combo_source_label(spot_value, taifex_values)', source)
         self.assertIn('if spot_value is not None:', source)
