@@ -855,14 +855,12 @@ def _extract_section_table_value(report_text, heading, label, required=False, ex
             continue
         raw = cells[1].replace(",", "").strip()
         if raw.lower() == "unavailable":
-            value = None
-        elif re.fullmatch(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)", raw):
-            value = float(raw)
-        else:
-            value = None
-        if value is None and required:
+            return None
+        if re.fullmatch(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)", raw):
+            return float(raw)
+        if required:
             raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing/invalid {label} in {heading}")
-        return value
+        return None
     if required:
         raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing/invalid table row {label} in {heading}")
     return None
