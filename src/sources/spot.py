@@ -209,19 +209,19 @@ def build(t0: str) -> dict:
              "change": t["change"], "pct": t["pct"]}
     # ---- 大盤 OHLC：FinMind 主、Yahoo ^TWII 備援 ----
     fm = finmind.taiex_ohlc(t0)
-    if fm["ok"]:
-        taiex.update({"open": fm["open"], "high": fm["high"], "low": fm["low"]})
-        sources["taiex_ohlc"] = "FinMind TaiwanStockPrice TAIEX"
-        if fm["money_yuan"] is not None and listed_turnover_yuan is None:
-            listed_turnover_yuan = fm["money_yuan"]
-            sources["listed_turnover"] = "FinMind Trading_money"
-    else:
-        # 不用 Yahoo 盤中值備援：FinMind 日線收盤後才有列，缺值即 unavailable，避免盤中混充收盤
-        notes.append("大盤開高低未取得 (FinMind 失敗；MI_INDEX 無此欄)")
-        for k in ("open", "high", "low"):
+    # Keep each observed OHLC field; partial rows must not hide missing siblings.
+    for k in ("open", "high", "low"):
+        if fm.get(k) is not None:
+            taiex[k] = fm[k]
+        else:
             unavailable.append(f"taiex.{k}")
-    if fm["ok"]:
-        pass  # OHLC 齊全，不標 unavailable
+    if any(fm.get(k) is not None for k in ("open", "high", "low")):
+        sources["taiex_ohlc"] = "FinMind TaiwanStockPrice TAIEX"
+    if any(fm.get(k) is None for k in ("open", "high", "low")):
+        notes.append("大盤開高低部分欄位未取得 (FinMind T0 欄位缺值；MI_INDEX 無此欄)")
+    if fm["money_yuan"] is not None and listed_turnover_yuan is None:
+        listed_turnover_yuan = fm["money_yuan"]
+        sources["listed_turnover"] = "FinMind Trading_money"
 
     # ---- 上市漲跌/成交 ----
     lb = {"up": None, "down": None, "flat": None, "limit_up": None, "limit_down": None}
