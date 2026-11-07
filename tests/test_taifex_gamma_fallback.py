@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from src.sources.taifex import (
-    BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status,
+    BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status, _chain_rollover,
     _sync_gamma_unavailable, _valid_gex_levels, _complete_sum, _complete_ratio, _oi_distribution,
 )
 
@@ -164,6 +164,36 @@ class CompleteAggregateContractTests(unittest.TestCase):
 
     def test_empty_oi_distribution_is_empty(self):
         self.assertEqual(_oi_distribution([]), [])
+
+
+class ChainRolloverThreeStateTests(unittest.TestCase):
+    def test_explicit_same_primary_month_means_no_rollover(self):
+        result = _chain_rollover(
+            [{"type": "call", "contract_month": "202611", "open_interest": 100}],
+            "202611", "202611")
+        self.assertEqual(result, (False, "202611"))
+
+    def test_explicit_different_primary_month_means_rollover(self):
+        result = _chain_rollover([], "202611", "202612")
+        self.assertEqual(result, (True, "202611"))
+
+    def test_missing_prior_primary_is_unknown_even_if_chain_looks_populated(self):
+        # Chain may be partial; its OI ranking cannot establish the prior primary expiry.
+        rows = [
+            {"type": "call", "contract_month": "202611", "open_interest": 10000},
+            {"type": "call", "contract_month": "202612", "open_interest": 100},
+            {"type": "put", "contract_month": "202611", "open_interest": 9000},
+        ]
+        self.assertEqual(_chain_rollover(rows, None, "202611"), (None, None))
+
+    def test_missing_current_primary_is_unknown(self):
+        self.assertEqual(_chain_rollover([], "202611", None), (None, "202611"))
+
+    def test_empty_or_invalid_snapshot_chain_does_not_infer_old_primary(self):
+        for rows in ([], None, [{"type": "call", "contract_month": "202611",
+                                 "open_interest": None}]):
+            with self.subTest(rows=rows):
+                self.assertEqual(_chain_rollover(rows, None, "202611"), (None, None))
 
 
 if __name__ == "__main__":
