@@ -42,7 +42,7 @@ if __name__ == "__main__":
 class DataReportWriteSafetyTests(unittest.TestCase):
     def valid_report(self, t0="2026-11-06"):
         from src.fetch_data import _validate_data_report_text
-        return "\\n".join([
+        return "\n".join([
             f"# DATA_REPORT_{t0.replace('-', '')}",
             f"- T0 交易日期：`{t0}`",
             "## 一、現貨", "## 二、重要市場", "## 三、期貨",
@@ -65,7 +65,7 @@ class DataReportWriteSafetyTests(unittest.TestCase):
             target = Path(directory) / "DATA_REPORT_20261106.md"
             target.write_text("舊報告", encoding="utf-8")
             with self.assertRaises(ValueError):
-                _atomic_write_data_report(target, "# DATA_REPORT_20261106\\n不完整", "2026-11-06")
+                _atomic_write_data_report(target, "# DATA_REPORT_20261106\n不完整", "2026-11-06")
             self.assertEqual(target.read_text(encoding="utf-8"), "舊報告")
             self.assertEqual(list(Path(directory).glob(".*.tmp")), [])
 
@@ -85,7 +85,7 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         from src.fetch_data import _validate_data_report_text
         with self.assertRaises(ValueError):
             _validate_data_report_text(self.valid_report(), "2026-11-07")
-        incomplete = self.valid_report().replace("## 四、選擇權\\n", "")
+        incomplete = self.valid_report().replace("## 四、選擇權\n", "")
         with self.assertRaises(ValueError):
             _validate_data_report_text(incomplete, "2026-11-06")
 
