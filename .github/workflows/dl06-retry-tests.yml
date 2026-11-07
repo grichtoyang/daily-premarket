@@ -18,7 +18,7 @@ jobs:
       - name: Checkout test contract
         uses: actions/checkout@v4
         with:
-          ref: \${{ github.sha }}
+          ref: $@@{ github.sha }}
 
       - name: Execute production retry shell with mocked commands
         shell: bash
@@ -42,8 +42,8 @@ jobs:
                   break
               block.append(line[10:] if line.startswith("          ") else "")
           production_script = textwrap.dedent("\n".join(block)).replace(
-              "\${{ github.event.schedule }}", ""
-          ).replace("\${{ inputs.t0 }}", "")
+              "$@@{ github.event.schedule }}", ""
+          ).replace("$@@{ inputs.t0 }}", "")
 
           required = [
               "for i in 1 2",
@@ -51,7 +51,7 @@ jobs:
               "FETCH_RC=0",
               "grep -F '[OK] report_path='",
               "validate_data_report_file",
-              'if [ -z "\${T0FILE:-}" ]; then',
+              'if [ -z "${T0FILE:-}" ]; then',
               "exit 1",
           ]
           missing = [item for item in required if item not in production_script]
@@ -70,9 +70,9 @@ jobs:
           if len(sys.argv) > 1 and sys.argv[1] == "src/fetch_data.py":
               report = Path(os.environ["DL06_TMP"]) / f"attempt-{attempt}.md"
               if scenario == "case-2" and attempt == 1:
-                  report.write_text("# DATA_REPORT_MOCK\\nINVALID", encoding="utf-8")
+                  report.write_text("# DATA_REPORT_MOCK\nINVALID", encoding="utf-8")
               else:
-                  report.write_text("# DATA_REPORT_MOCK\\nVALID", encoding="utf-8")
+                  report.write_text("# DATA_REPORT_MOCK\nVALID", encoding="utf-8")
               print(f"[OK] report_path={report}")
               if (scenario == "case-1" and attempt == 1) or scenario == "case-3":
                   raise SystemExit(9)
@@ -94,7 +94,7 @@ jobs:
                   python_stub.write_text(textwrap.dedent(fake_python), encoding="utf-8")
                   python_stub.chmod(0o755)
                   sleep_stub = bin_dir / "sleep"
-                  sleep_stub.write_text("#!/bin/sh\\nexit 0\\n", encoding="utf-8")
+                  sleep_stub.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
                   sleep_stub.chmod(0o755)
 
                   counter = root / "attempt-counter"
@@ -117,8 +117,8 @@ jobs:
                   if scenario in ("case-1", "case-2"):
                       if result.returncode != 0 or "T0FILE=" not in env_text:
                           raise AssertionError(
-                              f"{scenario} expected success and T0FILE; rc={result.returncode}\\n"
-                              f"stdout={result.stdout}\\nstderr={result.stderr}\\nenv={env_text}"
+                              f"{scenario} expected success and T0FILE; rc={result.returncode}\n"
+                              f"stdout={result.stdout}\nstderr={result.stderr}\nenv={env_text}"
                           )
                       if "attempt-2.md" not in env_text:
                           raise AssertionError(f"{scenario} accepted a report other than attempt 2: {env_text}")
@@ -126,8 +126,8 @@ jobs:
                   else:
                       if result.returncode == 0 or "T0FILE=" in env_text:
                           raise AssertionError(
-                              f"{scenario} expected final failure and no T0FILE; rc={result.returncode}\\n"
-                              f"stdout={result.stdout}\\nstderr={result.stderr}\\nenv={env_text}"
+                              f"{scenario} expected final failure and no T0FILE; rc={result.returncode}\n"
+                              f"stdout={result.stdout}\nstderr={result.stderr}\nenv={env_text}"
                           )
                       print("PASS: case-3 exits non-zero after two failed attempts")
 
