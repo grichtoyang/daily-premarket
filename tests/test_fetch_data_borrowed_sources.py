@@ -271,5 +271,25 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn("來源：{SRC_FX if fx['oi_chg'] is not None else MISSING}", source)
 
 
+    def test_night_scenario_source_labels_require_available_values(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn(
+            'f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX if _nratio is not None else MISSING)',
+            source,
+        )
+        self.assertIn(
+            '("夜盤漲跌點數", _f2s(_nchg), SRC_FX if _nchg is not None else MISSING)',
+            source,
+        )
+        self.assertNotIn(
+            'f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX)',
+            source,
+        )
+        self.assertNotIn(
+            '("夜盤漲跌點數", _f2s(_nchg), SRC_FX if n["change"] is not None else f"{SRC_FX}+{SRC_TX}")',
+            source,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
