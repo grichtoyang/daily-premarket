@@ -53,7 +53,8 @@ jobs:
           assert not re.search(r"(?m)^\\s*contents:\\s*write\\s*$", workflow)
           assert not re.search(r"(?m)^\\s*uses:\\s*actions/deploy-pages@", workflow)
           assert not re.search(r"(?m)^\\s*git\\s+(?:add|commit|push)\\b", workflow)
-          assert "src/fetch_data.py" not in workflow
+          fetch_entrypoint = "src/" + "fetch_data.py"
+          assert fetch_entrypoint not in workflow
           assert "permissions:\n  contents: read" in dl06
           assert "TemporaryDirectory" in dl06 and "fake_python" in dl06
           assert "actions/deploy-pages@" not in dl06
