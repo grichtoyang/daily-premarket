@@ -347,5 +347,17 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
 
 
+    def test_section_source_summaries_follow_actual_field_coverage(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('A(f"**資料來源：** `{_source_if_available(inst[\'foreign\'], SRC_INST)}`")', source)
+        self.assertIn('_mg_src_note = SRC_MG if any(mg[k] is not None for k in ("fin_yi", "fin_chg_yi", "s_bal", "s_chg")) else MISSING', source)
+        self.assertIn('_source_if_available(to["listed"], SRC_LTO)', source)
+        self.assertIn('_source_if_available(to["otc"], SRC_OTC)', source)
+        self.assertIn('_ratio_summary_src = "TAIFEX Proxy chain" if any(_ot[k] is not None', source)
+        self.assertIn('if any(row[3] != MISSING for row in _pc_rows[3:]) else MISSING', source)
+        self.assertIn('備援 TAIFEX Proxy；欄位依實際取得來源標示', source)
+
+
+
 if __name__ == "__main__":
     unittest.main()
