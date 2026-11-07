@@ -703,31 +703,35 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 1．台指期近月日盤行情")
     A("")
-    A(_tbl([("開盤價", _fi(d["open"]), SRC_FX if d["open"] is not None else MISSING), ("最高價", _fi(d["high"]), SRC_FX if d["high"] is not None else MISSING),
-            ("最低價", _fi(d["low"]), SRC_FX if d["low"] is not None else MISSING),
-            ("收盤價", _fi(d["close"]), SRC_FX if d["close"] is not None else MISSING), ("漲跌點數", _f2s(d["change"]), SRC_FX if d["change"] is not None else MISSING),
-            ("漲跌幅", _pct(d["pct"]), SRC_FX if d["pct"] is not None else MISSING),
+    A(_tbl([("開盤價", _fi(d["open"]), "點", SRC_FX if d["open"] is not None else MISSING),
+            ("最高價", _fi(d["high"]), "點", SRC_FX if d["high"] is not None else MISSING),
+            ("最低價", _fi(d["low"]), "點", SRC_FX if d["low"] is not None else MISSING),
+            ("收盤價", _fi(d["close"]), "點", SRC_FX if d["close"] is not None else MISSING),
+            ("漲跌點數", _f2s(d["change"]), "點", SRC_FX if d["change"] is not None else MISSING),
+            ("漲跌幅", _pct(d["pct"]), "%", SRC_FX if d["pct"] is not None else MISSING),
             # 日盤行情只取 regular_volume；total 含前夜盤，會與 §三.7.1 日盤成交量矛盾（2026-10-22 修正）
-            ("成交量", _fi(_prefer_not_none(d.get("vol_day"), d.get("vol"))), SRC_FX if _prefer_not_none(d.get("vol_day"), d.get("vol")) is not None else MISSING),
-            ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", SRC_FX if d["high"] is not None and d["low"] is not None else MISSING)],
-           ("項目", "數值", "資料來源")))
+            ("成交量", _fi(_prefer_not_none(d.get("vol_day"), d.get("vol"))), "口",
+             SRC_FX if _prefer_not_none(d.get("vol_day"), d.get("vol")) is not None else MISSING),
+            ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", "點",
+             SRC_FX if d["high"] is not None and d["low"] is not None else MISSING)],
+           ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 2．台指期近月夜盤行情")
     A("")
     _nvia = "TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF
     _nmiss = MISSING
-    A(_tbl([("開盤價", _fi(n["open"]), _nvia if n["open"] is not None else _nmiss),
-            ("最高價", _fi(n["high"]), _nvia if n["high"] is not None else _nmiss),
-            ("最低價", _fi(n["low"]), _nvia if n["low"] is not None else _nmiss),
-            ("收盤價", _fi(n["close"]), _nvia if n["close"] is not None else _nmiss),
-            ("漲跌點數", _f2s(n["change"]), _nvia if n["change"] is not None else _nmiss),
-            ("漲跌幅", _pct(n["pct"]), _nvia if n["pct"] is not None else _nmiss),
-            ("成交量", _fi(n["vol"]), _source_if_available(n["vol"], SRC_FX)),
-            ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}",
+    A(_tbl([("開盤價", _fi(n["open"]), "點", _nvia if n["open"] is not None else _nmiss),
+            ("最高價", _fi(n["high"]), "點", _nvia if n["high"] is not None else _nmiss),
+            ("最低價", _fi(n["low"]), "點", _nvia if n["low"] is not None else _nmiss),
+            ("收盤價", _fi(n["close"]), "點", _nvia if n["close"] is not None else _nmiss),
+            ("漲跌點數", _f2s(n["change"]), "點", _nvia if n["change"] is not None else _nmiss),
+            ("漲跌幅", _pct(n["pct"]), "%", _nvia if n["pct"] is not None else _nmiss),
+            ("成交量", _fi(n["vol"]), "口", _source_if_available(n["vol"], SRC_FX)),
+            ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}", "點",
              _source_if_available(_diff2(n["high"], n["low"]), _nvia)),
-            ("結算價", _fi(n["settle"]), _source_if_available(n["settle"], SRC_FX)),
-            ("未平倉量", _fi(n["oi"]), _source_if_available(n["oi"], SRC_FX))],
-           ("項目", "數值", "資料來源")))
+            ("結算價", _fi(n["settle"]), "點", _source_if_available(n["settle"], SRC_FX)),
+            ("未平倉量", _fi(n["oi"]), "口", _source_if_available(n["oi"], SRC_FX))],
+           ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 3．法人台指期多空未平倉部位")
     A("")
