@@ -214,5 +214,29 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertNotIn("return [(f\"{zh} {n}\", v, SRC_FX) for n, v in _rows]", block)
 
 
+    def test_options_chain_concentration_and_walls_source_labels_require_values(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        required = [
+            'SRC_FX if _ot[\'expiry\'] is not None else MISSING',
+            'SRC_FX if kk is not None and vv is not None else MISSING',
+            "SRC_FX if _oc['c_max'][0] is not None and _oc['c_max'][1] is not None else MISSING",
+            "SRC_FX if _oc['p_max'][0] is not None and _oc['p_max'][1] is not None else MISSING",
+            'SRC_FX if r.get("strike") is not None and r.get("oi") is not None else MISSING',
+            "SRC_FX if _w['call'].get('strike') is not None else MISSING",
+            "SRC_FX if _w['put'].get('strike') is not None else MISSING",
+            "SRC_FX if _w['expiry'] is not None else MISSING",
+            "SRC_FX if _w['maxpain'].get('strike') is not None else MISSING",
+        ]
+        for expression in required:
+            with self.subTest(expression=expression):
+                self.assertIn(expression, source)
+
+    def test_options_institutional_trade_source_is_row_complete(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('row_src = SRC_FX if all(v is not None for v in (*day_vals, *night_vals, diff)) else "端點未提供"', source)
+        self.assertIn('_tot_src = SRC_FX if all(v is not None for v in (*_tot_day, *_tot_night, _tot_diff)) else "端點未提供"', source)
+        self.assertNotIn('), _ot_src)', source)
+
+
 if __name__ == "__main__":
     unittest.main()
