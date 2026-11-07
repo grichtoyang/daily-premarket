@@ -829,7 +829,7 @@ def _extract_section_table_value(report_text, heading, label, required=False):
         if required:
             raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing section: {heading}")
         return None
-    following = re.search(r"(?m)^#{2,3}\\s+", report_text[start + len(heading):])
+    following = re.search(r"(?m)^#{2,3}\s+", report_text[start + len(heading):])
     end = start + len(heading) + following.start() if following else len(report_text)
     lines = report_text[start:end].splitlines()
     header = None
@@ -852,7 +852,7 @@ def _extract_section_table_value(report_text, heading, label, required=False):
         raw = cells[1].replace(",", "").strip()
         if raw.lower() == "unavailable":
             value = None
-        elif re.fullmatch(r"[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)", raw):
+        elif re.fullmatch(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)", raw):
             value = float(raw)
         else:
             value = None
