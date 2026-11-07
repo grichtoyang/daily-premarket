@@ -25,8 +25,9 @@ def taiex_ohlc(t0: str, timeout: int = 20, retries: int = 2) -> dict:
             for row in r.json().get("data") or []:
                 if row.get("date") != t0 or row.get("stock_id") != "TAIEX":
                     continue
-                return {"open": _f(row.get("open")), "high": _f(row.get("max")), "low": _f(row.get("min")),
-                        "money_yuan": _f(row.get("Trading_money")), "date": t0, "ok": True}
+                values = {"open": _f(row.get("open")), "high": _f(row.get("max")), "low": _f(row.get("min"))}
+                return {**values, "money_yuan": _f(row.get("Trading_money")), "date": t0,
+                        "ok": all(values[k] is not None for k in ("open", "high", "low"))}
             return out  # 有回應但無 T0 列，不必重試
         except Exception as e:  # noqa: BLE001
             print(f"[WARN] finmind TAIEX failed (try {attempt + 1}): {e}")
