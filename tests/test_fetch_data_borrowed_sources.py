@@ -153,9 +153,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
     def test_futures_night_proxy_fields_only_show_source_when_available(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
-        self.assertIn('("成交量", _fi(n["vol"]), _nvia if n["vol"] is not None else _nmiss)', source)
-        self.assertIn('("結算價", _fi(n["settle"]), _nvia if n["settle"] is not None else _nmiss)', source)
-        self.assertIn('("未平倉量", _fi(n["oi"]), _nvia if n["oi"] is not None else _nmiss)', source)
+        self.assertIn('("成交量", _fi(n["vol"]), _source_if_available(n["vol"], SRC_FX))', source)
+        self.assertIn('("結算價", _fi(n["settle"]), _source_if_available(n["settle"], SRC_FX))', source)
+        self.assertIn('("未平倉量", _fi(n["oi"]), _source_if_available(n["oi"], SRC_FX))', source)
+        self.assertIn('_nvia = "TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF', source)
+        self.assertIn('_source_if_available(_diff2(n["high"], n["low"]), _nvia)', source)
         self.assertNotIn('("成交量", _fi(n["vol"]), SRC_FX)', source)
         self.assertNotIn('("結算價", _fi(n["settle"]), SRC_FX)', source)
         self.assertNotIn('("未平倉量", _fi(n["oi"]), SRC_FX)', source)
@@ -262,7 +264,8 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('SRC_FX if _oi["foreign"]["long"] is not None else MISSING', source)
         self.assertIn('_t10_src if _t10["buy"] is not None else MISSING', source)
         self.assertIn('_fut_trade_rows = [(name, value, unit, src if value != MISSING else MISSING)', source)
-        self.assertIn('SRC_FX if d["close"] is not None and n["close"] is not None else MISSING', source)
+        self.assertIn('_source_if_available(_diff2(d["close"], n["close"]),', source)
+        self.assertIn('_combine_source_labels(SRC_FX, _nvia)', source)
         self.assertIn('SRC_FX if all(v != MISSING for v in _row[1:-1]) else MISSING', source)
         self.assertIn('_strength_src = SRC_FX if all(v is not None for v in _strength_values) else MISSING', source)
         self.assertIn('_pt_tot_src = SRC_FX if all(v is not None for v in (', source)
@@ -278,17 +281,70 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             source,
         )
         self.assertIn(
-            '("夜盤漲跌點數", _f2s(_nchg), SRC_FX if _nchg is not None else MISSING)',
+            '("夜盤漲跌點數", _f2s(_nchg), _nchg_src)',
             source,
         )
         self.assertNotIn(
             'f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX)',
             source,
         )
-        self.assertNotIn(
-            '("夜盤漲跌點數", _f2s(_nchg), SRC_FX if n["change"] is not None else f"{SRC_FX}+{SRC_TX}")',
-            source,
-        )
+        self.assertIn('_nchg_src = (_nvia if n["change"] is not None else _night_compare_src)', source)
+        self.assertIn('_source_if_available(_fgn, SRC_FX)', source)
+
+
+    def test_value_gated_source_label_helpers(self):
+        from src.fetch_data import _combine_source_labels, _source_if_available
+
+        self.assertEqual(_source_if_available(None, "TAIFEX Proxy"), "unavailable")
+        self.assertEqual(_source_if_available(0, "TAIFEX Proxy"), "TAIFEX Proxy")
+        self.assertEqual(_combine_source_labels("TAIFEX Proxy", "unavailable", "TAIFEX Proxy"),
+                         "TAIFEX Proxy")
+        self.assertEqual(_combine_source_labels("unavailable", "TAIFEX OpenAPI"),
+                         "TAIFEX OpenAPI")
+        self.assertEqual(_combine_source_labels("unavailable", "unavailable"), "unavailable")
+
+    def test_cash_market_source_labels_are_value_gated(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        expected = [
+            '_source_if_available(tx["close"], SRC_TX)',
+            '_source_if_available(tx["open"], SRC_OHLC)',
+            '_source_if_available(lb["limit_up"], SRC_LB)',
+            '_source_if_available(ob["limit_down"], SRC_OTC)',
+            '_source_if_available(inst["total"], SRC_INST)',
+            '_source_if_available(mg["fin_yi"], SRC_MG)',
+            '_source_if_available(mg["ratio"], SRC_MR)',
+            '_source_if_available(sb["bal"], SRC_SBL_BAL)',
+            '_source_if_available(to["total"], _combine_source_labels(SRC_LTO, SRC_OTC))',
+        ]
+        for expression in expected:
+            with self.subTest(expression=expression):
+                self.assertIn(expression, source)
+
+    def test_external_quote_source_is_unavailable_when_value_is_missing(self):
+        from src.fetch_data import _market_quote_table, _treasury_yield_table
+
+        quote_table = _market_quote_table([
+            ("No quote", {"symbol": "NONE", "price": None, "change": None, "pct": None,
+                          "source": "Yahoo Finance Chart API"})
+        ], "最新值")
+        self.assertIn("| No quote | NONE | unavailable |", quote_table)
+
+        yields = {
+            key: {"yield": None, "chg": None, "date": None, "retrieved_at": None,
+                  "source": "Yahoo Finance (備援)"}
+            for key in ("2Y", "10Y", "20Y", "30Y")
+        }
+        treasury_table = _treasury_yield_table(yields)
+        self.assertIn("| 美國 10 年期殖利率 | 10 Yr | unavailable | unavailable |", treasury_table)
+
+    def test_options_history_and_gamma_source_labels_are_field_specific(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('_source_if_available(_vol_ratio_change, _pch_src)', source)
+        self.assertIn('_source_if_available(_oi_ratio_change, _pch_src)', source)
+        self.assertIn('_gm_flip_src = f"{SRC_FX} ({_gm.get(\'src\', \'\')})" if _gm.get("flip") is not None else MISSING', source)
+        self.assertIn('_gm_date_src = f"{SRC_FX} ({_gm.get(\'src\', \'\')})" if _gm.get("date") is not None else MISSING', source)
+        self.assertIn('("Gamma Flip 價位", _f2(_gm[\'flip\']), _gm_flip_src)', source)
+
 
 
 if __name__ == "__main__":
