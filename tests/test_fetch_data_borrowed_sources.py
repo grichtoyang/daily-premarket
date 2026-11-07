@@ -825,7 +825,7 @@ class DataReportWriteSafetyTests(unittest.TestCase):
             self.assertTrue(target.read_text(encoding="utf-8").startswith("# DATA_REPORT_20261106"))
             self.assertEqual(list(Path(directory).glob("*.tmp")), [])
 
-    def test_merge_failure_stops_before_touching_existing_report(self):
+    def test_merge_failure_stops_before_touching_existing_report(self):  # regression
         import sys
         from unittest.mock import patch
         from src import fetch_data
