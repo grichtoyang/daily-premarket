@@ -260,7 +260,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('SRC_FX if d["open"] is not None else MISSING', source)
         self.assertIn('SRC_FX if d["close"] is not None else MISSING', source)
-        self.assertIn('SRC_FX if _prefer_not_none(d.get("vol_day"), d.get("vol")) is not None else MISSING', source)
+        self.assertIn('SRC_FX if d.get("vol_day") is not None else MISSING', source)
         self.assertIn('SRC_FX if _oi["foreign"]["long"] is not None else MISSING', source)
         self.assertIn('_t10_src if _t10["buy"] is not None else MISSING', source)
         self.assertIn('_fut_trade_rows = [(name, value, unit, src if value != MISSING else MISSING)', source)
