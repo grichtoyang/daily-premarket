@@ -41,9 +41,11 @@ jobs:
               if line.strip() and not line.startswith("          "):
                   break
               block.append(line[10:] if line.startswith("          ") else "")
+          gh_schedule = "$" + "{{ github.event.schedule }}"
+          gh_t0 = "$" + "{{ inputs.t0 }}"
           production_script = textwrap.dedent("\n".join(block)).replace(
-              "${{ github.event.schedule }}", ""
-          ).replace("${{ inputs.t0 }}", "")
+              gh_schedule, ""
+          ).replace(gh_t0, "")
 
           required = [
               "for i in 1 2",
