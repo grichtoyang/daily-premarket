@@ -81,7 +81,7 @@ jobs:
               raise SystemExit(0)
           if len(sys.argv) > 1 and sys.argv[1] == "-c":
               report = Path(sys.argv[-1])
-              raise SystemExit(0 if "VALID" in report.read_text(encoding="utf-8") else 1)
+              raise SystemExit(0 if report.read_text(encoding="utf-8").splitlines()[-1] == "VALID" else 1)
           raise SystemExit(f"Unexpected mocked python invocation: {sys.argv!r}")
           '''
 
