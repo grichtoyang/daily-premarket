@@ -585,7 +585,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 3. 三大法人現貨買賣超")
     A("")
-    A("**資料來源：** `TWSE RWD BFI82U`")
+    A(f"**資料來源：** `{_source_if_available(inst['foreign'], SRC_INST)}`")
     A("")
     A(_tbl([("外資", _f1s(inst["foreign"]), "億元", _source_if_available(inst["foreign"], SRC_INST)),
             ("投信", _f1s(inst["trust"]), "億元", _source_if_available(inst["trust"], SRC_INST)),
@@ -595,7 +595,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 4. 融資融券")
     A("")
-    A(f"**資料來源：** 上市+上櫃 `HiStock` (金額口徑)；維持率 `{SRC_MR}`；官方無每日維持率序列")
+    _mg_src_note = SRC_MG if any(mg[k] is not None for k in ("fin_yi", "fin_chg_yi", "s_bal", "s_chg")) else MISSING
+    A(f"**資料來源：** 上市+上櫃 `{_mg_src_note}` (金額口徑)；維持率 `{_source_if_available(mg['ratio'], SRC_MR)}`；官方無每日維持率序列")
     A("")
     A(_tbl([("融資餘額", _f1u(mg["fin_yi"]), "億元", _source_if_available(mg["fin_yi"], SRC_MG)),
             ("融資增減", _f1s(mg["fin_chg_yi"]), "億元", _source_if_available(mg["fin_chg_yi"], SRC_MG)),
@@ -622,7 +623,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 6. 市場成交結構")
     A("")
-    A("**資料來源：** 上市 `twse-proxy market_statistics`、上櫃 `TPEX OpenAPI tpex_mainborad_highlight`")
+    A(f"**資料來源：** 上市 `{_source_if_available(to['listed'], SRC_LTO)}`、上櫃 `{_source_if_available(to['otc'], SRC_OTC)}`")
     A("")
     A(_tbl([("上市成交金額", _f1u(to["listed"]), "億元", _source_if_available(to["listed"], SRC_LTO)),
             ("上櫃成交金額", _f1u(to["otc"]), "億元", _source_if_available(to["otc"], SRC_OTC)),
@@ -750,7 +751,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 4．前十大交易人多空未平倉部位")
     A("")
-    A("**資料來源：** `TAIFEX OpenAPI OpenInterestOfLargeTradersFutures` (官方資料落後約一日，標示實際日期)")
+    A("**資料來源：** `TAIFEX OpenAPI OpenInterestOfLargeTradersFutures`（備援 TAIFEX Proxy；欄位依實際取得來源標示）")
     A("")
     _t10 = taifex_official.top10_fut(d["month"] or "", t0)
     _t10_src = "TAIFEX Proxy" if _t10.get("via") == "proxy" else SRC_FX_OFF
@@ -942,7 +943,10 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _pc_rows += [("Call／Put 成交量比例變化", MISSING, "百分點（pp）", "端點未提供"),
                      ("Call／Put OI 比例變化", MISSING, "百分點（pp）", "端點未提供")]
     A(_tbl(_pc_rows, ("項目", "數值", "單位", "資料來源")))
-    A(f"**資料來源：** 比例 `TAIFEX Proxy chain`；變化 `{_pch_src} PutCallRatio`")
+    _ratio_summary_src = "TAIFEX Proxy chain" if any(_ot[k] is not None for k in ("vol_ratio", "oi_ratio", "pc_ratio")) else MISSING
+    _pch_summary_src = (_pch_src + " PutCallRatio"
+                        if any(row[3] != MISSING for row in _pc_rows[3:]) else MISSING)
+    A(f"**資料來源：** 比例 `{_ratio_summary_src}`；變化 `{_pch_summary_src}`")
     A("")
     A("### 5．外資 Call／Put 部位")
     A("")
