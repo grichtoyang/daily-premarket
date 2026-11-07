@@ -506,5 +506,63 @@ class DataReportSemanticRepairTests(unittest.TestCase):
                 report, "### 1．台指期近月日盤行情", "開盤價", True)
 
 
+class DataReportTurnoverAndUnitContractTests(unittest.TestCase):
+    def test_listed_turnover_keeps_finmind_when_proxy_field_is_missing(self):
+        from src.sources.spot import _select_listed_turnover
+
+        self.assertEqual(
+            _select_listed_turnover(123456789, None),
+            (123456789, "FinMind Trading_money"),
+        )
+        self.assertEqual(
+            _select_listed_turnover(123456789, 987654321),
+            (987654321, "twse-proxy market_statistics"),
+        )
+        self.assertEqual(_select_listed_turnover(None, None), (None, None))
+
+        source = (ROOT / "src/sources/spot.py").read_text(encoding="utf-8")
+        self.assertIn("_select_listed_turnover(\n        finmind_turnover_yuan, proxy_turnover_yuan)", source)
+        self.assertNotIn(
+            'listed_turnover_yuan = twse_proxy.parse_listed_turnover(payload)',
+            source,
+        )
+
+    def test_futures_day_volume_never_falls_back_to_total_volume(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('("成交量", _fi(d.get("vol_day")), "口",', source)
+        self.assertIn('SRC_FX if d.get("vol_day") is not None else MISSING', source)
+        self.assertNotIn(
+            '_prefer_not_none(d.get("vol_day"), d.get("vol"))',
+            source,
+        )
+        self.assertIn('("成交量", _fi(d["vol_day"]), _fi(n["vol"])', source)
+
+    def test_market_quote_change_header_is_asset_neutral(self):
+        from src.fetch_data import _market_quote_table
+
+        table = _market_quote_table([
+            ("USD/TWD", {"symbol": "TWD=X", "price": 32.1, "change": 0.1,
+                         "pct": 0.31, "date": "2026-11-06",
+                         "retrieved_at": "2026-11-07T00:00:00+00:00",
+                         "exchange_timezone": "America/New_York",
+                         "source": "Yahoo Finance Chart API"})
+        ], "最新值")
+        self.assertIn("漲跌值", table)
+        self.assertNotIn("漲跌點", table)
+
+    def test_treasury_yield_table_declares_percent_and_percentage_point_units(self):
+        from src.fetch_data import _treasury_yield_table
+
+        yields = {
+            key: {"yield": 4.0, "chg": 0.1, "date": "2026-11-06",
+                  "retrieved_at": "2026-11-07T00:00:00+00:00",
+                  "source": "U.S. Treasury FiscalData API"}
+            for key in ("2Y", "10Y", "20Y", "30Y")
+        }
+        table = _treasury_yield_table(yields)
+        self.assertIn("殖利率（%）", table)
+        self.assertIn("日變化（百分點）", table)
+
+
 if __name__ == "__main__":
     unittest.main()
