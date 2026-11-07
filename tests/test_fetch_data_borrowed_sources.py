@@ -359,5 +359,126 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
 
 
+class DataReportSemanticRepairTests(unittest.TestCase):
+    def test_yahoo_quote_timestamp_is_set_after_successful_response(self):
+        from src.sources import us_market
+        from unittest.mock import patch
+        from datetime import datetime, timezone
+
+        class Response:
+            def raise_for_status(self):
+                return None
+            def json(self):
+                return {"chart": {"result": [{
+                    "timestamp": [1793836800],
+                    "meta": {"exchangeTimezoneName": "America/New_York"},
+                    "indicators": {"quote": [{"close": [100.0]}]},
+                }]}}
+
+        fixed = datetime(2026, 11, 7, 12, 0, tzinfo=timezone.utc)
+        with patch("requests.get", return_value=Response()), patch.object(us_market, "datetime") as clock:
+            clock.now.return_value = fixed
+            result = us_market.quote("TEST")
+        self.assertEqual(result["retrieved_at"], "2026-11-07T12:00:00+00:00")
+
+    def test_yahoo_quote_failure_does_not_claim_retrieval_timestamp(self):
+        from src.sources import us_market
+        from unittest.mock import patch
+
+        with patch("requests.get", side_effect=RuntimeError("network down")):
+            result = us_market.quote("TEST")
+        self.assertIsNone(result["retrieved_at"])
+
+    def test_treasury_missing_tenors_fallback_independently(self):
+        from src.sources import treasury
+        from unittest.mock import patch
+
+        api = {
+            "2Y": {"yield": 3.5, "chg": 0.1, "date": "2026-11-06", "source": "FiscalData", "ok": True},
+            "10Y": {"yield": 4.1, "chg": 0.1, "date": "2026-11-06", "source": "FiscalData", "ok": True},
+            "20Y": {"yield": None, "chg": None, "ok": False},
+            "30Y": {"yield": None, "chg": None, "ok": False},
+        }
+        xml = {"yield": 4.6, "chg": 0.1, "date": "2026-11-06", "source": "Treasury XML", "ok": True}
+        yahoo = {"price": 4.7, "change": 0.1, "date": "2026-11-06",
+                 "retrieved_at": "2026-11-07T00:00:00+00:00", "ok": True}
+        with patch.object(treasury, "_treasury", return_value=api), \\
+             patch.object(treasury, "_xml_yield", return_value=xml) as xml_mock, \\
+             patch.object(treasury, "quote", return_value=yahoo) as yahoo_mock:
+            result = treasury.get_yields()
+        self.assertEqual(result["2Y"]["yield"], 3.5)
+        self.assertEqual(result["10Y"]["yield"], 4.1)
+        self.assertEqual(result["20Y"]["yield"], 4.6)
+        self.assertEqual(result["30Y"]["yield"], 4.7)
+        xml_mock.assert_called_once_with("BC_20YEAR")
+        yahoo_mock.assert_called_once_with("^TYX")
+
+    def test_finmind_partial_ohlc_is_not_marked_complete(self):
+        from src.sources import finmind
+        from unittest.mock import patch
+
+        class Response:
+            status_code = 200
+            def raise_for_status(self):
+                return None
+            def json(self):
+                return {"data": [{
+                    "date": "2026-11-06", "stock_id": "TAIEX",
+                    "open": "27000", "max": None, "min": "26800",
+                    "Trading_money": "1000000000",
+                }]}
+
+        with patch("requests.get", return_value=Response()):
+            result = finmind.taiex_ohlc("2026-11-06", retries=1)
+        self.assertEqual(result["open"], 27000.0)
+        self.assertIsNone(result["high"])
+        self.assertEqual(result["low"], 26800.0)
+        self.assertFalse(result["ok"])
+
+    def test_spot_ohlc_coverage_is_tracked_per_field(self):
+        source = (ROOT / "src/sources/spot.py").read_text(encoding="utf-8")
+        self.assertIn('for k in ("open", "high", "low"):', source)
+        self.assertIn('if fm.get(k) is not None:', source)
+        self.assertIn('unavailable.append(f"taiex.{k}")', source)
+        self.assertNotIn('if fm["ok"]:\\n        taiex.update', source)
+
+    def test_builder_futures_values_are_scoped_to_exact_section_and_schema(self):
+        from scripts.v9_pro_builder import _extract_section_table_value
+
+        report = """### 1．台指期近月日盤行情
+| 項目 | 數值 | 資料來源 |
+| --- | --- | --- |
+| 開盤價 | unavailable | unavailable |
+| 成交量 | 12,345 | TAIFEX Proxy |
+
+### 2．台指期近月夜盤行情
+| 項目 | 數值 | 資料來源 |
+| --- | --- | --- |
+| 開盤價 | 27,100 | TAIFEX Proxy |
+| 成交量 | 6,789 | TAIFEX Proxy |
+"""
+        self.assertIsNone(_extract_section_table_value(
+            report, "### 1．台指期近月日盤行情", "開盤價"))
+        self.assertEqual(_extract_section_table_value(
+            report, "### 2．台指期近月夜盤行情", "開盤價"), 27100.0)
+        self.assertEqual(_extract_section_table_value(
+            report, "### 1．台指期近月日盤行情", "成交量", True), 12345.0)
+        with self.assertRaises(ValueError):
+            _extract_section_table_value(
+                report, "### 1．台指期近月日盤行情", "開盤價", True)
+
+    def test_builder_rejects_wrong_futures_table_header(self):
+        from scripts.v9_pro_builder import _extract_section_table_value
+
+        report = """### 1．台指期近月日盤行情
+| 項目 | 數值 | 單位 |
+| --- | --- | --- |
+| 開盤價 | 27,000 | 點 |
+"""
+        with self.assertRaises(ValueError):
+            _extract_section_table_value(
+                report, "### 1．台指期近月日盤行情", "開盤價", True)
+
+
 if __name__ == "__main__":
     unittest.main()
