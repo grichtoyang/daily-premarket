@@ -757,16 +757,18 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         ("法人日盤交易金額淨額", _f1s(_add3(_t("day", "foreign")["net_amt_yi"], _t("day", "investment_trust")["net_amt_yi"], _t("day", "dealer")["net_amt_yi"])), "億元", SRC_FX),
         ("法人夜盤交易金額淨額", _f1s(_add3(_t("night", "foreign")["net_amt_yi"], _t("night", "investment_trust")["net_amt_yi"], _t("night", "dealer")["net_amt_yi"])), "億元", SRC_FX),
     ]
+    _fut_trade_rows = [(name, value, unit, src if value != MISSING else MISSING)
+                       for name, value, unit, src in _fut_trade_rows]
     A(_tbl(_fut_trade_rows, ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 6．期貨與現貨關係")
     A("")
     _night_vs_day = _diff2(n["close"], d["close"])
-    A(_tbl([("台指期近月價格", _fi(d["close"]), SRC_FX),
-            ("加權指數價格", _f2(tx["close"]), SRC_TX),
-            ("台指期與加權指數價差", _f2s(fx["basis"]), f"{SRC_FX}+{SRC_TX}"),
-            ("價差百分比", _pct(fx["basis_pct"]), f"{SRC_FX}+{SRC_TX}"),
-            ("日盤基差", _f2s(fx["basis"]), f"{SRC_FX}+{SRC_TX}"),
+    A(_tbl([("台指期近月價格", _fi(d["close"]), SRC_FX if d["close"] is not None else MISSING),
+            ("加權指數價格", _f2(tx["close"]), SRC_TX if tx["close"] is not None else MISSING),
+            ("台指期與加權指數價差", _f2s(fx["basis"]), f"{SRC_FX}+{SRC_TX}" if fx["basis"] is not None else MISSING),
+            ("價差百分比", _pct(fx["basis_pct"]), f"{SRC_FX}+{SRC_TX}" if fx["basis_pct"] is not None else MISSING),
+            ("日盤基差", _f2s(fx["basis"]), f"{SRC_FX}+{SRC_TX}" if fx["basis"] is not None else MISSING),
             ("夜盤價格相對日盤收盤的變化", _f2s(_night_vs_day),
              _nvia if _night_vs_day is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
@@ -775,8 +777,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("#### 7.1 日夜盤價格與成交量對照 (變化 = 日盤 - 夜盤)")
     A("")
-    A(_tbl([("收盤價", _fi(d["close"]), _fi(n["close"]), _f2s(_diff2(d["close"], n["close"])), SRC_FX),
-            ("成交量", _fi(d["vol_day"]), _fi(n["vol"]), _f2s(_diff2(d["vol_day"], n["vol"])), SRC_FX)],
+    A(_tbl([("收盤價", _fi(d["close"]), _fi(n["close"]), _f2s(_diff2(d["close"], n["close"])), SRC_FX if d["close"] is not None and n["close"] is not None else MISSING),
+            ("成交量", _fi(d["vol_day"]), _fi(n["vol"]), _f2s(_diff2(d["vol_day"], n["vol"])), SRC_FX if d["vol_day"] is not None and n["vol"] is not None else MISSING)],
            ("項目", "日盤", "夜盤", "變化 (日-夜)", "資料來源")))
     A(f"- 台指期總 OI 前日變化：{_f2s(fx['oi_chg'])}（來源：{SRC_FX}）")
     A("")
@@ -803,6 +805,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                                 _add3(_t("night", "foreign")["net"], _t("night", "investment_trust")["net"], _t("night", "dealer")["net"]))),
                     _fi(_oi["total"]["long"]), _fi(_oi["total"]["short"]), _f2s(_oi["total"]["net"]),
                     _f2s(_oi["total"]["d_net"]), SRC_FX))
+    for _ri in range(1, len(_rows72)):
+        _row = _rows72[_ri]
+        _rows72[_ri] = (*_row[:-1], SRC_FX if all(v != MISSING for v in _row[1:-1]) else MISSING)
     A(_tbl(_rows72, ("法人", "交易量", "", "", "", "", "", "", "未平倉量", "", "", "", "資料來源")))
     A("")
     A("#### 7.3 前十大交易人日夜盤對照 (OI 無日夜拆分，列收盤後總量)")
