@@ -772,11 +772,15 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         _sd.get("chain", []),
         ((_sd.get("walls") or {}).get("primary_expiry") or {}).get("contract_month"),
         prim_month)
-    if _sdate and _roll:
+    if _sdate and _roll is True:
         snapchg["chain"] = None
         snapchg["walls"] = None
         notes.append(f"跨到期換月（舊{_roll_old}→新{prim_month}），日對日 OI/Walls 變化不適用")
-    if _sdate and not _roll:
+    elif _sdate and _roll is None:
+        snapchg["chain"] = None
+        snapchg["walls"] = None
+        notes.append(f"前一日主力到期月份無法確認（快照值：{_roll_old or '缺失'}），日對日 OI/Walls 變化 unavailable")
+    elif _sdate and _roll is False:
         # 只有前後日主力到期合約集合完整一致，且每筆 OI 都有效，才計算日對日差值。
         snapchg["chain"] = _options_chain_oi_change(chain, _sd.get("chain", []), prim_month)
         if snapchg["chain"] is None:
@@ -794,13 +798,11 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             _so = (_sod.get(_k) or {}).get("net_volume")
             _pos[_k] = {"fut_chg": _diff(_cf, _sf), "opt_chg": _diff(_co, _so)}
         snapchg["pos"] = _pos
-        # walls
-        if not _roll:
-            _sw = _sd.get("walls") or {}
-            snapchg["walls"] = {
-                "call": _diff((walls["call"] or {}).get("strike"), (_sw.get("call_wall") or {}).get("strike")),
-                "put": _diff((walls["put"] or {}).get("strike"), (_sw.get("put_wall") or {}).get("strike")),
-                "maxpain": _diff((walls["maxpain"] or {}).get("strike"), (_sw.get("max_pain") or {}).get("strike"))}
+        _sw = _sd.get("walls") or {}
+        snapchg["walls"] = {
+            "call": _diff((walls["call"] or {}).get("strike"), (_sw.get("call_wall") or {}).get("strike")),
+            "put": _diff((walls["put"] or {}).get("strike"), (_sw.get("put_wall") or {}).get("strike")),
+            "maxpain": _diff((walls["maxpain"] or {}).get("strike"), (_sw.get("max_pain") or {}).get("strike"))}
 
     return {"day": day, "night": night, "fut_oi": fut_oi, "fut_trade": fut_trade,
             "basis": basis, "basis_pct": basis_pct, "oi_chg": oi_chg,
@@ -811,23 +813,16 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
 
 
 def _chain_rollover(snap_rows, snap_walls_primary, cur_primary):
-    """快照主力到期 vs 當前主力到期是否換月。純函式，可單測。
-    old 取快照 walls 主力，無則取快照 chain Call OI 最大月份；任一未知 → (False, old)。
-    回傳 (is_rollover, old_primary)。"""
+    """快照主力到期 vs 當前主力到期是否換月。
+
+    只有快照明確記錄舊主力到期月份時才判斷；缺少舊／新主力月份時回傳 None，
+    不從可能不完整的 chain OI 分布推估主力月份。
+    回傳 (True=已換月, False=未換月, None=未知；舊主力月份)。
+    """
     old = snap_walls_primary
-    if not old and snap_rows:
-        _m = {}
-        for x in snap_rows:
-            if isinstance(x, dict) and x.get("type") == "call":
-                try:
-                    _m[str(x.get("contract_month"))] = _m.get(
-                        str(x.get("contract_month")), 0) + int(x.get("open_interest") or 0)
-                except (ValueError, TypeError):
-                    pass
-        old = max(_m, key=_m.get) if _m else None
-    if not old or not cur_primary or old == cur_primary:
-        return False, old
-    return True, old
+    if not old or not cur_primary:
+        return None, old
+    return old != cur_primary, old
 
 
 def _iso8(v: str | None) -> str | None:
