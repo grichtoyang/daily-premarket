@@ -59,7 +59,7 @@ jobs:
               cat "$LOG_FILE"
               echo "fetch attempt $i failed/timed out (rc=$FETCH_RC)"
             fi
-            T0FILE=$(sed -n 's/^\\[OK\\] report_path=//p' "$LOG_FILE" | tail -1)
+            T0FILE=$(grep -F '[OK] report_path=' "$LOG_FILE" | sed 's/.*report_path=//' | tail -1)
             rm -f "$LOG_FILE"
             if [ "$FETCH_RC" -eq 0 ] && [ -n "$T0FILE" ] && [ -f "$T0FILE" ] \
               && python -c 'import sys; from src.fetch_data import validate_data_report_file; validate_data_report_file(sys.argv[1])' "$T0FILE"; then
