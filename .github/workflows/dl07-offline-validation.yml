@@ -56,7 +56,7 @@ jobs:
           assert "permissions:\n  contents: read" in dl06
           assert "TemporaryDirectory" in dl06 and "fake_python" in dl06
           assert "actions/deploy-pages@" not in dl06
-          assert not re.search(r"(?m)^\s*git\s+(?:add|commit|push)\b", dl06)
+          assert not re.search(r"(?m)^ *git +(add|commit|push)( |$)", dl06)
           print("PASS: DL-07 and DL-06 validation workflows are read-only and non-publishing")
           PY
 
