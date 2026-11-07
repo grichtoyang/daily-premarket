@@ -844,10 +844,12 @@ def _iso8(v: str | None) -> str | None:
 def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
                       dataset: str = "top10fut", callput: str | None = None) -> dict | None:
     """前十大淨變化 (快照 T-1)。dataset: top10fut (期貨) / top10opt (選擇權，需 callput)。
-    上游 OpenAPI 落後約一日，快照內容日期常比快照鍵日期早 (含週末)，
-    故不硬比快照日期，改按契約月份對齊、取該月最新內容日期。
+    上游 OpenAPI 落後約一日 (最新 = T-1)，取指定契約月份最新內容日期；
+    指定月份或買賣方資料不完整時回傳 None，不跨月份、不將缺值補零。
     回傳 {chg, prev_date, cur_date, snap_date} 或 None。"""
+    import math
     from datetime import date as _dd, timedelta as _td
+
     _t1 = (_dd.fromisoformat(t0) - _td(days=1)).isoformat()
     _sb = snapshot_bundle(_t1)
     if not _sb:
@@ -856,9 +858,7 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     if callput:
         rows = [r for r in rows if str(r.get("CallPut", "")) == str(callput)]
     if month:
-        _mrows = [r for r in rows if str(r.get("SettlementMonth", "")) == str(month)]
-        if _mrows:
-            rows = _mrows
+        rows = [r for r in rows if str(r.get("SettlementMonth", "")) == str(month)]
     if not rows or cur_net is None:
         return None
     rows.sort(key=lambda r: str(r.get("Date", "")))
@@ -866,12 +866,25 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     prev_date = _iso8(r0.get("Date"))
     if prev_date is None:
         return None
-    try:
-        prev = float(r0.get("Top10Buy", 0)) - float(r0.get("Top10Sell", 0))
-    except (ValueError, TypeError):
+
+    def _valid_number(value):
+        if value is None or value == "" or isinstance(value, bool):
+            return None
+        try:
+            number = float(str(value).replace(",", ""))
+        except (ValueError, TypeError):
+            return None
+        return number if math.isfinite(number) else None
+
+    prev_buy = _valid_number(r0.get("Top10Buy"))
+    prev_sell = _valid_number(r0.get("Top10Sell"))
+    current_net = _valid_number(cur_net)
+    if prev_buy is None or prev_sell is None or current_net is None:
         return None
-    return {"chg": cur_net - prev, "prev_date": prev_date,
+    prev = prev_buy - prev_sell
+    return {"chg": current_net - prev, "prev_date": prev_date,
             "cur_date": _iso8(cur_date) or t0, "snap_date": _sb["date"]}
+
 
 def _pct(v):
     try:
