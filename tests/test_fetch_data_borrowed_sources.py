@@ -183,9 +183,6 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertNotIn("資料時間：", frozen)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
     def test_options_chain_source_labels_only_show_source_when_values_exist(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         expected = [
@@ -205,3 +202,17 @@ if __name__ == "__main__":
         self.assertNotIn('("Put 總成交量", _fi(_ot[\'p_vol\']), SRC_FX)', source)
         self.assertNotIn('("Put 總未平倉量 OI", _fi(_ot[\'p_oi\']), SRC_FX)', source)
 
+    def test_options_institutional_day_night_source_labels_require_values(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        start = source.index("    def _full_rows(k, zh):")
+        end = source.index('    A(_tbl(_full_rows("foreign"', start)
+        block = source[start:end]
+        self.assertIn('("日盤淨總量", _f2s(_op[k][\'net\']), _op[k][\'net\'])', block)
+        self.assertIn('("Call日夜淨增減 (日－夜)", _f2s(c_diff), c_diff)', block)
+        self.assertIn('("Put日夜淨增減 (日－夜)", _f2s(p_diff), p_diff)', block)
+        self.assertIn("SRC_FX if raw is not None else MISSING", block)
+        self.assertNotIn("return [(f\"{zh} {n}\", v, SRC_FX) for n, v in _rows]", block)
+
+
+if __name__ == "__main__":
+    unittest.main()
