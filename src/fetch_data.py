@@ -135,7 +135,7 @@ def _market_quote_table(rows: list[tuple], column_label: str) -> str:
          q.get("exchange_timezone") or MISSING,
          (q.get("source") or "Yahoo Finance Chart API") if q.get("price") is not None else MISSING)
         for name, q in rows
-    ], ("項目", "Yahoo Finance 代號", column_label, "漲跌點", "漲跌幅",
+    ], ("項目", "Yahoo Finance 代號", column_label, "漲跌值", "漲跌幅",
         "資料日期（交易所時區）", "擷取時間（UTC）", "交易所時區", "資料來源"))
 
 
@@ -147,7 +147,7 @@ def _treasury_yield_table(yields: dict) -> str:
          yields[key]["source"] if yields[key]["yield"] is not None else MISSING)
         for key, label, api_label in (("2Y", "2", "2 Yr"), ("10Y", "10", "10 Yr"),
                                       ("20Y", "20", "20 Yr"), ("30Y", "30", "30 Yr"))
-    ], ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料日期", "擷取時間（UTC）", "資料來源"))
+    ], ("項目", "API 資料欄位／識別", "殖利率（%）", "日變化（百分點）", "資料日期", "擷取時間（UTC）", "資料來源"))
 
 
 def _tbl(rows: list[tuple], headers: tuple) -> str:
@@ -710,8 +710,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("漲跌點數", _f2s(d["change"]), "點", SRC_FX if d["change"] is not None else MISSING),
             ("漲跌幅", _pct(d["pct"]), "%", SRC_FX if d["pct"] is not None else MISSING),
             # 日盤行情只取 regular_volume；total 含前夜盤，會與 §三.7.1 日盤成交量矛盾（2026-10-22 修正）
-            ("成交量", _fi(_prefer_not_none(d.get("vol_day"), d.get("vol"))), "口",
-             SRC_FX if _prefer_not_none(d.get("vol_day"), d.get("vol")) is not None else MISSING),
+            ("成交量", _fi(d.get("vol_day")), "口",
+             SRC_FX if d.get("vol_day") is not None else MISSING),
             ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", "點",
              SRC_FX if d["high"] is not None and d["low"] is not None else MISSING)],
            ("項目", "數值", "單位", "資料來源")))
