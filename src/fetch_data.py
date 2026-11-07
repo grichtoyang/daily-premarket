@@ -897,18 +897,25 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         return _spl.get((sess, k)) or {}
     def _full_rows(k, zh):
         dd, nn = _sp("day", k), _sp("night", k)
-        _rows = [("Call日買", _fi(dd.get("c_long"))), ("Call日賣", _fi(dd.get("c_short"))),
-                 ("Call日淨", _f2s(dd.get("c_net"))),
-                 ("Put日買", _fi(dd.get("p_long"))), ("Put日賣", _fi(dd.get("p_short"))),
-                 ("Put日淨", _f2s(dd.get("p_net"))),
-                 ("Call夜買", _fi(nn.get("c_long"))), ("Call夜賣", _fi(nn.get("c_short"))),
-                 ("Call夜淨", _f2s(nn.get("c_net"))),
-                 ("Put夜買", _fi(nn.get("p_long"))), ("Put夜賣", _fi(nn.get("p_short"))),
-                 ("Put夜淨", _f2s(nn.get("p_net"))),
-                 ("日盤淨總量", _f2s(_op[k]['net'])),
-                 ("Call日夜淨增減 (日－夜)", _f2s(_diff2(dd.get("c_net"), nn.get("c_net")))),
-                 ("Put日夜淨增減 (日－夜)", _f2s(_diff2(dd.get("p_net"), nn.get("p_net"))))]
-        return [(f"{zh} {n}", v, SRC_FX) for n, v in _rows]
+        c_diff = _diff2(dd.get("c_net"), nn.get("c_net"))
+        p_diff = _diff2(dd.get("p_net"), nn.get("p_net"))
+        _rows = [("Call日買", _fi(dd.get("c_long")), dd.get("c_long")),
+                 ("Call日賣", _fi(dd.get("c_short")), dd.get("c_short")),
+                 ("Call日淨", _f2s(dd.get("c_net")), dd.get("c_net")),
+                 ("Put日買", _fi(dd.get("p_long")), dd.get("p_long")),
+                 ("Put日賣", _fi(dd.get("p_short")), dd.get("p_short")),
+                 ("Put日淨", _f2s(dd.get("p_net")), dd.get("p_net")),
+                 ("Call夜買", _fi(nn.get("c_long")), nn.get("c_long")),
+                 ("Call夜賣", _fi(nn.get("c_short")), nn.get("c_short")),
+                 ("Call夜淨", _f2s(nn.get("c_net")), nn.get("c_net")),
+                 ("Put夜買", _fi(nn.get("p_long")), nn.get("p_long")),
+                 ("Put夜賣", _fi(nn.get("p_short")), nn.get("p_short")),
+                 ("Put夜淨", _f2s(nn.get("p_net")), nn.get("p_net")),
+                 ("日盤淨總量", _f2s(_op[k]['net']), _op[k]['net']),
+                 ("Call日夜淨增減 (日－夜)", _f2s(c_diff), c_diff),
+                 ("Put日夜淨增減 (日－夜)", _f2s(p_diff), p_diff)]
+        return [(f"{zh} {n}", v, SRC_FX if raw is not None else MISSING)
+                for n, v, raw in _rows]
     A(_tbl(_full_rows("foreign", "外資"), ("項目", "口數", "資料來源")))
     A("")
     A("### 6．自營商 Call／Put 部位")
