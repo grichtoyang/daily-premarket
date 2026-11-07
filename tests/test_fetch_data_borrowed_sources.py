@@ -631,5 +631,80 @@ class OptionsChainOiChangeContractTests(unittest.TestCase):
         self.assertEqual(result["c_chg"], -5)
 
 
+class Top10OiSnapshotChangeContractTests(unittest.TestCase):
+    def setUp(self):
+        from unittest.mock import patch
+        from src.sources import taifex
+        self.taifex = taifex
+        self.patch_snapshot = patch("src.sources.taifex.snapshot_bundle", return_value={
+            "date": "2026-11-06",
+            "data": {
+                "top10fut": [
+                    {"Date": "20261105", "SettlementMonth": "202611",
+                     "Top10Buy": "1,000", "Top10Sell": "700"},
+                    {"Date": "20261106", "SettlementMonth": "202611",
+                     "Top10Buy": "1,200", "Top10Sell": "800"},
+                    {"Date": "20261106", "SettlementMonth": "202612",
+                     "Top10Buy": "9,000", "Top10Sell": "1,000"},
+                ],
+                "top10opt": [
+                    {"Date": "20261106", "SettlementMonth": "202611",
+                     "CallPut": "買權", "Top10Buy": "500", "Top10Sell": "300"},
+                    {"Date": "20261106", "SettlementMonth": "202611",
+                     "CallPut": "賣權", "Top10Buy": "700", "Top10Sell": "400"},
+                ],
+            },
+        })
+        self.mock_snapshot = self.patch_snapshot.start()
+        self.addCleanup(self.patch_snapshot.stop)
+
+    def test_uses_latest_record_of_requested_month_only(self):
+        result = self.taifex.snap_top10_change(
+            "202611", "2026-11-07", 450, cur_date="20261107")
+        self.assertEqual(result["chg"], 50)
+        self.assertEqual(result["prev_date"], "2026-11-06")
+
+    def test_missing_requested_month_is_unavailable_not_another_month(self):
+        result = self.taifex.snap_top10_change(
+            "202610", "2026-11-07", 450, cur_date="20261107")
+        self.assertIsNone(result)
+
+    def test_missing_buy_or_sell_is_unavailable_not_zero(self):
+        for missing_field in ("Top10Buy", "Top10Sell"):
+            with self.subTest(field=missing_field):
+                self.mock_snapshot.return_value["data"]["top10fut"][-2].pop(missing_field)
+                result = self.taifex.snap_top10_change(
+                    "202611", "2026-11-07", 450, cur_date="20261107")
+                self.assertIsNone(result)
+                self.mock_snapshot.return_value["data"]["top10fut"][-2][missing_field] = (
+                    "1,200" if missing_field == "Top10Buy" else "800")
+
+    def test_invalid_or_non_finite_snapshot_values_are_unavailable(self):
+        for value in ("", "not-a-number", "NaN", "Infinity"):
+            with self.subTest(value=value):
+                self.mock_snapshot.return_value["data"]["top10fut"][-2]["Top10Buy"] = value
+                result = self.taifex.snap_top10_change(
+                    "202611", "2026-11-07", 450, cur_date="20261107")
+                self.assertIsNone(result)
+        self.mock_snapshot.return_value["data"]["top10fut"][-2]["Top10Buy"] = "1,200"
+
+    def test_zero_is_valid_and_option_callput_is_filtered(self):
+        row = self.mock_snapshot.return_value["data"]["top10fut"][-2]
+        row["Top10Buy"] = "0"
+        row["Top10Sell"] = "0"
+        result = self.taifex.snap_top10_change(
+            "202611", "2026-11-07", 10, cur_date="20261107")
+        self.assertEqual(result["chg"], 10)
+
+        call_result = self.taifex.snap_top10_change(
+            "202611", "2026-11-07", 250, cur_date="20261107",
+            dataset="top10opt", callput="買權")
+        put_result = self.taifex.snap_top10_change(
+            "202611", "2026-11-07", 250, cur_date="20261107",
+            dataset="top10opt", callput="賣權")
+        self.assertEqual(call_result["chg"], 50)
+        self.assertEqual(put_result["chg"], -150)
+
+
 if __name__ == "__main__":
     unittest.main()
