@@ -94,4 +94,5 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "daily_data.yml").read_text(encoding="utf-8")
         self.assertIn('if [ "$FETCH_RC" -eq 0 ]', workflow)
         self.assertIn("validate_data_report_file", workflow)
+        self.assertIn("grep -F", workflow)
         self.assertNotIn("find data_reports -name 'DATA_REPORT_*.md' -newermt", workflow)
