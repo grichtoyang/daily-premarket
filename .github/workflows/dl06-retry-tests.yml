@@ -18,7 +18,7 @@ jobs:
       - name: Checkout test contract
         uses: actions/checkout@v4
         with:
-          ref: $@@{ github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Execute production retry shell with mocked commands
         shell: bash
@@ -42,8 +42,8 @@ jobs:
                   break
               block.append(line[10:] if line.startswith("          ") else "")
           production_script = textwrap.dedent("\n".join(block)).replace(
-              "$@@{ github.event.schedule }}", ""
-          ).replace("$@@{ inputs.t0 }}", "")
+              "${{ github.event.schedule }}", ""
+          ).replace("${{ inputs.t0 }}", "")
 
           required = [
               "for i in 1 2",
