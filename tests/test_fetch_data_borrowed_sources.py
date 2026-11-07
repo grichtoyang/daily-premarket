@@ -803,5 +803,66 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         self.assertEqual(put_result["chg"], -50)
 
 
+
+
+class DataReportWriteSafetyTests(unittest.TestCase):
+    def valid_report(self, t0="2026-11-06"):
+        from src.fetch_data import _validate_data_report_text
+        return "\n".join([
+            f"# DATA_REPORT_{t0.replace('-', '')}",
+            f"- T0 交易日期：`{t0}`",
+            "## 一、現貨", "## 二、重要市場", "## 三、期貨",
+            "## 四、選擇權", "## 五、資料來源、時間與完整性",
+            "## 六、期現選方向對照", "內容" * 600,
+        ])
+
+    def test_atomic_write_replaces_only_after_validation(self):
+        from src.fetch_data import _atomic_write_data_report
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "DATA_REPORT_20261106.md"
+            target.write_text("舊報告", encoding="utf-8")
+            _atomic_write_data_report(target, self.valid_report(), "2026-11-06")
+            self.assertTrue(target.read_text(encoding="utf-8").startswith("# DATA_REPORT_20261106"))
+            self.assertEqual(list(Path(directory).glob("*.tmp")), [])
+
+    def test_invalid_report_keeps_previous_file_and_cleans_temp(self):
+        from src.fetch_data import _atomic_write_data_report
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "DATA_REPORT_20261106.md"
+            target.write_text("舊報告", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                _atomic_write_data_report(target, "# DATA_REPORT_20261106\n不完整", "2026-11-06")
+            self.assertEqual(target.read_text(encoding="utf-8"), "舊報告")
+            self.assertEqual(list(Path(directory).glob(".*.tmp")), [])
+
+    def test_replace_failure_keeps_previous_file_and_cleans_temp(self):
+        from unittest.mock import patch
+        from src.fetch_data import _atomic_write_data_report
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "DATA_REPORT_20261106.md"
+            target.write_text("舊報告", encoding="utf-8")
+            with patch("src.fetch_data.os.replace", side_effect=OSError("simulated")):
+                with self.assertRaises(OSError):
+                    _atomic_write_data_report(target, self.valid_report(), "2026-11-06")
+            self.assertEqual(target.read_text(encoding="utf-8"), "舊報告")
+            self.assertEqual(list(Path(directory).glob(".*.tmp")), [])
+
+    def test_report_validator_rejects_wrong_t0_and_missing_sections(self):
+        from src.fetch_data import _validate_data_report_text
+        with self.assertRaises(ValueError):
+            _validate_data_report_text(self.valid_report(), "2026-11-07")
+        incomplete = self.valid_report().replace("## 四、選擇權\n", "")
+        with self.assertRaises(ValueError):
+            _validate_data_report_text(incomplete, "2026-11-06")
+
+    def test_workflow_requires_success_exit_and_validated_report_path(self):
+        from pathlib import Path
+        workflow = (ROOT / ".github" / "workflows" / "daily_data.yml").read_text(encoding="utf-8")
+        self.assertIn('if [ "$FETCH_RC" -eq 0 ]', workflow)
+        self.assertIn("validate_data_report_file", workflow)
+        self.assertIn("grep -F", workflow)
+        self.assertNotIn("find data_reports -name 'DATA_REPORT_*.md' -newermt", workflow)
+
+
 if __name__ == "__main__":
     unittest.main()
