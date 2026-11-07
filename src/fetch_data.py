@@ -846,7 +846,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 1．選擇權交易日期、到期日與報告產製時間")
     A("")
     A(_tbl([("交易日期", fx['trade_date'], SRC_FX),
-            ("到期月份／到期日", _ot['expiry'] or MISSING, SRC_FX),
+            ("到期月份／到期日", _ot['expiry'] or MISSING, SRC_FX if _ot['expiry'] is not None else MISSING),
             ("報告產製時間", now, "本機"),
             ("日盤／夜盤標記", "日盤收盤後資料", SRC_FX)],
            ("項目", "數值", "資料來源")))
@@ -924,16 +924,18 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 7．主要 Call OI 集中區")
     A("")
-    _crows = [("Call OI 第%d大履約價" % (i + 1), _fi(kk), _fi(vv), SRC_FX)
+    _crows = [("Call OI 第%d大履約價" % (i + 1), _fi(kk), _fi(vv), SRC_FX if kk is not None and vv is not None else MISSING)
               for i, (kk, vv) in enumerate(_oc["c_top"][:3])]
-    _crows.append(("Call OI 最大履約價", _fi(_oc['c_max'][0]), _fi(_oc['c_max'][1]), SRC_FX))
+    _crows.append(("Call OI 最大履約價", _fi(_oc['c_max'][0]), _fi(_oc['c_max'][1]),
+                   SRC_FX if _oc['c_max'][0] is not None and _oc['c_max'][1] is not None else MISSING))
     A(_tbl(_crows, ("項目", "履約價", "OI", "資料來源")))
     A("")
     A("#### Call OI 分布明細 Top10 (機器可讀，到期月份 {})".format(_od.get("expiry") or MISSING))
     A("")
     if _od["call"]:
         A(_tbl([(f"C{i + 1}", _fi(r["strike"]), _fi(r["oi"]),
-                 f"{r['pct']}%" if r["pct"] is not None else MISSING, SRC_FX)
+                 f"{r['pct']}%" if r["pct"] is not None else MISSING,
+                 SRC_FX if r.get("strike") is not None and r.get("oi") is not None else MISSING)
                 for i, r in enumerate(_od["call"])],
                ("#", "履約價", "OI", "佔比", "資料來源")))
     else:
@@ -943,16 +945,18 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 8．主要 Put OI 集中區")
     A("")
-    _prows = [("Put OI 第%d大履約價" % (i + 1), _fi(kk), _fi(vv), SRC_FX)
+    _prows = [("Put OI 第%d大履約價" % (i + 1), _fi(kk), _fi(vv), SRC_FX if kk is not None and vv is not None else MISSING)
               for i, (kk, vv) in enumerate(_oc["p_top"][:3])]
-    _prows.append(("Put OI 最大履約價", _fi(_oc['p_max'][0]), _fi(_oc['p_max'][1]), SRC_FX))
+    _prows.append(("Put OI 最大履約價", _fi(_oc['p_max'][0]), _fi(_oc['p_max'][1]),
+                   SRC_FX if _oc['p_max'][0] is not None and _oc['p_max'][1] is not None else MISSING))
     A(_tbl(_prows, ("項目", "履約價", "OI", "資料來源")))
     A("")
     A("#### Put OI 分布明細 Top10 (機器可讀，到期月份 {})".format(_od.get("expiry") or MISSING))
     A("")
     if _od["put"]:
         A(_tbl([(f"P{i + 1}", _fi(r["strike"]), _fi(r["oi"]),
-                 f"{r['pct']}%" if r["pct"] is not None else MISSING, SRC_FX)
+                 f"{r['pct']}%" if r["pct"] is not None else MISSING,
+                 SRC_FX if r.get("strike") is not None and r.get("oi") is not None else MISSING)
                 for i, r in enumerate(_od["put"])],
                ("#", "履約價", "OI", "佔比", "資料來源")))
     else:
@@ -983,16 +987,16 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 11．Call Wall")
     A("")
     _wl = (_sg.get("walls") or {})
-    A(_tbl([("Call Wall 價位", _fi(_w['call'].get('strike')), SRC_FX),
-            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX),
+    A(_tbl([("Call Wall 價位", _fi(_w['call'].get('strike')), SRC_FX if _w['call'].get('strike') is not None else MISSING),
+            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("與前一交易日的變化" + (f" ({_sdate}→{t0})" if _wl.get("call") is not None else ""),
              _f2s(_wl.get("call")), SRC_SNAP if _wl.get("call") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 12．Put Wall")
     A("")
-    A(_tbl([("Put Wall 價位", _fi(_w['put'].get('strike')), SRC_FX),
-            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX),
+    A(_tbl([("Put Wall 價位", _fi(_w['put'].get('strike')), SRC_FX if _w['put'].get('strike') is not None else MISSING),
+            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("與前一交易日的變化" + (f" ({_sdate}→{t0})" if _wl.get("put") is not None else ""),
              _f2s(_wl.get("put")), SRC_SNAP if _wl.get("put") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
@@ -1002,14 +1006,14 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _gm = fx["gamma"]
     _gm_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("wall") is not None else "端點未提供"
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
-            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX),
+            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("資料日期", _gm['date'] or MISSING, _gm_src)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 14．Gamma Flip")
     A("")
     A(_tbl([("Gamma Flip 價位", _f2(_gm['flip']), _gm_src),
-            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX),
+            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("資料日期", _gm['date'] or MISSING, _gm_src)],
            ("項目", "數值", "資料來源")))
     A("")
@@ -1049,8 +1053,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 15．Max Pain")
     A("")
-    A(_tbl([("Max Pain 價位", _fi(_w['maxpain'].get('strike')), SRC_FX),
-            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX),
+    A(_tbl([("Max Pain 價位", _fi(_w['maxpain'].get('strike')), SRC_FX if _w['maxpain'].get('strike') is not None else MISSING),
+            ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("與前一交易日的變化" + (f" ({_sdate}→{t0})" if _wl.get("maxpain") is not None else ""),
              _f2s(_wl.get("maxpain")), SRC_SNAP if _wl.get("maxpain") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
@@ -1064,17 +1068,24 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _ot_src = SRC_FX if _ot_ok else "端點未提供"
     def _orow(k, zh):
         dd, nn = _otg("day", k), _otg("night", k)
-        return (zh, _fi(dd.get("long")), _fi(dd.get("short")), _f2s(dd.get("net")),
-                _fi(nn.get("long")), _fi(nn.get("short")), _f2s(nn.get("net")),
-                _f2s(_diff2(dd.get("net"), nn.get("net"))), _ot_src)
+        day_vals = (dd.get("long"), dd.get("short"), dd.get("net"))
+        night_vals = (nn.get("long"), nn.get("short"), nn.get("net"))
+        diff = _diff2(dd.get("net"), nn.get("net"))
+        row_src = SRC_FX if all(v is not None for v in (*day_vals, *night_vals, diff)) else "端點未提供"
+        return (zh, _fi(day_vals[0]), _fi(day_vals[1]), _f2s(day_vals[2]),
+                _fi(night_vals[0]), _fi(night_vals[1]), _f2s(night_vals[2]),
+                _f2s(diff), row_src)
     _o_rows = [_orow("foreign", "外資"), _orow("investment_trust", "投信"),
                _orow("dealer", "自營商")]
     _o_tot = lambda s, f: _add3(_otg(s, "foreign").get(f), _otg(s, "investment_trust").get(f),
                                 _otg(s, "dealer").get(f))
-    _o_rows.append(("三大法人合計", _fi(_o_tot("day", "long")), _fi(_o_tot("day", "short")),
-                    _f2s(_o_tot("day", "net")), _fi(_o_tot("night", "long")),
-                    _fi(_o_tot("night", "short")), _f2s(_o_tot("night", "net")),
-                    _f2s(_diff2(_o_tot("day", "net"), _o_tot("night", "net"))), _ot_src))
+    _tot_day = tuple(_o_tot("day", f) for f in ("long", "short", "net"))
+    _tot_night = tuple(_o_tot("night", f) for f in ("long", "short", "net"))
+    _tot_diff = _diff2(_tot_day[2], _tot_night[2])
+    _tot_src = SRC_FX if all(v is not None for v in (*_tot_day, *_tot_night, _tot_diff)) else "端點未提供"
+    _o_rows.append(("三大法人合計", _fi(_tot_day[0]), _fi(_tot_day[1]), _f2s(_tot_day[2]),
+                    _fi(_tot_night[0]), _fi(_tot_night[1]), _f2s(_tot_night[2]),
+                    _f2s(_tot_diff), _tot_src))
     A(_tbl(_o_rows, ("法人", "日盤多單", "日盤空單", "日盤淨", "夜盤多單", "夜盤空單",
                      "夜盤淨", "淨變化 (日-夜)", "資料來源")))
     A("- 方法論：多方＝買Call＋賣Put（看多），空方＝賣Call＋買Put（看空），淨額＝看多－看空"
