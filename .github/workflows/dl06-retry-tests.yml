@@ -45,7 +45,7 @@ jobs:
               accepted = None
               for attempt, (fetch_rc, report_text, validator_ok) in enumerate(outcomes, start=1):
                   attempt_dir = root / f"attempt-{attempt}"
-                  attempt_dir.mkdir()
+                  attempt_dir.mkdir(parents=True)
                   report = attempt_dir / "mock-report.md"
                   if report_text is not None:
                       report.write_text(report_text, encoding="utf-8")
