@@ -515,12 +515,19 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
     def setUpClass(cls):
         cls.report = (ROOT / "data_reports" / "DATA_REPORT_20261030.md").read_text(encoding="utf-8")
 
-    def replace_row_value(self, report, label, value="unavailable"):
+    def replace_row_value(self, report, heading, label, value="unavailable"):
+        start = report.find(heading)
+        if start < 0:
+            self.fail(f"fixture section not found: {heading}")
+        next_heading = re.search(r"(?m)^#{2,4}\\s+", report[start + len(heading):])
+        end = start + len(heading) + next_heading.start() if next_heading else len(report)
+        section = report[start:end]
         pattern = re.compile(rf"(?m)^(\\|\\s*{re.escape(label)}\\s*\\|)[^|\\n]*(\\|)")
-        match = pattern.search(report)
+        match = pattern.search(section)
         if not match:
-            self.fail(f"fixture row not found: {label}")
-        return report[:match.start()] + match.group(1) + " " + value + " " + match.group(2) + report[match.end():]
+            self.fail(f"fixture row not found in {heading}: {label}")
+        section = section[:match.start()] + match.group(1) + " " + value + " " + match.group(2) + section[match.end():]
+        return report[:start] + section + report[end:]
 
     def parse_modified(self, report):
         from scripts.v9_pro_builder import parse_data_report
@@ -531,8 +538,16 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
 
     def test_unavailable_spot_and_institution_fields_are_preserved(self):
         report = self.report
-        for label in ("加權指數", "漲跌點數", "成交金額", "上漲家數", "下跌家數", "自營商", "三大法人合計"):
-            report = self.replace_row_value(report, label)
+        for heading, label in (
+            ("### 1. 台股大盤行情", "加權指數"),
+            ("### 1. 台股大盤行情", "漲跌點數"),
+            ("### 1. 台股大盤行情", "成交金額"),
+            ("#### 2.1 上市公司", "上漲家數"),
+            ("#### 2.1 上市公司", "下跌家數"),
+            ("### 3. 三大法人現貨買賣超", "自營商"),
+            ("### 3. 三大法人現貨買賣超", "三大法人合計"),
+        ):
+            report = self.replace_row_value(report, heading, label)
         parsed = self.parse_modified(report)
         self.assertIsNone(parsed["spot"]["close"])
         self.assertIsNone(parsed["spot"]["diff"])
@@ -544,8 +559,13 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
 
     def test_unavailable_futures_fields_are_preserved(self):
         report = self.report
-        for label in ("開盤價", "投信多空淨 OI", "自營商多空淨 OI", "前十大交易人多空淨 OI"):
-            report = self.replace_row_value(report, label)
+        for heading, label in (
+            ("### 1．台指期近月日盤行情", "開盤價"),
+            ("### 3．法人台指期多空未平倉部位", "投信多空淨 OI"),
+            ("### 3．法人台指期多空未平倉部位", "自營商多空淨 OI"),
+            ("### 4．前十大交易人多空未平倉部位", "前十大交易人多空淨 OI"),
+        ):
+            report = self.replace_row_value(report, heading, label)
         parsed = self.parse_modified(report)
         self.assertIsNone(parsed["tx"]["day"]["o"])
         self.assertIsNone(parsed["futures"]["trust_oi"])
@@ -554,8 +574,13 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
 
     def test_unavailable_option_volume_and_oi_are_preserved(self):
         report = self.report
-        for label in ("Call 總成交量", "Call 總未平倉量 OI", "Put 總成交量", "Put 總未平倉量 OI"):
-            report = self.replace_row_value(report, label)
+        for heading, label in (
+            ("### 2．Call 總成交量、OI、OI 增減", "Call 總成交量"),
+            ("### 2．Call 總成交量、OI、OI 增減", "Call 總未平倉量 OI"),
+            ("### 3．Put 總成交量、OI、OI 增減", "Put 總成交量"),
+            ("### 3．Put 總成交量、OI、OI 增減", "Put 總未平倉量 OI"),
+        ):
+            report = self.replace_row_value(report, heading, label)
         parsed = self.parse_modified(report)
         self.assertIsNone(parsed["options"]["callVol"])
         self.assertIsNone(parsed["options"]["callOi"])
@@ -563,7 +588,13 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
         self.assertIsNone(parsed["options"]["putOi"])
 
     def test_missing_required_option_row_still_fails_closed(self):
-        report = re.sub(r"(?m)^\\| Call 總成交量 \\|[^\\n]*\\n", "", self.report, count=1)
+        heading = "### 2．Call 總成交量、OI、OI 增減"
+        start = self.report.find(heading)
+        end_match = re.search(r"(?m)^#{2,4}\\s+", self.report[start + len(heading):])
+        end = start + len(heading) + end_match.start() if end_match else len(self.report)
+        section = self.report[start:end]
+        section = re.sub(r"(?m)^\\| Call 總成交量 \\|[^\\n]*\\n", "", section, count=1)
+        report = self.report[:start] + section + self.report[end:]
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "DATA_REPORT.md"
             path.write_text(report, encoding="utf-8")
