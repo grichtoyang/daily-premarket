@@ -185,3 +185,23 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_options_chain_source_labels_only_show_source_when_values_exist(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        expected = [
+            "SRC_FX if _ot['c_vol'] is not None else MISSING",
+            "SRC_FX if _ot['c_oi'] is not None else MISSING",
+            "SRC_FX if _ot['p_vol'] is not None else MISSING",
+            "SRC_FX if _ot['p_oi'] is not None else MISSING",
+            "SRC_FX if _ot['vol_ratio'] is not None else MISSING",
+            "SRC_FX if _ot['oi_ratio'] is not None else MISSING",
+            "SRC_FX if _ot['pc_ratio'] is not None else MISSING",
+        ]
+        for expression in expected:
+            with self.subTest(expression=expression):
+                self.assertIn(expression, source)
+        self.assertNotIn('("Call 總成交量", _fi(_ot[\'c_vol\']), SRC_FX)', source)
+        self.assertNotIn('("Call 總未平倉量 OI", _fi(_ot[\'c_oi\']), SRC_FX)', source)
+        self.assertNotIn('("Put 總成交量", _fi(_ot[\'p_vol\']), SRC_FX)', source)
+        self.assertNotIn('("Put 總未平倉量 OI", _fi(_ot[\'p_oi\']), SRC_FX)', source)
+
