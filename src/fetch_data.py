@@ -1106,9 +1106,12 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _ds = _yisum(dd.get("c_samt"), dd.get("p_lamt"))
         _nb = _yisum(nn.get("c_lamt"), nn.get("p_samt"))
         _ns = _yisum(nn.get("c_samt"), nn.get("p_lamt"))
+        _strength_diff = _diff2(_diff2(_db, _ds), _diff2(_nb, _ns))
+        _strength_values = (_db, _ds, _nb, _ns, _diff2(_db, _ds), _diff2(_nb, _ns), _strength_diff)
+        _strength_src = SRC_FX if all(v is not None for v in _strength_values) else MISSING
         return (zh, _f2(_db), _f2(_ds), _f2s(_diff2(_db, _ds)),
                 _f2(_nb), _f2(_ns), _f2s(_diff2(_nb, _ns)),
-                _f2s(_diff2(_diff2(_db, _ds), _diff2(_nb, _ns))), _ot_src)
+                _f2s(_strength_diff), _strength_src)
     _p_rows = [_prow("foreign", "外資"), _prow("investment_trust", "投信"),
                _prow("dealer", "自營商")]
     def _ptot(s, kind):
@@ -1120,12 +1123,16 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             else:
                 vals.append(_yisum(r.get("c_samt"), r.get("p_lamt")))
         return None if any(v is None for v in vals) else sum(vals)
-    _p_rows.append(("三大法人合計", _f2(_ptot("day", "b")), _f2(_ptot("day", "s")),
-                    _f2s(_diff2(_ptot("day", "b"), _ptot("day", "s"))),
-                    _f2(_ptot("night", "b")), _f2(_ptot("night", "s")),
-                    _f2s(_diff2(_ptot("night", "b"), _ptot("night", "s"))),
-                    _f2s(_diff2(_diff2(_ptot("day", "b"), _ptot("day", "s")),
-                                _diff2(_ptot("night", "b"), _ptot("night", "s")))), _ot_src))
+    _pt_day_b, _pt_day_s = _ptot("day", "b"), _ptot("day", "s")
+    _pt_night_b, _pt_night_s = _ptot("night", "b"), _ptot("night", "s")
+    _pt_day_net, _pt_night_net = _diff2(_pt_day_b, _pt_day_s), _diff2(_pt_night_b, _pt_night_s)
+    _pt_net_diff = _diff2(_pt_day_net, _pt_night_net)
+    _pt_tot_src = SRC_FX if all(v is not None for v in (
+        _pt_day_b, _pt_day_s, _pt_night_b, _pt_night_s, _pt_day_net, _pt_night_net, _pt_net_diff
+    )) else MISSING
+    _p_rows.append(("三大法人合計", _f2(_pt_day_b), _f2(_pt_day_s), _f2s(_pt_day_net),
+                    _f2(_pt_night_b), _f2(_pt_night_s), _f2s(_pt_night_net),
+                    _f2s(_pt_net_diff), _pt_tot_src))
     A(_tbl(_p_rows, ("法人", "日多方力道", "日空方力道", "日淨多空力道",
                      "夜多方力道", "夜空方力道", "夜淨多空力道", "日淨－夜淨", "資料來源")))
     A("")
@@ -1143,17 +1150,17 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                                          dataset="top10opt", callput="賣權")
     _t10c_lbl = (f" ({_t10c_chg['prev_date']}→{_t10c_chg['cur_date']})" if _t10c_chg else "")
     _t10p_lbl = (f" ({_t10p_chg['prev_date']}→{_t10p_chg['cur_date']})" if _t10p_chg else "")
-    A(_tbl([("買權多方 OI", _fi(_t10c["buy"]), _t10c_src),
-            ("買權空方 OI", _fi(_t10c["sell"]), _t10c_src),
-            ("買權多空淨 OI", _f2s(_t10c["net"]), _t10c_src),
+    A(_tbl([("買權多方 OI", _fi(_t10c["buy"]), _t10c_src if _t10c["buy"] is not None else MISSING),
+            ("買權空方 OI", _fi(_t10c["sell"]), _t10c_src if _t10c["sell"] is not None else MISSING),
+            ("買權多空淨 OI", _f2s(_t10c["net"]), _t10c_src if _t10c["net"] is not None else MISSING),
             ("買權多空淨 OI 變化" + _t10c_lbl,
              _f2s(_t10c_chg["chg"]) if _t10c_chg else MISSING,
              SRC_SNAP if _t10c_chg else "端點未提供")],
            ("項目", "口數", "資料來源")))
     A("")
-    A(_tbl([("賣權多方 OI", _fi(_t10p["buy"]), _t10p_src),
-            ("賣權空方 OI", _fi(_t10p["sell"]), _t10p_src),
-            ("賣權多空淨 OI", _f2s(_t10p["net"]), _t10p_src),
+    A(_tbl([("賣權多方 OI", _fi(_t10p["buy"]), _t10p_src if _t10p["buy"] is not None else MISSING),
+            ("賣權空方 OI", _fi(_t10p["sell"]), _t10p_src if _t10p["sell"] is not None else MISSING),
+            ("賣權多空淨 OI", _f2s(_t10p["net"]), _t10p_src if _t10p["net"] is not None else MISSING),
             ("賣權多空淨 OI 變化" + _t10p_lbl,
              _f2s(_t10p_chg["chg"]) if _t10p_chg else MISSING,
              SRC_SNAP if _t10p_chg else "端點未提供")],
