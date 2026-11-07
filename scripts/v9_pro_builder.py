@@ -870,12 +870,12 @@ def _extract_section_table_value(report_text, heading, label, required=False, ex
 
 def parse_data_report(report_path):
     text = pathlib.Path(report_path).read_text(encoding='utf-8', errors='ignore')
-    def get_value(pattern, default=None, is_float=True):
+    def get_value(pattern, default=None, is_float=True, preserve_unavailable=False):
         m=re.search(pattern, text, re.DOTALL)
         if not m: return default
         try:
             v=m.group(1).replace(',','').replace('+','').strip()
-            if v.lower()=='unavailable': return default
+            if v.lower()=='unavailable': return 'unavailable' if preserve_unavailable else default
             if is_float: return float(v)
             return v
         except: return default
@@ -908,7 +908,8 @@ def parse_data_report(report_path):
         try: return float(s)
         except (TypeError, ValueError): return None
     def must_get(pattern,name):
-        v=get_value(pattern,None)
+        v=get_value(pattern,None,preserve_unavailable=True)
+        if v == "unavailable": return None
         if v is None or v=="": raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {name}: {pattern}")
         return v
     def optional_get(pattern):
@@ -946,14 +947,15 @@ def parse_data_report(report_path):
     fxPct_simple, fxPct_full=build_arr_simple(fx_rows); adrPct_simple, adrPct_full=build_arr_simple(adr_rows); commPct_simple, commPct_full=build_arr_simple(comm_rows)
 
     # 現貨收盤是核心指數值；OHLC 開高低允許來源缺值，保留 None，不以收盤價代填。
-    spot_close=must_get(r"加權指數 \| ([0-9,.]+) \| 點","加權收盤")
+    spot_close=must_get(r"加權指數 \| ([0-9,.]+|unavailable) \| 點","加權收盤")
     spot_open=optional_get(r"開盤 \| ([0-9,.]+) \| 點")
     spot_high=optional_get(r"最高 \| ([0-9,.]+) \| 點")
     spot_low=optional_get(r"最低 \| ([0-9,.]+) \| 點")
-    spot_diff=must_get(r"漲跌點數 \| ([-\+0-9,.]+) \| 點","漲跌點"); spot_pct=optional_get(r"漲跌幅 \| ([-\+0-9,.]+) \| %")
-    spot_vol_raw=must_get(r"成交金額 \| ([0-9,.]+) \| 億元","成交金額")
+    spot_diff=must_get(r"漲跌點數 \| ([-\+0-9,.]+|unavailable) \| 點","漲跌點"); spot_pct=optional_get(r"漲跌幅 \| ([-\+0-9,.]+) \| %")
+    spot_vol_raw=must_get(r"成交金額 \| ([0-9,.]+|unavailable) \| 億元","成交金額")
 
-    up=int(must_get(r"\| 上漲家數 \| ([0-9]+) \|","上漲家數")); down=int(must_get(r"\| 下跌家數 \| ([0-9]+) \|","下跌家數"))
+    up_raw=must_get(r"\| 上漲家數 \| ([0-9]+|unavailable) \|","上漲家數"); down_raw=must_get(r"\| 下跌家數 \| ([0-9]+|unavailable) \|","下跌家數")
+    up=int(up_raw) if up_raw is not None else None; down=int(down_raw) if down_raw is not None else None
     flat_match=re.search(r"\| 平盤家數 \| ([0-9]+) \|", text); flat=int(flat_match.group(1)) if flat_match else None
     up_limit_match=re.search(r"\| 漲停家數 \| ([0-9]+) \|", text); down_limit_match=re.search(r"\| 跌停家數 \| ([0-9]+) \|", text)
     limit_up=int(up_limit_match.group(1)) if up_limit_match else None; limit_down=int(down_limit_match.group(1)) if down_limit_match else None
@@ -973,7 +975,7 @@ def parse_data_report(report_path):
         if m: otc_limit_down=int(m.group(1))
 
     foreign_inst=optional_get(r"\| 外資 \| ([-\+0-9,.]+) \| 億元"); trust_inst=optional_get(r"\| 投信 \| ([-\+0-9,.]+) \| 億元")
-    dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9,.]+) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9,.]+) \| 億元","三大法人")
+    dealer_inst=must_get(r"\| 自營商 \| ([-\+0-9,.]+|unavailable) \| 億元","自營商"); all_inst=must_get(r"\| 三大法人合計 \| ([-\+0-9,.]+|unavailable) \| 億元","三大法人")
     margin_finance=get_value(r"\| 融資餘額 \| ([0-9,.]+) \| 億元",None); margin_finance_diff=get_value(r"\| 融資增減 \| ([-\+0-9,.]+) \| 億元",None)
     margin_short=get_value(r"\| 融券餘額 \| ([0-9,]+) \| 張",None)
     margin_provenance=parse_margin_ratio_provenance(text, t0_date)
@@ -1015,11 +1017,11 @@ def parse_data_report(report_path):
     fut_night_diff=table_value(night_heading, "漲跌點數", "點"); fut_night_pct=table_value(night_heading, "漲跌幅", "%")
     fut_night_vol=table_value(night_heading, "成交量", "口")
     basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=optional_get(r"價差百分比 \| ([-\+0-9.]+) \|"); night_change=optional_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|")
-    foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
-    dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|","前十大OI")
+    foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+|unavailable) \|","投信OI")
+    dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+|unavailable) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+|unavailable) \|","前十大OI")
     foreign_day_net=optional_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|"); foreign_night_net=optional_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|")
-    call_vol=must_get(r"Call 總成交量 \| ([0-9,]+) \|","Call成交"); call_oi=must_get(r"Call 總未平倉量 OI \| ([0-9,]+) \|","Call OI")
-    put_vol=must_get(r"Put 總成交量 \| ([0-9,]+) \|","Put成交"); put_oi=must_get(r"Put 總未平倉量 OI \| ([0-9,]+) \|","Put OI")
+    call_vol=must_get(r"Call 總成交量 \| ([0-9,]+|unavailable) \|","Call成交"); call_oi=must_get(r"Call 總未平倉量 OI \| ([0-9,]+|unavailable) \|","Call OI")
+    put_vol=must_get(r"Put 總成交量 \| ([0-9,]+|unavailable) \|","Put成交"); put_oi=must_get(r"Put 總未平倉量 OI \| ([0-9,]+|unavailable) \|","Put OI")
     pcr=optional_get(r"Put／Call Ratio \| ([0-9.]+) \|")
     # Wall / Gamma / Max Pain 允許端點缺值；None 交由 Dashboard 顯示缺值，不以其他指標代替。
     call_wall=optional_get(r"Call Wall 價位 \| ([0-9,]+) \|")
