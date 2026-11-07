@@ -463,9 +463,11 @@ class DataReportSemanticRepairTests(unittest.TestCase):
             report, "### 2．台指期近月夜盤行情", "開盤價"), 27100.0)
         self.assertEqual(_extract_section_table_value(
             report, "### 1．台指期近月日盤行情", "成交量", True), 12345.0)
+        self.assertIsNone(_extract_section_table_value(
+            report, "### 1．台指期近月日盤行情", "開盤價", True))
         with self.assertRaises(ValueError):
             _extract_section_table_value(
-                report, "### 1．台指期近月日盤行情", "開盤價", True)
+                report, "### 1．台指期近月日盤行情", "不存在欄位", True)
 
     def test_builder_validates_explicit_futures_units(self):
         from scripts.v9_pro_builder import _extract_section_table_value
