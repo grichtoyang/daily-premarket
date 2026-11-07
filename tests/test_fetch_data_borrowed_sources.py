@@ -883,7 +883,7 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         start = workflow.index("          for i in 1 2; do", workflow.index("- name: Fetch daily data"))
         end = workflow.index("          if [ -z \"${T0FILE:-}\" ]; then", start)
         end = workflow.index("\n", workflow.index("          fi", end)) + 1
-        script = textwrap.dedent(workflow[start:end]).replace('\"${{ inputs.t0 }}\"', '""')
+        script = textwrap.dedent(workflow[start:end]).replace('${{ inputs.t0 }}', '')
 
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
