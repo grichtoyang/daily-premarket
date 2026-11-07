@@ -67,9 +67,9 @@ jobs:
 
           scenario = os.environ["DL06_SCENARIO"]
           counter = Path(os.environ["DL06_COUNTER"])
-          attempt = int(counter.read_text() if counter.exists() else "0") + 1
-          counter.write_text(str(attempt))
           if len(sys.argv) > 1 and sys.argv[1] == "src/fetch_data.py":
+              attempt = int(counter.read_text() if counter.exists() else "0") + 1
+              counter.write_text(str(attempt))
               report = Path(os.environ["DL06_TMP"]) / f"attempt-{attempt}.md"
               if scenario == "case-2" and attempt == 1:
                   report.write_text("# DATA_REPORT_MOCK\nINVALID", encoding="utf-8")
