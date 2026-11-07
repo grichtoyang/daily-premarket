@@ -1064,8 +1064,6 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _ot = fx.get("opt_trade", {})
     def _otg(sess, k):
         return _ot.get((sess, k)) or {}
-    _ot_ok = _otg("day", "foreign").get("long") is not None
-    _ot_src = SRC_FX if _ot_ok else "端點未提供"
     def _orow(k, zh):
         dd, nn = _otg("day", k), _otg("night", k)
         day_vals = (dd.get("long"), dd.get("short"), dd.get("net"))
