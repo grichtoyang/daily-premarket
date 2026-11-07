@@ -58,6 +58,16 @@ def _f2s(v) -> str:  # signed 口數/價差 (整數無小數，其餘2位)
     except (ValueError, TypeError):
         return MISSING
 
+def _market_combo_source_label(spot_value, taifex_values) -> str:
+    """List only source families that contributed at least one observed value."""
+    sources = []
+    if spot_value is not None:
+        sources.append("twse-proxy")
+    if any(value is not None for value in taifex_values):
+        sources.append("TAIFEX Proxy")
+    return "／".join(sources) if sources else MISSING
+
+
 def _coverage_status_lines(partial: list[str], unavailable: list[str]) -> list[str]:
     """Render partial and unavailable fields as separate, explicit DATA_REPORT lists."""
     partial_fields = list(partial or [])
@@ -1267,10 +1277,14 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                "onight": (_otr.get(("night", k_fx)) or {}).get("net"),
                "calld": (_sp("day", k_fx) or {}).get("c_net"),
                "putd": (_sp("day", k_fx) or {}).get("p_net")}
+        _mx_src = _market_combo_source_label(
+            _dd["spot"], (_dd["foi"], _dd["fday"], _dd["fnight"],
+                          _dd["oday"], _dd["onight"], _dd["calld"], _dd["putd"])
+        )
         _mx_rows.append(
             (zh, _f1s(_dd["spot"]), _f2s(_dd["foi"]), _f2s(_dd["fday"]),
              _f2s(_dd["fnight"]), _f2s(_dd["oday"]), _f2s(_dd["onight"]),
-             _mx_judge(_dd), _mx_combo(_dd), "twse-proxy／TAIFEX Proxy"))
+             _mx_judge(_dd), _mx_combo(_dd), _mx_src))
     A(_tbl(_mx_rows, ("法人", "現貨買賣超(億)", "期貨OI淨(口)", "期貨日淨", "期貨夜淨",
                       "選擇權日淨", "選擇權夜淨", "判定", "期選組合", "資料來源")))
     return "\n".join(L) + "\n"
