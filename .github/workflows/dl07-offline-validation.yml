@@ -112,7 +112,8 @@ jobs:
           assert '_source_if_available(_vol_ratio_change, _pch_src)' in fetch_data
           assert '"20Y": ("xml", "BC_20YEAR", None)' in treasury
           assert 'fallback = _xml_yield(xml_field)' in treasury
-          assert 'y["20Y"]["yield"]' in fetch_data
+          assert '("20Y", "20", "20 Yr")' in fetch_data
+          assert 'yields[key]["yield"]' in fetch_data
           print("PASS: current required/optional parsing, percentage-point units and 20Y fallback contracts")
           PY
 
