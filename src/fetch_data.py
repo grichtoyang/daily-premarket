@@ -68,6 +68,16 @@ def _market_combo_source_label(spot_value, taifex_values) -> str:
     return "／".join(sources) if sources else MISSING
 
 
+def _source_if_available(value, source: str) -> str:
+    """Show a source only when the value it describes was actually obtained."""
+    return source if value is not None else MISSING
+
+
+def _combine_source_labels(*sources: str) -> str:
+    """Join distinct available source labels, omitting unavailable entries."""
+    return "／".join(dict.fromkeys(s for s in sources if s and s != MISSING)) or MISSING
+
+
 def _coverage_status_lines(partial: list[str], unavailable: list[str]) -> list[str]:
     """Render partial and unavailable fields as separate, explicit DATA_REPORT lists."""
     partial_fields = list(partial or [])
@@ -122,7 +132,8 @@ def _market_quote_table(rows: list[tuple], column_label: str) -> str:
     return _tbl([
         (name, q["symbol"], _f2(q["price"]), _f2(q["change"]), _pct(q["pct"]),
          q.get("date") or MISSING, q.get("retrieved_at") or MISSING,
-         q.get("exchange_timezone") or MISSING, q.get("source") or "Yahoo Finance Chart API")
+         q.get("exchange_timezone") or MISSING,
+         (q.get("source") or "Yahoo Finance Chart API") if q.get("price") is not None else MISSING)
         for name, q in rows
     ], ("項目", "Yahoo Finance 代號", column_label, "漲跌點", "漲跌幅",
         "資料日期（交易所時區）", "擷取時間（UTC）", "交易所時區", "資料來源"))
@@ -133,7 +144,7 @@ def _treasury_yield_table(yields: dict) -> str:
     return _tbl([
         (f"美國 {label} 年期殖利率", api_label, _f2(yields[key]["yield"]),
          _f2(yields[key]["chg"]), yields[key].get("date") or MISSING, yields[key].get("retrieved_at") or MISSING,
-         yields[key]["source"])
+         yields[key]["source"] if yields[key]["yield"] is not None else MISSING)
         for key, label, api_label in (("2Y", "2", "2 Yr"), ("10Y", "10", "10 Yr"),
                                       ("20Y", "20", "20 Yr"), ("30Y", "30", "30 Yr"))
     ], ("項目", "API 資料欄位／識別", "殖利率", "日變化", "資料日期", "擷取時間（UTC）", "資料來源"))
@@ -538,11 +549,15 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** `Cloudflare Worker：twse-proxy` (備援 `TWSE OpenAPI MI_INDEX`)")
     A("")
-    A(_tbl([("加權指數", _f2(tx["close"]), "點", SRC_TX), ("開盤", _f2(tx["open"]), "點", SRC_OHLC),
-            ("最高", _f2(tx["high"]), "點", SRC_OHLC), ("最低", _f2(tx["low"]), "點", SRC_OHLC),
-            ("收盤", _f2(tx["close"]), "點", SRC_TX),
-            ("漲跌點數", _f2(tx["change"]), "點", SRC_TX), ("漲跌幅", _pct(tx["pct"]), "%", SRC_TX),
-            ("成交金額", _f1u(to["listed"]), "億元", SRC_LTO)], ("項目", "數值", "單位", "資料來源")))
+    A(_tbl([("加權指數", _f2(tx["close"]), "點", _source_if_available(tx["close"], SRC_TX)),
+            ("開盤", _f2(tx["open"]), "點", _source_if_available(tx["open"], SRC_OHLC)),
+            ("最高", _f2(tx["high"]), "點", _source_if_available(tx["high"], SRC_OHLC)),
+            ("最低", _f2(tx["low"]), "點", _source_if_available(tx["low"], SRC_OHLC)),
+            ("收盤", _f2(tx["close"]), "點", _source_if_available(tx["close"], SRC_TX)),
+            ("漲跌點數", _f2(tx["change"]), "點", _source_if_available(tx["change"], SRC_TX)),
+            ("漲跌幅", _pct(tx["pct"]), "%", _source_if_available(tx["pct"], SRC_TX)),
+            ("成交金額", _f1u(to["listed"]), "億元", _source_if_available(to["listed"], SRC_LTO))],
+           ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 2. 市場漲跌家數")
     A("")
@@ -550,43 +565,50 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** `Cloudflare Worker：twse-proxy` (備援 `TWSE OpenAPI twtazu_od`)")
     A("")
-    A(_tbl([("上漲家數", _fi(lb["up"]), SRC_LB), ("下跌家數", _fi(lb["down"]), SRC_LB),
-            ("平盤家數", _fi(lb["flat"]), SRC_LB),
-            ("漲停家數", _fi(lb["limit_up"]), SRC_LB), ("跌停家數", _fi(lb["limit_down"]), SRC_LB)],
+    A(_tbl([("上漲家數", _fi(lb["up"]), _source_if_available(lb["up"], SRC_LB)),
+            ("下跌家數", _fi(lb["down"]), _source_if_available(lb["down"], SRC_LB)),
+            ("平盤家數", _fi(lb["flat"]), _source_if_available(lb["flat"], SRC_LB)),
+            ("漲停家數", _fi(lb["limit_up"]), _source_if_available(lb["limit_up"], SRC_LB)),
+            ("跌停家數", _fi(lb["limit_down"]), _source_if_available(lb["limit_down"], SRC_LB))],
            ("項目", "家數", "資料來源")))
     A("")
     A("#### 2.2 上櫃公司")
     A("")
     A("**資料來源：** `TPEX OpenAPI tpex_mainborad_highlight`")
     A("")
-    A(_tbl([("上漲家數", _fi(ob["up"]), SRC_OTC), ("下跌家數", _fi(ob["down"]), SRC_OTC),
-            ("平盤家數", _fi(ob["flat"]), SRC_OTC),
-            ("漲停家數", _fi(ob["limit_up"]), SRC_OTC), ("跌停家數", _fi(ob["limit_down"]), SRC_OTC)],
+    A(_tbl([("上漲家數", _fi(ob["up"]), _source_if_available(ob["up"], SRC_OTC)),
+            ("下跌家數", _fi(ob["down"]), _source_if_available(ob["down"], SRC_OTC)),
+            ("平盤家數", _fi(ob["flat"]), _source_if_available(ob["flat"], SRC_OTC)),
+            ("漲停家數", _fi(ob["limit_up"]), _source_if_available(ob["limit_up"], SRC_OTC)),
+            ("跌停家數", _fi(ob["limit_down"]), _source_if_available(ob["limit_down"], SRC_OTC))],
            ("項目", "家數", "資料來源")))
     A("")
     A("### 3. 三大法人現貨買賣超")
     A("")
     A("**資料來源：** `TWSE RWD BFI82U`")
     A("")
-    A(_tbl([("外資", _f1s(inst["foreign"]), "億元", SRC_INST), ("投信", _f1s(inst["trust"]), "億元", SRC_INST),
-            ("自營商", _f1s(inst["dealer"]), "億元", SRC_INST),
-            ("三大法人合計", _f1s(inst["total"]), "億元", SRC_INST)],
+    A(_tbl([("外資", _f1s(inst["foreign"]), "億元", _source_if_available(inst["foreign"], SRC_INST)),
+            ("投信", _f1s(inst["trust"]), "億元", _source_if_available(inst["trust"], SRC_INST)),
+            ("自營商", _f1s(inst["dealer"]), "億元", _source_if_available(inst["dealer"], SRC_INST)),
+            ("三大法人合計", _f1s(inst["total"]), "億元", _source_if_available(inst["total"], SRC_INST))],
            ("法人別", "買賣超金額", "單位", "資料來源")))
     A("")
     A("### 4. 融資融券")
     A("")
     A(f"**資料來源：** 上市+上櫃 `HiStock` (金額口徑)；維持率 `{SRC_MR}`；官方無每日維持率序列")
     A("")
-    A(_tbl([("融資餘額", _f1u(mg["fin_yi"]), "億元", SRC_MG),
-            ("融資增減", _f1s(mg["fin_chg_yi"]), "億元", SRC_MG),
-            ("融券餘額", _fi(mg["s_bal"]), "張", SRC_MG), ("融券增減", _fi(mg["s_chg"]), "張", SRC_MG),
-            ("融資維持率", _f2(mg["ratio"]), "%", SRC_MR)], ("項目", "數值", "單位", "資料來源")))
+    A(_tbl([("融資餘額", _f1u(mg["fin_yi"]), "億元", _source_if_available(mg["fin_yi"], SRC_MG)),
+            ("融資增減", _f1s(mg["fin_chg_yi"]), "億元", _source_if_available(mg["fin_chg_yi"], SRC_MG)),
+            ("融券餘額", _fi(mg["s_bal"]), "張", _source_if_available(mg["s_bal"], SRC_MG)),
+            ("融券增減", _fi(mg["s_chg"]), "張", _source_if_available(mg["s_chg"], SRC_MG)),
+            ("融資維持率", _f2(mg["ratio"]), "%", _source_if_available(mg["ratio"], SRC_MR))],
+           ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 5. 借券資料")
     A("")
     A("**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWT93U 與上櫃 tpex_margin_sbl，缺值市場不納入加總。")
     A("")
-    A(_tbl([("整體市場借券餘額", _fi(sb["bal"]), "張", SRC_SBL_BAL)],
+    A(_tbl([("整體市場借券餘額", _fi(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))],
            ("項目", "數值", "單位", "資料來源")))
     A("")
     A(_sbl_market_table(sb))
@@ -602,9 +624,10 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** 上市 `twse-proxy market_statistics`、上櫃 `TPEX OpenAPI tpex_mainborad_highlight`")
     A("")
-    A(_tbl([("上市成交金額", _f1u(to["listed"]), "億元", SRC_LTO),
-            ("上櫃成交金額", _f1u(to["otc"]), "億元", SRC_OTC),
-            ("上市櫃成交金額合計", _f1u(to["total"]), "億元", f"{SRC_LTO}+{SRC_OTC}")],
+    A(_tbl([("上市成交金額", _f1u(to["listed"]), "億元", _source_if_available(to["listed"], SRC_LTO)),
+            ("上櫃成交金額", _f1u(to["otc"]), "億元", _source_if_available(to["otc"], SRC_OTC)),
+            ("上市櫃成交金額合計", _f1u(to["total"]), "億元",
+             _source_if_available(to["total"], _combine_source_labels(SRC_LTO, SRC_OTC)))],
            ("項目", "成交金額", "單位", "資料來源")))
     A("")
     A("## 二、重要市場")
@@ -690,18 +713,19 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 2．台指期近月夜盤行情")
     A("")
-    _nvia = ("TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF) if n.get("close") is not None else "端點未提供"
-    _nmiss = "端點未提供"
+    _nvia = "TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF
+    _nmiss = MISSING
     A(_tbl([("開盤價", _fi(n["open"]), _nvia if n["open"] is not None else _nmiss),
             ("最高價", _fi(n["high"]), _nvia if n["high"] is not None else _nmiss),
             ("最低價", _fi(n["low"]), _nvia if n["low"] is not None else _nmiss),
             ("收盤價", _fi(n["close"]), _nvia if n["close"] is not None else _nmiss),
             ("漲跌點數", _f2s(n["change"]), _nvia if n["change"] is not None else _nmiss),
             ("漲跌幅", _pct(n["pct"]), _nvia if n["pct"] is not None else _nmiss),
-            ("成交量", _fi(n["vol"]), _nvia if n["vol"] is not None else _nmiss),
-            ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}", _nvia if n["high"] is not None else _nmiss),
-            ("結算價", _fi(n["settle"]), _nvia if n["settle"] is not None else _nmiss),
-            ("未平倉量", _fi(n["oi"]), _nvia if n["oi"] is not None else _nmiss)],
+            ("成交量", _fi(n["vol"]), _source_if_available(n["vol"], SRC_FX)),
+            ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}",
+             _source_if_available(_diff2(n["high"], n["low"]), _nvia)),
+            ("結算價", _fi(n["settle"]), _source_if_available(n["settle"], SRC_FX)),
+            ("未平倉量", _fi(n["oi"]), _source_if_available(n["oi"], SRC_FX))],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 3．法人台指期多空未平倉部位")
@@ -738,7 +762,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src if _t10["net"] is not None else MISSING),
             ("多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
-             SRC_SNAP if _t10chg else "端點未提供")],
+             SRC_SNAP if _t10chg and _t10chg.get("chg") is not None else MISSING)],
            ("項目", "口數", "資料來源")))
     A(f"- 資料日期：{_t10['date'] or MISSING} (TypeOfTraders=0 全部交易人；契約月份 {_t10['month'] or MISSING})")
     A("")
@@ -774,21 +798,31 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 6．期貨與現貨關係")
     A("")
     _night_vs_day = _diff2(n["close"], d["close"])
-    A(_tbl([("台指期近月價格", _fi(d["close"]), SRC_FX if d["close"] is not None else MISSING),
-            ("加權指數價格", _f2(tx["close"]), SRC_TX if tx["close"] is not None else MISSING),
-            ("台指期與加權指數價差", _f2s(fx["basis"]), f"{SRC_FX}+{SRC_TX}" if fx["basis"] is not None else MISSING),
-            ("價差百分比", _pct(fx["basis_pct"]), f"{SRC_FX}+{SRC_TX}" if fx["basis_pct"] is not None else MISSING),
-            ("日盤基差", _f2s(fx["basis"]), f"{SRC_FX}+{SRC_TX}" if fx["basis"] is not None else MISSING),
+    _night_compare_src = _combine_source_labels(
+        _source_if_available(d["close"], SRC_FX),
+        _source_if_available(n["close"], _nvia),
+    )
+    A(_tbl([("台指期近月價格", _fi(d["close"]), _source_if_available(d["close"], SRC_FX)),
+            ("加權指數價格", _f2(tx["close"]), _source_if_available(tx["close"], SRC_TX)),
+            ("台指期與加權指數價差", _f2s(fx["basis"]),
+             _source_if_available(fx["basis"], _combine_source_labels(SRC_FX, SRC_TX))),
+            ("價差百分比", _pct(fx["basis_pct"]),
+             _source_if_available(fx["basis_pct"], _combine_source_labels(SRC_FX, SRC_TX))),
+            ("日盤基差", _f2s(fx["basis"]),
+             _source_if_available(fx["basis"], _combine_source_labels(SRC_FX, SRC_TX))),
             ("夜盤價格相對日盤收盤的變化", _f2s(_night_vs_day),
-             _nvia if _night_vs_day is not None else "端點未提供")],
+             _source_if_available(_night_vs_day, _night_compare_src))],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 7．日盤、夜盤與籌碼變化對照")
     A("")
     A("#### 7.1 日夜盤價格與成交量對照 (變化 = 日盤 - 夜盤)")
     A("")
-    A(_tbl([("收盤價", _fi(d["close"]), _fi(n["close"]), _f2s(_diff2(d["close"], n["close"])), SRC_FX if d["close"] is not None and n["close"] is not None else MISSING),
-            ("成交量", _fi(d["vol_day"]), _fi(n["vol"]), _f2s(_diff2(d["vol_day"], n["vol"])), SRC_FX if d["vol_day"] is not None and n["vol"] is not None else MISSING)],
+    A(_tbl([("收盤價", _fi(d["close"]), _fi(n["close"]), _f2s(_diff2(d["close"], n["close"])),
+             _source_if_available(_diff2(d["close"], n["close"]),
+                                  _combine_source_labels(SRC_FX, _nvia))),
+            ("成交量", _fi(d["vol_day"]), _fi(n["vol"]), _f2s(_diff2(d["vol_day"], n["vol"])),
+             _source_if_available(_diff2(d["vol_day"], n["vol"]), SRC_FX))],
            ("項目", "日盤", "夜盤", "變化 (日-夜)", "資料來源")))
     A(f"- 台指期總 OI 前日變化：{_f2s(fx['oi_chg'])}（來源：{SRC_FX if fx['oi_chg'] is not None else MISSING}）")
     A("")
@@ -827,7 +861,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src if _t10["net"] is not None else MISSING),
             ("前十大交易人多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
-             SRC_SNAP if _t10chg else "端點未提供")],
+             SRC_SNAP if _t10chg and _t10chg.get("chg") is not None else MISSING)],
            ("項目", "口數", "資料來源")))
     A("")
     A("#### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)")
@@ -835,6 +869,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _nv, _dv = n["vol"], d["vol_day"]
     _nratio = (_nv / (_nv + _dv)) if _nv is not None and _dv is not None and (_nv + _dv) else None
     _nchg = n["change"] if n["change"] is not None else _night_vs_day
+    _nchg_src = (_nvia if n["change"] is not None else _night_compare_src) if _nchg is not None else MISSING
     _fgn = _tr[("night", "foreign")]["net"]
     _play, _cond, _feat = MISSING, MISSING, MISSING
     if _nchg is not None and _fgn is not None and _nchg != 0 and _fgn != 0:
@@ -845,8 +880,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                  "劇本三": "開低、續跌機率高", "劇本四": "先跌、開低反彈"}[_play]
     A(_tbl([("夜盤成交量占比 (夜盤量／(夜盤量＋日盤量))",
              f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX if _nratio is not None else MISSING),
-            ("夜盤漲跌點數", _f2s(_nchg), SRC_FX if _nchg is not None else MISSING),
-            ("外資夜盤多空淨交易量", _f2s(_fgn), SRC_FX),
+            ("夜盤漲跌點數", _f2s(_nchg), _nchg_src),
+            ("外資夜盤多空淨交易量", _f2s(_fgn), _source_if_available(_fgn, SRC_FX)),
             ("劇本分類", _play, "規則對應"),
             ("劇本條件", _cond, "規則對應"),
             ("劇本特徵", _feat, "規則對應")],
@@ -895,10 +930,14 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _pch_src = "TAIFEX Proxy" if _pch.get("via") == "proxy" else SRC_FX_OFF
     if len(_pch_rows) >= 2:
         _a, _b = _pch_rows[-2], _pch_rows[-1]
+        _vol_ratio_change = _diff2(_b["vol_ratio"], _a["vol_ratio"])
+        _oi_ratio_change = _diff2(_b["oi_ratio"], _a["oi_ratio"])
         _pc_rows += [(f"Call／Put 成交量比例變化 ({_a['date']}→{_b['date']})",
-                      _f2(_diff2(_b['vol_ratio'], _a['vol_ratio'])), "百分點（pp）", _pch_src),
+                      _f2(_vol_ratio_change), "百分點（pp）",
+                      _source_if_available(_vol_ratio_change, _pch_src)),
                      (f"Call／Put OI 比例變化 ({_a['date']}→{_b['date']})",
-                      _f2(_diff2(_b['oi_ratio'], _a['oi_ratio'])), "百分點（pp）", _pch_src)]
+                      _f2(_oi_ratio_change), "百分點（pp）",
+                      _source_if_available(_oi_ratio_change, _pch_src))]
     else:
         _pc_rows += [("Call／Put 成交量比例變化", MISSING, "百分點（pp）", "端點未提供"),
                      ("Call／Put OI 比例變化", MISSING, "百分點（pp）", "端點未提供")]
@@ -1019,17 +1058,19 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 13．Gamma Wall")
     A("")
     _gm = fx["gamma"]
-    _gm_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("wall") is not None else "端點未提供"
+    _gm_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("wall") is not None else MISSING
+    _gm_flip_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("flip") is not None else MISSING
+    _gm_date_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("date") is not None else MISSING
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
-            ("資料日期", _gm['date'] or MISSING, _gm_src)],
+            ("資料日期", _gm['date'] or MISSING, _gm_date_src)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 14．Gamma Flip")
     A("")
-    A(_tbl([("Gamma Flip 價位", _f2(_gm['flip']), _gm_src),
+    A(_tbl([("Gamma Flip 價位", _f2(_gm['flip']), _gm_flip_src),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
-            ("資料日期", _gm['date'] or MISSING, _gm_src)],
+            ("資料日期", _gm['date'] or MISSING, _gm_date_src)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 14A．GEX 整體曝險與履約價分布")
@@ -1165,7 +1206,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("買權多空淨 OI", _f2s(_t10c["net"]), _t10c_src if _t10c["net"] is not None else MISSING),
             ("買權多空淨 OI 變化" + _t10c_lbl,
              _f2s(_t10c_chg["chg"]) if _t10c_chg else MISSING,
-             SRC_SNAP if _t10c_chg else "端點未提供")],
+             SRC_SNAP if _t10c_chg and _t10c_chg.get("chg") is not None else MISSING)],
            ("項目", "口數", "資料來源")))
     A("")
     A(_tbl([("賣權多方 OI", _fi(_t10p["buy"]), _t10p_src if _t10p["buy"] is not None else MISSING),
@@ -1173,7 +1214,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("賣權多空淨 OI", _f2s(_t10p["net"]), _t10p_src if _t10p["net"] is not None else MISSING),
             ("賣權多空淨 OI 變化" + _t10p_lbl,
              _f2s(_t10p_chg["chg"]) if _t10p_chg else MISSING,
-             SRC_SNAP if _t10p_chg else "端點未提供")],
+             SRC_SNAP if _t10p_chg and _t10p_chg.get("chg") is not None else MISSING)],
            ("項目", "口數", "資料來源")))
     A(f"- 資料日期：買權 {_t10c['date'] or MISSING}／賣權 {_t10p['date'] or MISSING} "
       f"(TypeOfTraders=0 全部交易人；契約月份 {_t10c['month'] or MISSING})")
@@ -1182,7 +1223,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("#### 大戶流向（全日；前十大無日夜拆分）")
     A("")
     def _t10r(chg, zh):
-        if chg:
+        if chg and chg.get("chg") is not None:
             return (zh, _f2s(chg["chg"]),
                     f"{chg['prev_date']}→{chg['cur_date']}", SRC_SNAP)
         return (zh, MISSING, "—", "端點未提供")
