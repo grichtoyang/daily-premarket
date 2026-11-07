@@ -34,7 +34,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('SRC_SBL_BAL = _src.get("sbl_bal"', source)
         self.assertIn('SRC_SBL_SALE_BAL = _src.get("sbl_sale_bal"', source)
         self.assertIn('SRC_SBL_SALE_CHG = _src.get("sbl_sale_chg"', source)
-        self.assertIn('("整體市場借券餘額", _fi(sb["bal"]), "張", SRC_SBL_BAL)', source)
+        self.assertIn('("整體市場借券餘額", _fi(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))', source)
         self.assertIn('def _sbl_market_table(sb: dict)', source)
         self.assertIn('sb.get("listed_sale_bal")', source)
         self.assertIn('sb.get("otc_sale_bal")', source)
