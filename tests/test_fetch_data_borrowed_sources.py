@@ -402,8 +402,8 @@ class DataReportSemanticRepairTests(unittest.TestCase):
         xml = {"yield": 4.6, "chg": 0.1, "date": "2026-11-06", "source": "Treasury XML", "ok": True}
         yahoo = {"price": 4.7, "change": 0.1, "date": "2026-11-06",
                  "retrieved_at": "2026-11-07T00:00:00+00:00", "ok": True}
-        with patch.object(treasury, "_treasury", return_value=api), \\
-             patch.object(treasury, "_xml_yield", return_value=xml) as xml_mock, \\
+        with patch.object(treasury, "_treasury", return_value=api), \
+             patch.object(treasury, "_xml_yield", return_value=xml) as xml_mock, \
              patch.object(treasury, "quote", return_value=yahoo) as yahoo_mock:
             result = treasury.get_yields()
         self.assertEqual(result["2Y"]["yield"], 3.5)
