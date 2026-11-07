@@ -209,6 +209,59 @@ def _oi_distribution(rows: list, limit: int = 10) -> list[dict]:
             for row in top]
 
 
+
+def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) -> dict | None:
+    """Calculate daily OI deltas only when both primary-expiry chains align completely."""
+    import math
+
+    if not primary_month or not isinstance(current_chain, list) or not isinstance(previous_chain, list):
+        return None
+
+    def _index(rows):
+        indexed = {}
+        for row in rows:
+            if not isinstance(row, dict) or row.get("contract_month") != primary_month:
+                continue
+            identity = (row.get("contract_month"), row.get("contract_expiry_date"),
+                        row.get("strike"), row.get("type"))
+            if any(value is None for value in identity):
+                return None
+            if identity in indexed:
+                return None
+            oi = row.get("open_interest")
+            if isinstance(oi, bool) or not isinstance(oi, (int, float)):
+                return None
+            if not math.isfinite(float(oi)) or oi < 0:
+                return None
+            indexed[identity] = oi
+        return indexed
+
+    current = _index(current_chain)
+    previous = _index(previous_chain)
+    if not current or not previous or current.keys() != previous.keys():
+        return None
+
+    moves = []
+    for key, oi in current.items():
+        kind = key[3]
+        if kind not in ("call", "put"):
+            return None
+        moves.append({"strike": key[2], "type": kind, "d_oi": oi - previous[key]})
+
+    calls = sorted((move for move in moves if move["type"] == "call"),
+                   key=lambda move: move["d_oi"], reverse=True)
+    puts = sorted((move for move in moves if move["type"] == "put"),
+                  key=lambda move: move["d_oi"], reverse=True)
+    return {
+        "c_chg": sum(move["d_oi"] for move in calls),
+        "p_chg": sum(move["d_oi"] for move in puts),
+        "c_up": calls[0] if calls and calls[0]["d_oi"] > 0 else None,
+        "c_dn": calls[-1] if calls and calls[-1]["d_oi"] < 0 else None,
+        "p_up": puts[0] if puts and puts[0]["d_oi"] > 0 else None,
+        "p_dn": puts[-1] if puts and puts[-1]["d_oi"] < 0 else None,
+    }
+
+
 def _rows(payload: dict | None) -> list:
     d = (payload or {}).get("data")
     return d if isinstance(d, list) else []
@@ -723,25 +776,11 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         snapchg["chain"] = None
         snapchg["walls"] = None
         notes.append(f"跨到期換月（舊{_roll_old}→新{prim_month}），日對日 OI/Walls 變化不適用")
-    if _sdate:
-        # chain：總量增減 + 增減集中 (primary 到期月，按 month|expiry|strike|type 對齊)
-        _pmap = {(x.get("contract_month"), x.get("contract_expiry_date"), x.get("strike"), x.get("type")): x
-                 for x in _sd.get("chain", []) if isinstance(x, dict)}
-        if not _roll and _pmap and prim_month:
-            _moves = []
-            for r in [x for x in chain if x.get("contract_month") == prim_month]:
-                p = _pmap.get((r.get("contract_month"), r.get("contract_expiry_date"),
-                               r.get("strike"), r.get("type")), {})
-                _moves.append({"strike": r.get("strike"), "type": r.get("type"),
-                               "d_oi": (r.get("open_interest") or 0) - (p.get("open_interest") or 0)})
-            _cm = sorted([m for m in _moves if m["type"] == "call"], key=lambda x: x["d_oi"], reverse=True)
-            _pm = sorted([m for m in _moves if m["type"] == "put"], key=lambda x: x["d_oi"], reverse=True)
-            snapchg["chain"] = {
-                "c_chg": sum(m["d_oi"] for m in _cm), "p_chg": sum(m["d_oi"] for m in _pm),
-                "c_up": _cm[0] if _cm and _cm[0]["d_oi"] > 0 else None,
-                "c_dn": _cm[-1] if _cm and _cm[-1]["d_oi"] < 0 else None,
-                "p_up": _pm[0] if _pm and _pm[0]["d_oi"] > 0 else None,
-                "p_dn": _pm[-1] if _pm and _pm[-1]["d_oi"] < 0 else None}
+    if _sdate and not _roll:
+        # 只有前後日主力到期合約集合完整一致，且每筆 OI 都有效，才計算日對日差值。
+        snapchg["chain"] = _options_chain_oi_change(chain, _sd.get("chain", []), prim_month)
+        if snapchg["chain"] is None:
+            notes.append("選擇權 OI 日對日變化 unavailable：前後日合約集合不一致或 OI 缺值")
         # 部位：日盤淨差值 (僅快照當日收集才可信)
         _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} \
             if (_sb or {}).get("trust_pos") else {}
