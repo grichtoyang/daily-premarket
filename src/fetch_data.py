@@ -780,7 +780,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(_tbl([("收盤價", _fi(d["close"]), _fi(n["close"]), _f2s(_diff2(d["close"], n["close"])), SRC_FX if d["close"] is not None and n["close"] is not None else MISSING),
             ("成交量", _fi(d["vol_day"]), _fi(n["vol"]), _f2s(_diff2(d["vol_day"], n["vol"])), SRC_FX if d["vol_day"] is not None and n["vol"] is not None else MISSING)],
            ("項目", "日盤", "夜盤", "變化 (日-夜)", "資料來源")))
-    A(f"- 台指期總 OI 前日變化：{_f2s(fx['oi_chg'])}（來源：{SRC_FX}）")
+    A(f"- 台指期總 OI 前日變化：{_f2s(fx['oi_chg'])}（來源：{SRC_FX if fx['oi_chg'] is not None else MISSING}）")
     A("")
     A("")
     A("#### 7.2 法人籌碼日夜盤對照 (淨變化 = 日盤淨 - 夜盤淨；OI 為日盤收盤後總量，前日變化另列)")
