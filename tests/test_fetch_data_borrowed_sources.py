@@ -874,6 +874,79 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _validate_data_report_text(incomplete, "2026-11-06")
 
+    def _run_isolated_workflow_retry(self, mode):
+        import os
+        import subprocess
+        import textwrap
+
+        workflow = (ROOT / ".github" / "workflows" / "daily_data.yml").read_text(encoding="utf-8")
+        start = workflow.index("          for i in 1 2; do", workflow.index("- name: Fetch daily data"))
+        end = workflow.index("          if [ -z \"${T0FILE:-}\" ]; then", start)
+        end = workflow.index("\n", workflow.index("          fi", end)) + 1
+        script = textwrap.dedent(workflow[start:end]).replace('\"${{ inputs.t0 }}\"', '""')
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bin_dir = root / "bin"
+            bin_dir.mkdir()
+            fake_python = bin_dir / "python"
+            fake_python.write_text(
+                "#!/usr/bin/env python3\n"
+                "import os, pathlib, sys\n"
+                "state = pathlib.Path(os.environ['FAKE_STATE'])\n"
+                "if len(sys.argv) > 1 and sys.argv[1] == 'src/fetch_data.py':\n"
+                " count = int(state.read_text()) + 1 if state.exists() else 1\n"
+                " state.write_text(str(count))\n"
+                " path = pathlib.Path.cwd() / 'DATA_REPORT_20261106.md'\n"
+                " valid = os.environ['FAKE_MODE'] != 'invalid_then_valid' or count > 1\n"
+                " path.write_text('VALID' if valid else 'INVALID')\n"
+                " print('[OK] report_path=' + str(path))\n"
+                " sys.exit(1 if os.environ['FAKE_MODE'] == 'both_fail' or (os.environ['FAKE_MODE'] == 'fail_then_success' and count == 1) else 0)\n"
+                "elif len(sys.argv) > 1 and sys.argv[1] == '-c':\n"
+                " sys.exit(0 if pathlib.Path(sys.argv[-1]).read_text() == 'VALID' else 1)\n"
+                "sys.exit(2)\n",
+                encoding="utf-8",
+            )
+            fake_python.chmod(0o755)
+            timeout = bin_dir / "timeout"
+            timeout.write_text("#!/bin/sh\nshift\nexec \"$@\"\n", encoding="utf-8")
+            timeout.chmod(0o755)
+            sleep = bin_dir / "sleep"
+            sleep.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+            sleep.chmod(0o755)
+            env = dict(os.environ)
+            env.update({
+                "PATH": str(bin_dir) + os.pathsep + env["PATH"],
+                "GITHUB_ENV": str(root / "github_env"),
+                "FAKE_STATE": str(root / "attempts"),
+                "FAKE_MODE": mode,
+                "TODAY": "2026-11-07",
+                "SLOT": "",
+            })
+            return subprocess.run(
+                ["bash", "-e", "-c", script], cwd=root, env=env,
+                text=True, capture_output=True, timeout=10,
+            ), root
+
+    def test_workflow_retries_after_fetch_nonzero_even_if_report_path_exists(self):
+        result, root = self._run_isolated_workflow_retry("fail_then_success")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((root / "attempts").read_text(), "2")
+        self.assertIn("attempt 2", result.stdout)
+        self.assertIn("T0FILE=", (root / "github_env").read_text())
+
+    def test_workflow_retries_after_report_validation_failure(self):
+        result, root = self._run_isolated_workflow_retry("invalid_then_valid")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual((root / "attempts").read_text(), "2")
+        self.assertIn("attempt 2", result.stdout)
+
+    def test_workflow_fails_after_two_fetch_failures(self):
+        result, root = self._run_isolated_workflow_retry("both_fail")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual((root / "attempts").read_text(), "2")
+        self.assertIn("FATAL: no fresh DATA produced", result.stdout)
+
     def test_workflow_requires_success_exit_and_validated_report_path(self):
         from pathlib import Path
         workflow = (ROOT / ".github" / "workflows" / "daily_data.yml").read_text(encoding="utf-8")
