@@ -2085,3 +2085,15 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - Template blob `281843f8727a76f3b14394b6ba2465b8bfba6626`；test blob `267ca92425b429b8fa22c5494132efda0f2eaef1`。已 GitHub 回讀確認 ID 38 綁定及舊固定文字移除。
 - P4 runtime binding 更新為 21/42：原 20 個已驗收區塊不重做；ID 38 新增完成。下一步只處理 ID 01–21（總覽／現貨／重要市場），不重做 ID 22–42。
 - 未 merge、未 deploy；未修改 master、P0 base、V8 或 data_reports 樣本。LLM runtime NOT IMPLEMENTED；42 區塊人工品質評分與 95/100 目標仍 NOT TESTED。
+
+
+## 2026-11-07 最新接續點｜DL-05 已結案
+
+- DL-01～DL-04：PASS／CLOSE，不重開。
+- DL-05 DATA_REPORT data contract：PASS／CLOSE。最後修正已在產品分支 phase2-p0-ui-fixes 完成，HEAD 1f5202003c3969ecca2dddadcdd479dafc134e5e；只修改 scripts/v9_pro_builder.py 與 tests/test_fetch_data_borrowed_sources.py。
+- 修正內容：明確 unavailable 轉為 None 傳遞至 Dashboard；必要欄位列／章節不存在仍 fail-closed。新增現貨、期貨、選擇權缺值測試及必要列缺失測試。
+- Actions #431（Run ID 42377949845）SUCCESS；53 tests passed；Dashboard data build、React injection、2026-10-30 full-day fixture build、HTML JavaScript validation、Pages artifact upload PASS。
+- 正式 DATA_REPORT 重新抓取 NOT TESTED；Browser 視覺驗證 NOT TESTED；Pages 部署未執行。不得把 artifact upload 說成部署成功。
+- DL-06（報告產生安全性／錯誤處理）與 DL-07（測試／最終驗收）：目前資料不足以確認正式定義及狀態，暫列 NOT ESTABLISHED；不可推定 PASS／CLOSE，也不可將 DL-05 的 CI 成果當作 DL-07 整體結案。
+- 下一步不是重開 DL-01～DL-05。若要處理 DL-06／DL-07，先取得其原始正式工作項目／驗收規格，再按範圍執行；不擅自擴大清查。
+- 本次只更新 docs/recovery 文件分支 ops/recovery-handoff；產品程式分支與 master、P0 base、V8、Worker、data_reports 樣本均未修改；未 Merge／Deploy。
