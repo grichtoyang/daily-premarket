@@ -49,6 +49,14 @@ def _turnover_values(listed_turnover_yuan, otc_turnover_yi):
     total, status = _complete_market_sum(listed_yi, otc_turnover_yi)
     return {"listed": listed_yi, "otc": otc_turnover_yi, "total": total}, status
 
+def _select_listed_turnover(finmind_value, proxy_value):
+    """Prefer a valid proxy value; never let a missing proxy field erase FinMind data."""
+    if proxy_value is not None:
+        return proxy_value, "twse-proxy market_statistics"
+    if finmind_value is not None:
+        return finmind_value, "FinMind Trading_money"
+    return None, None
+
 
 def _optional_float(value):
     """Parse a present numeric value while preserving a legitimate zero."""
@@ -193,6 +201,8 @@ def build(t0: str) -> dict:
 
     # ---- twse-proxy ----
     listed_turnover_yuan = None  # 後續 FinMind/proxy/FMTQIK 依序填入
+    finmind_turnover_yuan = None
+    proxy_turnover_yuan = None
     payload = twse_proxy.fetch(date8)
     if payload is None:
         notes.append("twse-proxy 連線失敗，TAIEX 改用 MI_INDEX 備援")
@@ -219,17 +229,14 @@ def build(t0: str) -> dict:
         sources["taiex_ohlc"] = "FinMind TaiwanStockPrice TAIEX"
     if any(fm.get(k) is None for k in ("open", "high", "low")):
         notes.append("大盤開高低部分欄位未取得 (FinMind T0 欄位缺值；MI_INDEX 無此欄)")
-    if fm["money_yuan"] is not None and listed_turnover_yuan is None:
-        listed_turnover_yuan = fm["money_yuan"]
-        sources["listed_turnover"] = "FinMind Trading_money"
+    finmind_turnover_yuan = fm["money_yuan"]
 
     # ---- 上市漲跌/成交 ----
     lb = {"up": None, "down": None, "flat": None, "limit_up": None, "limit_down": None}
     if payload is not None:
         lb = twse_proxy.parse_listed_breadth(payload)
-        listed_turnover_yuan = twse_proxy.parse_listed_turnover(payload)
+        proxy_turnover_yuan = twse_proxy.parse_listed_turnover(payload)
         sources["listed_breadth"] = "twse-proxy"
-        sources["listed_turnover"] = "twse-proxy market_statistics"
     if lb["up"] is None:
         raw = spot_raw.listed_breadth_raw(date8)
         if raw["up"] is not None and raw.get("date_ok"):
@@ -239,6 +246,10 @@ def build(t0: str) -> dict:
             notes.append("twtazu_od 備援日期不符 (回傳舊資料)，上市漲跌標 unavailable")
         else:
             notes.append("上市漲跌家數未取得 (proxy 與 twtazu_od 皆無)")
+    listed_turnover_yuan, _listed_turnover_source = _select_listed_turnover(
+        finmind_turnover_yuan, proxy_turnover_yuan)
+    if _listed_turnover_source is not None:
+        sources["listed_turnover"] = _listed_turnover_source
     if listed_turnover_yuan is None:
         v = spot_raw.turnover_tw(roc)
         if v is not None:
