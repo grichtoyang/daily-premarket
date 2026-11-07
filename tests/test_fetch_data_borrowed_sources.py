@@ -519,10 +519,10 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
         start = report.find(heading)
         if start < 0:
             self.fail(f"fixture section not found: {heading}")
-        next_heading = re.search(r"(?m)^#{2,4}\\s+", report[start + len(heading):])
+        next_heading = re.search(r"(?m)^#{2,4}\s+", report[start + len(heading):])
         end = start + len(heading) + next_heading.start() if next_heading else len(report)
         section = report[start:end]
-        pattern = re.compile(rf"(?m)^(\\|\\s*{re.escape(label)}\\s*\\|)[^|\\n]*(\\|)")
+        pattern = re.compile(rf"(?m)^(\|\s*{re.escape(label)}\s*\|)[^|\n]*(\|)")
         match = pattern.search(section)
         if not match:
             self.fail(f"fixture row not found in {heading}: {label}")
@@ -590,10 +590,10 @@ class BuilderUnavailableFieldPropagationTests(unittest.TestCase):
     def test_missing_required_option_row_still_fails_closed(self):
         heading = "### 2．Call 總成交量、OI、OI 增減"
         start = self.report.find(heading)
-        end_match = re.search(r"(?m)^#{2,4}\\s+", self.report[start + len(heading):])
+        end_match = re.search(r"(?m)^#{2,4}\s+", self.report[start + len(heading):])
         end = start + len(heading) + end_match.start() if end_match else len(self.report)
         section = self.report[start:end]
-        section = re.sub(r"(?m)^\\| Call 總成交量 \\|[^\\n]*\\n", "", section, count=1)
+        section = re.sub(r"(?m)^\| Call 總成交量 \|[^\n]*\n", "", section, count=1)
         report = self.report[:start] + section + self.report[end:]
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "DATA_REPORT.md"
