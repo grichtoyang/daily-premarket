@@ -467,6 +467,32 @@ class DataReportSemanticRepairTests(unittest.TestCase):
             _extract_section_table_value(
                 report, "### 1．台指期近月日盤行情", "開盤價", True)
 
+    def test_builder_validates_explicit_futures_units(self):
+        from scripts.v9_pro_builder import _extract_section_table_value
+
+        report = """### 1．台指期近月日盤行情
+| 項目 | 數值 | 單位 | 資料來源 |
+| --- | --- | --- | --- |
+| 開盤價 | 27,000 | 點 | TAIFEX Proxy |
+| 漲跌幅 | -1.25 | % | TAIFEX Proxy |
+| 成交量 | 12,345 | 口 | TAIFEX Proxy |
+"""
+        self.assertEqual(_extract_section_table_value(
+            report, "### 1．台指期近月日盤行情", "開盤價", True, "點"), 27000.0)
+        self.assertEqual(_extract_section_table_value(
+            report, "### 1．台指期近月日盤行情", "漲跌幅", True, "%"), -1.25)
+        self.assertEqual(_extract_section_table_value(
+            report, "### 1．台指期近月日盤行情", "成交量", True, "口"), 12345.0)
+        with self.assertRaises(ValueError):
+            _extract_section_table_value(
+                report, "### 1．台指期近月日盤行情", "成交量", True, "點")
+
+    def test_futures_report_tables_declare_units(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertGreaterEqual(source.count('("項目", "數值", "單位", "資料來源")'), 2)
+        self.assertIn('("成交量", _fi(n["vol"]), "口"', source)
+        self.assertIn('("未平倉量", _fi(n["oi"]), "口"', source)
+
     def test_builder_rejects_wrong_futures_table_header(self):
         from scripts.v9_pro_builder import _extract_section_table_value
 
