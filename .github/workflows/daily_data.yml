@@ -48,22 +48,27 @@ jobs:
             '0 11 * * 1-5') SLOT=evening;;
             *) SLOT='';;
           esac
-          START_TS=$(date +%s)
-          # 只認本輪新寫的檔（不用 ls -t 取最新：fetch 全滅時會誤拿昨天的檔，
-          # grep 舊檔必然通過→靜默跳過，2026-10-14 早上教訓）
           for i in 1 2; do
-            if timeout 480 python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"}; then
+            LOG_FILE=$(mktemp)
+            if timeout 480 python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"} >"$LOG_FILE" 2>&1; then
+              FETCH_RC=0
+              cat "$LOG_FILE"
               echo "fetch attempt $i rc=0"
             else
-              echo "fetch attempt $i failed/timed out (rc=$?)"
+              FETCH_RC=$?
+              cat "$LOG_FILE"
+              echo "fetch attempt $i failed/timed out (rc=$FETCH_RC)"
             fi
-            T0FILE=$(find data_reports -name 'DATA_REPORT_*.md' -newermt "@$START_TS" | head -1)
-            if [ -n "$T0FILE" ] && grep -q "^# DATA_REPORT_" "$T0FILE"; then
-              echo "DATA_REPORT ok on attempt $i ($T0FILE)"
-              echo "T0FILE=$T0FILE" >> $GITHUB_ENV
+            T0FILE=$(sed -n 's/^\\[OK\\] report_path=//p' "$LOG_FILE" | tail -1)
+            rm -f "$LOG_FILE"
+            if [ "$FETCH_RC" -eq 0 ] && [ -n "$T0FILE" ] && [ -f "$T0FILE" ] \
+              && python -c 'import sys; from src.fetch_data import validate_data_report_file; validate_data_report_file(sys.argv[1])' "$T0FILE"; then
+              echo "DATA_REPORT validated on attempt $i ($T0FILE)"
+              echo "T0FILE=$T0FILE" >> "$GITHUB_ENV"
               break
             fi
-            echo "fetch incomplete, attempt $i/2; sleep 90s"
+            T0FILE=''
+            echo "fetch incomplete or report validation failed, attempt $i/2; sleep 90s"
             sleep 90
           done
           if [ -z "${T0FILE:-}" ]; then
