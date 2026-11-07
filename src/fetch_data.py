@@ -669,13 +669,13 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 1．台指期近月日盤行情")
     A("")
-    A(_tbl([("開盤價", _fi(d["open"]), SRC_FX), ("最高價", _fi(d["high"]), SRC_FX),
-            ("最低價", _fi(d["low"]), SRC_FX),
-            ("收盤價", _fi(d["close"]), SRC_FX), ("漲跌點數", _f2s(d["change"]), SRC_FX),
-            ("漲跌幅", _pct(d["pct"]), SRC_FX),
+    A(_tbl([("開盤價", _fi(d["open"]), SRC_FX if d["open"] is not None else MISSING), ("最高價", _fi(d["high"]), SRC_FX if d["high"] is not None else MISSING),
+            ("最低價", _fi(d["low"]), SRC_FX if d["low"] is not None else MISSING),
+            ("收盤價", _fi(d["close"]), SRC_FX if d["close"] is not None else MISSING), ("漲跌點數", _f2s(d["change"]), SRC_FX if d["change"] is not None else MISSING),
+            ("漲跌幅", _pct(d["pct"]), SRC_FX if d["pct"] is not None else MISSING),
             # 日盤行情只取 regular_volume；total 含前夜盤，會與 §三.7.1 日盤成交量矛盾（2026-10-22 修正）
-            ("成交量", _fi(_prefer_not_none(d.get("vol_day"), d.get("vol"))), SRC_FX),
-            ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", SRC_FX)],
+            ("成交量", _fi(_prefer_not_none(d.get("vol_day"), d.get("vol"))), SRC_FX if _prefer_not_none(d.get("vol_day"), d.get("vol")) is not None else MISSING),
+            ("日盤高點及低點", f"{_fi(d['high'])} / {_fi(d['low'])}", SRC_FX if d["high"] is not None and d["low"] is not None else MISSING)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 2．台指期近月夜盤行情")
