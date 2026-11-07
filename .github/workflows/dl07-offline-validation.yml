@@ -1,0 +1,151 @@
+name: DL-07 Offline Unit and Integration Validation
+
+on:
+  push:
+    branches:
+      - phase2-p0-ui-fixes
+    paths:
+      - '.github/workflows/dl07-offline-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dl07-offline-validation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  offline-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Set up Node.js for JavaScript contract tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify isolated test workflow has no publishing permissions or side effects
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          workflow = Path(".github/workflows/dl07-offline-validation.yml").read_text(encoding="utf-8")
+          dl06 = Path(".github/workflows/dl06-retry-tests.yml").read_text(encoding="utf-8")
+          assert "permissions:\n  contents: read" in workflow
+          for forbidden in ("contents: write", "git push", "git commit", "actions/deploy-pages@", "data_reports/"):
+              assert forbidden not in workflow, f"DL-07 workflow contains forbidden side effect: {forbidden}"
+          assert "permissions:\n  contents: read" in dl06
+          assert "TemporaryDirectory" in dl06 and "fake_python" in dl06
+          assert "actions/deploy-pages@" not in dl06
+          assert not re.search(r"(?m)^\s*git\s+(?:add|commit|push)\b", dl06)
+          print("PASS: DL-07 and DL-06 validation workflows are read-only and non-publishing")
+          PY
+
+      - name: Run offline unit tests (exclude live API probe and stale workflow-reference test)
+        run: |
+          python3 <<'PY'
+          import unittest
+
+          excluded = {"test_spot_borrowed_live", "test_p0_workflow_isolation"}
+          loader = unittest.TestLoader()
+          discovered = loader.discover("tests", pattern="test_*.py")
+          selected = []
+          skipped = {}
+
+          def collect(suite):
+              for item in suite:
+                  if isinstance(item, unittest.TestSuite):
+                      collect(item)
+                      continue
+                  module = item.id().split(".", 1)[0]
+                  if module in excluded:
+                      skipped[module] = skipped.get(module, 0) + 1
+                  else:
+                      selected.append(item)
+
+          collect(discovered)
+          print("Excluded modules:", skipped)
+          print("Selected test cases:", len(selected))
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(selected))
+          if not result.wasSuccessful():
+              raise SystemExit(1)
+          print(f"PASS: {result.testsRun} offline unit tests")
+          PY
+
+      - name: Run V9 Pro 17F offline self-tests
+        run: python scripts/v9_pro_builder.py --self-test
+
+      - name: Rebuild historical DATA_REPORT fixtures into runner temp storage
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/dl07-history
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261030.md --out "$OUTPUT_DIR/data-20261030.json" --date 20261030
+          python scripts/v9_pro_builder.py --data_report data_reports/DATA_REPORT_20261102.md --out "$OUTPUT_DIR/data-20261102.json" --date 20261102
+          python -m json.tool "$OUTPUT_DIR/data-20261030.json" > /dev/null
+          python -m json.tool "$OUTPUT_DIR/data-20261102.json" > /dev/null
+
+      - name: Inject historical JSON into temporary HTML and validate JavaScript
+        env:
+          OUTPUT_DIR: ${{ runner.temp }}/dl07-history
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          output = Path(os.environ["OUTPUT_DIR"])
+          template = Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
+          if "var vf=window.DASHBOARD_DATA;" not in template:
+              raise SystemExit("React template must consume injected data only")
+          if "</head>" not in template:
+              raise SystemExit("React template closing head is missing")
+          required_tabs = ["總覽", "現貨", "重要市場", "期貨", "選擇權", "綜合分析"]
+          missing = [tab for tab in required_tabs if tab not in template]
+          if missing:
+              raise SystemExit(f"Required Dashboard tabs missing: {missing}")
+
+          for date in ("20261030", "20261102"):
+              data_path = output / f"data-{date}.json"
+              data = json.loads(data_path.read_text(encoding="utf-8"))
+              expected_date = f"{date[:4]}-{date[4:6]}-{date[6:]}"
+              if data.get("meta", {}).get("date") != expected_date:
+                  raise SystemExit(f"T0 mismatch for {date}: {data.get('meta', {}).get('date')}")
+              if data.get("meta", {}).get("version") != "v9-pro-17F":
+                  raise SystemExit(f"Unexpected Builder version for {date}")
+              payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+              html = template.replace("</head>", f"<script>window.DASHBOARD_DATA={payload};</script>\n</head>", 1)
+              html_path = output / f"v9-pro-{date}.html"
+              html_path.write_text(html, encoding="utf-8")
+              if "window.DASHBOARD_DATA=" not in html:
+                  raise SystemExit(f"Injection failed for {date}")
+              print(f"PASS: historical JSON and HTML fixture {date} ({html_path.stat().st_size} bytes)")
+          PY
+          python tests/validate_react_html_js.py "$OUTPUT_DIR/v9-pro-20261030.html"
+          python tests/validate_react_html_js.py "$OUTPUT_DIR/v9-pro-20261102.html"
+
+      - name: Confirm repository fixtures were not modified
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- data_reports/ dashboards/
+          echo "PASS: historical DATA_REPORT fixtures and repository Dashboard outputs remain unchanged"
