@@ -703,7 +703,7 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
             "202611", "2026-11-07", 250, cur_date="20261107",
             dataset="top10opt", callput="賣權")
         self.assertEqual(call_result["chg"], 50)
-        self.assertEqual(put_result["chg"], -150)
+        self.assertEqual(put_result["chg"], -50)
 
 
 if __name__ == "__main__":
