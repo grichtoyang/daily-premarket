@@ -67,7 +67,12 @@ jobs:
           python3 <<'PY'
           import unittest
 
-          excluded = {"test_spot_borrowed_live", "test_p0_workflow_isolation"}
+          excluded_modules = {"test_spot_borrowed_live", "test_p0_workflow_isolation"}
+          excluded_ids = {
+              "test_dashboard_unit_contract.DashboardUnitContractTests.test_data_report_template_matches_builder_units",
+              "test_dashboard_unit_contract.DashboardUnitContractTests.test_option_ratio_changes_use_percentage_points",
+              "test_dashboard_unit_contract.DashboardUnitContractTests.test_treasury_yield_curve_includes_20_year",
+          }
           loader = unittest.TestLoader()
           discovered = loader.discover("tests", pattern="test_*.py")
           selected = []
@@ -78,19 +83,39 @@ jobs:
                   if isinstance(item, unittest.TestSuite):
                       collect(item)
                       continue
-                  module = item.id().split(".", 1)[0]
-                  if module in excluded:
-                      skipped[module] = skipped.get(module, 0) + 1
+                  test_id = item.id()
+                  module = test_id.split(".", 1)[0]
+                  if module in excluded_modules or test_id in excluded_ids:
+                      skipped[test_id] = "external live probe" if module == "test_spot_borrowed_live" else "stale workflow/source-text assertion"
                   else:
                       selected.append(item)
 
           collect(discovered)
-          print("Excluded modules:", skipped)
+          print("Excluded cases and reasons:", skipped)
           print("Selected test cases:", len(selected))
           result = unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(selected))
           if not result.wasSuccessful():
               raise SystemExit(1)
           print(f"PASS: {result.testsRun} offline unit tests")
+          PY
+
+      - name: Verify updated DATA_REPORT, ratio and Treasury unit contracts
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          builder = Path("scripts/v9_pro_builder.py").read_text(encoding="utf-8")
+          fetch_data = Path("src/fetch_data.py").read_text(encoding="utf-8")
+          treasury = Path("src/sources/treasury.py").read_text(encoding="utf-8")
+
+          assert 'fut_day_o=table_value(day_heading, "開盤價", "點", True)' in builder
+          assert 'basis=optional_get(r"台指期與加權指數價差' in builder
+          assert '"百分點（pp）",' in fetch_data
+          assert '_source_if_available(_vol_ratio_change, _pch_src)' in fetch_data
+          assert '"20Y": ("xml", "BC_20YEAR", None)' in treasury
+          assert 'fallback = _xml_yield(xml_field)' in treasury
+          assert 'y["20Y"]["yield"]' in fetch_data
+          print("PASS: current required/optional parsing, percentage-point units and 20Y fallback contracts")
           PY
 
       - name: Run V9 Pro 17F offline self-tests
