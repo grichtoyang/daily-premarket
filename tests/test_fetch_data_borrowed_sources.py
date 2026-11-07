@@ -880,6 +880,7 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         self.assertIn('if [ "$FETCH_RC" -eq 0 ]', workflow)
         self.assertIn("validate_data_report_file", workflow)
         self.assertIn("grep -F", workflow)
+        self.assertIn("tail -1 || true", workflow)
         self.assertNotIn("find data_reports -name 'DATA_REPORT_*.md' -newermt", workflow)
 
 
