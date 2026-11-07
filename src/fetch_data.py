@@ -844,8 +844,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _feat = {"劇本一": "開高、續漲機率高", "劇本二": "先漲、小心開高走低",
                  "劇本三": "開低、續跌機率高", "劇本四": "先跌、開低反彈"}[_play]
     A(_tbl([("夜盤成交量占比 (夜盤量／(夜盤量＋日盤量))",
-             f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX),
-            ("夜盤漲跌點數", _f2s(_nchg), SRC_FX if n["change"] is not None else f"{SRC_FX}+{SRC_TX}"),
+             f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX if _nratio is not None else MISSING),
+            ("夜盤漲跌點數", _f2s(_nchg), SRC_FX if _nchg is not None else MISSING),
             ("外資夜盤多空淨交易量", _f2s(_fgn), SRC_FX),
             ("劇本分類", _play, "規則對應"),
             ("劇本條件", _cond, "規則對應"),
