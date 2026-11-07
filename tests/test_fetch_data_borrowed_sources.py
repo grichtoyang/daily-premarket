@@ -237,6 +237,17 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('_tot_src = SRC_FX if all(v is not None for v in (*_tot_day, *_tot_night, _tot_diff)) else "端點未提供"', source)
         self.assertNotIn('_f2s(_diff2(_o_tot("day", "net"), _o_tot("night", "net"))), _ot_src)', source)
 
+    def test_futures_report_source_labels_require_available_values(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('SRC_FX if d["open"] is not None else MISSING', source)
+        self.assertIn('SRC_FX if d["close"] is not None else MISSING', source)
+        self.assertIn('SRC_FX if _prefer_not_none(d.get("vol_day"), d.get("vol")) is not None else MISSING', source)
+        self.assertIn('SRC_FX if _oi["foreign"]["long"] is not None else MISSING', source)
+        self.assertIn('_t10_src if _t10["buy"] is not None else MISSING', source)
+        self.assertIn('_fut_trade_rows = [(name, value, unit, src if value != MISSING else MISSING)', source)
+        self.assertIn('SRC_FX if d["close"] is not None and n["close"] is not None else MISSING', source)
+        self.assertIn('SRC_FX if all(v != MISSING for v in _row[1:-1]) else MISSING', source)
+
 
 if __name__ == "__main__":
     unittest.main()
