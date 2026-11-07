@@ -18,64 +18,118 @@ jobs:
       - name: Checkout test contract
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: \${{ github.sha }}
 
-      - name: Run isolated mock retry scenarios
+      - name: Execute production retry shell with mocked commands
         shell: bash
         run: |
           set -euo pipefail
           python3 <<'PY'
+          import os
+          import subprocess
+          import tempfile
+          import textwrap
           from pathlib import Path
-          from tempfile import TemporaryDirectory
 
-          production = Path(".github/workflows/daily_data.yml").read_text(encoding="utf-8")
-          required_contract = [
-              'for i in 1 2',
-              'FETCH_RC=0',
-              'T0FILE=$(grep -F \'[OK] report_path=\'',
-              'validate_data_report_file',
-              'if [ -z "${T0FILE:-}" ]; then',
-              'exit 1',
+          workflow = Path(".github/workflows/daily_data.yml").read_text(encoding="utf-8")
+          lines = workflow.splitlines()
+          start = next(i for i, line in enumerate(lines) if line.strip() == "- name: Fetch daily data")
+          run_line = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == "run: |")
+
+          block = []
+          for line in lines[run_line + 1:]:
+              if line.strip() and not line.startswith("          "):
+                  break
+              block.append(line[10:] if line.startswith("          ") else "")
+          production_script = textwrap.dedent("\n".join(block)).replace(
+              "\${{ github.event.schedule }}", ""
+          ).replace("\${{ inputs.t0 }}", "")
+
+          required = [
+              "for i in 1 2",
+              "timeout 480 python src/fetch_data.py",
+              "FETCH_RC=0",
+              "grep -F '[OK] report_path='",
+              "validate_data_report_file",
+              'if [ -z "\${T0FILE:-}" ]; then',
+              "exit 1",
           ]
-          missing = [item for item in required_contract if item not in production]
+          missing = [item for item in required if item not in production_script]
           if missing:
-              raise SystemExit(f"Production retry contract changed; review required: {missing}")
+              raise SystemExit(f"Could not extract expected production retry logic: {missing}")
 
-          def run_mock_retry(outcomes, root):
-              accepted = None
-              for attempt, (fetch_rc, report_text, validator_ok) in enumerate(outcomes, start=1):
-                  attempt_dir = root / f"attempt-{attempt}"
-                  attempt_dir.mkdir(parents=True)
-                  report = attempt_dir / "mock-report.md"
-                  if report_text is not None:
-                      report.write_text(report_text, encoding="utf-8")
-                  report_path = report if report.exists() else None
-                  if fetch_rc == 0 and report_path is not None and validator_ok:
-                      accepted = report_path
-                      break
-              return accepted
+          fake_python = r'''#!/usr/bin/env python3
+          import os
+          import sys
+          from pathlib import Path
 
-          valid = "# DATA_REPORT_MOCK\nVALID"
-          invalid = "# DATA_REPORT_MOCK\nINVALID"
+          scenario = os.environ["DL06_SCENARIO"]
+          counter = Path(os.environ["DL06_COUNTER"])
+          attempt = int(counter.read_text() if counter.exists() else "0") + 1
+          counter.write_text(str(attempt))
+          if len(sys.argv) > 1 and sys.argv[1] == "src/fetch_data.py":
+              report = Path(os.environ["DL06_TMP"]) / f"attempt-{attempt}.md"
+              if scenario == "case-2" and attempt == 1:
+                  report.write_text("# DATA_REPORT_MOCK\\nINVALID", encoding="utf-8")
+              else:
+                  report.write_text("# DATA_REPORT_MOCK\\nVALID", encoding="utf-8")
+              print(f"[OK] report_path={report}")
+              if (scenario == "case-1" and attempt == 1) or scenario == "case-3":
+                  raise SystemExit(9)
+              raise SystemExit(0)
+          if len(sys.argv) > 1 and sys.argv[1] == "-c":
+              report = Path(sys.argv[-1])
+              raise SystemExit(0 if "VALID" in report.read_text(encoding="utf-8") else 1)
+          raise SystemExit(f"Unexpected mocked python invocation: {sys.argv!r}")
+          '''
 
-          with TemporaryDirectory(prefix="dl06-retry-") as temp:
-              root = Path(temp)
+          for scenario in ("case-1", "case-2", "case-3"):
+              with tempfile.TemporaryDirectory(prefix=f"dl06-{scenario}-") as temp:
+                  root = Path(temp)
+                  bin_dir = root / "bin"
+                  temp_dir = root / "reports"
+                  bin_dir.mkdir()
+                  temp_dir.mkdir()
+                  python_stub = bin_dir / "python"
+                  python_stub.write_text(textwrap.dedent(fake_python), encoding="utf-8")
+                  python_stub.chmod(0o755)
+                  sleep_stub = bin_dir / "sleep"
+                  sleep_stub.write_text("#!/bin/sh\\nexit 0\\n", encoding="utf-8")
+                  sleep_stub.chmod(0o755)
 
-              # Case 1: first fetch fails; second fetch produces a valid report.
-              result = run_mock_retry([(1, None, False), (0, valid, True)], root / "case-1")
-              assert result is not None and result.parent.name == "attempt-2"
-              print("PASS: fetch failure then success accepts attempt 2")
+                  counter = root / "attempt-counter"
+                  github_env = root / "github-env"
+                  github_env.write_text("", encoding="utf-8")
+                  env = os.environ.copy()
+                  env.update({
+                      "PATH": f"{bin_dir}:{env['PATH']}",
+                      "DL06_SCENARIO": scenario,
+                      "DL06_COUNTER": str(counter),
+                      "DL06_TMP": str(temp_dir),
+                      "GITHUB_ENV": str(github_env),
+                  })
+                  result = subprocess.run(
+                      ["bash", "-e", "-u", "-o", "pipefail", "-c", production_script],
+                      cwd=Path.cwd(), env=env, text=True, capture_output=True, timeout=30,
+                  )
+                  env_text = github_env.read_text(encoding="utf-8")
 
-              # Case 2: first report fails validation; second report is valid.
-              result = run_mock_retry([(0, invalid, False), (0, valid, True)], root / "case-2")
-              assert result is not None and result.parent.name == "attempt-2"
-              assert result.read_text(encoding="utf-8") == valid
-              print("PASS: invalid first report then success accepts only attempt 2")
+                  if scenario in ("case-1", "case-2"):
+                      if result.returncode != 0 or "T0FILE=" not in env_text:
+                          raise AssertionError(
+                              f"{scenario} expected success and T0FILE; rc={result.returncode}\\n"
+                              f"stdout={result.stdout}\\nstderr={result.stderr}\\nenv={env_text}"
+                          )
+                      if "attempt-2.md" not in env_text:
+                          raise AssertionError(f"{scenario} accepted a report other than attempt 2: {env_text}")
+                      print(f"PASS: {scenario} accepts only the valid second attempt")
+                  else:
+                      if result.returncode == 0 or "T0FILE=" in env_text:
+                          raise AssertionError(
+                              f"{scenario} expected final failure and no T0FILE; rc={result.returncode}\\n"
+                              f"stdout={result.stdout}\\nstderr={result.stderr}\\nenv={env_text}"
+                          )
+                      print("PASS: case-3 exits non-zero after two failed attempts")
 
-              # Case 3: both attempts fail; no report may be accepted.
-              result = run_mock_retry([(1, None, False), (1, None, False)], root / "case-3")
-              assert result is None
-              print("PASS: two failures produce no accepted report")
-
-          print("DL-06 isolated mock scenarios: 3/3 PASS")
+          print("DL-06 production-shell isolated scenarios: 3/3 PASS")
           PY
