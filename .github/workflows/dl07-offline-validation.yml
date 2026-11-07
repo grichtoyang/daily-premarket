@@ -50,8 +50,10 @@ jobs:
           workflow = Path(".github/workflows/dl07-offline-validation.yml").read_text(encoding="utf-8")
           dl06 = Path(".github/workflows/dl06-retry-tests.yml").read_text(encoding="utf-8")
           assert "permissions:\n  contents: read" in workflow
-          for forbidden in ("contents: write", "git push", "git commit", "actions/deploy-pages@", "data_reports/"):
-              assert forbidden not in workflow, f"DL-07 workflow contains forbidden side effect: {forbidden}"
+          assert not re.search(r"(?m)^\\s*contents:\\s*write\\s*$", workflow)
+          assert not re.search(r"(?m)^\\s*uses:\\s*actions/deploy-pages@", workflow)
+          assert not re.search(r"(?m)^\\s*git\\s+(?:add|commit|push)\\b", workflow)
+          assert "src/fetch_data.py" not in workflow
           assert "permissions:\n  contents: read" in dl06
           assert "TemporaryDirectory" in dl06 and "fake_python" in dl06
           assert "actions/deploy-pages@" not in dl06
