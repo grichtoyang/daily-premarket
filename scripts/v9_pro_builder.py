@@ -822,7 +822,7 @@ def build_option_force_analysis(force_rows, volume_rows=None):
         "checks": {"force_rows": len(required_names), "volume_rows_complete": volume_complete, "warnings": warnings}
     }
 
-def _extract_section_table_value(report_text, heading, label, required=False):
+def _extract_section_table_value(report_text, heading, label, required=False, expected_unit=None):
     """Read one numeric field from its own validated Markdown table."""
     start = report_text.find(heading)
     if start < 0:
@@ -845,9 +845,13 @@ def _extract_section_table_value(report_text, heading, label, required=False):
         if not separator_seen:
             header = cells
             continue
-        if header != ["項目", "數值", "資料來源"] or len(cells) != len(header):
+        legacy_header = ["項目", "數值", "資料來源"]
+        unit_header = ["項目", "數值", "單位", "資料來源"]
+        if header not in (legacy_header, unit_header) or len(cells) != len(header):
             continue
         if cells[0] != label:
+            continue
+        if header == unit_header and expected_unit is not None and cells[2] != expected_unit:
             continue
         raw = cells[1].replace(",", "").strip()
         if raw.lower() == "unavailable":
@@ -1000,15 +1004,16 @@ def parse_data_report(report_path):
 
     day_heading = "### 1．台指期近月日盤行情"
     night_heading = "### 2．台指期近月夜盤行情"
-    table_value = lambda heading, label, required=False: _extract_section_table_value(text, heading, label, required)
-    fut_day_o=table_value(day_heading, "開盤價", True); fut_day_h=table_value(day_heading, "最高價", True)
-    fut_day_l=table_value(day_heading, "最低價", True); fut_day_c=table_value(day_heading, "收盤價", True)
-    fut_day_diff=table_value(day_heading, "漲跌點數", True); fut_day_pct=table_value(day_heading, "漲跌幅", True)
-    fut_day_vol=table_value(day_heading, "成交量", True)
-    fut_night_o=table_value(night_heading, "開盤價"); fut_night_h=table_value(night_heading, "最高價")
-    fut_night_l=table_value(night_heading, "最低價"); fut_night_c=table_value(night_heading, "收盤價")
-    fut_night_diff=table_value(night_heading, "漲跌點數"); fut_night_pct=table_value(night_heading, "漲跌幅")
-    fut_night_vol=table_value(night_heading, "成交量")
+    table_value = lambda heading, label, unit=None, required=False: _extract_section_table_value(
+        text, heading, label, required=required, expected_unit=unit)
+    fut_day_o=table_value(day_heading, "開盤價", "點", True); fut_day_h=table_value(day_heading, "最高價", "點", True)
+    fut_day_l=table_value(day_heading, "最低價", "點", True); fut_day_c=table_value(day_heading, "收盤價", "點", True)
+    fut_day_diff=table_value(day_heading, "漲跌點數", "點", True); fut_day_pct=table_value(day_heading, "漲跌幅", "%", True)
+    fut_day_vol=table_value(day_heading, "成交量", "口", True)
+    fut_night_o=table_value(night_heading, "開盤價", "點"); fut_night_h=table_value(night_heading, "最高價", "點")
+    fut_night_l=table_value(night_heading, "最低價", "點"); fut_night_c=table_value(night_heading, "收盤價", "點")
+    fut_night_diff=table_value(night_heading, "漲跌點數", "點"); fut_night_pct=table_value(night_heading, "漲跌幅", "%")
+    fut_night_vol=table_value(night_heading, "成交量", "口")
     basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=optional_get(r"價差百分比 \| ([-\+0-9.]+) \|"); night_change=optional_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|")
     foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+) \|","前十大OI")
