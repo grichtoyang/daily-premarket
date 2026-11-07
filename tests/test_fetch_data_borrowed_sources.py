@@ -247,6 +247,10 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('_fut_trade_rows = [(name, value, unit, src if value != MISSING else MISSING)', source)
         self.assertIn('SRC_FX if d["close"] is not None and n["close"] is not None else MISSING', source)
         self.assertIn('SRC_FX if all(v != MISSING for v in _row[1:-1]) else MISSING', source)
+        self.assertIn('_strength_src = SRC_FX if all(v is not None for v in _strength_values) else MISSING', source)
+        self.assertIn('_pt_tot_src = SRC_FX if all(v is not None for v in (', source)
+        self.assertIn('_t10c_src if _t10c["buy"] is not None else MISSING', source)
+        self.assertIn('_t10p_src if _t10p["sell"] is not None else MISSING', source)
 
 
 if __name__ == "__main__":
