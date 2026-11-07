@@ -1926,3 +1926,39 @@ P1 尚未開始。啟動前必須：
 - Template blob `281843f8727a76f3b14394b6ba2465b8bfba6626`；test blob `267ca92425b429b8fa22c5494132efda0f2eaef1`。已 GitHub 回讀確認 ID 38 綁定及舊固定文字移除。
 - P4 runtime binding 更新為 21/42：原 20 個已驗收區塊不重做；ID 38 新增完成。下一步只處理 ID 01–21（總覽／現貨／重要市場），不重做 ID 22–42。
 - 未 merge、未 deploy；未修改 master、P0 base、V8 或 data_reports 樣本。LLM runtime NOT IMPLEMENTED；42 區塊人工品質評分與 95/100 目標仍 NOT TESTED。
+
+
+## 2026-11-07｜DL-01～DL-07 最新進度（DL-05 結案）
+
+> 本節為最新狀態索引，若與前文歷史紀錄衝突，以本節及 GitHub 最新可查證狀態為準。DL-06／DL-07 尚未取得可核對的正式範圍與驗收證據，不推定其狀態。
+
+| DL | 主題／目前判定 | 狀態 | 最新說明 |
+|---|---|---|---|
+| DL-01 | 交易日期正確性 | **PASS／CLOSE** | 已完成；不重開。 |
+| DL-02 | 現貨／借券資料品質 | **PASS／CLOSE** | 已完成；不重開。 |
+| DL-03 | 期貨／選擇權資料品質 | **PASS／CLOSE** | 已完成；不重開。 |
+| DL-04 | 維持率及外部市場資料 | **PASS／CLOSE** | 已完成；自建上市維持率為主、Blave 交叉驗證／備援，差異小於 1% 可接受；不重開。 |
+| DL-05 | DATA_REPORT data contract | **PASS／CLOSE** | 本日完成最後一項 Builder unavailable 缺值傳遞修正及回歸測試，詳見下節。 |
+| DL-06 | 報告產生安全性／錯誤處理 | **NOT ESTABLISHED** | 目前交接資料未提供可核對的正式範圍、逐項驗收或結案證據；不得標示 PASS／CLOSE，也不在本次擅自擴大清查。 |
+| DL-07 | 測試與最終驗收 | **NOT ESTABLISHED** | 目前交接資料未提供可核對的正式範圍、逐項驗收或結案證據；不得標示 PASS／CLOSE。DL-05 的 CI 測試不等同 DL-07 整體結案。 |
+
+### DL-05 最後修正（2026-11-07）
+
+- 工作分支：phase2-p0-ui-fixes。
+- 最終產品分支 HEAD：1f5202003c3969ecca2dddadcdd479dafc134e5e。
+- 只修改 scripts/v9_pro_builder.py：DATA_REPORT 明確標示 unavailable 的欄位轉成 None，不再因單一欄位缺值而使 Builder 解析中止；必要欄位列或章節不存在仍維持 fail-closed。
+- 只修改 tests/test_fetch_data_borrowed_sources.py：新增現貨、期貨、選擇權缺值傳遞測試，以及必要欄位列缺失仍報錯的反向測試。
+- 獨立測試檔 tests/test_builder_unavailable_fields.py 曾短暫建立，之後已刪除；最終變更範圍不包含該檔。
+- GitHub Actions Run #431 / Run ID 42377949845：SUCCESS。
+- CI log 驗證：回歸測試共 53 tests passed；Dashboard data build、React template injection、2026-10-30 full-day fixture build、HTML JavaScript validation、Pages artifact upload 均 PASS。
+- GitHub 回讀確認上述兩檔已包含修正；最終 branch HEAD 與該次 CI head SHA 一致。
+- 與前一個已驗證產品 HEAD 889c1c980c452e1d9c00992f66e1c303fe0290cf 比較，僅上述兩個檔案有差異；沒有修改 data_reports 樣本、Worker、V8、P0 base 或 master。
+- 未執行正式 DATA_REPORT 重新抓取；Browser 桌面／手機視覺驗證 NOT TESTED；Pages 實際部署 NOT TESTED／未執行。artifact upload 不代表 Pages deploy。
+- DL-05 結案條件已達成：契約允許的明確缺值可傳遞，必要結構缺失仍會失敗，針對性測試及 CI 通過。未測項目保留標記，不再延長 DL-05 或追加清查。
+
+### DL 最新接續原則
+
+1. DL-01～DL-05 不重開；若未來出現新的可重現證據，才針對該具體缺陷另案處理。
+2. DL-06／DL-07 暫列 NOT ESTABLISHED；在找到正式定義及現存證據前，不臆測其完成度。
+3. 不把 DL-05 的局部 CI 通過擴張解讀成 DL-06／DL-07 全面通過。
+4. 本次只更新 Recovery 文件分支；不修改產品程式、DATA_REPORT、Workflow、Dashboard，不 Merge／Deploy。
