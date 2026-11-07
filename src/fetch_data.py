@@ -697,21 +697,21 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 3．法人台指期多空未平倉部位")
     A("")
     _oi = fx["fut_oi"]
-    A(_tbl([("外資多方 OI", _fi(_oi["foreign"]["long"]), SRC_FX),
-            ("外資空方 OI", _fi(_oi["foreign"]["short"]), SRC_FX),
-            ("外資多空淨 OI", _f2s(_oi["foreign"]["net"]), SRC_FX),
-            ("投信多方 OI", _fi(_oi["investment_trust"]["long"]), SRC_FX),
-            ("投信空方 OI", _fi(_oi["investment_trust"]["short"]), SRC_FX),
-            ("投信多空淨 OI", _f2s(_oi["investment_trust"]["net"]), SRC_FX),
-            ("自營商多方 OI", _fi(_oi["dealer"]["long"]), SRC_FX),
-            ("自營商空方 OI", _fi(_oi["dealer"]["short"]), SRC_FX),
-            ("自營商多空淨 OI", _f2s(_oi["dealer"]["net"]), SRC_FX),
-            ("三大法人合計多方 OI", _fi(_oi["total"]["long"]), SRC_FX),
-            ("三大法人合計空方 OI", _fi(_oi["total"]["short"]), SRC_FX),
-            ("三大法人合計多空淨 OI", _f2s(_oi["total"]["net"]), SRC_FX),
-            ("外資多空淨 OI 變化", _f2s(_oi["foreign"]["d_net"]), SRC_FX),
-            ("投信多空淨 OI 變化", _f2s(_oi["investment_trust"]["d_net"]), SRC_FX),
-            ("自營商多空淨 OI 變化", _f2s(_oi["dealer"]["d_net"]), SRC_FX)],
+    A(_tbl([("外資多方 OI", _fi(_oi["foreign"]["long"]), SRC_FX if _oi["foreign"]["long"] is not None else MISSING),
+            ("外資空方 OI", _fi(_oi["foreign"]["short"]), SRC_FX if _oi["foreign"]["short"] is not None else MISSING),
+            ("外資多空淨 OI", _f2s(_oi["foreign"]["net"]), SRC_FX if _oi["foreign"]["net"] is not None else MISSING),
+            ("投信多方 OI", _fi(_oi["investment_trust"]["long"]), SRC_FX if _oi["investment_trust"]["long"] is not None else MISSING),
+            ("投信空方 OI", _fi(_oi["investment_trust"]["short"]), SRC_FX if _oi["investment_trust"]["short"] is not None else MISSING),
+            ("投信多空淨 OI", _f2s(_oi["investment_trust"]["net"]), SRC_FX if _oi["investment_trust"]["net"] is not None else MISSING),
+            ("自營商多方 OI", _fi(_oi["dealer"]["long"]), SRC_FX if _oi["dealer"]["long"] is not None else MISSING),
+            ("自營商空方 OI", _fi(_oi["dealer"]["short"]), SRC_FX if _oi["dealer"]["short"] is not None else MISSING),
+            ("自營商多空淨 OI", _f2s(_oi["dealer"]["net"]), SRC_FX if _oi["dealer"]["net"] is not None else MISSING),
+            ("三大法人合計多方 OI", _fi(_oi["total"]["long"]), SRC_FX if _oi["total"]["long"] is not None else MISSING),
+            ("三大法人合計空方 OI", _fi(_oi["total"]["short"]), SRC_FX if _oi["total"]["short"] is not None else MISSING),
+            ("三大法人合計多空淨 OI", _f2s(_oi["total"]["net"]), SRC_FX if _oi["total"]["net"] is not None else MISSING),
+            ("外資多空淨 OI 變化", _f2s(_oi["foreign"]["d_net"]), SRC_FX if _oi["foreign"]["d_net"] is not None else MISSING),
+            ("投信多空淨 OI 變化", _f2s(_oi["investment_trust"]["d_net"]), SRC_FX if _oi["investment_trust"]["d_net"] is not None else MISSING),
+            ("自營商多空淨 OI 變化", _f2s(_oi["dealer"]["d_net"]), SRC_FX if _oi["dealer"]["d_net"] is not None else MISSING)],
            ("項目", "口數", "資料來源")))
     A("")
     A("### 4．前十大交易人多空未平倉部位")
@@ -723,9 +723,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _t10chg = taifex.snap_top10_change(d["month"] or "", t0, _t10.get("net"),
                                            cur_date=_t10.get("date"))
     _t10chg_lbl = (f" ({_t10chg['prev_date']}→{_t10chg['cur_date']})" if _t10chg else "")
-    A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src),
-            ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src),
-            ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src),
+    A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src if _t10["buy"] is not None else MISSING),
+            ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src if _t10["sell"] is not None else MISSING),
+            ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src if _t10["net"] is not None else MISSING),
             ("多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
              SRC_SNAP if _t10chg else "端點未提供")],
@@ -807,9 +807,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("#### 7.3 前十大交易人日夜盤對照 (OI 無日夜拆分，列收盤後總量)")
     A("")
-    A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src),
-            ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src),
-            ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src),
+    A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src if _t10["buy"] is not None else MISSING),
+            ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src if _t10["sell"] is not None else MISSING),
+            ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src if _t10["net"] is not None else MISSING),
             ("前十大交易人多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
              SRC_SNAP if _t10chg else "端點未提供")],
