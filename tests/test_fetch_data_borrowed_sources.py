@@ -151,6 +151,16 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             self.assertIn(f"2026-11-06T00:{minute}:00+00:00", table)
 
 
+    def test_futures_night_proxy_fields_only_show_source_when_available(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('("成交量", _fi(n["vol"]), _nvia if n["vol"] is not None else _nmiss)', source)
+        self.assertIn('("結算價", _fi(n["settle"]), _nvia if n["settle"] is not None else _nmiss)', source)
+        self.assertIn('("未平倉量", _fi(n["oi"]), _nvia if n["oi"] is not None else _nmiss)', source)
+        self.assertNotIn('("成交量", _fi(n["vol"]), SRC_FX)', source)
+        self.assertNotIn('("結算價", _fi(n["settle"]), SRC_FX)', source)
+        self.assertNotIn('("未平倉量", _fi(n["oi"]), SRC_FX)', source)
+
+
     def test_options_timestamp_is_labeled_as_report_generation_time(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('("報告產製時間", now, "本機")', source)
