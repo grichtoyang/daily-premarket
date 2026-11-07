@@ -2097,3 +2097,44 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - DL-06（報告產生安全性／錯誤處理）與 DL-07（測試／最終驗收）：目前資料不足以確認正式定義及狀態，暫列 NOT ESTABLISHED；不可推定 PASS／CLOSE，也不可將 DL-05 的 CI 成果當作 DL-07 整體結案。
 - 下一步不是重開 DL-01～DL-05。若要處理 DL-06／DL-07，先取得其原始正式工作項目／驗收規格，再按範圍執行；不擅自擴大清查。
 - 本次只更新 docs/recovery 文件分支 ops/recovery-handoff；產品程式分支與 master、P0 base、V8、Worker、data_reports 樣本均未修改；未 Merge／Deploy。
+
+
+## 2026-11-07 最新進度｜DL-06 重試驗收完成；DL-07 離線驗收第一階段完成
+
+### DL-06
+- 產品分支：`phase2-p0-ui-fixes`。
+- DL-06 隔離重試 Workflow：`.github/workflows/dl06-retry-tests.yml`。
+- 最終隔離測試 commit：`0980de4edce4a0ccea5260e28fad43a0b89850eb`；Actions Run ID `42381174670` SUCCESS。
+- 以現有 production retry shell 搭配 mock Fetch／mock validator 驗證三情境：第一次 Fetch 失敗後第二次成功、第一次報告驗證失敗後第二次成功、連續兩次失敗最終非零退出；三項均 PASS。
+- 測試只使用 TemporaryDirectory，不呼叫正式 Fetch、不寫正式 DATA_REPORT、不 commit、不 deploy。
+- DL-06 程式安全及隔離重試驗收：**PASS／CLOSE**。正式市場 API Fetch／正式 daily_data Workflow 實際重跑：**NOT TESTED**，不包含在隔離重試結案聲明內。
+
+### DL-07 第一階段
+- 新增唯讀離線驗收 Workflow：`.github/workflows/dl07-offline-validation.yml`。
+- 最終產品分支 HEAD／CI head SHA：`a52ce7800e155d51da3e4091269089cd53c1d8fe`。
+- 本次與 DL-06 最終 HEAD `0980de4edce4a0ccea5260e28fad43a0b89850eb` 比較，**只有新增上述一個 Workflow 檔案**；沒有修改產品程式、DATA_REPORT 樣本或 Dashboard 版面。
+- Actions Run ID `42381892154` SUCCESS： [DL-07 Offline Unit and Integration Validation](https://github.com/grichtoyang/daily-premarket/actions/runs/42381892154)。
+- 驗收證據：
+  - **282 個離線單元測試 PASS**。
+  - DL-06／DL-07 Workflow 唯讀權限、無 commit／push／deploy side effect 檢查 PASS。
+  - 更新後 DATA_REPORT 必要／選填欄位解析、比例變化百分點單位、Treasury 20Y 備援語義契約 PASS。
+  - V9 Pro 17F offline self-test PASS。
+  - 使用 `git archive` 建立 runner temp workspace，對 `DATA_REPORT_20261030.md` 與 `DATA_REPORT_20261102.md` 重建 Builder JSON；兩份 T0／版本檢查 PASS。
+  - 在 temp workspace 注入 React HTML；兩份 HTML 各 4 個 executable inline scripts，JavaScript validation PASS。
+  - `git diff --exit-code -- data_reports/ dashboards/` PASS；正式 Checkout 的 DATA_REPORT 樣本與 Dashboard 輸出未變更。
+- 10 個測試案例未納入 282 個測試數：
+  - `test_spot_borrowed_live` 3 個 live API probe：避免離線測試碰外部市場 API，**NOT TESTED**。
+  - `test_p0_workflow_isolation` 4 個測試：仍引用目前 UI fixes 分支不存在的 `.github/workflows/test-data-report-margin-ratio.yml`；該舊測試未執行。DL-07 另有針對現存 DL-06／DL-07 Workflow 的唯讀及 side-effect 檢查 PASS，但不等同舊 P0 workflow isolation 測試全數驗證。
+  - `test_dashboard_unit_contract.py` 3 個舊 source-text assertions：期待舊 Builder／Fetch／Treasury 寫法，與目前等價實作不一致；未執行原 assertions。Workflow 已以目前實作語義重新驗證 required/optional parser、pp 單位及 Treasury 20Y fallback，PASS。原測試檔未修改。
+- DL-07 尚未結案。以下項目仍明確保留：
+  - 正式 Fetch／歷史日期重新抓取：**NOT TESTED**。
+  - 正式 `daily_data.yml` Workflow：**NOT TESTED**；不得手動觸發此正式資料流程作為離線測試。
+  - Browser Desktop／Mobile 視覺稽核：**NOT TESTED**；本次只驗證 HTML inline JavaScript 語法。
+  - DL-07 整體：**IN PROGRESS**，不得標示 PASS／CLOSE。
+
+### 後續接續範圍（不擴張）
+1. 先處理上述 7 個舊測試案例的測試契約整理：4 個 stale workflow reference、3 個 stale source-text assertions；修改前先確認不會不必要觸發既有 Dashboard build／history commit。
+2. 再規劃安全的正式 Workflow／歷史 Fetch 驗收；先設計可隔離資料目錄、mock 外部端點及禁止 commit/push 的執行方式。未建立安全隔離前，不觸發正式 `daily_data.yml`。
+3. Browser Desktop／Mobile 視覺驗收另列，不可把 HTML JavaScript syntax PASS 當成視覺 PASS。
+4. 不重做已 PASS 的 282 個離線測試、17F self-test、兩份歷史 Builder fixture；只有程式或 fixture 有新變更時才針對性回歸。
+5. 不修改 `master`、P0 base、V8、Worker、DATA_REPORT 樣本或 Dashboard layout；不 merge／deploy。
