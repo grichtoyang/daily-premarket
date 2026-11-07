@@ -825,6 +825,25 @@ class DataReportWriteSafetyTests(unittest.TestCase):
             self.assertTrue(target.read_text(encoding="utf-8").startswith("# DATA_REPORT_20261106"))
             self.assertEqual(list(Path(directory).glob("*.tmp")), [])
 
+    def test_merge_failure_stops_before_touching_existing_report(self):
+        import sys
+        from unittest.mock import patch
+        from src import fetch_data
+
+        with tempfile.TemporaryDirectory() as directory:
+            out_dir = Path(directory)
+            target = out_dir / "DATA_REPORT_20261106.md"
+            old_text = self.valid_report()
+            target.write_text(old_text, encoding="utf-8")
+            with patch.object(fetch_data, "OUT_DIR", out_dir), \
+                 patch.object(fetch_data, "build", return_value=self.valid_report()), \
+                 patch.object(fetch_data, "merge_same_t0", side_effect=ValueError("merge failed")), \
+                 patch.object(sys, "argv", ["fetch_data.py", "--date", "2026-11-07", "--t0", "2026-11-06"]):
+                with self.assertRaisesRegex(RuntimeError, "為保護既有報告"):
+                    fetch_data.main()
+            self.assertEqual(target.read_text(encoding="utf-8"), old_text)
+            self.assertEqual(list(out_dir.glob(".*.tmp")), [])
+
     def test_invalid_report_keeps_previous_file_and_cleans_temp(self):
         from src.fetch_data import _atomic_write_data_report
         with tempfile.TemporaryDirectory() as directory:
