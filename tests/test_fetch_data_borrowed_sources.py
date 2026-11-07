@@ -237,6 +237,16 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('_tot_src = SRC_FX if all(v is not None for v in (*_tot_day, *_tot_night, _tot_diff)) else "端點未提供"', source)
         self.assertNotIn('_f2s(_diff2(_o_tot("day", "net"), _o_tot("night", "net"))), _ot_src)', source)
 
+    def test_market_combo_source_label_tracks_available_source_families(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('def _market_combo_source_label(spot_value, taifex_values)', source)
+        self.assertIn('if spot_value is not None:', source)
+        self.assertIn('if any(value is not None for value in taifex_values):', source)
+        self.assertIn('_dd["spot"], (_dd["foi"], _dd["fday"], _dd["fnight"],', source)
+        self.assertIn('_dd["oday"], _dd["onight"], _dd["calld"], _dd["putd"])', source)
+        self.assertIn('), _mx_src))', source)
+        self.assertNotIn('_mx_combo(_dd), "twse-proxy／TAIFEX Proxy")', source)
+
     def test_futures_report_source_labels_require_available_values(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('SRC_FX if d["open"] is not None else MISSING', source)
