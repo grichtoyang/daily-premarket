@@ -33,12 +33,14 @@ GROUPS: dict[str, list[tuple[str, str]]] = {
 
 def quote(sym: str) -> dict:
     out = {"symbol": sym, "price": None, "change": None, "pct": None, "date": None,
-           "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-           "exchange_timezone": None, "source": "Yahoo Finance Chart API", "ok": False}
+           "retrieved_at": None, "exchange_timezone": None,
+           "source": "Yahoo Finance Chart API", "ok": False}
     try:
         r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1mo",
                          headers={**HEADERS, "Accept": "application/json"}, timeout=20)
         r.raise_for_status()
+        # Record the timestamp after a successful HTTP response, not before the request.
+        out["retrieved_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
         res = (r.json().get("chart", {}).get("result") or [None])[0]
         if not res:
             return out
