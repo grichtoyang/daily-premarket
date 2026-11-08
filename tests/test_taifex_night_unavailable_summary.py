@@ -15,16 +15,13 @@ from src.sources.taifex import _missing_night_fields
 
 
 class NightUnavailableSummaryTests(unittest.TestCase):
-    def test_missing_settlement_and_oi_are_reported(self):
+    def test_night_settlement_and_oi_are_not_missing_because_exchange_does_not_publish_them(self):
         night = {
             "open": 45395, "high": 45420, "low": 44052, "close": 44433,
             "change": -867, "pct": -1.91, "vol": 44305,
             "settle": None, "oi": None,
         }
-        self.assertEqual(
-            _missing_night_fields(night),
-            ["futures.night.settle", "futures.night.oi"],
-        )
+        self.assertEqual(_missing_night_fields(night), [])
 
     def test_available_night_fields_do_not_appear_as_missing(self):
         night = {
@@ -38,7 +35,7 @@ class NightUnavailableSummaryTests(unittest.TestCase):
         self.assertEqual(
             _missing_night_fields({}),
             [f"futures.night.{field}" for field in
-             ("open", "high", "low", "close", "change", "pct", "vol", "settle", "oi")],
+             ("open", "high", "low", "close", "change", "pct", "vol")],
         )
 
 
