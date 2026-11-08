@@ -77,6 +77,25 @@ def _f3s(v) -> str:
     except (ValueError, TypeError):
         return MISSING
 
+
+def _sum_gex_model_oi(levels: list[dict], side: str):
+    """Sum only the OI carried into valid strike-level GEX rows."""
+    if side not in {"call_oi", "put_oi"}:
+        raise ValueError(f"unsupported GEX OI side: {side}")
+    total = 0.0
+    for row in levels or []:
+        if not isinstance(row, dict):
+            continue
+        value = row.get(side, 0)
+        try:
+            number = float(value or 0)
+        except (TypeError, ValueError):
+            return None
+        if number < 0 or not __import__("math").isfinite(number):
+            return None
+        total += number
+    return total
+
 def _market_combo_source_label(spot_value, taifex_values) -> str:
     """List only source families that contributed at least one observed value."""
     sources = []
@@ -469,11 +488,6 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                         old = None
                     _gamma_flip_section = any("Gamma Flip" in (part or "") for part in hkey)
                     if _gamma_flip_section:
-                        _flip_row = new_rows.get((hkey, "Gamma Flip 價位"))
-                        _flip_unavailable = (
-                            _flip_row and len(_flip_row) > 1
-                            and _flip_row[1] == MISSING
-                        )
                         if (_label == "Gamma Flip 價位" and len(cells) > 1
                                 and cells[1] == MISSING):
                             old = None
@@ -1194,9 +1208,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("主到期月份（Key Levels）", _gm_primary_month or MISSING,
              SRC_FX if _gm_primary_month is not None else MISSING),
             ("原始 Call OI（選定到期日全部有效 Chain 合約）", _fi(_gm_call_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
-            ("模型納入 Call OI（通過 GEX 計算條件）", _fi(sum(float(r.get("call_oi") or 0) for r in (_gm.get("levels") or []) if isinstance(r, dict))), "TAIFEX Gamma model（逐履約價）"),
+            ("模型納入 Call OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "call_oi")), "TAIFEX Gamma model（逐履約價）"),
             ("原始 Put OI（選定到期日全部有效 Chain 合約）", _fi(_gm_put_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
-            ("模型納入 Put OI（通過 GEX 計算條件）", _fi(sum(float(r.get("put_oi") or 0) for r in (_gm.get("levels") or []) if isinstance(r, dict))), "TAIFEX Gamma model（逐履約價）"),
+            ("模型納入 Put OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "put_oi")), "TAIFEX Gamma model（逐履約價）"),
             ("資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
            ("項目", "數值", "資料來源")))
     A("- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。")
