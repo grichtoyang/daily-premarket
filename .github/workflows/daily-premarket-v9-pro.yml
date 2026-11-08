@@ -176,6 +176,11 @@ jobs:
               raise SystemExit(f"Golden Master missing tabs: {missing}")
           if data_obj.get("meta", {}).get("version") != "v9-pro-17F":
               raise SystemExit("Unexpected dashboard data version")
+          options = data_obj.get("options", {})
+          if "extendedFlip" not in options:
+              raise SystemExit("Dashboard data is missing options.extendedFlip")
+          if options.get("flip") is not None and options.get("extendedFlip") is not None:
+              raise SystemExit("Extended Gamma Flip must be suppressed when formal ±10% Flip exists")
           data = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
           injection = f"<script>window.DASHBOARD_DATA={data};</script>" + chr(10)
           if "</head>" not in template:
