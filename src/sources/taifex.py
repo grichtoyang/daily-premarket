@@ -969,6 +969,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
              "wide_range_flip_diagnostics": (gdata.get("gamma_flip_wide_range_diagnostics") if g_pay is not None else None) or cgamma.get("gamma_flip_wide_range_diagnostics"),
              "wide_range_flip": (gdata.get("gamma_flip_wide_range") if g_pay is not None else None) or cgamma.get("gamma_flip_wide_range"),
              "expiry_selection_diagnostics": (gdata.get("expiry_selection_diagnostics") if g_pay is not None else None) or cgamma.get("expiry_selection_diagnostics"),
+             "delta_fetch_diagnostics": (cdata.get("data_quality") or {}).get("delta_fetch_diagnostics"),
              "gex_status": "available" if _gex_levels and _net_gex is not None and _gross_gex is not None else "unavailable",
              "date": gamma_date, "wall_date": wall_date, "flip_date": flip_date,
              "src": gsrc, "wall_src": wall_src, "flip_src": flip_src}
