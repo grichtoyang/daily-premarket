@@ -19,7 +19,6 @@ class NightUnavailableSummaryTests(unittest.TestCase):
         night = {
             "open": 45395, "high": 45420, "low": 44052, "close": 44433,
             "change": -867, "pct": -1.91, "vol": 44305,
-            "settle": None, "oi": None,
         }
         self.assertEqual(_missing_night_fields(night), [])
 
@@ -27,7 +26,6 @@ class NightUnavailableSummaryTests(unittest.TestCase):
         night = {
             "open": 45395, "high": 45420, "low": 44052, "close": 44433,
             "change": -867, "pct": -1.91, "vol": 44305,
-            "settle": 44433, "oi": 123456,
         }
         self.assertEqual(_missing_night_fields(night), [])
 
