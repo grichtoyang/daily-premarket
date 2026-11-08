@@ -69,13 +69,32 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         )
         self.assertTrue(all(item["response"] == "unavailable" for item in result["attempts"]))
 
-    def test_missing_flip_diagnostic_distinguishes_usable_gex_model(self):
+    def test_missing_flip_with_usable_gex_and_no_wide_crossing_is_not_blamed_on_search_bug(self):
         unavailable, notes = _gamma_status(
             ["gamma_flip"], False, 38900, None,
-            "options-gamma-levels", gex_model_available=True)
+            "options-gamma-levels", gex_model_available=True,
+            flip_diagnostics={"search_lower_underlying": 35731.48,
+                              "search_upper_underlying": 43671.80,
+                              "zero_crossings": 0},
+            wide_range_diagnostics={"found": False, "zero_crossings": 0})
         self.assertIn("gamma_flip", unavailable)
-        self.assertTrue(any("逐履約價 GEX 模型仍可用" in note for note in notes))
-        self.assertFalse(any("原始端點與 Proxy 備援皆未取得" in note for note in notes))
+        self.assertTrue(any("正式 Gamma Flip 搜尋範圍未找到零交叉" in note for note in notes))
+        self.assertTrue(any("擴大診斷範圍亦未找到零交叉" in note for note in notes))
+        self.assertFalse(any("需檢查零交叉搜尋條件" in note for note in notes))
+
+    def test_missing_formal_flip_reports_wide_range_diagnostic_crossing(self):
+        unavailable, notes = _gamma_status(
+            ["gamma_flip"], False, 38900, None,
+            "options-gamma-levels", gex_model_available=True,
+            flip_diagnostics={"search_lower_underlying": 35731.48,
+                              "search_upper_underlying": 43671.80,
+                              "zero_crossings": 0},
+            wide_range_flip={"estimated_underlying": 35542.63},
+            wide_range_diagnostics={"found": True, "zero_crossings": 1})
+        self.assertIn("gamma_flip", unavailable)
+        self.assertTrue(any("35542.63" in note for note in notes))
+        self.assertTrue(any("不取代正式 ±10% 結果" in note for note in notes))
+        self.assertFalse(any("需檢查零交叉搜尋條件" in note for note in notes))
 
     def test_gamma_levels_fetch_uses_requested_t0_date(self):
         response = Mock(status_code=200)
