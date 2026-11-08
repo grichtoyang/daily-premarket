@@ -5,6 +5,7 @@ from src.sources.taifex import (
     BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status, _chain_rollover,
     _sync_gamma_unavailable, _valid_gex_levels, _complete_sum, _complete_ratio, _oi_distribution,
     _gamma_proxy_fallback,
+    _gamma_expiry_metadata,
     _options_chain_oi_change_diagnostic,
 )
 
@@ -290,6 +291,33 @@ class OptionsChainOICoverageDiagnosticTests(unittest.TestCase):
     def test_reports_missing_primary_expiry(self):
         result = _options_chain_oi_change_diagnostic([], [], None)
         self.assertEqual(result["reason"], "primary_expiry_missing")
+
+
+class GammaExpiryMetadataTests(unittest.TestCase):
+    def test_preserves_actual_gex_expiry_and_oi_totals(self):
+        result = _gamma_expiry_metadata({
+            "contract_month": "202611W2",
+            "expiry_date": "2026-11-11",
+            "call_oi": {"rows": 120, "valid_rows": 120, "invalid_rows": 0, "total": 43644},
+            "put_oi": {"rows": 90, "valid_rows": 90, "invalid_rows": 0, "total": 7235},
+        }, "202611F1")
+        self.assertEqual(result["gex_contract_month"], "202611W2")
+        self.assertEqual(result["gex_expiry_date"], "2026-11-11")
+        self.assertEqual(result["gex_call_oi"]["total"], 43644)
+        self.assertEqual(result["gex_put_oi"]["total"], 7235)
+        self.assertFalse(result["gex_expiry_matches_primary"])
+
+    def test_missing_or_invalid_metadata_does_not_claim_expiry_match(self):
+        result = _gamma_expiry_metadata({}, "202611F1")
+        self.assertIsNone(result["gex_contract_month"])
+        self.assertIsNone(result["gex_expiry_date"])
+        self.assertIsNone(result["gex_expiry_matches_primary"])
+        self.assertEqual(result["gex_call_oi"], {})
+        self.assertEqual(result["gex_put_oi"], {})
+
+    def test_matching_expiry_is_explicit(self):
+        result = _gamma_expiry_metadata({"contract_month": "202611F1"}, "202611F1")
+        self.assertTrue(result["gex_expiry_matches_primary"])
 
 if __name__ == "__main__":
     unittest.main()
