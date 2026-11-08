@@ -1,7 +1,41 @@
 import unittest
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
 from src.sources import spot_raw
+
+
+class SBLPublicationMetadataTests(unittest.TestCase):
+    def test_historical_data_available_after_schedule_is_not_unknown(self):
+        now = datetime(2026, 11, 8, 10, 38, tzinfo=ZoneInfo("Asia/Taipei"))
+        result = spot_raw._sbl_publication_metadata(
+            "2026-11-06", "23:30", now=now, data_available=True
+        )
+        self.assertEqual(result["status"], "available_after_schedule")
+        self.assertEqual(result["checked_at"], "2026-11-08T10:38:00+08:00")
+        self.assertIsNone(result["production_time"])
+
+    def test_same_day_before_schedule_remains_pending(self):
+        now = datetime(2026, 11, 6, 22, 0, tzinfo=ZoneInfo("Asia/Taipei"))
+        result = spot_raw._sbl_publication_metadata(
+            "2026-11-06", "23:30", now=now, data_available=False
+        )
+        self.assertEqual(result["status"], "pending")
+
+    def test_same_day_after_schedule_with_data_is_available(self):
+        now = datetime(2026, 11, 6, 23, 45, tzinfo=ZoneInfo("Asia/Taipei"))
+        result = spot_raw._sbl_publication_metadata(
+            "2026-11-06", "23:30", now=now, data_available=True
+        )
+        self.assertEqual(result["status"], "available_after_schedule")
+
+    def test_historical_date_without_data_remains_unknown(self):
+        now = datetime(2026, 11, 8, 10, 38, tzinfo=ZoneInfo("Asia/Taipei"))
+        result = spot_raw._sbl_publication_metadata(
+            "2026-11-06", "23:30", now=now, data_available=False
+        )
+        self.assertEqual(result["status"], "unknown")
 
 
 class TWT93USourceTests(unittest.TestCase):
