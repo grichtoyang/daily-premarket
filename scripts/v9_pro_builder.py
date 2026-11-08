@@ -1017,6 +1017,7 @@ def parse_data_report(report_path):
     basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=optional_get(r"價差百分比 \| ([-\+0-9.]+) \|"); night_change=optional_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|")
     foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+|unavailable) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+|unavailable) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+|unavailable) \|","前十大OI")
+    institutional_oi_total=calculate_institutional_oi_total([foreign_fut_oi,trust_fut_oi,dealer_fut_oi])
     foreign_day_net=optional_get(r"外資日盤多空淨交易量 \| ([-\+0-9,]+) \|"); foreign_night_net=optional_get(r"外資夜盤多空淨交易量 \| ([-\+0-9,]+) \|")
     call_vol=must_get(r"Call 總成交量 \| ([0-9,]+|unavailable) \|","Call成交"); call_oi=must_get(r"Call 總未平倉量 OI \| ([0-9,]+|unavailable) \|","Call OI")
     put_vol=must_get(r"Put 總成交量 \| ([0-9,]+|unavailable) \|","Put成交"); put_oi=must_get(r"Put 總未平倉量 OI \| ([0-9,]+|unavailable) \|","Put OI")
@@ -1082,7 +1083,7 @@ def parse_data_report(report_path):
         'turnover': {'listed': listed_turnover, 'otc': otc_turnover, 'total': total_turnover},
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
-        'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
+        'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'institutional_oi_total': institutional_oi_total, 'top10': top10_oi, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
         'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'extendedFlip': ((gex_payload.get('wide_range_flip') or {}).get('estimated_underlying') if gamma_flip is None else None), 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'instOptForceAnalysis': build_option_force_analysis(opt_inst_force_table, opt_inst_table), 'top10Call': opt_top10_call, 'top10Put': opt_top10_put},
         'news': news_events,
     }
@@ -1372,10 +1373,26 @@ def classify_three_market(values):
         return "三市場一致偏空"
     return "三市場方向分歧"
 
+def calculate_institutional_oi_total(values):
+    """Return a complete three-institution OI total; never sum a partial snapshot."""
+    if len(values) != 3:
+        return None
+    nums = []
+    for value in values:
+        try:
+            number = float(value)
+            if not math.isfinite(number):
+                return None
+            nums.append(number)
+        except (TypeError, ValueError):
+            return None
+    return sum(nums)
+
+
 def classify_futures_oi(values):
     """Assess whether the three institutional futures OI snapshot is usable."""
     if len(values) != 3:
-        return "期貨淨 OI 欄位不完整，不能判定快照可信度", False
+        return "期貨淨 OI 欄位不完整，合計停用", False
     nums = []
     for value in values:
         try:
@@ -1384,10 +1401,10 @@ def classify_futures_oi(values):
         except (TypeError, ValueError):
             nums.append(None)
     if all(value == 0 for value in nums):
-        return "三法人淨 OI 全為 0，視為可疑快照，不納入方向判斷", True
+        return "三法人淨 OI 全為 0，合計為 0 但視為可疑快照，不納入方向判斷", True
     if any(value is None for value in nums):
-        return "期貨淨 OI 有缺值，僅採可用欄位", False
-    return "期貨淨 OI 可讀取；仍與日盤交易流量分開解讀", False
+        return "期貨淨 OI 有缺值，三法人合計停用；不可將部分數值當完整合計", False
+    return "三法人期貨淨 OI 合計有效；仍與日盤交易流量分開解讀", False
 
 def classify_option_sessions(day, night):
     if day is None or night is None:
@@ -1474,9 +1491,12 @@ def build_41_cards(analyzer, parsed, historical, db_status):
     option_dealer_day=signed_table_value(opt_dealer_row,3)
     def signed_text(value, unit, digits=0):
         return "資料不足" if value is None else f"{value:+,.{digits}f}{unit}"
+    futures_oi_total=parsed.get('futures',{}).get('institutional_oi_total')
+    futures_oi_total_text=signed_text(futures_oi_total,'口') if futures_oi_total is not None else "資料不足（不計算部分合計）"
     three_market_look=(
         f"現貨外資 {signed_text(foreign,'億元',1)}、投信 {signed_text(spot_inst_values[1],'億元',1)}、"
         f"自營商 {signed_text(spot_inst_values[2],'億元',1)}；"
+        f"期貨三法人淨 OI 合計 {futures_oi_total_text}；"
         f"期貨外資日盤淨交易 {signed_text(foreign_day,'口')}；"
         f"選擇權外資日盤 {signed_text(option_foreign_day,'口')}／夜盤 {signed_text(option_foreign_night,'口')}"
     )
@@ -1757,6 +1777,14 @@ def run_17f_self_tests():
 | Put | 20 |
 """)
         assert len(sample_tables)==2 and sample_tables[0][0][0]=="Call" and sample_tables[1][0][0]=="Put"
+        # Institutional futures OI totals require all three finite source values.
+        assert calculate_institutional_oi_total([100,-20,5])==85
+        assert calculate_institutional_oi_total([0,0,0])==0
+        assert calculate_institutional_oi_total([None,0,0]) is None
+        assert calculate_institutional_oi_total([100,None,-5]) is None
+        assert calculate_institutional_oi_total([100,float("nan"),-5]) is None
+        assert "三法人合計停用" in classify_futures_oi([100,None,-5])[0]
+        assert "合計為 0" in classify_futures_oi([0,0,0])[0]
         partial_turnover_warnings=validate_data_report_consistency(
             {'open':100,'high':110,'low':90,'close':105},
             {'foreign':10,'trust':5,'dealer':-2,'all':13},
