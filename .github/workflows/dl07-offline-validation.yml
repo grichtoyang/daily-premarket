@@ -60,7 +60,7 @@ jobs:
 
           # The dedicated validation workflows must be read-only and non-publishing.
           for name, workflow in (("DL-07", dl07), ("DL-06", dl06)):
-              assert "permissions:\\n  contents: read" in workflow, f"{name} must have contents:read"
+              assert "permissions:\n  contents: read" in workflow, f"{name} must have contents:read"
               assert not re.search(r"(?m)^ *contents: *write *$", workflow), f"{name} has write permission"
               assert not re.search(r"(?m)^ *uses: *actions/deploy-pages@", workflow), f"{name} deploys Pages"
               assert not re.search(r"(?m)^ *git +(add|commit|push)( |$)", workflow), f"{name} mutates git"
@@ -87,7 +87,7 @@ jobs:
           # The old P0 integration workflow referenced by the legacy unit test is absent.
           # The production DATA workflow is write-capable, so this validation must not invoke it.
           assert not legacy_p0_integration.exists()
-          assert "permissions:\\n  contents: write" in daily_data
+          assert "permissions:\n  contents: write" in daily_data
           assert "git push" in daily_data
           assert "daily_data.yml" not in dl07
           print("PASS: DL-06/DL-07 are read-only; Dashboard branch/commit/deploy guards match current workflow")
