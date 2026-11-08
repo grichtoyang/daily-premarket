@@ -3,7 +3,7 @@
 - 報告日期：`2026-11-08`
 - T0 交易日期：`2026-11-06`
 - 首次資料產出時間：`2026-11-08 10:38:08`
-- 本次更新開始時間：`2026-11-08 23:32:13`
+- 本次更新開始時間：`2026-11-09 00:40:02`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -67,7 +67,7 @@
 
 ### 4. 融資融券
 
-**資料來源：** 上市+上櫃 `HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)` (金額口徑)；維持率 `TWSE 上市自建估算（當日暫估；資料日期：2026-11-06；估值 1240 檔；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）；Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS）`；官方無每日維持率序列
+**資料來源：** 上市+上櫃 `HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)` (金額口徑)；維持率 `Blave 上市市場融資維持率估算（當日暫估；資料日期：2026-11-06；自建計算備援）`；官方無每日維持率序列
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
@@ -94,8 +94,8 @@
 - 上櫃來源：TPEx S47（上櫃）；增減來源：TPEx S47（上櫃）
 - 借券賣出餘額完整性：`complete`
 - 借券賣出增減完整性：`complete`
-- TWSE TWT93U（上市）：資料日期：`20261106`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T23:32:52+08:00`；狀態：`available_after_schedule`
-- TPEx S47（上櫃）：資料日期：`20261106`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T23:32:52+08:00`；狀態：`available_after_schedule`
+- TWSE TWT93U（上市）：資料日期：`20261106`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-09T00:40:32+08:00`；狀態：`available_after_schedule`
+- TPEx S47（上櫃）：資料日期：`20261106`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-09T00:40:36+08:00`；狀態：`available_after_schedule`
 
 ### 6. 市場成交結構
 
@@ -391,7 +391,7 @@
 |---|---|---|
 | 交易日期 | 2026-11-06 | TAIFEX Proxy |
 | 到期月份／到期日 | 202611F1 | TAIFEX Proxy |
-| 本次報告產製時間 | 2026-11-08 23:32:13 | 本機 |
+| 本次報告產製時間 | 2026-11-09 00:40:02 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -559,9 +559,12 @@
 | GEX 實際使用到期月份 | 202611W2 | options-gamma-levels（GEX 實際使用） |
 | GEX 實際到期日 | 2026-11-11 | options-gamma-levels（GEX 實際使用） |
 | 主到期月份（Key Levels） | 202611F1 | TAIFEX Proxy |
-| GEX Call OI | 43,690 | options-gamma-levels（GEX 到期日） |
-| GEX Put OI | 7,235 | options-gamma-levels（GEX 到期日） |
-| 資料日期 | unavailable | unavailable |
+| 原始 Call OI（選定到期日全部有效 Chain 合約） | 43,690 | options-gamma-levels（GEX 到期日） |
+| 模型納入 Call OI（通過 GEX 計算條件） | 43,644 | TAIFEX Gamma model（逐履約價） |
+| 原始 Put OI（選定到期日全部有效 Chain 合約） | 7,235 | options-gamma-levels（GEX 到期日） |
+| 模型納入 Put OI（通過 GEX 計算條件） | 7,235 | TAIFEX Gamma model（逐履約價） |
+| GEX 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |
+- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。
 
 **Gamma Flip 零交叉搜尋診斷**
 - 搜尋標的區間：35,731.48～43,671.80
@@ -666,7 +669,7 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-11-06；本次報告產製時間：2026-11-08 23:32:13；時區：`Asia/Taipei`
+- 資料日期：2026-11-06；本次報告產製時間：2026-11-09 00:40:02；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 部分取得欄位 (0)：無
 - 註記：同 T0 穩定：56 格新舊皆有值，沿用前版（不再靜默覆寫）；涉及資料列：一、現貨／5. 借券資料／整體市場借券餘額、一、現貨／5. 借券資料／借券賣出餘額、一、現貨／5. 借券資料／借券賣出增減、二、重要市場／1. 美股指數／S&P 500、二、重要市場／1. 美股指數／Nasdaq Composite、二、重要市場／1. 美股指數／Nasdaq 100、二、重要市場／1. 美股指數／Dow Jones、二、重要市場／1. 美股指數／費城半導體 SOX、二、重要市場／1. 美股指數／VIX、二、重要市場／2. 亞洲主要指數／日經225、二、重要市場／2. 亞洲主要指數／韓國KOSPI、二、重要市場／2. 亞洲主要指數／香港恆生、二、重要市場／2. 亞洲主要指數／上海綜合、二、重要市場／2. 亞洲主要指數／深圳成分、二、重要市場／3. 美股指數期貨／S&P500期貨、二、重要市場／3. 美股指數期貨／Nasdaq100期貨、二、重要市場／3. 美股指數期貨／道瓊期貨、二、重要市場／3. 美股指數期貨／Russell2000期貨、二、重要市場／4. 美國國債殖利率／美國 2 年期殖利率、二、重要市場／4. 美國國債殖利率／美國 10 年期殖利率、二、重要市場／4. 美國國債殖利率／美國 20 年期殖利率、二、重要市場／4. 美國國債殖利率／美國 30 年期殖利率、二、重要市場／5. 主要匯率／USD/TWD、二、重要市場／5. 主要匯率／DXY美元指數、二、重要市場／5. 主要匯率／USD/JPY、二、重要市場／5. 主要匯率／USD/KRW、二、重要市場／6. 台灣相關ADR／台積電ADR、二、重要市場／6. 台灣相關ADR／聯電ADR、二、重要市場／6. 台灣相關ADR／日月光ADR、二、重要市場／7. 原油黃金Bitcoin／WTI原油期貨、二、重要市場／7. 原油黃金Bitcoin／黃金期貨、二、重要市場／7. 原油黃金Bitcoin／Bitcoin、三、期貨／7．日盤、夜盤與籌碼變化對照／7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)／夜盤成交量占比、三、期貨／7．日盤、夜盤與籌碼變化對照／7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)／夜盤漲跌點數、三、期貨／7．日盤、夜盤與籌碼變化對照／7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)／劇本分類、三、期貨／7．日盤、夜盤與籌碼變化對照／7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)／劇本條件、三、期貨／7．日盤、夜盤與籌碼變化對照／7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)／劇本特徵、四、選擇權／13．Gamma Wall／Gamma Wall 價位
@@ -674,7 +677,7 @@
 
 ## 五、資料來源、時間與完整性
 
-- 期貨/匯率為最新報價，其餘為 T0 收盤資料；時間皆為 `Asia/Taipei`。
+- 台股現貨、TAIFEX 期貨／選擇權以 T0 為基準；海外指數、匯率、ADR、原油、黃金與 Bitcoin 採各來源最新可得報價。各表格均列示實際資料日期；時間皆為 `Asia/Taipei`。
 - taiex：`twse-proxy`
 - taiex_ohlc：`FinMind TaiwanStockPrice TAIEX`
 - listed_breadth：`twse-proxy`
@@ -682,7 +685,7 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)`
-- margin_ratio：`TWSE 上市自建估算（當日暫估；資料日期：2026-11-06；估值 1240 檔；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）；Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS）`
+- margin_ratio：`Blave 上市市場融資維持率估算（當日暫估；資料日期：2026-11-06；自建計算備援）`
 - sbl_bal：`TWSE TWT72U（SLBNLB；上市+上櫃）`
 - sbl_sale_bal_listed：`TWSE TWT93U（上市）`
 - sbl_sale_bal_otc：`TPEx S47（上櫃）`
@@ -693,7 +696,7 @@
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：上市市場維持率為當日暫估，以 TWSE 自建計算為主；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）。Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS。Blave 不可用不影響 DATA_REPORT 產出。
+- 註記：上市市場維持率為當日暫估；TWSE 自建部分計算僅供診斷（部分估算 151.9221%；價格覆蓋率 0.997581；已估值 1237/1240 檔；缺價 3 檔：['1589', '3714', '5906']），不得作為正式維持率。TWSE 自建計算未成功（partial calculation only; missing close for 3 listed securities: ['1589', '3714', '5906']）；改用 Blave 同 T0 數值（2026-11-06）。
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
 - TAIFEX 註記：futures-price-after-hours 日期 2026-11-06 非今日 2026-11-09，視為無新節次，不採用
 - TAIFEX 註記：Gamma Flip Proxy 查詢診斷：2026-11-06: response=available, response_date=2026-11-06, status=usable, wall=38900, flip=None, error=none；2026-11-05: response=available, response_date=2026-11-05, status=usable, wall=41000, flip=None, error=none；2026-11-04: response=available, response_date=2026-11-04, status=usable, wall=41000, flip=None, error=none
