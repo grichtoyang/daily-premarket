@@ -149,7 +149,7 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 |---|---|---|
 | Gamma Flip 價位 | 41,102.53 | TAIFEX Proxy (options-gamma-levels) |
 | 對應到期月份 | 202611F1 | TAIFEX Proxy |
-| 資料日期 | 2026-11-05 | TAIFEX Proxy (options-gamma-levels) |
+| GEX 資料日期 | 2026-11-05 | TAIFEX Proxy (options-gamma-levels) |
 """
         new = """# DATA_REPORT_20261106
 - T0 交易日期：`2026-11-06`
@@ -161,12 +161,12 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 |---|---|---|
 | Gamma Flip 價位 | unavailable | unavailable |
 | 對應到期月份 | 202611F1 | TAIFEX Proxy |
-| 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |
+| GEX 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |
 """
         merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
         self.assertIn("| Gamma Flip 價位 | unavailable | unavailable |", merged)
         self.assertNotIn("41,102.53", merged)
-        self.assertIn("| 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |", merged)
+        self.assertIn("| GEX 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |", merged)
         self.assertNotIn("2026-11-05 | TAIFEX Proxy", merged)
         self.assertNotIn("沿用前版（原來源：TAIFEX Proxy (options-gamma-levels)）", merged)
 
