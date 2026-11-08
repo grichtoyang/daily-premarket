@@ -211,4 +211,39 @@ const expiryRows = (contract_month, expiry, type = "call") => ({
   assert.equal(result.diagnostics.future_date_fallback_common_expiries.length, 1);
 }
 
+
+const parseDeltaWithDiagnostics = new Function(
+  "nullableNumber", "isoCompactDate",
+  `${declaration("parseTXODeltaRowsWithDiagnostics", "\\n\\nfunction parseTXODeltaRows")}; return parseTXODeltaRowsWithDiagnostics;`
+)(
+  value => {
+    if (value === null || value === undefined || value === "") return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  },
+  value => {
+    const s = String(value ?? "").trim();
+    if (/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return s;
+    if (/^\\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+    return null;
+  }
+);
+
+{
+  const result = parseDeltaWithDiagnostics([
+    ["TXO", "", "Call", "202611W2", "20261111", "20000", "0.42"],
+    ["TXO", "", "Put", "202611W2", "20261111", "20000", "-0.38"],
+    { contract: "TXO", contract_month: "202611F1", contract_expiry_date: "2026-11-06",
+      strike: 19500, type: "call", delta: 0.51 }
+  ]);
+  assert.equal(result.data.length, 3);
+  assert.equal(result.diagnostics.array_rows, 2);
+  assert.equal(result.diagnostics.object_rows, 1);
+  assert.equal(result.diagnostics.per_expiry.length, 2);
+  assert.equal(
+    result.diagnostics.per_expiry.find(x => x.contract_month === "202611F1").parsed_rows,
+    1
+  );
+}
+
 console.log("PASS: Worker Gamma Flip, OI, and expiry selection diagnostics");
