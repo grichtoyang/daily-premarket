@@ -58,6 +58,25 @@ def _f2s(v) -> str:  # signed 口數/價差 (整數無小數，其餘2位)
     except (ValueError, TypeError):
         return MISSING
 
+def _f3(v) -> str:
+    """Format share-to-lot conversions without rounding away sub-lot precision."""
+    if v is None:
+        return MISSING
+    try:
+        return f"{float(v):,.3f}".rstrip("0").rstrip(".")
+    except (ValueError, TypeError):
+        return MISSING
+
+
+def _f3s(v) -> str:
+    """Signed variant of _f3 for daily borrowed-short changes."""
+    if v is None:
+        return MISSING
+    try:
+        return f"{float(v):+,.3f}".rstrip("0").rstrip(".")
+    except (ValueError, TypeError):
+        return MISSING
+
 def _market_combo_source_label(spot_value, taifex_values) -> str:
     """List only source families that contributed at least one observed value."""
     sources = []
@@ -122,8 +141,8 @@ def _sbl_status_line(label: str, status: str | None) -> str:
 def _sbl_market_table(sb: dict) -> str:
     """Render listed, OTC, and combined borrowed-short figures without hiding market splits."""
     return _tbl([
-        ("借券賣出餘額", _fi(sb.get("listed_sale_bal")), _fi(sb.get("otc_sale_bal")), _fi(sb.get("sale_bal")), "張"),
-        ("借券賣出增減", _fi(sb.get("listed_sale_chg")), _fi(sb.get("otc_sale_chg")), _fi(sb.get("sale_chg")), "張"),
+        ("借券賣出餘額", _f3(sb.get("listed_sale_bal")), _f3(sb.get("otc_sale_bal")), _f3(sb.get("sale_bal")), "張"),
+        ("借券賣出增減", _f3s(sb.get("listed_sale_chg")), _f3s(sb.get("otc_sale_chg")), _f3s(sb.get("sale_chg")), "張"),
     ], ("項目", "上市", "上櫃", "兩者合計", "單位"))
 
 
