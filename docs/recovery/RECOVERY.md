@@ -2173,3 +2173,13 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 
 ### 下一個唯一接續工作
 轉向 DL-07 Browser Desktop／Mobile 視覺驗收。先確認可取得的非部署 HTML／Artifact 與瀏覽器檢查方式；若無可用瀏覽器執行環境，明確列為 BLOCKED 並請使用者提供畫面，不以 HTML／JS 語法檢查代替視覺驗收。不要重跑已 PASS 的單一 Fetch 隔離測試、282 個離線測試或歷史 fixture。
+
+
+## 2026-11-08｜DL-07 Browser Artifact 取得完成；實際瀏覽器稽核 BLOCKED
+
+- Dashboard workflow run：`42436118367`；Artifact ID：`13599433688`（`github-pages`）。已透過 GitHub Artifact 下載，並在工作目錄解壓縮，取得 `p0/test-fixtures/v9-pro-20261030-full-day.html`（約 353 KB）等 Pages 產物。
+- Artifact 內容檢查確認 HTML 內含六個分頁定義：總覽、現貨、重要市場、期貨、選擇權、綜合分析。這只是靜態 HTML／程式內容確認，**不代表六個分頁已實際點擊或渲染驗收**。
+- 執行環境雖有 Chromium 與 Playwright 套件，但 Playwright 導航本機 HTML／HTTP 頁面均回報 `net::ERR_BLOCKED_BY_ADMINISTRATOR`；Chromium headless CLI 亦未能在限定時間內完成頁面載入。未取得有效 DOM、畫面截圖或瀏覽器互動結果。
+- 因此 Desktop 1440×1000、Mobile 390×844 六分頁的視覺、溢位、圖表可見性及 console error 驗收均為 **BLOCKED／NOT TESTED**；不可標記 PASS。不是產品頁面測試失敗，而是目前執行環境阻擋瀏覽器導航。
+- 下一步需要使用者在可正常開啟該 HTML 的桌面及手機瀏覽器提供六分頁畫面（或提供可用的瀏覽器執行環境）。在取得實際渲染證據前，不修改產品程式、不擴大測試、不部署 Pages。
+- DL-07 整體維持 **IN PROGRESS**；正式市場 API Fetch、正式 `daily_data.yml` 仍 **NOT TESTED**。本次未執行正式 Fetch、未寫入正式 DATA_REPORT、未部署 Pages、未 merge。
