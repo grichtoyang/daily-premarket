@@ -432,9 +432,10 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                         or "OI 減少最多" in _label
                     )
                     if (_oi_change_row and len(cells) > 2
-                            and old[1] == MISSING and cells[1] not in (MISSING, "")):
-                        old = list(old)
-                        old[-1] = MISSING
+                            and cells[1] not in (MISSING, "")):
+                        # OI 變化是本次由共同合約快照重算；即使舊版數值存在，
+                        # 也必須讓本次數值與本次快照來源一起更新，不能凍結舊來源。
+                        old = None
                     # Gamma Flip 本次沒有零交叉時，價位與日期都必須維持 unavailable，
                     # 不可由同 T0 保護機制回填前版 Flip 價位或日期。
                     _gamma_flip_section = any("Gamma Flip" in (part or "") for part in hkey)
