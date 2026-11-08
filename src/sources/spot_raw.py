@@ -150,11 +150,18 @@ def _sbl_publication_metadata(date_value: str, expected_time: str, actual_time: 
     else:
         current = current.astimezone(taipei)
     result["checked_at"] = current.isoformat(timespec="seconds")
-    if current.strftime("%Y%m%d") == date8:
-        if current.strftime("%H%M") < expected_time.replace(":", ""):
-            result["status"] = "pending"
-        elif data_available:
-            result["status"] = "available_after_schedule"
+    current_date = current.strftime("%Y%m%d")
+    current_time = current.strftime("%H%M")
+    schedule_passed = (
+        current_date > date8
+        or (current_date == date8 and current_time >= expected_time.replace(":", ""))
+    )
+    if current_date == date8 and not schedule_passed:
+        result["status"] = "pending"
+    elif data_available and schedule_passed:
+        # Historical reports are commonly fetched after their scheduled
+        # publication date; availability must not depend on querying on T0.
+        result["status"] = "available_after_schedule"
     return result
 
 def _twse_date8(date_value: str) -> str | None:
