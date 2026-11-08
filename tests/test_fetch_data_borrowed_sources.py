@@ -711,13 +711,28 @@ class OptionsChainOiChangeContractTests(unittest.TestCase):
         self.assertIsNone(self.calculate(current_missing, self.previous, "202611W2"))
         self.assertIsNone(self.calculate(self.current, previous_missing, "202611W2"))
 
-    def test_missing_or_extra_contract_is_unavailable(self):
-        self.assertIsNone(self.calculate(self.current[:-1], self.previous, "202611W2"))
+    def test_missing_or_extra_contract_uses_common_set_and_discloses_coverage(self):
+        missing = self.calculate(self.current[:-1], self.previous, "202611W2")
+        self.assertEqual(missing["c_chg"], 10)
+        self.assertEqual(missing["p_chg"], -20)
+        self.assertEqual(missing["matched_count"], 2)
+        self.assertEqual(missing["current_count"], 2)
+        self.assertEqual(missing["previous_count"], 3)
+        self.assertEqual(missing["current_coverage"], 1.0)
+        self.assertAlmostEqual(missing["previous_coverage"], 2 / 3)
+        self.assertTrue(missing["partial"])
+
         extra = self.current + [{
             "contract_month": "202611W2", "contract_expiry_date": "2026-11-11",
             "strike": 27200, "type": "call", "open_interest": 0,
         }]
-        self.assertIsNone(self.calculate(extra, self.previous, "202611W2"))
+        added = self.calculate(extra, self.previous, "202611W2")
+        self.assertEqual(added["matched_count"], 3)
+        self.assertEqual(added["current_count"], 4)
+        self.assertEqual(added["previous_count"], 3)
+        self.assertAlmostEqual(added["current_coverage"], 0.75)
+        self.assertEqual(added["previous_coverage"], 1.0)
+        self.assertTrue(added["partial"])
 
     def test_duplicate_contract_identity_is_unavailable(self):
         duplicate = self.current + [dict(self.current[0])]
