@@ -1097,17 +1097,20 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _gm = fx["gamma"]
     _gm_src = _gm.get("wall_src") or MISSING
     _gm_flip_src = _gm.get("flip_src") or MISSING
-    _gm_date_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("date") is not None else MISSING
+    _gm_wall_date = _gm.get("wall_date") or _gm.get("date")
+    _gm_flip_date = _gm.get("flip_date") or _gm.get("date")
+    _gm_wall_date_src = f"{SRC_FX} ({_gm_src})" if _gm_wall_date is not None else MISSING
+    _gm_flip_date_src = f"{SRC_FX} ({_gm_flip_src})" if _gm_flip_date is not None else MISSING
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
-            ("資料日期", _gm['date'] or MISSING, _gm_date_src)],
+            ("資料日期", _gm_wall_date or MISSING, _gm_wall_date_src)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 14．Gamma Flip")
     A("")
     A(_tbl([("Gamma Flip 價位", _f2(_gm['flip']), _gm_flip_src),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
-            ("資料日期", _gm['date'] or MISSING, _gm_date_src)],
+            ("資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 14A．GEX 整體曝險與履約價分布")
@@ -1139,6 +1142,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                       "model": _gm.get("model"), "quality": _gm.get("quality"),
                       "net_gex_1pct": _gm.get("net_gex_1pct"),
                       "gross_gex_1pct": _gm.get("gross_gex_1pct"),
+                       "gamma_diagnostics": _gm.get("diagnostics"),
                       "levels": _gex_levels}, ensure_ascii=False, separators=(",", ":")))
         A("```")
     else:
