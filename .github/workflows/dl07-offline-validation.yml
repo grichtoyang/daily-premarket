@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: dl07-offline-validation-${{ github.ref }}
+  group: dl07-offline-validation-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
