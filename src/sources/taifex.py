@@ -899,6 +899,13 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         _previous_chain = _sd.get("chain", [])
         snapchg["chain_diagnostic"] = _options_chain_oi_change_diagnostic(chain, _previous_chain, prim_month)
         snapchg["chain"] = _options_chain_oi_change(chain, _previous_chain, prim_month)
+        if snapchg["chain"] is not None:
+            # These deltas are locally calculated from the current TAIFEX chain and
+            # the prior chain stored in the Worker snapshot bundle; they are not
+            # supplied by a dedicated OI-change endpoint.
+            snapchg["chain"]["snapshot_date"] = _sdate
+            snapchg["chain"]["current_date"] = t0
+            snapchg["chain"]["source"] = "Cloudflare Worker KV snapshot bundle"
         if snapchg["chain"] is None:
             _diag = snapchg["chain_diagnostic"]
             notes.append("選擇權 OI 日對日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; 僅本日/僅前日={}/{}; 本日/前日 OI 缺值={}/{}; 無效/重複識別={}/{}".format(
