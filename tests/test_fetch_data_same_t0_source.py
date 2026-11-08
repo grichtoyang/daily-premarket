@@ -92,6 +92,39 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("| Call OI 增減 (2026-11-05→2026-11-06) | +43,511 | TAIFEX Proxy snapshots (2026-11-05) |", merged)
         self.assertIn("| Call OI 增加最多的履約價 | 40,000 (+4,752) | TAIFEX Proxy snapshots (2026-11-05) |", merged)
 
+    def test_valid_oi_changes_refresh_stale_endpoint_source_on_same_t0(self):
+        old = """# DATA_REPORT_20261106
+- T0 交易日期：`2026-11-06`
+- 產出盤別：`全日`
+
+## 四、選擇權
+### 2．Call 總成交量、OI、OI 增減
+| 項目 | 數值 | 資料來源 |
+|---|---|---|
+| Call OI 增減（共同合約） (2026-11-05→2026-11-06) | +43,511 | 端點未提供 |
+### 3．Put 總成交量、OI、OI 增減
+| 項目 | 數值 | 資料來源 |
+|---|---|---|
+| Put OI 增減（共同合約） (2026-11-05→2026-11-06) | +16,839 | 端點未提供 |
+### 9．Call OI 增減集中區
+| 項目 | 履約價 (增減口數) | 資料來源 |
+|---|---|---|
+| Call OI 增加最多的履約價（共同合約） | 40,000 (+4,752) | 端點未提供 |
+| Call OI 減少最多的履約價（共同合約） | 46,500 (-1,958) | 端點未提供 |
+### 10．Put OI 增減集中區
+| 項目 | 履約價 (增減口數) | 資料來源 |
+|---|---|---|
+| Put OI 增加最多的履約價（共同合約） | 39,700 (+3,026) | 端點未提供 |
+| Put OI 減少最多的履約價（共同合約） | 40,500 (-429) | 端點未提供 |
+"""
+        new = old.replace("端點未提供", "TAIFEX Proxy snapshots (2026-11-05)")
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertNotIn("端點未提供", merged)
+        self.assertEqual(merged.count("TAIFEX Proxy snapshots (2026-11-05)"), 6)
+        self.assertIn("| Call OI 增減（共同合約） (2026-11-05→2026-11-06) | +43,511 | TAIFEX Proxy snapshots (2026-11-05) |", merged)
+        self.assertIn("| Put OI 增減（共同合約） (2026-11-05→2026-11-06) | +16,839 | TAIFEX Proxy snapshots (2026-11-05) |", merged)
+
+
     def test_unavailable_gamma_flip_does_not_carry_forward_old_date(self):
         old = """# DATA_REPORT_20261106
 - T0 交易日期：`2026-11-06`
