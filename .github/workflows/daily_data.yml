@@ -11,6 +11,11 @@ on:
         description: 'T0 交易日期 YYYY-MM-DD (空白=自動)'
         required: false
         default: ''
+      force_rewrite:
+        description: '明確覆蓋同 T0 已發布 DATA_REPORT（會重抓並更新同檔資料）'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -40,6 +45,12 @@ jobs:
           echo "PYTHONUNBUFFERED=1" >> $GITHUB_ENV
           TODAY=$(TZ=Asia/Taipei date +%F)
           echo "TODAY=$TODAY" >> $GITHUB_ENV
+          FORCE_REWRITE='${{ inputs.force_rewrite }}'
+          FORCE_ARGS=()
+          if [ "$FORCE_REWRITE" = "true" ]; then
+            FORCE_ARGS+=(--force-rewrite)
+            echo "[INFO] force_rewrite=true：明示覆蓋同 T0 DATA_REPORT"
+          fi
           # 排定班別釘死（用觸發的 cron 精確匹配，不看牆鐘；手動觸發則留空走自動判定）
           SCHED='${{ github.event.schedule }}'
           case "$SCHED" in
@@ -50,7 +61,7 @@ jobs:
           esac
           for i in 1 2; do
             LOG_FILE=$(mktemp)
-            if timeout 480 python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"} >"$LOG_FILE" 2>&1; then
+            if timeout 480 python src/fetch_data.py --date "$TODAY" --t0 "${{ inputs.t0 }}" ${SLOT:+--slot "$SLOT"} "${FORCE_ARGS[@]}" >"$LOG_FILE" 2>&1; then
               FETCH_RC=0
               cat "$LOG_FILE"
               echo "fetch attempt $i rc=0"
