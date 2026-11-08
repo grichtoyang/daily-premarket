@@ -4170,9 +4170,6 @@ export default {
                 gamma_wall:
                   gammaRaw.gamma_wall || null,
 
-                gamma_flip:
-                  gammaRaw.gamma_flip || null,
-
                 net_gex_1pct:
                   gammaRaw.net_gex_1pct ??
                   null,
