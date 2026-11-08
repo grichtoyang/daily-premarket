@@ -6,6 +6,10 @@ on:
       - phase2-p0-ui-fixes
     paths:
       - '.github/workflows/dl07-offline-validation.yml'
+      - 'workers/taifex-proxy_V1.5.js'
+      - 'tests/test_worker_gamma_flip.mjs'
+      - 'src/sources/taifex.py'
+      - 'src/fetch_data.py'
   workflow_dispatch:
 
 permissions:
