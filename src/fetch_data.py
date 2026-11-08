@@ -1096,9 +1096,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     _gm = fx["gamma"]
     _gm_src = _gm.get("wall_src") or MISSING
-    _gm_flip_src = _gm.get("flip_src") or MISSING
+    _gm_flip_src = (_gm.get("flip_src") or MISSING) if _gm.get("flip") is not None else MISSING
     _gm_wall_date = _gm.get("wall_date") or _gm.get("date")
-    _gm_flip_date = _gm.get("flip_date") or _gm.get("date")
+    _gm_flip_date = (_gm.get("flip_date") or _gm.get("date")) if _gm.get("flip") is not None else None
     _gm_wall_date_src = f"{SRC_FX} ({_gm_src})" if _gm_wall_date is not None else MISSING
     _gm_flip_date_src = f"{SRC_FX} ({_gm_flip_src})" if _gm_flip_date is not None else MISSING
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
@@ -1112,6 +1112,15 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
            ("項目", "數值", "資料來源")))
+    _flip_diag = _gm.get("flip_diagnostics") or {}
+    if _flip_diag:
+        A("")
+        A("**Gamma Flip 零交叉搜尋診斷**")
+        A(f"- 搜尋標的區間：{_f2(_flip_diag.get('search_lower_underlying'))}～{_f2(_flip_diag.get('search_upper_underlying'))}")
+        A(f"- 搜尋步長／計算次數：{_f2(_flip_diag.get('step'))}／{_flip_diag.get('evaluations', MISSING)}")
+        A(f"- 起點／終點 Net GEX：{_f2(_flip_diag.get('start_net_gex_1pct'))}／{_f2(_flip_diag.get('end_net_gex_1pct'))}")
+        A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_flip_diag.get('min_net_gex_1pct'))}／{_f2(_flip_diag.get('max_net_gex_1pct'))}")
+        A(f"- 正負號交叉次數：{_flip_diag.get('zero_crossings', MISSING)}")
     A("")
     A("### 14A．GEX 整體曝險與履約價分布")
     A("")
