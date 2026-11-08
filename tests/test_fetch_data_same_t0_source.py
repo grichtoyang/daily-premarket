@@ -1,9 +1,22 @@
 import unittest
 
-from src.fetch_data import merge_same_t0, _snapshot_chain_source_label
+from src.fetch_data import merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi
 
 
 class SameT0SourceAttributionTests(unittest.TestCase):
+    def test_raw_chain_oi_and_model_eligible_oi_are_reconciled_separately(self):
+        levels = [
+            {"call_oi": 12000, "put_oi": 3000},
+            {"call_oi": 31644, "put_oi": 4235},
+        ]
+        raw_call_oi = 43690
+        raw_put_oi = 7235
+        model_call_oi = _sum_gex_model_oi(levels, "call_oi")
+        model_put_oi = _sum_gex_model_oi(levels, "put_oi")
+        self.assertEqual(model_call_oi, 43644)
+        self.assertEqual(model_put_oi, raw_put_oi)
+        self.assertEqual(raw_call_oi - model_call_oi, 46)
+
     def test_same_t0_freezes_first_publish_time_but_refreshes_update_time(self):
         old = """# DATA_REPORT_20261106
 - 報告日期：`2026-11-08`
