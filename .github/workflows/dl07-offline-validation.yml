@@ -9,6 +9,8 @@ on:
       - 'workers/taifex-proxy_V1.5.js'
       - 'tests/test_worker_gamma_flip.mjs'
       - 'tests/test_taifex_gamma_fallback.py'
+      - 'scripts/v9_pro_builder.py'
+      - 'templates/v9-pro-react-template.html'
       - 'src/sources/taifex.py'
       - 'src/fetch_data.py'
   workflow_dispatch:
@@ -156,7 +158,11 @@ jobs:
           assert 'fallback = _xml_yield(xml_field)' in treasury
           assert '("20Y", "20", "20 Yr")' in fetch_data
           assert 'yields[key]["yield"]' in fetch_data
-          print("PASS: current required/optional parsing, percentage-point units and 20Y fallback contracts")
+          assert "'extendedFlip': (gex_payload.get('wide_range_flip') or {}).get('estimated_underlying')" in builder
+          template = Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
+          assert '延伸Flip ±15%' in template
+          assert '延伸 Gamma Flip（±15%）' in template
+          print("PASS: current required/optional parsing, percentage-point units, 20Y fallback and extended Gamma Flip display contracts")
           PY
 
       - name: Test Worker Gamma Flip exact-zero, expiry OI, expiry selection and wider scan diagnostics (null-safe)

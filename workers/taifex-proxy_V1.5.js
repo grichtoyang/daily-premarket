@@ -2601,37 +2601,65 @@ function summarizeExpiryOi(rows, type) {
   };
 }
 
-function scanGammaFlipRange(totalGexAt, lower, upper, step) {
+function scanGammaFlipRange(
+  totalGexAt,
+  lower,
+  upper,
+  step,
+  referenceUnderlying = (lower + upper) / 2
+) {
   let previousS = lower;
   let previousGex = totalGexAt(previousS);
-  let gammaFlip = null;
+  const crossings = [];
   const diagnostics = {
-    search_lower_underlying: lower, search_upper_underlying: upper, step,
-    evaluations: 1, start_net_gex_1pct: previousGex, end_net_gex_1pct: previousGex,
+    search_lower_underlying: lower,
+    search_upper_underlying: upper,
+    reference_underlying: referenceUnderlying,
+    step,
+    evaluations: 1,
+    start_net_gex_1pct: previousGex,
+    end_net_gex_1pct: previousGex,
     min_net_gex_1pct: Number.isFinite(previousGex) ? previousGex : null,
     max_net_gex_1pct: Number.isFinite(previousGex) ? previousGex : null,
-    zero_crossings: 0, found: false
+    zero_crossings: 0,
+    found: false
   };
+
   for (let S = lower + step; S <= upper + step / 2; S += step) {
     const currentGex = totalGexAt(S);
     diagnostics.evaluations += 1;
     diagnostics.end_net_gex_1pct = currentGex;
+
     if (Number.isFinite(currentGex)) {
       diagnostics.min_net_gex_1pct = diagnostics.min_net_gex_1pct === null
         ? currentGex : Math.min(diagnostics.min_net_gex_1pct, currentGex);
       diagnostics.max_net_gex_1pct = diagnostics.max_net_gex_1pct === null
         ? currentGex : Math.max(diagnostics.max_net_gex_1pct, currentGex);
     }
+
     const crossing = findGammaFlipBracket(previousS, previousGex, S, currentGex);
-    if (crossing) {
-      gammaFlip = crossing;
-      diagnostics.zero_crossings += 1;
-      diagnostics.found = true;
-      break;
+    if (crossing && !crossings.some(
+      item => Math.abs(item.estimated_underlying - crossing.estimated_underlying) < 1e-8
+    )) {
+      crossings.push(crossing);
     }
+
     previousS = S;
     previousGex = currentGex;
   }
+
+  crossings.sort(
+    (a, b) =>
+      Math.abs(a.estimated_underlying - referenceUnderlying) -
+      Math.abs(b.estimated_underlying - referenceUnderlying)
+  );
+  const gammaFlip = crossings[0] || null;
+  diagnostics.zero_crossings = crossings.length;
+  diagnostics.found = crossings.length > 0;
+  diagnostics.selected_crossing_distance = gammaFlip
+    ? Math.abs(gammaFlip.estimated_underlying - referenceUnderlying)
+    : null;
+
   return { gamma_flip: gammaFlip, diagnostics };
 }
 
@@ -3038,7 +3066,11 @@ function buildGammaForCommonExpiry(
 
   // Diagnostic only: the formal production Flip remains the existing +/-10% scan.
   const wideRange = scanGammaFlipRange(
-    totalGexAt, underlyingPrice * 0.85, underlyingPrice * 1.15, step
+    totalGexAt,
+    underlyingPrice * 0.85,
+    underlyingPrice * 1.15,
+    step,
+    underlyingPrice
   );
 
   return {

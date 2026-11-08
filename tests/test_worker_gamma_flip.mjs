@@ -127,7 +127,22 @@ const expiryRows = (contract_month, expiry, type = "call") => ({
   const result = scanGammaFlipRange(value => value - 105, 100, 110, 2);
   assert.equal(result.gamma_flip.estimated_underlying, 105);
   assert.equal(result.diagnostics.found, true);
-  assert.equal(result.diagnostics.evaluations, 4);
+  assert.equal(result.diagnostics.evaluations, 6);
+}
+
+// When multiple zero crossings exist, the extended scan selects the crossing
+// nearest to the current underlying price, while retaining the full count.
+{
+  const result = scanGammaFlipRange(
+    value => (value - 103.5) * (value - 108.5),
+    100,
+    112,
+    1,
+    110
+  );
+  assert.equal(result.diagnostics.zero_crossings, 2);
+  assert.equal(result.gamma_flip.estimated_underlying, 108.5);
+  assert.equal(result.diagnostics.selected_crossing_distance, 1.5);
 }
 
 // Same-day common expiry is recorded but rejected; next future common expiry wins.
