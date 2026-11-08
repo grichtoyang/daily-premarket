@@ -731,8 +731,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("成交量", _fi(n["vol"]), "口", _source_if_available(n["vol"], SRC_FX)),
             ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}", "點",
              _source_if_available(_diff2(n["high"], n["low"]), _nvia)),
-            ("結算價", "不適用（夜盤不公布）", "點", "TAIFEX 制度：僅日盤公告"),
-            ("未平倉量", "不適用（夜盤不公布）", "口", "TAIFEX 制度：僅日盤公告")],
+            ],
            ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 3．法人台指期多空未平倉部位")
