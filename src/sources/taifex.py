@@ -199,11 +199,23 @@ def _gamma_proxy_fallback(fetch, dates: list[str]) -> dict:
     payload = None
     wall = flip = None
     wall_date = flip_date = None
+    attempts = []
     for day in dates:
         candidate = fetch(day)
         gamma = ((((candidate or {}).get("data") or {}).get("gamma")) or {})
         candidate_wall = gamma.get("gamma_wall_proxy")
         candidate_flip = gamma.get("gamma_flip_proxy")
+        fetch_error = _LAST_FETCH_ERRORS.get("options-market-structure-compact") if candidate is None else None
+        attempts.append({
+            "requested_date": day,
+            "response": "available" if candidate is not None else "unavailable",
+            "response_date": candidate.get("date") if isinstance(candidate, dict) else None,
+            "gamma_status": gamma.get("status"),
+            "gamma_wall_proxy": candidate_wall,
+            "gamma_flip_proxy": candidate_flip,
+            "error_code": (fetch_error or {}).get("error_code"),
+            "error": (fetch_error or {}).get("error"),
+        })
         if wall is None and candidate_wall is not None:
             wall, wall_date = candidate_wall, day
         if flip is None and candidate_flip is not None:
@@ -215,7 +227,7 @@ def _gamma_proxy_fallback(fetch, dates: list[str]) -> dict:
 
     if payload is None:
         return {"payload": None, "wall": None, "wall_date": None,
-                "flip": None, "flip_date": None}
+                "flip": None, "flip_date": None, "attempts": attempts}
 
     merged = dict(payload)
     data = dict(merged.get("data") or {})
@@ -229,7 +241,7 @@ def _gamma_proxy_fallback(fetch, dates: list[str]) -> dict:
     data["gamma"] = gamma
     merged["data"] = data
     return {"payload": merged, "wall": wall, "wall_date": wall_date,
-            "flip": flip, "flip_date": flip_date}
+            "flip": flip, "flip_date": flip_date, "attempts": attempts}
 
 
 def _complete_sum(values) -> int | float | None:
@@ -638,6 +650,15 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _gamma_proxy = _gamma_proxy_fallback(
         lambda _d: _get("options-market-structure-compact", _d),
         _prev_dates(t0, 2))
+    if _gamma_proxy["flip"] is None:
+        _proxy_diag = []
+        for _attempt in _gamma_proxy.get("attempts", []):
+            _proxy_diag.append(
+                "{}: response={}, response_date={}, status={}, wall={}, flip={}, error={}".format(
+                    _attempt["requested_date"], _attempt["response"], _attempt["response_date"],
+                    _attempt["gamma_status"], _attempt["gamma_wall_proxy"],
+                    _attempt["gamma_flip_proxy"], _attempt["error_code"] or _attempt["error"] or "none"))
+        notes.append("Gamma Flip Proxy 查詢診斷：" + "；".join(_proxy_diag))
     c_pay = _gamma_proxy["payload"]
     c_date = next((d for d in (_gamma_proxy["wall_date"], _gamma_proxy["flip_date"]) if d), None)
     P["options-gamma-levels"] = g_pay
