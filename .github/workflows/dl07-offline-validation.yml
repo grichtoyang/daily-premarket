@@ -41,23 +41,58 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify isolated test workflow has no publishing permissions or side effects
+      - name: Verify workflow isolation, branch guards and deployment boundaries
         run: |
           python3 <<'PY'
           from pathlib import Path
           import re
 
-          workflow = Path(".github/workflows/dl07-offline-validation.yml").read_text(encoding="utf-8")
-          dl06 = Path(".github/workflows/dl06-retry-tests.yml").read_text(encoding="utf-8")
-          assert "permissions:\n  contents: read" in workflow
-          assert not re.search(r"(?m)^ *contents: *write *$", workflow)
-          assert not re.search(r"(?m)^ *uses: *actions/deploy-pages@", workflow)
-          assert not re.search(r"(?m)^ *git +(add|commit|push)( |$)", workflow)
-          assert "permissions:\n  contents: read" in dl06
+          dl07_path = Path(".github/workflows/dl07-offline-validation.yml")
+          dl06_path = Path(".github/workflows/dl06-retry-tests.yml")
+          dashboard_path = Path(".github/workflows/daily-premarket-v9-pro.yml")
+          data_path = Path(".github/workflows/daily_data.yml")
+          legacy_p0_integration = Path(".github/workflows/test-data-report-margin-ratio.yml")
+
+          dl07 = dl07_path.read_text(encoding="utf-8")
+          dl06 = dl06_path.read_text(encoding="utf-8")
+          dashboard = dashboard_path.read_text(encoding="utf-8")
+          daily_data = data_path.read_text(encoding="utf-8")
+
+          # The dedicated validation workflows must be read-only and non-publishing.
+          for name, workflow in (("DL-07", dl07), ("DL-06", dl06)):
+              assert "permissions:\\n  contents: read" in workflow, f"{name} must have contents:read"
+              assert not re.search(r"(?m)^ *contents: *write *$", workflow), f"{name} has write permission"
+              assert not re.search(r"(?m)^ *uses: *actions/deploy-pages@", workflow), f"{name} deploys Pages"
+              assert not re.search(r"(?m)^ *git +(add|commit|push)( |$)", workflow), f"{name} mutates git"
           assert "TemporaryDirectory" in dl06 and "fake_python" in dl06
-          assert "actions/deploy-pages@" not in dl06
-          assert not re.search(r"(?m)^ *git +(add|commit|push)( |$)", dl06)
-          print("PASS: DL-07 and DL-06 validation workflows are read-only and non-publishing")
+          assert "workflow_dispatch:" in dl07
+          assert "ref: ${{ github.sha }}" in dl07
+
+          # Current Dashboard workflow: checkout is pinned to triggering SHA;
+          # generated commits are explicitly limited to the two P0 working branches.
+          assert "ref: ${{ github.sha }}" in dashboard
+          assert "if: github.ref == 'refs/heads/phase2-p0-data-quality' || github.ref == 'refs/heads/phase2-p0-ui-fixes'" in dashboard
+          assert 'if [ "${GITHUB_REF_NAME}" != "phase2-p0-data-quality" ] && [ "${GITHUB_REF_NAME}" != "phase2-p0-ui-fixes" ]; then' in dashboard
+          assert 'git push origin "HEAD:${GITHUB_REF_NAME}"' in dashboard
+          assert "git add dashboards/" in dashboard
+          assert "git add data_reports" not in dashboard
+
+          # The Pages deploy job is limited to the repository default branch or P0 base;
+          # phase2-p0-ui-fixes is deliberately not in that deploy condition.
+          deploy_gate = "if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/phase2-p0-data-quality'"
+          assert deploy_gate in dashboard
+          assert "uses: actions/deploy-pages@v4" in dashboard
+          assert "phase2-p0-ui-fixes" not in deploy_gate
+
+          # The old P0 integration workflow referenced by the legacy unit test is absent.
+          # The production DATA workflow is write-capable, so this validation must not invoke it.
+          assert not legacy_p0_integration.exists()
+          assert "permissions:\\n  contents: write" in daily_data
+          assert "git push" in daily_data
+          assert "daily_data.yml" not in dl07
+          print("PASS: DL-06/DL-07 are read-only; Dashboard branch/commit/deploy guards match current workflow")
+          print("PASS: production daily_data workflow is identified as write-capable and excluded")
+          print("NOT TESTED: legacy P0 integration workflow (referenced file is absent)")
           PY
 
       - name: Run offline unit tests (exclude live API probe and stale workflow-reference test)
