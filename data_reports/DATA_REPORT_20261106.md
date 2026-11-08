@@ -3,7 +3,7 @@
 - 報告日期：`2026-11-08`
 - T0 交易日期：`2026-11-06`
 - 資料產出時間：`2026-11-08 10:38:08`
-- 本次更新開始時間：`2026-11-08 11:18:04`
+- 本次更新開始時間：`2026-11-08 11:52:39`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -94,8 +94,8 @@
 - 上櫃來源：TPEx S47（上櫃）；增減來源：TPEx S47（上櫃）
 - 借券賣出餘額完整性：`complete`
 - 借券賣出增減完整性：`complete`
-- TWSE TWT93U（上市）：資料日期：`20261106`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T11:18:28+08:00`；狀態：`available_after_schedule`
-- TPEx S47（上櫃）：資料日期：`20261106`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T11:18:30+08:00`；狀態：`available_after_schedule`
+- TWSE TWT93U（上市）：資料日期：`20261106`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T11:52:59+08:00`；狀態：`available_after_schedule`
+- TPEx S47（上櫃）：資料日期：`20261106`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T11:52:59+08:00`；狀態：`available_after_schedule`
 
 ### 6. 市場成交結構
 
@@ -274,8 +274,8 @@
 | 漲跌幅 | +1.63 | % | TAIFEX Proxy |
 | 成交量 | 69,882 | 口 | TAIFEX Proxy |
 | 夜盤高點及低點 | 40,845 / 39,129 | 點 | TAIFEX Proxy |
-| 結算價 | unavailable | 點 | unavailable |
-| 未平倉量 | unavailable | 口 | unavailable |
+| 結算價 | 不適用（夜盤不公布） | 點 | TAIFEX 制度：僅日盤公告 |
+| 未平倉量 | 不適用（夜盤不公布） | 口 | TAIFEX 制度：僅日盤公告 |
 
 ### 3．法人台指期多空未平倉部位
 
@@ -638,8 +638,8 @@
 - 資料日期：2026-11-06；報告產製時間：2026-11-08 10:38:08；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 部分取得欄位 (0)：無
-- 註記：同 T0 穩定：33 格新舊皆有值，沿用前版（不再靜默覆寫）
-- 未取得欄位 (4)：futures.futures.night.settle, futures.futures.night.oi, futures.gamma_flip, options.chain_oi_change
+- 註記：同 T0 穩定：34 格新舊皆有值，沿用前版（不再靜默覆寫）
+- 未取得欄位 (2)：futures.gamma_flip, options.chain_oi_change
 
 ## 五、資料來源、時間與完整性
 
@@ -664,6 +664,10 @@
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
 - 註記：上市市場維持率為當日暫估，以 TWSE 自建計算為主；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）。Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS。Blave 不可用不影響 DATA_REPORT 產出。
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
+- TAIFEX 註記：futures-price-after-hours 日期 2026-11-06 非今日 2026-11-09，視為無新節次，不採用
+- TAIFEX 註記：法人交易量變化無昨日交易端點，標 unavailable
+- TAIFEX 註記：Gamma Flip 無資料（原始端點與 Proxy 備援皆未取得），標 unavailable
+- TAIFEX 註記：選擇權 OI 日對日變化 unavailable：reason=contract_set_mismatch; 主力=202611F1; 本日/前日有效合約=452/400; 僅本日/僅前日=52/0; 本日/前日 OI 缺值=0/0; 無效/重複識別=0/0
 - 本報告僅整理資料，不提供交易判斷。
 
 ## 六、期現選方向對照
