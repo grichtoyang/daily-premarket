@@ -4105,12 +4105,13 @@ export default {
         ------------------------- */
 
         let gammaExpiry = null;
+        let expirySelection = null;
 
         let gamma = {
           status: "unavailable",
           reason:
             deltaResult.found
-              ? "No common Chain/Delta expiry"
+              ? "No future common Chain/Delta expiry with positive time to expiry"
               : (
                   deltaResult.reason ||
                   "TAIFEX Delta unavailable"
@@ -4118,13 +4119,12 @@ export default {
         };
 
         if (deltaResult.found) {
-
-          gammaExpiry =
-            findCommonExpiry(
-              chainResult.rows,
-              deltaResult.rows,
-              queryDate
-            );
+          expirySelection = findCommonExpiryWithDiagnostics(
+            chainResult.rows,
+            deltaResult.rows,
+            queryDate
+          );
+          gammaExpiry = expirySelection.selected;
 
           if (gammaExpiry) {
 
@@ -4217,7 +4217,19 @@ export default {
 
                 gamma_diagnostics:
                   gammaRaw.gamma_diagnostics ||
-                  null
+                  null,
+
+                gamma_flip:
+                  gammaRaw.gamma_flip || null,
+
+                gamma_flip_diagnostics:
+                  gammaRaw.gamma_flip_diagnostics || null,
+
+                gamma_flip_wide_range:
+                  gammaRaw.gamma_flip_wide_range || null,
+
+                gamma_flip_wide_range_diagnostics:
+                  gammaRaw.gamma_flip_wide_range_diagnostics || null
               };
 
             } else {
@@ -4248,10 +4260,25 @@ export default {
 
                 gamma_diagnostics:
                   gammaRaw.gamma_diagnostics ||
-                  null
+                  null,
+
+                gamma_flip:
+                  gammaRaw.gamma_flip || null,
+
+                gamma_flip_diagnostics:
+                  gammaRaw.gamma_flip_diagnostics || null,
+
+                gamma_flip_wide_range:
+                  gammaRaw.gamma_flip_wide_range || null,
+
+                gamma_flip_wide_range_diagnostics:
+                  gammaRaw.gamma_flip_wide_range_diagnostics || null
               };
             }
+          } else {
+            gamma.reason = expirySelection.diagnostics.selection_reason;
           }
+          gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
         }
 
         /* -------------------------
@@ -4371,6 +4398,18 @@ export default {
 
               put_oi:
                 gamma.put_oi ?? null,
+
+              gamma_flip_diagnostics:
+                gamma.gamma_flip_diagnostics || null,
+
+              gamma_flip_wide_range:
+                gamma.gamma_flip_wide_range || null,
+
+              gamma_flip_wide_range_diagnostics:
+                gamma.gamma_flip_wide_range_diagnostics || null,
+
+              expiry_selection_diagnostics:
+                gamma.expiry_selection_diagnostics || null,
 
               net_gex_proxy:
                 gamma.net_gex_1pct ??
