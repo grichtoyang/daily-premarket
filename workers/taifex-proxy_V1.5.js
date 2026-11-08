@@ -2849,6 +2849,18 @@ function buildGammaForCommonExpiry(
   let previousS = loS;
   let previousGex = totalGexAt(previousS);
   let gammaFlip = null;
+  const gammaFlipDiagnostics = {
+    search_lower_underlying: loS,
+    search_upper_underlying: hiS,
+    step: step,
+    evaluations: 1,
+    start_net_gex_1pct: previousGex,
+    end_net_gex_1pct: previousGex,
+    min_net_gex_1pct: Number.isFinite(previousGex) ? previousGex : null,
+    max_net_gex_1pct: Number.isFinite(previousGex) ? previousGex : null,
+    zero_crossings: 0,
+    found: false
+  };
 
   for (
     let S = loS + step;
@@ -2858,6 +2870,19 @@ function buildGammaForCommonExpiry(
 
     const currentGex =
       totalGexAt(S);
+    gammaFlipDiagnostics.evaluations += 1;
+    gammaFlipDiagnostics.end_net_gex_1pct = currentGex;
+
+    if (Number.isFinite(currentGex)) {
+      gammaFlipDiagnostics.min_net_gex_1pct =
+        gammaFlipDiagnostics.min_net_gex_1pct === null
+          ? currentGex
+          : Math.min(gammaFlipDiagnostics.min_net_gex_1pct, currentGex);
+      gammaFlipDiagnostics.max_net_gex_1pct =
+        gammaFlipDiagnostics.max_net_gex_1pct === null
+          ? currentGex
+          : Math.max(gammaFlipDiagnostics.max_net_gex_1pct, currentGex);
+    }
 
     if (
       Number.isFinite(previousGex) &&
@@ -2885,6 +2910,8 @@ function buildGammaForCommonExpiry(
         lower_net_gex_1pct: previousGex,
         upper_net_gex_1pct: currentGex
       };
+      gammaFlipDiagnostics.zero_crossings += 1;
+      gammaFlipDiagnostics.found = true;
 
       break;
     }
@@ -2929,6 +2956,7 @@ function buildGammaForCommonExpiry(
       gross_gex_1pct: gammaWall.gross_gex_1pct
     },
     gamma_flip: gammaFlip,
+    gamma_flip_diagnostics: gammaFlipDiagnostics,
     net_gex_1pct: netGexCurrent,
     gross_gex_1pct: grossGexCurrent,
     levels
@@ -4398,6 +4426,8 @@ export default {
                       gamma.gamma_wall || null,
                     gamma_flip:
                       gamma.gamma_flip || null,
+                    gamma_flip_diagnostics:
+                      gamma.gamma_flip_diagnostics || null,
                     net_gex_1pct:
                       gamma.net_gex_1pct ?? null,
                     gross_gex_1pct:
