@@ -2026,3 +2026,17 @@ P1 尚未開始。啟動前必須：
 - **CI 狀態：PENDING／尚未取得可驗證的 Actions run ID 與結果。** 因此新增測試尚未標記 PASS；不得推定 Workflow 已成功執行。
 - 本次未觸發正式 Fetch、未寫入正式 DATA_REPORT、未執行正式 `daily_data.yml`、未部署 Pages、未 merge。
 - DL-07 仍 **IN PROGRESS**。本項待獨立 Workflow CI 成功後才能標記 PASS；正式 API Fetch 與 Browser Desktop／Mobile 視覺稽核仍 **NOT TESTED**。
+
+## 2026-11-08｜DL-07 Fetch main 隔離成功路徑 CI 驗證完成
+
+> 本節取代前一節的 CI pending 狀態；保留前一節作為當時紀錄。
+
+- Actions Run ID：`42436125303`，[Run 詳細紀錄](https://github.com/grichtoyang/daily-premarket/actions/runs/42436125303)，Conclusion：**SUCCESS**。
+- Workflow：`.github/workflows/dl07-fetch-isolated-tests.yml`；Run head SHA：`aa4cba71b838bcf878de0cf3de53cd00736cfc0c`。
+- 產品分支 `phase2-p0-ui-fixes` 最新 HEAD 已回讀核對，與 Run head SHA 完全一致。
+- Job `fetch-main-isolated` 全部步驟 SUCCESS：checkout triggering commit、Python／dependencies、指定測試、`data_reports/` 與 `dashboards/` 未變更檢查。
+- Job log 明確顯示 `test_main_writes_valid_report_in_isolated_output_dir ... ok`、`Ran 1 test`、`OK`。
+- **DL-07 Fetch main 隔離成功路徑：PASS**。測試執行真正的 `fetch_data.main()`，但以 mock `build()` 阻斷外部 API，並寫入 TemporaryDirectory；只證明隔離環境的成功寫檔路徑及報告驗證，不代表正式 API Fetch／正式 DATA_REPORT 產製通過。
+- 本次未執行正式 Fetch、未寫入正式 DATA_REPORT、未執行正式 `daily_data.yml`、未部署 Pages、未 merge；`src/fetch_data.py` 未修改。
+- DL-07 整體仍 **IN PROGRESS**。正式市場 API Fetch／正式 workflow 及 Browser Desktop／Mobile 視覺稽核仍 **NOT TESTED**；不得標示 DL-07 整體 PASS／CLOSE。
+- 下一步只進入 DL-07 尚未完成的 Browser Desktop／Mobile 視覺驗收規劃／執行；不可將此隔離測試擴大解讀為正式資料流程驗收。
