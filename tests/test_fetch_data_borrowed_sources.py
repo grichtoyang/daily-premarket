@@ -153,6 +153,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             self.assertIn(f"2026-11-06T00:{minute}:00+00:00", table)
 
 
+    def test_report_includes_taifex_diagnostic_notes(self):
+        source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        self.assertIn('for n in fx.get("notes", []):', source)
+        self.assertIn('A(f"- TAIFEX 註記：{n}")', source)
+
     def test_futures_night_proxy_fields_only_show_source_when_available(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('("成交量", _fi(n["vol"]), "口", _source_if_available(n["vol"], SRC_FX))', source)
