@@ -180,15 +180,17 @@ def calculate(t0, margin_payload, price_payload, historical_prices=None):
 
     if financed == 0:
         raise ValueError("no positive listed financing balance rows")
-    if missing:
-        raise ValueError(f"listed securities missing T0 close: {missing}")
+    priced = financed - len(missing)
+    coverage = priced / financed if financed else 0.0
     ratio = collateral / financing_amount * 100
-    return {
-        "ok": True, "date": t0, "ratio": round(ratio, 4),
+    common = {
+        "date": t0,
         "numerator_collateral_value_ntd": round(collateral, 2),
         "denominator_financing_amount_ntd": round(financing_amount, 2),
-        "financed_security_count": financed, "priced_security_count": financed,
-        "coverage": 1.0, "market": "listed",
+        "financed_security_count": financed, "priced_security_count": priced,
+        "coverage": round(coverage, 6), "market": "listed",
+        "missing_price_security_count": len(missing),
+        "missing_price_security_codes": missing,
         "stale_price_security_count": len(stale_price_codes),
         "stale_price_security_codes": stale_price_codes,
         "price_date_min": min(price_dates.values()) if price_dates else None,
@@ -196,6 +198,17 @@ def calculate(t0, margin_payload, price_payload, historical_prices=None):
         "method": "TWSE listed financing balance lots x latest available close on/before T0 / TWSE listed financing amount",
         "classification": "listed_market_estimate_not_individual_account_ratio",
     }
+    if missing:
+        # Keep a diagnostic partial estimate, but never mark it usable as the
+        # official self-built ratio. The caller's 100% coverage gate forces
+        # Blave/manual fallback for the published value.
+        return {
+            **common, "ok": False, "partial": True,
+            "ratio": round(ratio, 4),
+            "reason": f"partial calculation only; missing close for {len(missing)} listed securities: {missing}",
+        }
+    return {**common, "ok": True, "partial": False,
+            "ratio": round(ratio, 4)}
 
 
 def get(t0, timeout=6):
