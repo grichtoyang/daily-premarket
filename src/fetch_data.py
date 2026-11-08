@@ -162,28 +162,31 @@ def _tbl(rows: list[tuple], headers: tuple) -> str:
 # 維持率缺值必須維持 unavailable，不得沿用前一交易日數值。
 # 以下純函式只在 protect=True 時套用；protect=False（無凍結對象）完全不動。
 
-_HEADER_FIELDS = ("報告日期", "資料產出時間", "產出者", "排定班別")
+_HEADER_FIELDS = ("報告日期", "資料產出時間", "首次資料產出時間", "產出者", "排定班別")
 
 
 def _freeze_header(old_text: str, new_text: str) -> str:
-    """protect 模式：標頭四行（報告日期／資料產出時間／產出者／排定班別）沿用前版值。
+    """protect 模式：首次產出時間與報告識別欄位沿用前版值；本次更新時間另行刷新。
 
-    只改「本次文本已存在且前版有值」的行；前版缺行不補行（補行屬改寫）。
+    舊版「資料產出時間」與新版「首次資料產出時間」視為同一欄位，
+    只改本次文本已存在且前版有值的行；前版缺行不補行。
     """
     import re as _r
-    _pat = _r.compile(r"^(\s*-\s*(?:%s)：)(.*?)(\s*)$" % "|".join(_HEADER_FIELDS))
+    _pat = _r.compile(r"^(\s*-\s*)(報告日期|資料產出時間|首次資料產出時間|產出者|排定班別)(：)(.*?)(\s*)$")
+    def _key(label: str) -> str:
+        return "首次資料產出時間" if label in ("資料產出時間", "首次資料產出時間") else label
     old_vals: dict = {}
     for ln in old_text.split("\n"):
         m = _pat.match(ln)
-        if m and m.group(2).strip():
-            old_vals.setdefault(m.group(1), m.group(2))
+        if m and m.group(4).strip():
+            old_vals.setdefault(_key(m.group(2)), m.group(4))
     if not old_vals:
         return new_text
     out: list[str] = []
     for ln in new_text.split("\n"):
         m = _pat.match(ln)
-        if m and old_vals.get(m.group(1)):
-            ln = m.group(1) + old_vals[m.group(1)] + m.group(3)
+        if m and old_vals.get(_key(m.group(2))):
+            ln = m.group(1) + m.group(2) + m.group(3) + old_vals[_key(m.group(2))] + m.group(5)
         out.append(ln)
     return "\n".join(out)
 
@@ -541,8 +544,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A(f"- 報告日期：`{report_date}`")
     A(f"- T0 交易日期：`{t0}`")
-    A(f"- 資料產出時間：`{now}`")
-    # 同 T0 重跑時「資料產出時間」保留首次發布時間；此欄記錄本次重新建構開始時間。
+    A(f"- 首次資料產出時間：`{now}`")
+    # 同 T0 重跑時「首次資料產出時間」保留首次發布時間；此欄記錄本次重新建構開始時間。
     A(f"- 本次更新開始時間：`{now}`")
     A("- 時區：`Asia/Taipei`")
     A(f"- 產出盤別：`{session}`")
@@ -909,7 +912,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A(_tbl([("交易日期", fx['trade_date'], SRC_FX),
             ("到期月份／到期日", _ot['expiry'] or MISSING, SRC_FX if _ot['expiry'] is not None else MISSING),
-            ("報告產製時間", now, "本機"),
+            ("本次報告產製時間", now, "本機"),
             ("日盤／夜盤標記", "日盤收盤後資料", SRC_FX)],
            ("項目", "數值", "資料來源")))
     A("")
@@ -1250,7 +1253,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 16．資料來源、時間、時區與狀態")
     A("")
     A("- 資料來源：TAIFEX 經 Cloudflare Worker Proxy")
-    A(f"- 資料日期：{t0}；報告產製時間：{now}；時區：`Asia/Taipei`")
+    A(f"- 資料日期：{t0}；本次報告產製時間：{now}；時區：`Asia/Taipei`")
     A("- 日盤／夜盤標記：日盤收盤後 + 夜盤盤後")
     _snap = fx.get("snapchg", {})
     _snap_unav = []
