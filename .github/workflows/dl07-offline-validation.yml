@@ -158,7 +158,7 @@ jobs:
           print("PASS: current required/optional parsing, percentage-point units and 20Y fallback contracts")
           PY
 
-      - name: Test Worker Gamma Flip exact-zero and expiry OI diagnostics (null-safe)
+      - name: Test Worker Gamma Flip exact-zero, expiry OI, expiry selection and wider scan diagnostics (null-safe)
         run: node tests/test_worker_gamma_flip.mjs
 
       - name: Run V9 Pro 17F offline self-tests
