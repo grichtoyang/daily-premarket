@@ -506,7 +506,9 @@ class DataReportSemanticRepairTests(unittest.TestCase):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertGreaterEqual(source.count('("項目", "數值", "單位", "資料來源")'), 2)
         self.assertIn('("成交量", _fi(n["vol"]), "口"', source)
-        self.assertIn('("未平倉量", "不適用（夜盤不公布）", "口"', source)
+        night_section = source[source.index('A("### 2．台指期近月夜盤行情")'):source.index('A("### 3．法人台指期多空未平倉部位")')]
+        self.assertNotIn('("未平倉量",', night_section)
+        self.assertNotIn('("結算價",', night_section)
 
     def test_builder_rejects_wrong_futures_table_header(self):
         from scripts.v9_pro_builder import _extract_section_table_value
