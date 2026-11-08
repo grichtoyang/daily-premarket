@@ -193,6 +193,25 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("| 收盤價 | 40,298 | 點 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
         self.assertIn("| 成交量 | 69,882 | 口 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
 
+    def test_valid_new_same_t0_night_quotes_replace_old_values(self):
+        old = """# DATA_REPORT_20261106
+- T0 交易日期：`2026-11-06`
+- 產出盤別：`全日`
+
+## 三、期貨
+### 2．台指期近月夜盤行情
+| 項目 | 數值 | 單位 | 資料來源 |
+|---|---|---|---|
+| 收盤價 | 40,298 | 點 | TAIFEX Proxy |
+| 成交量 | 69,882 | 口 | TAIFEX Proxy |
+"""
+        new = old.replace("40,298 | 點 | TAIFEX Proxy", "40,310 | 點 | TAIFEX Proxy")
+        new = new.replace("69,882 | 口 | TAIFEX Proxy", "70,120 | 口 | TAIFEX Proxy")
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertIn("| 收盤價 | 40,310 | 點 | TAIFEX Proxy |", merged)
+        self.assertIn("| 成交量 | 70,120 | 口 | TAIFEX Proxy |", merged)
+        self.assertNotIn("沿用前版", merged)
+
     def test_oi_snapshot_source_label_uses_chain_provenance_not_endpoint(self):
         chain = {"c_chg": 43511, "p_chg": 16839, "snapshot_date": "2026-11-05"}
         self.assertEqual(
