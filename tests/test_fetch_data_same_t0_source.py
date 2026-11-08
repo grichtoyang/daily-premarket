@@ -125,7 +125,7 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("| Put OI 增減（共同合約） (2026-11-05→2026-11-06) | +16,839 | TAIFEX Proxy snapshots (2026-11-05) |", merged)
 
 
-    def test_unavailable_gamma_flip_does_not_carry_forward_old_date(self):
+    def test_unavailable_gamma_flip_keeps_current_gex_data_date(self):
         old = """# DATA_REPORT_20261106
 - T0 交易日期：`2026-11-06`
 - 產出盤別：`全日`
@@ -148,12 +148,12 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 |---|---|---|
 | Gamma Flip 價位 | unavailable | unavailable |
 | 對應到期月份 | 202611F1 | TAIFEX Proxy |
-| 資料日期 | unavailable | unavailable |
+| 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |
 """
         merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
         self.assertIn("| Gamma Flip 價位 | unavailable | unavailable |", merged)
         self.assertNotIn("41,102.53", merged)
-        self.assertIn("| 資料日期 | unavailable | unavailable |", merged)
+        self.assertIn("| 資料日期 | 2026-11-06 | TAIFEX Proxy (options-gamma-levels) |", merged)
         self.assertNotIn("2026-11-05 | TAIFEX Proxy", merged)
         self.assertNotIn("沿用前版（原來源：TAIFEX Proxy (options-gamma-levels)）", merged)
 
