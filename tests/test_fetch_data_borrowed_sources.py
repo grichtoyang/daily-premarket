@@ -164,6 +164,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         night_section = source[source.index('A("### 2．台指期近月夜盤行情")'):source.index('A("### 3．法人台指期多空未平倉部位")')]
         self.assertNotIn('("結算價",', night_section)
         self.assertNotIn('("未平倉量",', night_section)
+        taifex_source = (ROOT / "src/sources/taifex.py").read_text(encoding="utf-8")
+        self.assertNotIn('"oi": ah.get("open_interest")', taifex_source)
+        self.assertNotIn('"settle": ah.get("settlement_price")', taifex_source)
+        self.assertNotIn("僅成交量/OI/結算價", taifex_source)
+        self.assertIn("夜盤結算價與 OI 不列入資料模型", taifex_source)
         self.assertIn('_nvia = "TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF', source)
         self.assertIn('_source_if_available(_diff2(n["high"], n["low"]), _nvia)', source)
         self.assertNotIn('("成交量", _fi(n["vol"]), SRC_FX)', source)
