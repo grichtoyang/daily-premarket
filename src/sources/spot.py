@@ -39,6 +39,11 @@ def _complete_market_sum(listed, otc):
     return listed + otc, "complete"
 
 
+def _shares_to_lots(value):
+    """Convert source share counts to thousand-share lots without rounding."""
+    return value / 1000 if value is not None else None
+
+
 def _partial_coverage_note(field: str) -> str:
     return f"[partial] {field}僅取得單一市場；不提供不完整的合計數值"
 
@@ -351,11 +356,11 @@ def build(t0: str) -> dict:
     tw72 = spot_raw.twse_twt72u_sbl(roc)
     tw93 = spot_raw.twse_twt93u_sbl(roc)
     tp_sbl = spot_raw.tpex_sbl(roc)
-    sbl_bal = tw72["bal"] / 1000 if tw72["bal"] is not None else None
-    _tw_sale = tw93["sale_bal"] / 1000 if tw93["sale_bal"] is not None else None
-    _tp_sale = tp_sbl["sale_bal"] / 1000 if tp_sbl["sale_bal"] is not None else None
-    _tw_schg = tw93["sale_chg"] / 1000 if tw93["sale_chg"] is not None else None
-    _tp_schg = tp_sbl["sale_chg"] / 1000 if tp_sbl["sale_chg"] is not None else None
+    sbl_bal = _shares_to_lots(tw72["bal"])
+    _tw_sale = _shares_to_lots(tw93["sale_bal"])
+    _tp_sale = _shares_to_lots(tp_sbl["sale_bal"])
+    _tw_schg = _shares_to_lots(tw93["sale_chg"])
+    _tp_schg = _shares_to_lots(tp_sbl["sale_chg"])
     _sale, _sale_status = _complete_market_sum(_tw_sale, _tp_sale)
     _schg, _schg_status = _complete_market_sum(_tw_schg, _tp_schg)
     sbl = {
