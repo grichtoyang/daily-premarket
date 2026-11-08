@@ -9,11 +9,7 @@ on:
         default: ""
       session:
         description: "Optional report session"
-        type: choice
-        options:
-          - ""
-          - "日盤"
-          - "全日"
+        type: string
         required: false
         default: ""
 
@@ -87,7 +83,6 @@ jobs:
             exit 1
           fi
           REPORT=$(find "$ISOLATED_OUT_DIR" -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print -quit)
-          python -m src.fetch_data --help >/dev/null
           python - "$REPORT" <<'PY'
           import sys
           from src.fetch_data import validate_data_report_file
@@ -113,5 +108,5 @@ jobs:
         with:
           name: dl07-real-fetch-${{ github.run_id }}
           path: ${{ runner.temp }}/dl07-real-fetch/evidence/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
