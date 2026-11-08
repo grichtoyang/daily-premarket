@@ -166,6 +166,25 @@ def _valid_gex_levels(levels) -> list[dict]:
     return sorted(valid, key=lambda item: item["strike"])
 
 
+def _gamma_expiry_metadata(gdata: dict | None, primary_month: str | None) -> dict:
+    """Preserve the exact expiry and raw OI totals used by the Worker GEX model."""
+    data = gdata if isinstance(gdata, dict) else {}
+    call_oi = data.get("call_oi") if isinstance(data.get("call_oi"), dict) else {}
+    put_oi = data.get("put_oi") if isinstance(data.get("put_oi"), dict) else {}
+    gex_month = data.get("contract_month")
+    return {
+        "primary_expiry_month": primary_month,
+        "gex_contract_month": gex_month,
+        "gex_expiry_date": data.get("expiry_date"),
+        "gex_call_oi": call_oi,
+        "gex_put_oi": put_oi,
+        "gex_expiry_matches_primary": (
+            None if not gex_month or not primary_month
+            else gex_month == primary_month
+        ),
+    }
+
+
 def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
                   wall, flip, source: str, gex_model_available: bool = False) -> tuple[list[str], list[str]]:
     """Resolve Gamma availability and provenance notes after primary/proxy fallback."""
@@ -896,7 +915,17 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _gex_levels = _valid_gex_levels(gdata.get("levels")) if g_pay is not None else []
     _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
     _gross_gex = gdata.get("gross_gex_1pct") if g_pay is not None else None
-    gamma = {"wall": wall, "flip": flip,
+    _gamma_expiry = _gamma_expiry_metadata(gdata if g_pay is not None else {}, prim_month)
+    if _gamma_expiry["gex_expiry_matches_primary"] is False:
+        notes.append(
+            "Gamma GEX 實際使用到期月份 {}（到期日 {}）與 Options Key Levels 主到期月份 {} 不同；"
+            "GEX 數值應以實際使用到期月份為準".format(
+                _gamma_expiry["gex_contract_month"],
+                _gamma_expiry["gex_expiry_date"] or "未提供",
+                prim_month
+            )
+        )
+    gamma = {"wall": wall, "flip": flip, **_gamma_expiry,
              "model": gdata.get("model") if g_pay is not None else None,
              "sign_convention_note": (
                  "Call 正／Put 負為模型假設；Aggregate OI 不揭露 Dealer 實際淨部位，"
