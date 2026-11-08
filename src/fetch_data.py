@@ -1275,6 +1275,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A(f"- 註記：{_asia_note}")
     for n in s["notes"]:
         A(f"- 註記：{n}")
+    for n in fx.get("notes", []):
+        A(f"- TAIFEX 註記：{n}")
     A("- 本報告僅整理資料，不提供交易判斷。")
     A("")
     A("## 六、期現選方向對照")
