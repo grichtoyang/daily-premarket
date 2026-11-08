@@ -13,6 +13,9 @@ on:
       - 'templates/v9-pro-react-template.html'
       - 'src/sources/taifex.py'
       - 'src/fetch_data.py'
+      - 'tests/test_fetch_data_same_t0_source.py'
+      - 'tests/test_fetch_data_borrowed_sources.py'
+      - 'tests/test_spot_borrowed_semantics.py'
   workflow_dispatch:
 
 permissions:
