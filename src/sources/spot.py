@@ -123,6 +123,18 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
                        "reason": f"{type(exc).__name__}: {exc}"}
     self_ratio = _valid_ratio(self_result, t0)
     self_reason = (self_result or {}).get("reason", "invalid result/date/coverage")
+    self_partial_note = ""
+    if isinstance(self_result, dict) and self_result.get("partial"):
+        partial_ratio = self_result.get("ratio")
+        coverage = self_result.get("coverage")
+        priced = self_result.get("priced_security_count")
+        financed = self_result.get("financed_security_count")
+        missing_codes = self_result.get("missing_price_security_codes") or []
+        self_partial_note = (
+            f"TWSE 自建部分計算僅供診斷（部分估算 {partial_ratio}%；"
+            f"價格覆蓋率 {coverage}；已估值 {priced}/{financed} 檔；"
+            f"缺價 {len(missing_codes)} 檔：{missing_codes}），不得作為正式維持率。"
+        )
 
     try:
         blave_result = blave_maint_ratio.get(t0, timeout=BLAVE_RATIO_TIMEOUT)
@@ -163,7 +175,10 @@ def _get_margin_ratio(t0: str, env=None) -> dict:
         return {
             "ratio": round(blave_ratio, 4),
             "source": f"Blave 上市市場融資維持率估算（當日暫估；資料日期：{t0}；自建計算備援）",
-            "note": f"上市市場維持率為當日暫估；TWSE 自建計算未成功（{self_reason}）；改用 Blave 同 T0 數值（{t0}）。",
+            "note": (
+                f"上市市場維持率為當日暫估；{self_partial_note}"
+                f"TWSE 自建計算未成功（{self_reason}）；改用 Blave 同 T0 數值（{t0}）。"
+            ),
         }
 
     manual_date = str(values.get("MANUAL_LISTED_MARGIN_RATIO_DATE", "")).strip()
