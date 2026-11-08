@@ -1,0 +1,117 @@
+name: DL-07 Real Fetch Isolated Report
+
+on:
+  workflow_dispatch:
+    inputs:
+      t0:
+        description: "Optional T0 trading date (YYYY-MM-DD); blank uses automatic resolution"
+        required: false
+        default: ""
+      session:
+        description: "Optional report session"
+        type: choice
+        options:
+          - ""
+          - "日盤"
+          - "全日"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dl07-real-fetch-isolated
+  cancel-in-progress: false
+
+jobs:
+  real-fetch-isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout triggering branch commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run real Fetch into runner temporary directory
+        env:
+          REQUESTED_T0: ${{ inputs.t0 }}
+          REQUESTED_SESSION: ${{ inputs.session }}
+          MANUAL_LISTED_MARGIN_RATIO: ${{ vars.MANUAL_LISTED_MARGIN_RATIO }}
+          MANUAL_LISTED_MARGIN_RATIO_DATE: ${{ vars.MANUAL_LISTED_MARGIN_RATIO_DATE }}
+          ISOLATED_OUT_DIR: ${{ runner.temp }}/dl07-real-fetch/data_reports
+          EVIDENCE_DIR: ${{ runner.temp }}/dl07-real-fetch/evidence
+        run: |
+          set -euo pipefail
+          mkdir -p "$ISOLATED_OUT_DIR" "$EVIDENCE_DIR"
+          export PYTHONUNBUFFERED=1
+          TODAY=$(TZ=Asia/Taipei date +%F)
+          export TODAY
+          set +e
+          python3 <<'PY' 2>&1 | tee "$EVIDENCE_DIR/fetch.log"
+          import os
+          import sys
+          from pathlib import Path
+          import src.fetch_data as fetch
+
+          fetch.OUT_DIR = Path(os.environ["ISOLATED_OUT_DIR"])
+          args = ["--date", os.environ["TODAY"]]
+          if os.environ.get("REQUESTED_T0", "").strip():
+              args += ["--t0", os.environ["REQUESTED_T0"].strip()]
+          if os.environ.get("REQUESTED_SESSION", "").strip():
+              args += ["--session", os.environ["REQUESTED_SESSION"].strip()]
+          sys.argv = ["src/fetch_data.py", *args]
+          fetch.main()
+          PY
+          FETCH_RC=${PIPESTATUS[0]}
+          set -e
+          if [ "$FETCH_RC" -ne 0 ]; then
+            echo "FAIL: real Fetch exited with code $FETCH_RC"
+            exit "$FETCH_RC"
+          fi
+          REPORT_COUNT=$(find "$ISOLATED_OUT_DIR" -maxdepth 1 -type f -name 'DATA_REPORT_*.md' | wc -l)
+          if [ "$REPORT_COUNT" -ne 1 ]; then
+            echo "FAIL: expected exactly one isolated DATA_REPORT, found $REPORT_COUNT"
+            exit 1
+          fi
+          REPORT=$(find "$ISOLATED_OUT_DIR" -maxdepth 1 -type f -name 'DATA_REPORT_*.md' -print -quit)
+          python -m src.fetch_data --help >/dev/null
+          python - "$REPORT" <<'PY'
+          import sys
+          from src.fetch_data import validate_data_report_file
+          validate_data_report_file(sys.argv[1])
+          print("PASS: isolated real DATA_REPORT structural/T0 validation")
+          PY
+          cp "$REPORT" "$EVIDENCE_DIR/"
+          cat > "$EVIDENCE_DIR/run-manifest.txt" <<EOF
+          repository=grichtoyang/daily-premarket
+          branch=${GITHUB_REF_NAME}
+          commit=${GITHUB_SHA}
+          run_id=${GITHUB_RUN_ID}
+          run_attempt=${GITHUB_RUN_ATTEMPT}
+          report_file=$(basename "$REPORT")
+          report_bytes=$(wc -c < "$REPORT")
+          report_sha256=$(sha256sum "$REPORT" | awk '{print $1}')
+          EOF
+          echo "PASS: report created outside repository data_reports/ and dashboards/"
+
+      - name: Upload isolated report and execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dl07-real-fetch-${{ github.run_id }}
+          path: ${{ runner.temp }}/dl07-real-fetch/evidence/
+          if-no-files-found: error
+          retention-days: 7
