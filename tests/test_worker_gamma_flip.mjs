@@ -24,6 +24,33 @@ const summarizeExpiryOi = extractFunction(
   "\n\nfunction buildGammaForCommonExpiry"
 );
 
+function declaration(name, nextMarker) {
+  const start = source.indexOf(`function ${name}(`);
+  assert.notEqual(start, -1, `Missing Worker function: ${name}`);
+  const end = source.indexOf(nextMarker, start);
+  assert.notEqual(end, -1, `Missing end marker after ${name}`);
+  return source.slice(start, end).trim();
+}
+
+const isoCompactDate = value => {
+  const s = String(value ?? "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if (/^\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+  return null;
+};
+const uniqueExpiries = new Function(
+  "isoCompactDate",
+  `${declaration("uniqueExpiries", "\n\nfunction buildExpirySelectionDiagnostics")}; return uniqueExpiries;`
+)(isoCompactDate);
+const buildExpirySelectionDiagnostics = new Function(
+  "uniqueExpiries", "isoCompactDate",
+  `${declaration("buildExpirySelectionDiagnostics", "\n\nfunction findCommonExpiryWithDiagnostics")}; return buildExpirySelectionDiagnostics;`
+)(uniqueExpiries, isoCompactDate);
+const findCommonExpiryWithDiagnostics = new Function(
+  "buildExpirySelectionDiagnostics",
+  `${declaration("findCommonExpiryWithDiagnostics", "\n\nfunction findCommonExpiry")}; return findCommonExpiryWithDiagnostics;`
+)(buildExpirySelectionDiagnostics);
+
 assert.deepEqual(
   findGammaFlipBracket(100, 0, 110, 12),
   {
@@ -88,4 +115,68 @@ assert.deepEqual(
   "Incomplete OI must not be reported as a complete total"
 );
 
-console.log("PASS: Worker Gamma Flip exact-zero, sign-crossing, and expiry OI diagnostics");
+const expiryRows = (contract_month, expiry, type = "call") => ({
+  contract_month, contract_expiry_date: expiry, type, strike: 40000
+});
+
+// Same-day common expiry is recorded but rejected; next future common expiry wins.
+{
+  const chain = [
+    expiryRows("202611F1", "2026-11-06"),
+    expiryRows("202611W2", "2026-11-11")
+  ];
+  const delta = [
+    expiryRows("202611F1", "2026-11-06"),
+    expiryRows("202611W2", "2026-11-11")
+  ];
+  const result = findCommonExpiryWithDiagnostics(chain, delta, "2026-11-06");
+  assert.deepEqual(result.selected, {
+    contract_month: "202611W2", expiry: "2026-11-11"
+  });
+  assert.equal(result.diagnostics.same_day_common_expiries.length, 1);
+  assert.equal(result.diagnostics.selection_reason, "earliest_future_exact_common_expiry");
+}
+
+// If Delta omits the same-day expiry, the next shared expiry remains selectable.
+{
+  const chain = [
+    expiryRows("202611F1", "2026-11-06"),
+    expiryRows("202611W2", "2026-11-11")
+  ];
+  const delta = [expiryRows("202611W2", "2026-11-11")];
+  const result = findCommonExpiryWithDiagnostics(chain, delta, "2026-11-06");
+  assert.equal(result.selected.contract_month, "202611W2");
+  assert.equal(result.diagnostics.same_day_common_expiries.length, 0);
+}
+
+// Same-day-only overlap must fail closed instead of returning a zero-time expiry.
+{
+  const result = findCommonExpiryWithDiagnostics(
+    [expiryRows("202611F1", "2026-11-06")],
+    [expiryRows("202611F1", "2026-11-06")],
+    "2026-11-06"
+  );
+  assert.equal(result.selected, null);
+  assert.equal(
+    result.diagnostics.selection_reason,
+    "same_day_common_expiry_rejected_no_positive_time_to_expiry"
+  );
+}
+
+// A unique expiry-date match is allowed when source contract-month labels differ.
+{
+  const result = findCommonExpiryWithDiagnostics(
+    [expiryRows("202611W2", "2026-11-11")],
+    [expiryRows("202611W02", "2026-11-11")],
+    "2026-11-06"
+  );
+  assert.deepEqual(result.selected, {
+    contract_month: "202611W2", expiry: "2026-11-11"
+  });
+  assert.equal(
+    result.diagnostics.selected.match_type,
+    "unique_expiry_date_label_mismatch"
+  );
+}
+
+console.log("PASS: Worker Gamma Flip, OI, and expiry selection diagnostics");
