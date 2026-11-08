@@ -941,5 +941,21 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         self.assertNotIn("find data_reports -name 'DATA_REPORT_*.md' -newermt", workflow)
 
 
+class BorrowedShortLotPrecisionTests(unittest.TestCase):
+    def test_market_table_preserves_fractional_lots_so_components_reconcile(self):
+        from src.fetch_data import _sbl_market_table
+
+        table = _sbl_market_table({
+            "listed_sale_bal": 18225070.125,
+            "otc_sale_bal": 2189311.375,
+            "sale_bal": 20414381.5,
+            "listed_sale_chg": 358192.6,
+            "otc_sale_chg": 2817.9,
+            "sale_chg": 361010.5,
+        })
+        self.assertIn("| 借券賣出餘額 | 18,225,070.125 | 2,189,311.375 | 20,414,381.5 | 張 |", table)
+        self.assertIn("| 借券賣出增減 | +358,192.6 | +2,817.9 | +361,010.5 | 張 |", table)
+
+
 if __name__ == "__main__":
     unittest.main()
