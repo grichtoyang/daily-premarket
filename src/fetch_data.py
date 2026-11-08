@@ -459,8 +459,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                         # OI 變化是本次由共同合約快照重算；即使舊版數值存在，
                         # 也必須讓本次數值與本次快照來源一起更新，不能凍結舊來源。
                         old = None
-                    # Gamma Flip 本次沒有零交叉時，價位與日期都必須維持 unavailable，
-                    # 不可由同 T0 保護機制回填前版 Flip 價位或日期。
+                    # Gamma Flip 本次沒有零交叉時，只清除 Flip 價位；GEX 資料日期仍須保留本次來源日期。
                     # 選擇權表內的「本次報告產製時間」是執行稽核時間，不是 T0 市場數據，必須每次重跑刷新。
                     _volatile_option_timestamp = (
                         _label == "本次報告產製時間"
@@ -475,9 +474,8 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                             _flip_row and len(_flip_row) > 1
                             and _flip_row[1] == MISSING
                         )
-                        if ((_label == "Gamma Flip 價位" and len(cells) > 1
-                             and cells[1] == MISSING)
-                                or (_label == "資料日期" and _flip_unavailable)):
+                        if (_label == "Gamma Flip 價位" and len(cells) > 1
+                                and cells[1] == MISSING):
                             old = None
                 # T0 維持率來源優先序：TWSE 自建 > Blave > 同 T0 人工輸入。
                 # unavailable 必須清除舊值；較高優先級新來源可取代舊來源，低優先級不可倒灌。
@@ -1169,9 +1167,10 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _gm_src = _gm.get("wall_src") or MISSING
     _gm_flip_src = (_gm.get("flip_src") or MISSING) if _gm.get("flip") is not None else MISSING
     _gm_wall_date = _gm.get("wall_date") or _gm.get("date")
-    _gm_flip_date = (_gm.get("flip_date") or _gm.get("date")) if _gm.get("flip") is not None else None
+    # Gamma Flip 價位可以 unavailable，但 GEX 計算資料日期仍然存在；日期不可綁定是否找到零交叉。
+    _gm_flip_date = _gm.get("date")
     _gm_wall_date_src = f"{SRC_FX} ({_gm_src})" if _gm_wall_date is not None else MISSING
-    _gm_flip_date_src = f"{SRC_FX} ({_gm_flip_src})" if _gm_flip_date is not None else MISSING
+    _gm_flip_date_src = f"{SRC_FX} (options-gamma-levels)" if _gm_flip_date is not None else MISSING
     _gm_expiry_month = _gm.get("gex_contract_month")
     _gm_expiry_date = _gm.get("gex_expiry_date")
     _gm_primary_month = _gm.get("primary_expiry_month") or _w.get("expiry")
@@ -1194,10 +1193,13 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("GEX 實際到期日", _gm_expiry_date or MISSING, _gm_expiry_src if _gm_expiry_date else MISSING),
             ("主到期月份（Key Levels）", _gm_primary_month or MISSING,
              SRC_FX if _gm_primary_month is not None else MISSING),
-            ("GEX Call OI", _fi(_gm_call_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
-            ("GEX Put OI", _fi(_gm_put_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
+            ("原始 Call OI（選定到期日全部有效 Chain 合約）", _fi(_gm_call_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
+            ("模型納入 Call OI（通過 GEX 計算條件）", _fi(sum(float(r.get("call_oi") or 0) for r in (_gm.get("levels") or []) if isinstance(r, dict))), "TAIFEX Gamma model（逐履約價）"),
+            ("原始 Put OI（選定到期日全部有效 Chain 合約）", _fi(_gm_put_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
+            ("模型納入 Put OI（通過 GEX 計算條件）", _fi(sum(float(r.get("put_oi") or 0) for r in (_gm.get("levels") or []) if isinstance(r, dict))), "TAIFEX Gamma model（逐履約價）"),
             ("資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
            ("項目", "數值", "資料來源")))
+    A("- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。")
     _flip_diag = _gm.get("flip_diagnostics") or {}
     if _flip_diag:
         A("")
@@ -1421,7 +1423,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("## 五、資料來源、時間與完整性")
     A("")
-    A("- 期貨/匯率為最新報價，其餘為 T0 收盤資料；時間皆為 `Asia/Taipei`。")
+    A("- 台股現貨、TAIFEX 期貨／選擇權以 T0 為基準；海外指數、匯率、ADR、原油、黃金與 Bitcoin 採各來源最新可得報價。各表格均列示實際資料日期；時間皆為 `Asia/Taipei`。")
     for k, v in s["sources"].items():
         A(f"- {k}：`{v}`")
     A("- 期貨選擇權：`TAIFEX Proxy`")
