@@ -161,8 +161,9 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
     def test_futures_night_proxy_fields_only_show_source_when_available(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('("成交量", _fi(n["vol"]), "口", _source_if_available(n["vol"], SRC_FX))', source)
-        self.assertIn('("結算價", "不適用（夜盤不公布）", "點", "TAIFEX 制度：僅日盤公告")', source)
-        self.assertIn('("未平倉量", "不適用（夜盤不公布）", "口", "TAIFEX 制度：僅日盤公告")', source)
+        night_section = source[source.index('A("### 2．台指期近月夜盤行情")'):source.index('A("### 3．法人台指期多空未平倉部位")')]
+        self.assertNotIn('("結算價",', night_section)
+        self.assertNotIn('("未平倉量",', night_section)
         self.assertIn('_nvia = "TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF', source)
         self.assertIn('_source_if_available(_diff2(n["high"], n["low"]), _nvia)', source)
         self.assertNotIn('("成交量", _fi(n["vol"]), SRC_FX)', source)
