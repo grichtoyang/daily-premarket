@@ -355,7 +355,9 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('_source_if_available(_vol_ratio_change, _pch_src)', source)
         self.assertIn('_source_if_available(_oi_ratio_change, _pch_src)', source)
         self.assertIn('_gm_flip_src = _gm.get("flip_src") or MISSING', source)
-        self.assertIn('_gm_date_src = f"{SRC_FX} ({_gm.get(\'src\', \'\')})" if _gm.get("date") is not None else MISSING', source)
+        self.assertIn('_gm_wall_date = _gm.get("wall_date") or _gm.get("date")', source)
+        self.assertIn('_gm_flip_date = _gm.get("flip_date") or _gm.get("date")', source)
+        self.assertIn('"gamma_diagnostics": _gm.get("diagnostics")', source)
         self.assertIn('("Gamma Flip 價位", _f2(_gm[\'flip\']), _gm_flip_src)', source)
 
 
