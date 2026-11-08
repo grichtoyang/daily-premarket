@@ -731,8 +731,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("成交量", _fi(n["vol"]), "口", _source_if_available(n["vol"], SRC_FX)),
             ("夜盤高點及低點", f"{_fi(n['high'])} / {_fi(n['low'])}", "點",
              _source_if_available(_diff2(n["high"], n["low"]), _nvia)),
-            ("結算價", _fi(n["settle"]), "點", _source_if_available(n["settle"], SRC_FX)),
-            ("未平倉量", _fi(n["oi"]), "口", _source_if_available(n["oi"], SRC_FX))],
+            ("結算價", "不適用（夜盤不公布）", "點", "TAIFEX 制度：僅日盤公告"),
+            ("未平倉量", "不適用（夜盤不公布）", "口", "TAIFEX 制度：僅日盤公告")],
            ("項目", "數值", "單位", "資料來源")))
     A("")
     A("### 3．法人台指期多空未平倉部位")
@@ -1068,8 +1068,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 13．Gamma Wall")
     A("")
     _gm = fx["gamma"]
-    _gm_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("wall") is not None else MISSING
-    _gm_flip_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("flip") is not None else MISSING
+    _gm_src = _gm.get("wall_src") or MISSING
+    _gm_flip_src = _gm.get("flip_src") or MISSING
     _gm_date_src = f"{SRC_FX} ({_gm.get('src', '')})" if _gm.get("date") is not None else MISSING
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
