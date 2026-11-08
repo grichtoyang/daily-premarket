@@ -2422,7 +2422,8 @@ function buildExpirySelectionDiagnostics(chain, deltaRows, requestedISO) {
   }
 
   const commonExpiries = [...common.values()].sort((a, b) =>
-    a.expiry.localeCompare(b.expiry) || a.contract_month.localeCompare(b.contract_month)
+    a.expiry.localeCompare(b.expiry) ||
+    String(a.contract_month ?? "").localeCompare(String(b.contract_month ?? ""))
   );
   const perExpiryCounts = new Map();
   for (const [rows, side] of [[chain, "chain_rows"], [deltaRows, "delta_rows"]]) {
