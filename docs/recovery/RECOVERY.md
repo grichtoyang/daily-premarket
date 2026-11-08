@@ -2138,3 +2138,14 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 3. Browser Desktop／Mobile 視覺驗收另列，不可把 HTML JavaScript syntax PASS 當成視覺 PASS。
 4. 不重做已 PASS 的 282 個離線測試、17F self-test、兩份歷史 Builder fixture；只有程式或 fixture 有新變更時才針對性回歸。
 5. 不修改 `master`、P0 base、V8、Worker、DATA_REPORT 樣本或 Dashboard layout；不 merge／deploy。
+
+
+## 2026-11-08｜DL-07 Workflow isolation guard strengthening
+
+- 產品分支：`phase2-p0-ui-fixes`；最新驗證 commit：`9ada66a4841502b5e1e443fdad9652ef3cb32e3d`。
+- 只修改 `.github/workflows/dl07-offline-validation.yml`（2 additions／1 deletion）；GitHub commit changed-files API 確認只有此檔案。Workflow blob 已回讀、產品分支 HEAD 與 CI head SHA 一致。
+- Actions Run ID `42435737830`：SUCCESS。Workflow isolation、branch guards、deployment boundaries 檢查 PASS；282 個離線單元測試 PASS；DATA_REPORT／ratio／Treasury 語義契約 PASS；17F offline self-tests PASS；兩份歷史 fixture Builder、React injection／JS syntax、正式樣本及 dashboards 未變更檢查 PASS。
+- 本次 isolation guard 檢查涵蓋 DL-06／DL-07 唯讀權限與禁止副作用、DL-06 mock/temp 測試模式、DL-07 workflow_dispatch／checkout SHA pin、Dashboard checkout SHA pin、生成檔 commit branch guard、Pages deploy gate，以及禁止 DL-07 呼叫正式 Fetch／daily_data 流程。
+- 注意：這些是新增的現存 Workflow 靜態邊界檢查；不代表舊 `test_p0_workflow_isolation.py` 中引用缺失 Workflow 的 4 個測試已執行或通過。該 4 個舊測試仍 **NOT TESTED**。3 個 stale source-text assertions 與 3 個 live API probes 的排除狀態亦不變。
+- DL-07 整體仍 **IN PROGRESS**：正式 Fetch／正式 `daily_data.yml` 執行及 Browser Desktop／Mobile 視覺稽核仍 **NOT TESTED**。本次未執行正式 Fetch、未寫入 DATA_REPORT、未部署 Pages、未 merge。
+- 後續不再擴充此靜態檢查清單；除非有新的可重現缺陷，不重跑本次已 PASS 的 282 tests、17F self-test 或歷史 fixture builds。
