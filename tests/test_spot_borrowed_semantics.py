@@ -18,7 +18,7 @@ class SBLPublicationMetadataTests(unittest.TestCase):
             spot._shares_to_lots(358193),
             spot._shares_to_lots(2818),
         )
-        self.assertEqual(total, 361.011)
+        self.assertAlmostEqual(total, 361.011, places=9)
         self.assertEqual(status, "complete")
 
     def test_historical_data_available_after_schedule_is_not_unknown(self):
