@@ -383,7 +383,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                     rows[(hkey, cells[0])] = cells
         return lines, rows
 
-    new_lines, _ = _parse(new_text)
+    new_lines, new_rows = _parse(new_text)
     _, old_rows = _parse(old_text)
 
     def _norm_label(s: str) -> str:
@@ -423,6 +423,25 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
             if not is_sep and not is_hdr and cells:
                 _label = _norm_label(cells[0])
                 old = old_norm.get((hkey, _label))
+                if old and len(old) == len(cells):
+                    # 本次 OI 增減是由前後日快照共同合約計算；若前版數值缺失、
+                    # 本次已有計算值，舊版「端點未提供」不得凍結覆蓋本次來源。
+                    _oi_change_row = (
+                        "OI 增減" in _label
+                        or "OI 增加最多" in _label
+                        or "OI 減少最多" in _label
+                    )
+                    if (_oi_change_row and len(cells) > 2
+                            and old[1] == MISSING and cells[1] not in (MISSING, "")):
+                        old = list(old)
+                        old[-1] = MISSING
+                    # Gamma Flip 本次沒有零交叉時，日期必須與 unavailable 價位同步清空，
+                    # 不可由同 T0 保護機制回填前版 Flip 日期。
+                    _gamma_flip_section = any("Gamma Flip" in (part or "") for part in hkey)
+                    if _gamma_flip_section and _label == "資料日期":
+                        _flip_row = new_rows.get((hkey, "Gamma Flip 價位"))
+                        if _flip_row and len(_flip_row) > 1 and _flip_row[1] == MISSING:
+                            old = None
                 # T0 維持率來源優先序：TWSE 自建 > Blave > 同 T0 人工輸入。
                 # unavailable 必須清除舊值；較高優先級新來源可取代舊來源，低優先級不可倒灌。
                 if _label == "融資維持率":
