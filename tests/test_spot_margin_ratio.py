@@ -41,7 +41,7 @@ class SblMarketReportTests(unittest.TestCase):
             "listed_sale_chg": 100, "otc_sale_chg": -20, "sale_chg": 80,
         })
         self.assertIn("| 借券賣出餘額 | 1,200 | 300 | 1,500 | 張 |", table)
-        self.assertIn("| 借券賣出增減 | 100 | -20 | 80 | 張 |", table)
+        self.assertIn("| 借券賣出增減 | +100 | -20 | +80 | 張 |", table)
 
     def test_missing_market_is_not_filled_from_combined_value(self):
         table = _sbl_market_table({
@@ -49,7 +49,7 @@ class SblMarketReportTests(unittest.TestCase):
             "listed_sale_chg": 100, "otc_sale_chg": None, "sale_chg": 100,
         })
         self.assertIn("| 借券賣出餘額 | 1,200 | unavailable | 1,200 | 張 |", table)
-        self.assertIn("| 借券賣出增減 | 100 | unavailable | 100 | 張 |", table)
+        self.assertIn("| 借券賣出增減 | +100 | unavailable | +100 | 張 |", table)
 
 
 class SblReportStatusOutputTests(unittest.TestCase):
