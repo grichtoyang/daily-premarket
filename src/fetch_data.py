@@ -434,6 +434,19 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                 _label = _norm_label(cells[0])
                 old = old_norm.get((hkey, _label))
                 if old and len(old) == len(cells):
+                    # 夜盤衍生欄位若數值完全相同、只有來源標籤改善，應更新來源欄，
+                    # 不應把「沿用前版」凍結成永久標籤；數值有差異時仍走原同 T0 保護。
+                    _night_derived_row = (
+                        (any("期貨與現貨關係" in (part or "") for part in hkey)
+                         and _label == "夜盤價格相對日盤收盤的變化")
+                        or (any("7.1 日夜盤價格與成交量對照" in (part or "") for part in hkey)
+                            and _label in {"收盤價", "成交量"})
+                    )
+                    if (_night_derived_row and len(cells) >= 3
+                            and cells[1:-1] == old[1:-1]
+                            and cells[-1] not in (MISSING, "")
+                            and cells[-1] != old[-1]):
+                        old = None
                     # 本次 OI 增減是由前後日快照共同合約計算；若前版數值缺失、
                     # 本次已有計算值，舊版「端點未提供」不得凍結覆蓋本次來源。
                     _oi_change_row = (
