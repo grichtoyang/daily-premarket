@@ -119,6 +119,7 @@
     "putWall": 37400.0,
     "gammaWall": 38900.0,
     "flip": null,
+    "extendedFlip": 35542.62523767237,
     "maxPain": 40300.0,
     "netGex1pct": 1992264865.9714477,
     "grossGex1pct": 3397641282.4984756,
