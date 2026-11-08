@@ -4537,7 +4537,7 @@ export default {
         let gamma = {
           found: false,
           reason: deltaResult.found
-            ? "No common Chain/Delta expiry"
+            ? "No future common Chain/Delta expiry with positive time to expiry"
             : (deltaResult.reason || "TAIFEX Delta not found")
         };
 
@@ -4871,19 +4871,21 @@ export default {
                 found: false,
                 reason:
                   !gammaExpiry
-                    ? "No common Chain/Delta expiry"
+                    ? (expirySelection.diagnostics.same_day_common_expiries.length
+                        ? "Only same-day common expiry exists; GEX requires positive time to expiry"
+                        : "No future common Chain/Delta expiry")
                     : (
                         taiexResult.reason ||
                         "TAIEX underlying price unavailable"
                       ),
                 error_code: !gammaExpiry
-                  ? "GEX_NO_COMMON_EXPIRY"
+                  ? "GEX_NO_FUTURE_COMMON_EXPIRY"
                   : "TAIEX_SPOT_UNAVAILABLE",
                 stage: !gammaExpiry
-                  ? "gex_input_match"
+                  ? "gex_expiry_selection"
                   : "taiex_underlying",
                 detail: !gammaExpiry
-                  ? "TXO Chain and Delta have no matching expiry for requested date"
+                  ? expirySelection.diagnostics.selection_reason
                   : (taiexResult.reason || "TAIEX underlying price unavailable")
               };
         gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
