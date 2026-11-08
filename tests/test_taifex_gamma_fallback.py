@@ -28,6 +28,18 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertEqual(result["payload"]["data"]["gamma"]["gamma_flip_proxy"], 39750.5)
         self.assertEqual(result["payload"]["data"]["call_wall"]["strike"], 39000)
 
+    def test_compact_proxy_fallback_stops_when_both_fields_are_found(self):
+        queried = []
+        payload = {"data": {"gamma": {
+            "gamma_wall_proxy": 38900, "gamma_flip_proxy": 39750.5,
+        }}}
+        result = _gamma_proxy_fallback(
+            lambda day: queried.append(day) or payload,
+            ["2026-11-06", "2026-11-05", "2026-11-04"])
+        self.assertEqual(queried, ["2026-11-06"])
+        self.assertEqual(result["wall_date"], "2026-11-06")
+        self.assertEqual(result["flip_date"], "2026-11-06")
+
     def test_no_compact_proxy_values_returns_empty_payload(self):
         result = _gamma_proxy_fallback(
             lambda day: {"data": {"gamma": {}}}, ["2026-11-05", "2026-11-04"])
