@@ -4582,8 +4582,10 @@ export default {
                     matched_strikes:
                       0
                   };
-            gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
+          } else {
+            gamma.reason = expirySelection.diagnostics.selection_reason;
           }
+          gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
         }
 
         const quality =
@@ -4686,7 +4688,9 @@ export default {
                     option_contracts_modeled:
                       gamma.option_contracts_modeled ?? 0,
                     gamma_diagnostics:
-                      gamma.gamma_diagnostics || null
+                      gamma.gamma_diagnostics || null,
+                    expiry_selection_diagnostics:
+                      gamma.expiry_selection_diagnostics || null
                   },
 
             data_quality:
