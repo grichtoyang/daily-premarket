@@ -66,11 +66,12 @@ jobs:
               assert not re.search(r"(?m)^ *git +(add|commit|push)( |$)", workflow), f"{name} mutates git"
           assert "TemporaryDirectory" in dl06 and "fake_python" in dl06
           assert "workflow_dispatch:" in dl07
-          assert "ref: ${{ github.sha }}" in dl07
+          checkout_ref = "ref: " + "$" + "{{ github.sha }}"
+          assert checkout_ref in dl07
 
           # Current Dashboard workflow: checkout is pinned to triggering SHA;
           # generated commits are explicitly limited to the two P0 working branches.
-          assert "ref: ${{ github.sha }}" in dashboard
+          assert checkout_ref in dashboard
           assert "if: github.ref == 'refs/heads/phase2-p0-data-quality' || github.ref == 'refs/heads/phase2-p0-ui-fixes'" in dashboard
           assert 'if [ "${GITHUB_REF_NAME}" != "phase2-p0-data-quality" ] && [ "${GITHUB_REF_NAME}" != "phase2-p0-ui-fixes" ]; then' in dashboard
           assert 'git push origin "HEAD:${GITHUB_REF_NAME}"' in dashboard
