@@ -189,7 +189,7 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         new = old.replace("40,298 | 點 | TAIFEX Proxy", "unavailable | 點 | unavailable")
         new = new.replace("69,882 | 口 | TAIFEX Proxy", "unavailable | 口 | unavailable")
         merged, filled = merge_same_t0(old, new, new_session="全日", protect=True)
-        self.assertEqual(filled, 2)
+        self.assertEqual(filled, 4)  # value and source cells for each of two rows
         self.assertIn("| 收盤價 | 40,298 | 點 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
         self.assertIn("| 成交量 | 69,882 | 口 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
 
