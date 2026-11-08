@@ -1,6 +1,6 @@
 import unittest
 
-from src.fetch_data import merge_same_t0
+from src.fetch_data import merge_same_t0, _snapshot_chain_source_label
 
 
 class SameT0SourceAttributionTests(unittest.TestCase):
@@ -156,6 +156,54 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("| 資料日期 | unavailable | unavailable |", merged)
         self.assertNotIn("2026-11-05 | TAIFEX Proxy", merged)
         self.assertNotIn("沿用前版（原來源：TAIFEX Proxy (options-gamma-levels)）", merged)
+
+
+    def test_option_report_production_timestamp_refreshes_on_same_t0(self):
+        old = """# DATA_REPORT_20261106
+- T0 交易日期：`2026-11-06`
+- 產出盤別：`全日`
+
+## 四、選擇權
+### 1．選擇權交易日期、到期日與報告產製時間
+| 項目 | 數值 | 資料來源 |
+|---|---|---|
+| 本次報告產製時間 | 2026-11-08 13:52:30 | 本機 |
+"""
+        new = old.replace("2026-11-08 13:52:30", "2026-11-08 15:20:21")
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertIn("| 本次報告產製時間 | 2026-11-08 15:20:21 | 本機 |", merged)
+        self.assertNotIn("13:52:30", merged)
+
+    def test_night_quote_carry_forward_is_explicitly_attributed(self):
+        old = """# DATA_REPORT_20261106
+- T0 交易日期：`2026-11-06`
+- 產出盤別：`全日`
+
+## 三、期貨
+### 2．台指期近月夜盤行情
+| 項目 | 數值 | 單位 | 資料來源 |
+|---|---|---|---|
+| 收盤價 | 40,298 | 點 | TAIFEX Proxy |
+| 成交量 | 69,882 | 口 | TAIFEX Proxy |
+"""
+        new = old.replace("40,298 | 點 | TAIFEX Proxy", "unavailable | 點 | unavailable")
+        new = new.replace("69,882 | 口 | TAIFEX Proxy", "unavailable | 口 | unavailable")
+        merged, filled = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertEqual(filled, 2)
+        self.assertIn("| 收盤價 | 40,298 | 點 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
+        self.assertIn("| 成交量 | 69,882 | 口 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
+
+    def test_oi_snapshot_source_label_uses_chain_provenance_not_endpoint(self):
+        chain = {"c_chg": 43511, "p_chg": 16839, "snapshot_date": "2026-11-05"}
+        self.assertEqual(
+            _snapshot_chain_source_label(chain, None, "2026-11-06"),
+            "TAIFEX Proxy snapshot bundle (2026-11-05→2026-11-06)"
+        )
+        self.assertEqual(
+            _snapshot_chain_source_label({"c_chg": 43511}, None, "2026-11-06"),
+            "TAIFEX Proxy snapshot bundle (快照日期未提供→2026-11-06)"
+        )
+        self.assertEqual(_snapshot_chain_source_label({}, None, "2026-11-06"), "unavailable")
 
 
 if __name__ == "__main__":
