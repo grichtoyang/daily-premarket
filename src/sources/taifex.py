@@ -855,6 +855,10 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _gross_gex = gdata.get("gross_gex_1pct") if g_pay is not None else None
     gamma = {"wall": wall, "flip": flip,
              "model": gdata.get("model") if g_pay is not None else None,
+             "sign_convention_note": (
+                 "Call 正／Put 負為模型假設；Aggregate OI 不揭露 Dealer 實際淨部位，"
+                 "此值不可視為實際 Dealer GEX"
+             ) if g_pay is not None else None,
              "quality": gdata.get("model_quality") if g_pay is not None else None,
              "underlying": gdata.get("underlying_price") if g_pay is not None else None,
              "net_gex_1pct": _net_gex, "gross_gex_1pct": _gross_gex,
