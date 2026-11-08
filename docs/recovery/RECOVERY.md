@@ -2160,3 +2160,16 @@ Recovery 最新詳細證據記錄於 `PROGRESS.md` 的「2026-11-03 資料層第
 - **CI：PENDING，尚無可驗證的 Actions run ID／結果；新增測試不得標記 PASS。**
 - 正式 Fetch、正式 `daily_data.yml`、正式 DATA_REPORT 寫入、Pages deploy、merge 均未執行。
 - DL-07 保持 **IN PROGRESS**；正式 API Fetch 及 Browser Desktop／Mobile 視覺稽核仍 **NOT TESTED**。
+
+## 2026-11-08 接續更新｜DL-07 Fetch main 隔離測試 CI 已通過
+
+前一節記錄的 CI pending 已更新：
+- Actions Run `42436125303` SUCCESS：[查看執行紀錄](https://github.com/grichtoyang/daily-premarket/actions/runs/42436125303)。
+- Workflow head SHA `aa4cba71b838bcf878de0cf3de53cd00736cfc0c`；已核對產品分支 `phase2-p0-ui-fixes` HEAD 相同。
+- Job log：指定的 `test_main_writes_valid_report_in_isolated_output_dir` 顯示 `ok`，`Ran 1 test`、`OK`；報告檔驗證及正式 `data_reports/`、`dashboards/` 未變更檢查成功。
+- 此測試呼叫 `fetch_data.main()`，但 `build()` 使用 mock、輸出目錄為 TemporaryDirectory；**只驗證隔離成功路徑，不是正式市場 API Fetch**。
+- DL-07 此子項 **PASS**；DL-07 整體仍 **IN PROGRESS**。正式 API Fetch／正式 `daily_data.yml` 與 Browser Desktop／Mobile 視覺驗收仍 **NOT TESTED**。
+- 無正式 DATA_REPORT 寫入、無正式 workflow 執行、無 Pages deploy、無 merge；正式 `src/fetch_data.py` 未修改。
+
+### 下一個唯一接續工作
+轉向 DL-07 Browser Desktop／Mobile 視覺驗收。先確認可取得的非部署 HTML／Artifact 與瀏覽器檢查方式；若無可用瀏覽器執行環境，明確列為 BLOCKED 並請使用者提供畫面，不以 HTML／JS 語法檢查代替視覺驗收。不要重跑已 PASS 的單一 Fetch 隔離測試、282 個離線測試或歷史 fixture。
