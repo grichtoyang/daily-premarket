@@ -536,6 +536,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(f"- 報告日期：`{report_date}`")
     A(f"- T0 交易日期：`{t0}`")
     A(f"- 資料產出時間：`{now}`")
+    # 同 T0 重跑時「資料產出時間」保留首次發布時間；此欄記錄本次重新建構開始時間。
+    A(f"- 本次更新開始時間：`{now}`")
     A("- 時區：`Asia/Taipei`")
     A(f"- 產出盤別：`{session}`")
     A(f"- 產出者：`{'actions' if os.getenv('GITHUB_ACTIONS') == 'true' else 'local'}`")
