@@ -196,7 +196,10 @@ def calculate(t0, margin_payload, price_payload, historical_prices=None):
         "price_date_min": min(price_dates.values()) if price_dates else None,
         "price_date_max": max(price_dates.values()) if price_dates else None,
         "method": "TWSE listed financing balance lots x latest available close on/before T0 / TWSE listed financing amount",
-        "classification": "listed_market_estimate_not_individual_account_ratio",
+        "classification": (
+            "listed_market_partial_lower_bound_not_individual_account_ratio"
+            if missing else "listed_market_estimate_not_individual_account_ratio"
+        ),
     }
     if missing:
         # Keep a diagnostic partial estimate, but never mark it usable as the
@@ -236,21 +239,19 @@ def get(t0, timeout=6):
             response.raise_for_status()
             payloads.append(response.json())
 
-        try:
-            return calculate(t0, payloads[0], payloads[1])
-        except ValueError as exc:
-            marker = "listed securities missing T0 close: "
-            if marker not in str(exc):
-                raise
-            missing_codes = ast.literal_eval(str(exc).split(marker, 1)[1].strip())
-            if not missing_codes:
-                raise
-            if len(missing_codes) > 20:
-                raise ValueError(
-                    f"historical close lookup cap exceeded ({len(missing_codes)} symbols); "
-                    "skip self-built result and use fallback"
-                )
-            remaining = deadline - time.monotonic()
+        initial = calculate(t0, payloads[0], payloads[1])
+        if not initial.get("partial"):
+            return initial
+        missing_codes = initial.get("missing_price_security_codes") or []
+        if not missing_codes:
+            return initial
+        if len(missing_codes) > 20:
+            initial["reason"] = (
+                f"partial calculation only; historical close lookup cap exceeded "
+                f"({len(missing_codes)} symbols)"
+            )
+            return initial
+        remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise TimeoutError("TWSE self-built ratio time budget exhausted before historical prices")
 
