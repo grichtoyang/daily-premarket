@@ -1184,7 +1184,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     # Gamma Flip 價位可以 unavailable，但 GEX 計算資料日期仍然存在；日期不可綁定是否找到零交叉。
     _gm_flip_date = _gm.get("date")
     _gm_wall_date_src = f"{SRC_FX} ({_gm_src})" if _gm_wall_date is not None else MISSING
-    _gm_flip_date_src = f"{SRC_FX} (options-gamma-levels)" if _gm_flip_date is not None else MISSING
+    _gm_flip_date_src = f"{SRC_FX} ({_gm.get('src') or 'TAIFEX Gamma endpoints'})" if _gm_flip_date is not None else MISSING
     _gm_expiry_month = _gm.get("gex_contract_month")
     _gm_expiry_date = _gm.get("gex_expiry_date")
     _gm_primary_month = _gm.get("primary_expiry_month") or _w.get("expiry")
