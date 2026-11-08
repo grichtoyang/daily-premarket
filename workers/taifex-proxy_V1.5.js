@@ -2567,7 +2567,18 @@ function summarizeExpiryOi(rows, type) {
   let invalidRows = 0;
 
   for (const row of contracts) {
-    const oi = Number(row.open_interest);
+    const rawOi = row.open_interest;
+    if (
+      rawOi === null ||
+      rawOi === undefined ||
+      rawOi === "" ||
+      typeof rawOi === "boolean"
+    ) {
+      invalidRows += 1;
+      continue;
+    }
+
+    const oi = Number(rawOi);
     if (!Number.isFinite(oi) || oi < 0) {
       invalidRows += 1;
       continue;
