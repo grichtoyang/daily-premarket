@@ -629,12 +629,11 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         import src.t0 as _cal1
         # 全日節 _night_ohlc 內必經 load_closed：_LAST_CAL_ERROR 非空 ⟺ 本次曆失敗，歸因準確
         if session != "日盤" and _cal1._LAST_CAL_ERROR:
-            notes.append(f"夜盤開高低收未取得（交易日曆不可用：{_cal1._LAST_CAL_ERROR}），僅成交量/OI/結算價")
+            notes.append(f"夜盤開高低收未取得（交易日曆不可用：{_cal1._LAST_CAL_ERROR}），僅有夜盤成交量")
         else:
-            notes.append("夜盤開高低收未取得 (proxy 與官方皆無)，僅成交量/OI/結算價")
+            notes.append("夜盤開高低收未取得 (proxy 與官方皆無)，僅有夜盤成交量")
 
-    # 完整性清單必須涵蓋報告表格實際顯示 unavailable 的夜盤欄位。
-    # 夜盤 OHLC 與 after-hours 結算價／OI 是不同端點欄位，逐欄列入，不以 0 代替。
+    # 完整性清單只追蹤 DATA_REPORT 實際顯示的夜盤行情欄位；夜盤結算價與 OI 不列入資料模型。
     unav.extend(_missing_night_fields(night))
 
     # ---------- 期貨 3：法人 OI + 變化 ----------
