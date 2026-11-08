@@ -80,9 +80,11 @@ assert.deepEqual(
 assert.deepEqual(
   summarizeExpiryOi([
     { type: "put", open_interest: 20 },
-    { type: "put", open_interest: null }
+    { type: "put", open_interest: null },
+    { type: "put", open_interest: "" },
+    { type: "put", open_interest: true }
   ], "put"),
-  { rows: 2, valid_rows: 1, invalid_rows: 1, total: null },
+  { rows: 4, valid_rows: 1, invalid_rows: 3, total: null },
   "Incomplete OI must not be reported as a complete total"
 );
 
