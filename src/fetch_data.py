@@ -509,6 +509,14 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                             new_cells[j] = old[j]
                             filled += 1
                             _touched = True
+                        elif (_night_quote_row and protect and not _fb
+                                and new_last not in (MISSING, "", "unavailable")
+                                and not new_last.startswith("沿用前版")
+                                and new_cells[j] not in (MISSING, "")
+                                and new_cells[j] != old[j]):
+                            # 夜盤是已完成的特定 T0 節次；本次有有效來源的新行情應更新舊值。
+                            # 只有本次缺值／遞補時才沿用前版，避免永久凍結舊報價。
+                            overwritten += 1
                         elif (not prefer_new and protect
                                 and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
                                 and new_cells[j] != old[j]):
