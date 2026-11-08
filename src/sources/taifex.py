@@ -463,31 +463,51 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
             print(f"[INFO] 夜盤節未收盤（T0 {t0} 節次 {_end} 才收），不採用半成品")
             return None
     base = os.getenv("TAIFEX_PROXY_BASE_URL", BASE).rstrip("/")
+    print(f"[NIGHT_OHLC] start t0={t0} session={session} query_date={query_date} month={month}")
     if month:
         try:
             r = requests.get(f"{base}/futures-night-ohlc", params={"date": query_date, "month": month},
                              headers={**HEADERS, "accept": "application/json"}, timeout=30)
+            print(f"[NIGHT_OHLC] proxy status={r.status_code} query_date={query_date} month={month}")
             if r.status_code == 200:
                 j = r.json()
-                if isinstance(j, dict) and j.get("ok") is True and isinstance(j.get("data"), dict):
-                    d = j["data"]
+                d = j.get("data") if isinstance(j, dict) else None
+                print(f"[NIGHT_OHLC] proxy payload ok={j.get('ok') if isinstance(j, dict) else None} "
+                      f"date={j.get('date') if isinstance(j, dict) else None} "
+                      f"data_keys={sorted(d.keys()) if isinstance(d, dict) else []} "
+                      f"close={d.get('close') if isinstance(d, dict) else None} "
+                      f"volume={d.get('volume') if isinstance(d, dict) else None}")
+                if isinstance(j, dict) and j.get("ok") is True and isinstance(d, dict):
                     if d.get("close") is not None and (j.get("date") or "") == query_date:
+                        print(f"[NIGHT_OHLC] selected=proxy date={query_date}")
                         return {"open": d.get("open"), "high": d.get("high"), "low": d.get("low"),
                                 "close": d.get("close"), "change": d.get("change"),
                                 "pct": _pct(d.get("change_percent")),
                                 "volume": d.get("volume"),
                                 "via": "proxy", "date": query_date,
                                 "qdate": query_date}
-                    print(f"[INFO] proxy night-ohlc 回退 (查 {query_date} 得 {j.get('date')})，改官方備援")
+                    print(f"[NIGHT_OHLC] proxy rejected: expected_date={query_date} actual_date={j.get('date')} "
+                          f"close_present={d.get('close') is not None}; try official")
+                else:
+                    print("[NIGHT_OHLC] proxy rejected: payload shape/ok flag invalid; try official")
+            else:
+                print(f"[NIGHT_OHLC] proxy rejected: HTTP {r.status_code}; try official")
         except Exception as e:  # noqa: BLE001
-            print(f"[INFO] proxy night-ohlc 不可用，改官方備援：{e}")
+            print(f"[NIGHT_OHLC] proxy exception={type(e).__name__}: {e}; try official")
     try:
         from src.sources import taifex_official as _off
-        rows = [x for x in _off._get("/DailyMarketReportFut")
-                if x.get("Contract") == "TX" and x.get("TradingSession") == "盤後"
-                and x.get("ContractMonth(Week)") == month
-                and _off._iso(x.get("Date", "")) == query_date]
+        official_all = _off._get("/DailyMarketReportFut")
+        official_candidates = [x for x in official_all
+                               if x.get("Contract") == "TX" and x.get("TradingSession") == "盤後"
+                               and x.get("ContractMonth(Week)") == month]
+        rows = [x for x in official_candidates
+                if _off._iso(x.get("Date", "")) == query_date]
+        print(f"[NIGHT_OHLC] official rows_total={len(official_all)} "
+              f"tx_after_hours_month_rows={len(official_candidates)} "
+              f"matching_date_rows={len(rows)} query_date={query_date} "
+              f"candidate_dates={sorted({_off._iso(x.get('Date', '')) for x in official_candidates})[-5:]}")
         if not rows:
+            print(f"[NIGHT_OHLC] result=unavailable query_date={query_date} month={month}")
             return None
         rows.sort(key=lambda x: x.get("Date", ""), reverse=True)
         r0 = rows[0]
@@ -497,13 +517,15 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
             except (ValueError, TypeError):
                 return None
         chg, close = _n(r0.get("Change")), _n(r0.get("Last"))
-        return {"open": _n(r0.get("Open")), "high": _n(r0.get("High")), "low": _n(r0.get("Low")),
-                "close": close, "change": chg,
-                "pct": (chg / (close - chg) * 100) if chg is not None and close else None,
-                "via": "official", "date": _off._iso(r0.get("Date", "")),
-                "qdate": query_date}
+        result = {"open": _n(r0.get("Open")), "high": _n(r0.get("High")), "low": _n(r0.get("Low")),
+                  "close": close, "change": chg,
+                  "pct": (chg / (close - chg) * 100) if chg is not None and close else None,
+                  "via": "official", "date": _off._iso(r0.get("Date", "")),
+                  "qdate": query_date}
+        print(f"[NIGHT_OHLC] selected=official date={result['date']} close={result['close']} volume={_n(r0.get('Volume'))}")
+        return result
     except Exception as e:  # noqa: BLE001
-        print(f"[INFO] official night-ohlc 不可用：{e}")
+        print(f"[NIGHT_OHLC] official exception={type(e).__name__}: {e}")
         return None
 
 def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
