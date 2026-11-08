@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 from src.sources.taifex import (
     BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status, _chain_rollover,
     _sync_gamma_unavailable, _valid_gex_levels, _complete_sum, _complete_ratio, _oi_distribution,
+    _options_chain_oi_change_diagnostic,
 )
 
 
@@ -195,6 +196,33 @@ class ChainRolloverThreeStateTests(unittest.TestCase):
             with self.subTest(rows=rows):
                 self.assertEqual(_chain_rollover(rows, None, "202611"), (None, None))
 
+
+class OptionsChainOICoverageDiagnosticTests(unittest.TestCase):
+    def _row(self, strike, oi):
+        return {"contract_month": "202611", "contract_expiry_date": "2026-11-18",
+                "strike": strike, "type": "call", "open_interest": oi}
+
+    def test_reports_contract_set_mismatch_counts(self):
+        current = [self._row(22000, 100), self._row(22100, 200)]
+        previous = [self._row(22000, 90), self._row(22200, 180)]
+        result = _options_chain_oi_change_diagnostic(current, previous, "202611")
+        self.assertEqual(result["reason"], "contract_set_mismatch")
+        self.assertEqual(result["current_only"], 1)
+        self.assertEqual(result["previous_only"], 1)
+
+    def test_reports_missing_oi_separately_for_each_snapshot(self):
+        result = _options_chain_oi_change_diagnostic([self._row(22000, None)], [self._row(22000, 90)], "202611")
+        self.assertEqual(result["reason"], "open_interest_missing_or_invalid")
+        self.assertEqual(result["current_missing_oi"], 1)
+        self.assertEqual(result["previous_missing_oi"], 0)
+
+    def test_reports_aligned_contract_sets(self):
+        result = _options_chain_oi_change_diagnostic([self._row(22000, 100)], [self._row(22000, 90)], "202611")
+        self.assertEqual(result["reason"], "aligned")
+
+    def test_reports_missing_primary_expiry(self):
+        result = _options_chain_oi_change_diagnostic([], [], None)
+        self.assertEqual(result["reason"], "primary_expiry_missing")
 
 if __name__ == "__main__":
     unittest.main()
