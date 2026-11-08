@@ -4,11 +4,45 @@ from unittest.mock import Mock, patch
 from src.sources.taifex import (
     BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status, _chain_rollover,
     _sync_gamma_unavailable, _valid_gex_levels, _complete_sum, _complete_ratio, _oi_distribution,
+    _gamma_proxy_fallback,
     _options_chain_oi_change_diagnostic,
 )
 
 
 class GammaFallbackAvailabilityTests(unittest.TestCase):
+    def test_compact_proxy_fallback_searches_flip_independently_of_wall(self):
+        payloads = {
+            "2026-11-05": {"data": {"gamma": {
+                "gamma_wall_proxy": 38900, "gamma_flip_proxy": None,
+            }, "call_wall": {"strike": 39000}}},
+            "2026-11-04": {"data": {"gamma": {
+                "gamma_wall_proxy": 38800, "gamma_flip_proxy": 39750.5,
+            }}},
+        }
+        result = _gamma_proxy_fallback(
+            lambda day: payloads[day], ["2026-11-05", "2026-11-04"])
+        self.assertEqual(result["wall"], 38900)
+        self.assertEqual(result["wall_date"], "2026-11-05")
+        self.assertEqual(result["flip"], 39750.5)
+        self.assertEqual(result["flip_date"], "2026-11-04")
+        self.assertEqual(result["payload"]["data"]["gamma"]["gamma_flip_proxy"], 39750.5)
+        self.assertEqual(result["payload"]["data"]["call_wall"]["strike"], 39000)
+
+    def test_no_compact_proxy_values_returns_empty_payload(self):
+        result = _gamma_proxy_fallback(
+            lambda day: {"data": {"gamma": {}}}, ["2026-11-05", "2026-11-04"])
+        self.assertIsNone(result["payload"])
+        self.assertIsNone(result["wall"])
+        self.assertIsNone(result["flip"])
+
+    def test_missing_flip_diagnostic_distinguishes_usable_gex_model(self):
+        unavailable, notes = _gamma_status(
+            ["gamma_flip"], False, 38900, None,
+            "options-gamma-levels", gex_model_available=True)
+        self.assertIn("gamma_flip", unavailable)
+        self.assertTrue(any("逐履約價 GEX 模型仍可用" in note for note in notes))
+        self.assertFalse(any("原始端點與 Proxy 備援皆未取得" in note for note in notes))
+
     def test_gamma_levels_fetch_uses_requested_t0_date(self):
         response = Mock(status_code=200)
         response.json.return_value = {
