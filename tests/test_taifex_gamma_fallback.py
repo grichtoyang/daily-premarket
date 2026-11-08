@@ -46,6 +46,27 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertIsNone(result["payload"])
         self.assertIsNone(result["wall"])
         self.assertIsNone(result["flip"])
+        self.assertEqual(
+            [item["requested_date"] for item in result["attempts"]],
+            ["2026-11-05", "2026-11-04"],
+        )
+        self.assertTrue(all(item["response"] == "available" for item in result["attempts"]))
+        self.assertTrue(all(item["gamma_flip_proxy"] is None for item in result["attempts"]))
+
+    def test_compact_proxy_fallback_records_endpoint_failure_per_date(self):
+        with patch.dict(_LAST_FETCH_ERRORS, {
+            "options-market-structure-compact": {
+                "error_code": "HTTP_503", "error": "Worker HTTP 503",
+            }
+        }, clear=True):
+            result = _gamma_proxy_fallback(
+                lambda day: None, ["2026-11-06", "2026-11-05"])
+        self.assertEqual(result["payload"], None)
+        self.assertEqual(
+            [item["error_code"] for item in result["attempts"]],
+            ["HTTP_503", "HTTP_503"],
+        )
+        self.assertTrue(all(item["response"] == "unavailable" for item in result["attempts"]))
 
     def test_missing_flip_diagnostic_distinguishes_usable_gex_model(self):
         unavailable, notes = _gamma_status(
