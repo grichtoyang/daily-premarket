@@ -2512,6 +2512,77 @@ function calculateKeyLevelsForExpiry(chain, expiry) {
 }
 
 
+function findGammaFlipBracket(previousS, previousGex, currentS, currentGex) {
+  if (
+    !Number.isFinite(previousGex) ||
+    !Number.isFinite(currentGex)
+  ) {
+    return null;
+  }
+
+  if (previousGex === 0) {
+    return {
+      lower_underlying: previousS,
+      upper_underlying: previousS,
+      estimated_underlying: previousS,
+      lower_net_gex_1pct: previousGex,
+      upper_net_gex_1pct: previousGex
+    };
+  }
+
+  if (currentGex === 0) {
+    return {
+      lower_underlying: currentS,
+      upper_underlying: currentS,
+      estimated_underlying: currentS,
+      lower_net_gex_1pct: currentGex,
+      upper_net_gex_1pct: currentGex
+    };
+  }
+
+  if (
+    (previousGex < 0 && currentGex > 0) ||
+    (previousGex > 0 && currentGex < 0)
+  ) {
+    const estimated =
+      previousS +
+      (-previousGex * (currentS - previousS)) /
+      (currentGex - previousGex);
+
+    return {
+      lower_underlying: previousS,
+      upper_underlying: currentS,
+      estimated_underlying: estimated,
+      lower_net_gex_1pct: previousGex,
+      upper_net_gex_1pct: currentGex
+    };
+  }
+
+  return null;
+}
+
+function summarizeExpiryOi(rows, type) {
+  const contracts = rows.filter(row => row.type === type);
+  let total = 0;
+  let invalidRows = 0;
+
+  for (const row of contracts) {
+    const oi = Number(row.open_interest);
+    if (!Number.isFinite(oi) || oi < 0) {
+      invalidRows += 1;
+      continue;
+    }
+    total += oi;
+  }
+
+  return {
+    rows: contracts.length,
+    valid_rows: contracts.length - invalidRows,
+    invalid_rows: invalidRows,
+    total: invalidRows === 0 ? total : null
+  };
+}
+
 function buildGammaForCommonExpiry(
   chain,
   deltaRows,
@@ -2525,6 +2596,13 @@ function buildGammaForCommonExpiry(
 
   const deltaRowsForExpiry =
     filterExpiry(deltaRows, expiry, true);
+
+  const expiryMetadata = {
+    contract_month: expiry.contract_month ?? null,
+    expiry_date: expiry.expiry ?? null,
+    call_oi: summarizeExpiryOi(chainRows, "call"),
+    put_oi: summarizeExpiryOi(chainRows, "put")
+  };
 
   const chainKeys =
     new Set(
@@ -2552,6 +2630,7 @@ function buildGammaForCommonExpiry(
   if (!matched) {
     return {
       found: false,
+      ...expiryMetadata,
       reason: "No overlapping Chain/Delta strike keys",
       chain_rows: chainRows.length,
       delta_rows: deltaRowsForExpiry.length,
@@ -2565,6 +2644,7 @@ function buildGammaForCommonExpiry(
   ) {
     return {
       found: false,
+      ...expiryMetadata,
       reason: "Underlying TAIEX spot/index price unavailable; TX futures price is not substituted",
       chain_rows: chainRows.length,
       delta_rows: deltaRowsForExpiry.length,
@@ -2578,6 +2658,7 @@ function buildGammaForCommonExpiry(
   if (!Number.isFinite(days) || days <= 0) {
     return {
       found: false,
+      ...expiryMetadata,
       reason: "Gamma expiry is not in the future",
       chain_rows: chainRows.length,
       delta_rows: deltaRowsForExpiry.length,
@@ -2727,6 +2808,7 @@ function buildGammaForCommonExpiry(
   ) {
     return {
       found: false,
+      ...expiryMetadata,
       reason:
         !modeled.length
           ? "No valid option IV/Gamma could be modeled from settlement prices"
@@ -2884,35 +2966,17 @@ function buildGammaForCommonExpiry(
           : Math.max(gammaFlipDiagnostics.max_net_gex_1pct, currentGex);
     }
 
-    if (
-      Number.isFinite(previousGex) &&
-      Number.isFinite(currentGex) &&
-      (
-        (previousGex < 0 && currentGex > 0) ||
-        (previousGex > 0 && currentGex < 0)
-      )
-    ) {
+    const crossing = findGammaFlipBracket(
+      previousS,
+      previousGex,
+      S,
+      currentGex
+    );
 
-      const estimated =
-        previousGex === currentGex
-          ? previousS
-          : previousS +
-            (
-              -previousGex *
-              (S - previousS)
-            ) /
-            (currentGex - previousGex);
-
-      gammaFlip = {
-        lower_underlying: previousS,
-        upper_underlying: S,
-        estimated_underlying: estimated,
-        lower_net_gex_1pct: previousGex,
-        upper_net_gex_1pct: currentGex
-      };
+    if (crossing) {
+      gammaFlip = crossing;
       gammaFlipDiagnostics.zero_crossings += 1;
       gammaFlipDiagnostics.found = true;
-
       break;
     }
 
@@ -2938,6 +3002,7 @@ function buildGammaForCommonExpiry(
     chain_rows: chainRows.length,
     delta_rows: deltaRowsForExpiry.length,
     matched_strikes: matched,
+    ...expiryMetadata,
 
     option_contracts_modeled: modeled.length,
     eligible_contracts: matchedPositiveOiRows,
@@ -4027,6 +4092,18 @@ export default {
                 matched_strikes:
                   gammaRaw.matched_strikes,
 
+                contract_month:
+                  gammaRaw.contract_month ?? null,
+
+                expiry_date:
+                  gammaRaw.expiry_date ?? null,
+
+                call_oi:
+                  gammaRaw.call_oi ?? null,
+
+                put_oi:
+                  gammaRaw.put_oi ?? null,
+
                 gamma_diagnostics:
                   gammaRaw.gamma_diagnostics ||
                   null
@@ -4045,6 +4122,18 @@ export default {
                   gammaRaw.delta_rows || 0,
                 matched_strikes:
                   gammaRaw.matched_strikes || 0,
+
+                contract_month:
+                  gammaRaw.contract_month ?? null,
+
+                expiry_date:
+                  gammaRaw.expiry_date ?? null,
+
+                call_oi:
+                  gammaRaw.call_oi ?? null,
+
+                put_oi:
+                  gammaRaw.put_oi ?? null,
 
                 gamma_diagnostics:
                   gammaRaw.gamma_diagnostics ||
@@ -4159,6 +4248,18 @@ export default {
               gamma_flip_proxy:
                 gamma.gamma_flip?.estimated_underlying ??
                 null,
+
+              contract_month:
+                gamma.contract_month ?? null,
+
+              expiry_date:
+                gamma.expiry_date ?? null,
+
+              call_oi:
+                gamma.call_oi ?? null,
+
+              put_oi:
+                gamma.put_oi ?? null,
 
               net_gex_proxy:
                 gamma.net_gex_1pct ??
