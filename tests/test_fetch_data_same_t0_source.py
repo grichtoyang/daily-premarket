@@ -119,7 +119,9 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 """
         merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
         self.assertIn("| Gamma Flip 價位 | unavailable | unavailable |", merged)
+        self.assertNotIn("41,102.53", merged)
         self.assertIn("| 資料日期 | unavailable | unavailable |", merged)
+        self.assertNotIn("2026-11-05 | TAIFEX Proxy", merged)
         self.assertNotIn("沿用前版（原來源：TAIFEX Proxy (options-gamma-levels)）", merged)
 
 
