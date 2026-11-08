@@ -252,35 +252,36 @@ def get(t0, timeout=6):
             )
             return initial
         remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                raise TimeoutError("TWSE self-built ratio time budget exhausted before historical prices")
+        if remaining <= 0:
+            initial["reason"] = "partial calculation only; time budget exhausted before historical prices"
+            return initial
 
-            historical = {}
-            executor = ThreadPoolExecutor(max_workers=min(8, len(missing_codes)))
-            futures = {
-                executor.submit(
-                    _last_valid_close, code, date8, timeout=2.0,
-                    max_months=12, deadline=deadline
-                ): code
-                for code in missing_codes
-            }
-            try:
-                for future in as_completed(futures, timeout=max(0.05, remaining)):
-                    code = futures[future]
-                    try:
-                        found = future.result()
-                        if found:
-                            historical[code] = found
-                    except Exception:
-                        continue
-            except FuturesTimeoutError:
-                pass
-            finally:
-                # Do not block the caller after the shared deadline has expired.
-                # Each worker's HTTP request is itself capped by that deadline.
-                executor.shutdown(wait=False, cancel_futures=True)
+        historical = {}
+        executor = ThreadPoolExecutor(max_workers=min(8, len(missing_codes)))
+        futures = {
+            executor.submit(
+                _last_valid_close, code, date8, timeout=2.0,
+                max_months=12, deadline=deadline
+            ): code
+            for code in missing_codes
+        }
+        try:
+            for future in as_completed(futures, timeout=max(0.05, remaining)):
+                code = futures[future]
+                try:
+                    found = future.result()
+                    if found:
+                        historical[code] = found
+                except Exception:
+                    continue
+        except FuturesTimeoutError:
+            pass
+        finally:
+            # Do not block the caller after the shared deadline has expired.
+            # Each worker's HTTP request is itself capped by that deadline.
+            executor.shutdown(wait=False, cancel_futures=True)
 
-            return calculate(t0, payloads[0], payloads[1], historical_prices=historical)
+        return calculate(t0, payloads[0], payloads[1], historical_prices=historical)
     except Exception as exc:
         return {"ok": False, "date": t0, "ratio": None,
                 "reason": f"{type(exc).__name__}: {exc}"}
