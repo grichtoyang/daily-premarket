@@ -92,6 +92,16 @@ def _source_if_available(value, source: str) -> str:
     return source if value is not None else MISSING
 
 
+def _snapshot_chain_source_label(chain: dict | None, snapshot_date: str | None, t0: str) -> str:
+    """Attribute calculated OI changes to the snapshot bundle that supplied the prior chain."""
+    data = chain if isinstance(chain, dict) else {}
+    if data.get("c_chg") is None and data.get("p_chg") is None:
+        return MISSING
+    prior_date = data.get("snapshot_date") or snapshot_date
+    date_label = prior_date or "快照日期未提供"
+    return f"TAIFEX Proxy snapshot bundle ({date_label}→{t0})"
+
+
 def _combine_source_labels(*sources: str) -> str:
     """Join distinct available source labels, omitting unavailable entries."""
     return "／".join(dict.fromkeys(s for s in sources if s and s != MISSING)) or MISSING
@@ -438,6 +448,13 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                         old = None
                     # Gamma Flip 本次沒有零交叉時，價位與日期都必須維持 unavailable，
                     # 不可由同 T0 保護機制回填前版 Flip 價位或日期。
+                    # 選擇權表內的「本次報告產製時間」是執行稽核時間，不是 T0 市場數據，必須每次重跑刷新。
+                    _volatile_option_timestamp = (
+                        _label == "本次報告產製時間"
+                        and any("選擇權交易日期" in (part or "") for part in hkey)
+                    )
+                    if _volatile_option_timestamp:
+                        old = None
                     _gamma_flip_section = any("Gamma Flip" in (part or "") for part in hkey)
                     if _gamma_flip_section:
                         _flip_row = new_rows.get((hkey, "Gamma Flip 價位"))
@@ -478,6 +495,10 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                     _fb = ("遞補" in new_last) and ("遞補" not in old_last)
                     _touched = False
                     _carried_forward = False
+                    _night_quote_row = (
+                        any("台指期近月夜盤行情" in (part or "") for part in hkey)
+                        and _label in {"開盤價", "最高價", "最低價", "收盤價", "漲跌點數", "漲跌幅", "成交量", "夜盤高點及低點"}
+                    )
                     for j in range(1, len(new_cells)):
                         if new_cells[j] == MISSING and old[j] not in (MISSING, ""):
                             new_cells[j] = old[j]
@@ -492,6 +513,8 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                                 and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
                                 and new_cells[j] != old[j]):
                             new_cells[j] = old[j]
+                            if _night_quote_row:
+                                _carried_forward = True
                             kept += 1
                             _section = "／".join(x for x in hkey if x)
                             _row_label = f"{_section}／{_label}" if _section else _label
@@ -755,6 +778,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _sg = fx.get("snapchg") or {}
     _sdate = _sg.get("date")
     SRC_SNAP = f"TAIFEX Proxy snapshots ({_sdate})" if _sdate else "端點未提供"
+    _ch = (_sg.get("chain") or {})
+    SRC_CHAIN_SNAP = _snapshot_chain_source_label(_ch, _sdate, t0)
     A(f"近月契約月份：{d['month'] or MISSING} (日盤成交量最大者)；交易日期：{t0}")
     A("")
     A("### 1．台指期近月日盤行情")
@@ -963,11 +988,10 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 2．Call 總成交量、OI、OI 增減")
     A("")
-    _ch = (_sg.get("chain") or {})
     A(_tbl([("Call 總成交量", _fi(_ot['c_vol']), SRC_FX if _ot['c_vol'] is not None else MISSING),
             ("Call 總未平倉量 OI", _fi(_ot['c_oi']), SRC_FX if _ot['c_oi'] is not None else MISSING),
             ("Call OI 增減（共同合約）" + (f" ({_sdate}→{t0})" if _ch.get("c_chg") is not None else ""),
-             _f2s(_ch.get("c_chg")), SRC_SNAP if _ch.get("c_chg") is not None else "端點未提供")],
+             _f2s(_ch.get("c_chg")), SRC_CHAIN_SNAP if _ch.get("c_chg") is not None else MISSING)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 3．Put 總成交量、OI、OI 增減")
@@ -975,7 +999,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(_tbl([("Put 總成交量", _fi(_ot['p_vol']), SRC_FX if _ot['p_vol'] is not None else MISSING),
             ("Put 總未平倉量 OI", _fi(_ot['p_oi']), SRC_FX if _ot['p_oi'] is not None else MISSING),
             ("Put OI 增減（共同合約）" + (f" ({_sdate}→{t0})" if _ch.get("p_chg") is not None else ""),
-             _f2s(_ch.get("p_chg")), SRC_SNAP if _ch.get("p_chg") is not None else "端點未提供")],
+             _f2s(_ch.get("p_chg")), SRC_CHAIN_SNAP if _ch.get("p_chg") is not None else MISSING)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 4．Call／Put 比例與變化")
@@ -1088,17 +1112,17 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             return MISSING
         return f"{_fi(x['strike'])} ({_f2s(x['d_oi'])})"
     A(_tbl([("Call OI 增加最多的履約價（共同合約）", _mv(_ch.get("c_up"), 1),
-             SRC_SNAP if _ch.get("c_up") else "端點未提供"),
+             SRC_CHAIN_SNAP if _ch.get("c_up") else MISSING),
             ("Call OI 減少最多的履約價（共同合約）", _mv(_ch.get("c_dn"), 1),
-             SRC_SNAP if _ch.get("c_dn") else "端點未提供")],
+             SRC_CHAIN_SNAP if _ch.get("c_dn") else MISSING)],
            ("項目", "履約價 (增減口數)", "資料來源")))
     A("")
     A("### 10．Put OI 增減集中區")
     A("")
     A(_tbl([("Put OI 增加最多的履約價（共同合約）", _mv(_ch.get("p_up"), 1),
-             SRC_SNAP if _ch.get("p_up") else "端點未提供"),
+             SRC_CHAIN_SNAP if _ch.get("p_up") else MISSING),
             ("Put OI 減少最多的履約價（共同合約）", _mv(_ch.get("p_dn"), 1),
-             SRC_SNAP if _ch.get("p_dn") else "端點未提供")],
+             SRC_CHAIN_SNAP if _ch.get("p_dn") else MISSING)],
            ("項目", "履約價 (增減口數)", "資料來源")))
     A("")
     A("### 11．Call Wall")
