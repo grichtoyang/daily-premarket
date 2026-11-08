@@ -66,7 +66,7 @@
 
 ### 4. 融資融券
 
-**資料來源：** 上市+上櫃 `HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)` (金額口徑)；維持率 `TWSE 上市自建估算（當日暫估；資料日期：2026-11-06；估值 1240 檔；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）；Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS）`；官方無每日維持率序列
+**資料來源：** 上市+上櫃 `HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)` (金額口徑)；維持率 `Blave 上市市場融資維持率估算（當日暫估；資料日期：2026-11-06；自建計算備援）`；官方無每日維持率序列
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
@@ -93,8 +93,8 @@
 - 上櫃來源：TPEx S47（上櫃）；增減來源：TPEx S47（上櫃）
 - 借券賣出餘額完整性：`complete`
 - 借券賣出增減完整性：`complete`
-- TWSE TWT93U（上市）：資料日期：`20261106`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T10:38:28+08:00`；狀態：`unknown`
-- TPEx S47（上櫃）：資料日期：`20261106`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T10:38:28+08:00`；狀態：`unknown`
+- TWSE TWT93U（上市）：資料日期：`20261106`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T10:50:03+08:00`；狀態：`available_after_schedule`
+- TPEx S47（上櫃）：資料日期：`20261106`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-08T10:50:05+08:00`；狀態：`available_after_schedule`
 
 ### 6. 市場成交結構
 
@@ -637,6 +637,7 @@
 - 資料日期：2026-11-06；報告產製時間：2026-11-08 10:38:08；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 部分取得欄位 (0)：無
+- 註記：同 T0 穩定：33 格新舊皆有值，沿用前版（不再靜默覆寫）
 - 未取得欄位 (4)：futures.futures.night.settle, futures.futures.night.oi, futures.gamma_flip, options.chain_oi_change
 
 ## 五、資料來源、時間與完整性
@@ -649,7 +650,7 @@
 - otc：`TPEX OpenAPI tpex_mainborad_highlight`
 - institutional：`twse-proxy /institutional`
 - margin：`HiStock 上市+上櫃融資融券 (金額口徑；合計需雙市場欄位完整)`
-- margin_ratio：`TWSE 上市自建估算（當日暫估；資料日期：2026-11-06；估值 1240 檔；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）；Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS）`
+- margin_ratio：`Blave 上市市場融資維持率估算（當日暫估；資料日期：2026-11-06；自建計算備援）`
 - sbl_bal：`TWSE TWT72U（SLBNLB；上市+上櫃）`
 - sbl_sale_bal_listed：`TWSE TWT93U（上市）`
 - sbl_sale_bal_otc：`TPEx S47（上櫃）`
@@ -660,7 +661,7 @@
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：上市市場維持率為當日暫估，以 TWSE 自建計算為主；3 檔採最近有效收盤價（價格日期 20260402 至 20261106）。Blave 同 T0 交叉驗證 151.9300%；差異 0.209 個百分點；門檻 <1.00 個百分點；PASS。Blave 不可用不影響 DATA_REPORT 產出。
+- 註記：上市市場維持率為當日暫估；TWSE 自建計算未成功（ValueError: listed securities missing T0 close: ['1589']）；改用 Blave 同 T0 數值（2026-11-06）。
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
 - 本報告僅整理資料，不提供交易判斷。
 
