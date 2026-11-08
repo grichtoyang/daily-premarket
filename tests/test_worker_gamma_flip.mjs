@@ -190,4 +190,25 @@ const expiryRows = (contract_month, expiry, type = "call") => ({
   );
 }
 
+// Preserve exact contract-month matches ahead of earlier date-only label fallbacks.
+{
+  const result = findCommonExpiryWithDiagnostics(
+    [
+      expiryRows("202611W2", "2026-11-11"),
+      expiryRows("202611W3", "2026-11-18")
+    ],
+    [
+      expiryRows("202611W02", "2026-11-11"),
+      expiryRows("202611W3", "2026-11-18")
+    ],
+    "2026-11-06"
+  );
+  assert.equal(result.selected.contract_month, "202611W3");
+  assert.equal(
+    result.diagnostics.selection_reason,
+    "earliest_future_exact_common_expiry"
+  );
+  assert.equal(result.diagnostics.future_date_fallback_common_expiries.length, 1);
+}
+
 console.log("PASS: Worker Gamma Flip, OI, and expiry selection diagnostics");
