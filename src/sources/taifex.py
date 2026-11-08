@@ -609,8 +609,8 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
            "low": near.get("low"), "close": near.get("close"), "change": near.get("change"),
            "pct": _pct(near.get("change_percent")), "vol": near.get("total_volume"),
            "vol_day": near.get("regular_volume"), "oi": near.get("open_interest")}
+    # TAIFEX 不公布夜盤結算價與 OI；night 僅保留可用的成交量及 OHLC 行情。
     night = {"month": ah.get("contract_month"), "vol": ah.get("after_hours_volume"),
-             "oi": ah.get("open_interest"), "settle": ah.get("settlement_price"),
              "open": None, "high": None, "low": None, "close": None, "change": None, "pct": None,
              "via": "proxy"}
     # 夜盤 OHLC：proxy V1.4+ /futures-night-ohlc 優先，官方 DailyMarketReportFut 備援
