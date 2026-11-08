@@ -2441,6 +2441,8 @@ function buildExpirySelectionDiagnostics(chain, deltaRows, requestedISO) {
 
   const sameDay = commonExpiries.filter(item => item.expiry === requestedISO);
   const future = commonExpiries.filter(item => item.expiry > requestedISO);
+  const futureExact = future.filter(item => item.match_type === "exact_contract_month_and_expiry");
+  const futureDateFallback = future.filter(item => item.match_type === "unique_expiry_date_label_mismatch");
   return {
     requested_date: requestedISO,
     chain_expiries: chainExpiries,
@@ -2448,15 +2450,19 @@ function buildExpirySelectionDiagnostics(chain, deltaRows, requestedISO) {
     common_expiries: commonExpiries,
     same_day_common_expiries: sameDay,
     future_common_expiries: future,
+    future_exact_common_expiries: futureExact,
+    future_date_fallback_common_expiries: futureDateFallback,
     per_expiry_row_counts: [...perExpiryCounts.values()].sort((a, b) =>
-      a.expiry.localeCompare(b.expiry) || String(a.contract_month).localeCompare(String(b.contract_month))
+      a.expiry.localeCompare(b.expiry) || String(a.contract_month ?? "").localeCompare(String(b.contract_month ?? ""))
     )
   };
 }
 
 function findCommonExpiryWithDiagnostics(chain, deltaRows, requestedISO) {
   const diagnostics = buildExpirySelectionDiagnostics(chain, deltaRows, requestedISO);
-  const selected = diagnostics.future_common_expiries[0] || null;
+  // Preserve the prior exact-label preference, but skip all same-day expiries.
+  const selected = diagnostics.future_exact_common_expiries[0] ||
+    diagnostics.future_date_fallback_common_expiries[0] || null;
   return {
     selected: selected ? { contract_month: selected.contract_month, expiry: selected.expiry } : null,
     diagnostics: {
