@@ -113,7 +113,7 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertEqual(unavailable, ["gamma_flip"])
         self.assertEqual(len(notes), 2)
         self.assertIn("Wall 有值", notes[0])
-        self.assertIn("Gamma Flip 無資料", notes[1])
+        self.assertIn("Gamma Flip 原始端點與 Proxy 備援皆未取得有效價位", notes[1])
 
     def test_primary_and_proxy_failure_marks_both_unavailable(self):
         unavailable, notes = _gamma_status([], True, None, None, "compact proxy")
