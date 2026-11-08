@@ -915,7 +915,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _gex_levels = _valid_gex_levels(gdata.get("levels")) if g_pay is not None else []
     _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
     _gross_gex = gdata.get("gross_gex_1pct") if g_pay is not None else None
-    _gamma_expiry = _gamma_expiry_metadata(gdata if g_pay is not None else {}, prim_month)
+    _gamma_expiry = _gamma_expiry_metadata(gdata if g_pay is not None else cgamma, prim_month)
     if _gamma_expiry["gex_expiry_matches_primary"] is False:
         notes.append(
             "Gamma GEX 實際使用到期月份 {}（到期日 {}）與 Options Key Levels 主到期月份 {} 不同；"
