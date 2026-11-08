@@ -50,6 +50,10 @@ const findCommonExpiryWithDiagnostics = new Function(
   "buildExpirySelectionDiagnostics",
   `${declaration("findCommonExpiryWithDiagnostics", "\n\nfunction findCommonExpiry")}; return findCommonExpiryWithDiagnostics;`
 )(buildExpirySelectionDiagnostics);
+const scanGammaFlipRange = new Function(
+  "findGammaFlipBracket",
+  `${declaration("scanGammaFlipRange", "\n\nfunction buildGammaForCommonExpiry")}; return scanGammaFlipRange;`
+)(findGammaFlipBracket);
 
 assert.deepEqual(
   findGammaFlipBracket(100, 0, 110, 12),
@@ -118,6 +122,13 @@ assert.deepEqual(
 const expiryRows = (contract_month, expiry, type = "call") => ({
   contract_month, contract_expiry_date: expiry, type, strike: 40000
 });
+
+{
+  const result = scanGammaFlipRange(value => value - 105, 100, 110, 2);
+  assert.equal(result.gamma_flip.estimated_underlying, 105);
+  assert.equal(result.diagnostics.found, true);
+  assert.equal(result.diagnostics.evaluations, 4);
+}
 
 // Same-day common expiry is recorded but rejected; next future common expiry wins.
 {
