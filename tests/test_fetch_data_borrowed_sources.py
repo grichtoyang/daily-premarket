@@ -874,6 +874,35 @@ class DataReportWriteSafetyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _validate_data_report_text(incomplete, "2026-11-06")
 
+    def test_main_writes_valid_report_in_isolated_output_dir(self):
+        import io
+        import sys
+        from contextlib import redirect_stdout
+        from unittest.mock import patch
+        from src import fetch_data
+
+        with tempfile.TemporaryDirectory(prefix="dl07-fetch-main-") as directory:
+            out_dir = Path(directory)
+            expected = out_dir / "DATA_REPORT_20261106.md"
+            report = self.valid_report()
+
+            with patch.object(fetch_data, "OUT_DIR", out_dir), \
+                 patch.object(fetch_data, "build", return_value=report), \
+                 patch.object(sys, "argv", [
+                     "fetch_data.py", "--date", "2026-11-07",
+                     "--t0", "2026-11-06",
+                 ]), redirect_stdout(io.StringIO()) as output:
+                fetch_data.main()
+
+            self.assertTrue(expected.is_file())
+            self.assertEqual(expected.read_text(encoding="utf-8"), report)
+            fetch_data.validate_data_report_file(expected)
+            self.assertIn(f"[OK] report_path={expected}", output.getvalue())
+            self.assertEqual(sorted(path.name for path in out_dir.iterdir()), [
+                "DATA_REPORT_20261106.md",
+            ])
+
+
     def test_workflow_requires_success_exit_and_validated_report_path(self):
         from pathlib import Path
         workflow = (ROOT / ".github" / "workflows" / "daily_data.yml").read_text(encoding="utf-8")
