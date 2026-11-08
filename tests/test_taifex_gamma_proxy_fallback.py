@@ -1,6 +1,6 @@
 import unittest
 
-from src.sources.taifex import _gamma_proxy_fallback
+from src.sources.taifex import _gamma_proxy_fallback, _gamma_status
 
 
 class GammaProxyFallbackTests(unittest.TestCase):
@@ -53,6 +53,15 @@ class GammaProxyFallbackTests(unittest.TestCase):
         self.assertIsNone(result["payload"])
         self.assertIsNone(result["wall"])
         self.assertIsNone(result["flip"])
+
+    def test_missing_flip_is_not_misreported_as_missing_gex_model(self):
+        unavailable, notes = _gamma_status(
+            ["gamma_flip"], False, 38900, None,
+            "options-gamma-levels", gex_model_available=True,
+        )
+        self.assertIn("gamma_flip", unavailable)
+        self.assertTrue(any("逐履約價 GEX 模型仍可用" in note for note in notes))
+        self.assertFalse(any("原始端點與 Proxy 備援皆未取得" in note for note in notes))
 
 
 if __name__ == "__main__":
