@@ -46,11 +46,17 @@ class ListedMaintenanceRatioTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "date mismatch"):
             calculate("2026-10-30", margin, prices)
 
-    def test_rejects_missing_same_day_close(self):
+    def test_returns_diagnostic_partial_when_close_is_missing(self):
         margin, prices = self.fixtures()
         prices["tables"][0]["data"] = []
-        with self.assertRaisesRegex(ValueError, "missing T0 close"):
-            calculate("2026-10-30", margin, prices)
+        result = calculate("2026-10-30", margin, prices)
+        self.assertFalse(result["ok"])
+        self.assertTrue(result["partial"])
+        self.assertEqual(result["coverage"], 0.0)
+        self.assertEqual(result["priced_security_count"], 0)
+        self.assertEqual(result["missing_price_security_codes"], ["2330"])
+        self.assertEqual(result["classification"],
+                         "listed_market_partial_lower_bound_not_individual_account_ratio")
 
 
     def test_uses_explicit_historical_close_for_no_trade_security(self):
@@ -89,6 +95,29 @@ class ListedMaintenanceRatioTests(unittest.TestCase):
         margin["tables"][0]["data"][0][5] = "0"
         with self.assertRaisesRegex(ValueError, "non-positive"):
             calculate("2026-10-30", margin, prices)
+
+    @patch("src.sources.listed_maint_ratio._last_valid_close")
+    @patch("src.sources.listed_maint_ratio.requests.get")
+    def test_get_retries_missing_close_with_historical_price(self, get_request, historical_close):
+        margin, prices = self.fixtures()
+        prices["tables"][0]["data"] = []
+
+        class Response:
+            def __init__(self, payload):
+                self.payload = payload
+            def raise_for_status(self):
+                return None
+            def json(self):
+                return self.payload
+
+        get_request.side_effect = [Response(margin), Response(prices)]
+        historical_close.return_value = ("20261029", 95.0)
+        result = get("2026-10-30", timeout=1.0)
+        self.assertTrue(result["ok"])
+        self.assertFalse(result["partial"])
+        self.assertEqual(result["ratio"], 95.0)
+        self.assertEqual(result["stale_price_security_codes"], ["2330"])
+        historical_close.assert_called_once()
 
     @patch("src.sources.listed_maint_ratio.requests.get")
     def test_network_failure_returns_unavailable_with_bounded_timeout(self, get_request):
