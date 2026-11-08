@@ -2014,3 +2014,15 @@ P1 尚未開始。啟動前必須：
 - 注意：這些是新增的現存 Workflow 靜態邊界檢查；不代表舊 `test_p0_workflow_isolation.py` 中引用缺失 Workflow 的 4 個測試已執行或通過。該 4 個舊測試仍 **NOT TESTED**。3 個 stale source-text assertions 與 3 個 live API probes 的排除狀態亦不變。
 - DL-07 整體仍 **IN PROGRESS**：正式 Fetch／正式 `daily_data.yml` 執行及 Browser Desktop／Mobile 視覺稽核仍 **NOT TESTED**。本次未執行正式 Fetch、未寫入 DATA_REPORT、未部署 Pages、未 merge。
 - 後續不再擴充此靜態檢查清單；除非有新的可重現缺陷，不重跑本次已 PASS 的 282 tests、17F self-test 或歷史 fixture builds。
+
+## 2026-11-08｜DL-07 Fetch main isolated success-path test added（CI pending）
+
+- 產品分支：`phase2-p0-ui-fixes`。
+- 新增測試 `DataReportWriteSafetyTests.test_main_writes_valid_report_in_isolated_output_dir`，位於 `tests/test_fetch_data_borrowed_sources.py`。
+- 測試直接呼叫 `fetch_data.main()`，但以 mock `build()` 阻斷所有外部資料來源，並將 `OUT_DIR` 指向 `TemporaryDirectory`；驗證報告路徑、內容、正式檔案驗證器、成功輸出及暫存目錄內容。
+- 新增唯讀 Workflow：`.github/workflows/dl07-fetch-isolated-tests.yml`。只執行上述單一測試，checkout 釘選觸發 SHA，`contents: read`，並檢查 `data_reports/` 與 `dashboards/` 無變更；不呼叫正式 Fetch API、不執行 `daily_data.yml`、不 commit／push／deploy。
+- 產品 commits：測試 `71bc3a85579f68dfd506bdc7f215e72c500fcec2`；Workflow `aa4cba71b838bcf878de0cf3de53cd00736cfc0c`。各 commit changed-files API 分別確認只修改測試檔及 Workflow 檔。
+- 測試檔、Workflow 檔均已從產品分支回讀；`src/fetch_data.py` Blob SHA 維持 `6d8eb13004ab6273525b28b2d7396a7eaa24d61e`，沒有修改正式 Fetch 程式。
+- **CI 狀態：PENDING／尚未取得可驗證的 Actions run ID 與結果。** 因此新增測試尚未標記 PASS；不得推定 Workflow 已成功執行。
+- 本次未觸發正式 Fetch、未寫入正式 DATA_REPORT、未執行正式 `daily_data.yml`、未部署 Pages、未 merge。
+- DL-07 仍 **IN PROGRESS**。本項待獨立 Workflow CI 成功後才能標記 PASS；正式 API Fetch 與 Browser Desktop／Mobile 視覺稽核仍 **NOT TESTED**。
