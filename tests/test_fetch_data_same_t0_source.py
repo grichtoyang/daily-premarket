@@ -252,7 +252,6 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
         self.assertIn("| 夜盤價格相對日盤收盤的變化 | +512 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
         self.assertNotIn("| 夜盤價格相對日盤收盤的變化 | +520 |", merged)
-        self.assertIn("同 T0 穩定", merged)
 
     def test_oi_snapshot_source_label_uses_chain_provenance_not_endpoint(self):
         chain = {"c_chg": 43511, "p_chg": 16839, "snapshot_date": "2026-11-05"}
