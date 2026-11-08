@@ -1171,6 +1171,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A(f"- 起點／終點 Net GEX：{_f2(_flip_diag.get('start_net_gex_1pct'))}／{_f2(_flip_diag.get('end_net_gex_1pct'))}")
         A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_flip_diag.get('min_net_gex_1pct'))}／{_f2(_flip_diag.get('max_net_gex_1pct'))}")
         A(f"- 正負號交叉次數：{_flip_diag.get('zero_crossings', MISSING)}")
+        A("- 解讀限制：此 Flip 僅代表目前 Call 正／Put 負假設下的模型零交叉；Aggregate OI 無法識別 Dealer 實際淨部位，不等同市場實際 Dealer Gamma Flip。")
     A("")
     A("### 14A．GEX 整體曝險與履約價分布")
     A("")
@@ -1185,6 +1186,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         ("Net GEX（標的變動 1%）", f"{_f2(_gm.get('net_gex_1pct'))} NT$" if _gex_valid else MISSING, "TAIFEX Gamma model；NT$／標的變動 1%" if _gex_valid else "端點未提供"),
         ("Gross GEX（標的變動 1%）", f"{_f2(_gm.get('gross_gex_1pct'))} NT$" if _gex_valid else MISSING, "TAIFEX Gamma model；NT$／標的變動 1%" if _gex_valid else "端點未提供"),
         ("模型品質", _gm.get("quality") or MISSING, _gm.get("model") or MISSING),
+        ("部位正負號假設", _gm.get("sign_convention_note") or MISSING, "模型限制；非 TAIFEX 公布的 Dealer 部位"),
         ("履約價資料筆數", str(len(_gex_levels)) if _gex_valid else MISSING, f"資料日期：{_gm.get('date') or MISSING}"),
         ("正 Net GEX 最大履約價", _fi(_gex_pos[0]["strike"]) if _gex_pos else MISSING, "依 Net GEX 排序"),
         ("負 Net GEX 最低履約價", _fi(_gex_neg[0]["strike"]) if _gex_neg else MISSING, "依 Net GEX 排序")
