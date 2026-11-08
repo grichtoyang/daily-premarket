@@ -2383,38 +2383,97 @@ function uniqueExpiries(rows, requestedISO) {
   );
 }
 
-function findCommonExpiry(chain, deltaRows, requestedISO) {
-  const chainKeys = new Map();
+function buildExpirySelectionDiagnostics(chain, deltaRows, requestedISO) {
+  const chainExpiries = uniqueExpiries(chain, requestedISO);
+  const deltaExpiries = uniqueExpiries(deltaRows, requestedISO);
+  const chainByDate = new Map();
 
-  for (const x of uniqueExpiries(chain, requestedISO)) {
-    chainKeys.set(`${x.contract_month}|${x.expiry}`, x);
+  for (const item of chainExpiries) {
+    const matches = chainByDate.get(item.expiry) || [];
+    matches.push(item);
+    chainByDate.set(item.expiry, matches);
   }
 
-  for (const x of uniqueExpiries(deltaRows, requestedISO)) {
-    const key = `${x.contract_month}|${x.expiry}`;
-    if (chainKeys.has(key)) {
-      return chainKeys.get(key);
+  const common = new Map();
+  for (const deltaExpiry of deltaExpiries) {
+    const exact = chainExpiries.find(item =>
+      item.contract_month === deltaExpiry.contract_month &&
+      item.expiry === deltaExpiry.expiry
+    );
+    if (exact) {
+      common.set(`${exact.contract_month}|${exact.expiry}|${deltaExpiry.contract_month}`, {
+        contract_month: exact.contract_month,
+        expiry: exact.expiry,
+        delta_contract_month: deltaExpiry.contract_month,
+        match_type: "exact_contract_month_and_expiry"
+      });
+      continue;
+    }
+    const sameDate = chainByDate.get(deltaExpiry.expiry) || [];
+    if (sameDate.length === 1) {
+      const match = sameDate[0];
+      common.set(`${match.contract_month}|${match.expiry}|${deltaExpiry.contract_month}`, {
+        contract_month: match.contract_month,
+        expiry: match.expiry,
+        delta_contract_month: deltaExpiry.contract_month,
+        match_type: "unique_expiry_date_label_mismatch"
+      });
     }
   }
 
-  /*
-   * TAIFEX can use different contract-month labels for the
-   * same expiry in different reports. Fall back to expiry
-   * date only, but only when the date is unique on both sides.
-   */
-  const chainByDate = new Map();
-  for (const x of uniqueExpiries(chain, requestedISO)) {
-    const arr = chainByDate.get(x.expiry) || [];
-    arr.push(x);
-    chainByDate.set(x.expiry, arr);
+  const commonExpiries = [...common.values()].sort((a, b) =>
+    a.expiry.localeCompare(b.expiry) || a.contract_month.localeCompare(b.contract_month)
+  );
+  const perExpiryCounts = new Map();
+  for (const [rows, side] of [[chain, "chain_rows"], [deltaRows, "delta_rows"]]) {
+    for (const row of rows) {
+      const expiry = isoCompactDate(row.contract_expiry_date);
+      if (!expiry) continue;
+      const key = `${row.contract_month}|${expiry}`;
+      const item = perExpiryCounts.get(key) || {
+        contract_month: row.contract_month, expiry, chain_rows: 0, delta_rows: 0
+      };
+      item[side] += 1;
+      perExpiryCounts.set(key, item);
+    }
   }
 
-  for (const x of uniqueExpiries(deltaRows, requestedISO)) {
-    const matches = chainByDate.get(x.expiry) || [];
-    if (matches.length === 1) return matches[0];
-  }
+  const sameDay = commonExpiries.filter(item => item.expiry === requestedISO);
+  const future = commonExpiries.filter(item => item.expiry > requestedISO);
+  return {
+    requested_date: requestedISO,
+    chain_expiries: chainExpiries,
+    delta_expiries: deltaExpiries,
+    common_expiries: commonExpiries,
+    same_day_common_expiries: sameDay,
+    future_common_expiries: future,
+    per_expiry_row_counts: [...perExpiryCounts.values()].sort((a, b) =>
+      a.expiry.localeCompare(b.expiry) || String(a.contract_month).localeCompare(String(b.contract_month))
+    )
+  };
+}
 
-  return null;
+function findCommonExpiryWithDiagnostics(chain, deltaRows, requestedISO) {
+  const diagnostics = buildExpirySelectionDiagnostics(chain, deltaRows, requestedISO);
+  const selected = diagnostics.future_common_expiries[0] || null;
+  return {
+    selected: selected ? { contract_month: selected.contract_month, expiry: selected.expiry } : null,
+    diagnostics: {
+      ...diagnostics,
+      selected,
+      selection_reason: selected
+        ? (selected.match_type === "exact_contract_month_and_expiry"
+            ? "earliest_future_exact_common_expiry"
+            : "earliest_future_unique_expiry_date_match")
+        : (diagnostics.same_day_common_expiries.length
+            ? "same_day_common_expiry_rejected_no_positive_time_to_expiry"
+            : "no_future_common_chain_delta_expiry")
+    }
+  };
+}
+
+function findCommonExpiry(chain, deltaRows, requestedISO) {
+  return findCommonExpiryWithDiagnostics(chain, deltaRows, requestedISO).selected;
 }
 
 function filterExpiry(rows, expiry, allowLabelMismatch = false) {
@@ -2592,6 +2651,40 @@ function summarizeExpiryOi(rows, type) {
     invalid_rows: invalidRows,
     total: invalidRows === 0 ? total : null
   };
+}
+
+function scanGammaFlipRange(totalGexAt, lower, upper, step) {
+  let previousS = lower;
+  let previousGex = totalGexAt(previousS);
+  let gammaFlip = null;
+  const diagnostics = {
+    search_lower_underlying: lower, search_upper_underlying: upper, step,
+    evaluations: 1, start_net_gex_1pct: previousGex, end_net_gex_1pct: previousGex,
+    min_net_gex_1pct: Number.isFinite(previousGex) ? previousGex : null,
+    max_net_gex_1pct: Number.isFinite(previousGex) ? previousGex : null,
+    zero_crossings: 0, found: false
+  };
+  for (let S = lower + step; S <= upper + step / 2; S += step) {
+    const currentGex = totalGexAt(S);
+    diagnostics.evaluations += 1;
+    diagnostics.end_net_gex_1pct = currentGex;
+    if (Number.isFinite(currentGex)) {
+      diagnostics.min_net_gex_1pct = diagnostics.min_net_gex_1pct === null
+        ? currentGex : Math.min(diagnostics.min_net_gex_1pct, currentGex);
+      diagnostics.max_net_gex_1pct = diagnostics.max_net_gex_1pct === null
+        ? currentGex : Math.max(diagnostics.max_net_gex_1pct, currentGex);
+    }
+    const crossing = findGammaFlipBracket(previousS, previousGex, S, currentGex);
+    if (crossing) {
+      gammaFlip = crossing;
+      diagnostics.zero_crossings += 1;
+      diagnostics.found = true;
+      break;
+    }
+    previousS = S;
+    previousGex = currentGex;
+  }
+  return { gamma_flip: gammaFlip, diagnostics };
 }
 
 function buildGammaForCommonExpiry(
@@ -2995,6 +3088,11 @@ function buildGammaForCommonExpiry(
     previousGex = currentGex;
   }
 
+  // Diagnostic only: the formal production Flip remains the existing +/-10% scan.
+  const wideRange = scanGammaFlipRange(
+    totalGexAt, underlyingPrice * 0.85, underlyingPrice * 1.15, step
+  );
+
   return {
     found: true,
     model:
@@ -3033,6 +3131,8 @@ function buildGammaForCommonExpiry(
     },
     gamma_flip: gammaFlip,
     gamma_flip_diagnostics: gammaFlipDiagnostics,
+    gamma_flip_wide_range: wideRange.gamma_flip,
+    gamma_flip_wide_range_diagnostics: wideRange.diagnostics,
     net_gex_1pct: netGexCurrent,
     gross_gex_1pct: grossGexCurrent,
     levels
@@ -4444,12 +4544,13 @@ export default {
         let commonExpiry = null;
 
         if (deltaResult.found) {
-          commonExpiry =
-            findCommonExpiry(
+          const expirySelection =
+            findCommonExpiryWithDiagnostics(
               chainResult.rows,
               deltaResult.rows,
               queryDate
             );
+          commonExpiry = expirySelection.selected;
 
           if (commonExpiry) {
             gamma =
@@ -4481,6 +4582,7 @@ export default {
                     matched_strikes:
                       0
                   };
+            gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
           }
         }
 
@@ -4540,6 +4642,12 @@ export default {
                       gamma.gamma_flip || null,
                     gamma_flip_diagnostics:
                       gamma.gamma_flip_diagnostics || null,
+                    gamma_flip_wide_range:
+                      gamma.gamma_flip_wide_range || null,
+                    gamma_flip_wide_range_diagnostics:
+                      gamma.gamma_flip_wide_range_diagnostics || null,
+                    expiry_selection_diagnostics:
+                      gamma.expiry_selection_diagnostics || null,
                     net_gex_1pct:
                       gamma.net_gex_1pct ?? null,
                     gross_gex_1pct:
@@ -4742,12 +4850,13 @@ export default {
             queryDate
           );
 
-        const gammaExpiry =
-          findCommonExpiry(
+        const expirySelection =
+          findCommonExpiryWithDiagnostics(
             parsedChain.data,
             deltaResult.rows,
             queryDate
           );
+        const gammaExpiry = expirySelection.selected;
 
         const gamma =
           gammaExpiry && taiexResult.found
@@ -4777,6 +4886,7 @@ export default {
                   ? "TXO Chain and Delta have no matching expiry for requested date"
                   : (taiexResult.reason || "TAIEX underlying price unavailable")
               };
+        gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
 
         return json({
 
