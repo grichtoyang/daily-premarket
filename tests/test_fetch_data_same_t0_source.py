@@ -212,6 +212,48 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("| 成交量 | 70,120 | 口 | TAIFEX Proxy |", merged)
         self.assertNotIn("沿用前版", merged)
 
+    def test_night_derived_rows_refresh_source_when_values_are_unchanged(self):
+        old = """# DATA_REPORT_20261106
+- T0 交易日期：`2026-11-06`
+- 產出盤別：`全日`
+
+## 三、期貨
+### 6．期貨與現貨關係
+| 項目 | 數值 | 資料來源 |
+|---|---|---|
+| 夜盤價格相對日盤收盤的變化 | +512 | 沿用前版（原來源：TAIFEX Proxy） |
+### 7．日盤、夜盤與籌碼變化對照
+#### 7.1 日夜盤價格與成交量對照 (變化 = 日盤 - 夜盤)
+| 項目 | 日盤 | 夜盤 | 變化 (日-夜) | 資料來源 |
+|---|---|---|---|---|
+| 收盤價 | 39,786 | 40,298 | -512 | 沿用前版（原來源：TAIFEX Proxy） |
+| 成交量 | 143,277 | 69,882 | +73,395 | 沿用前版（原來源：TAIFEX Proxy） |
+"""
+        new = old.replace("沿用前版（原來源：TAIFEX Proxy）", "TAIFEX Proxy")
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertIn("| 夜盤價格相對日盤收盤的變化 | +512 | TAIFEX Proxy |", merged)
+        self.assertIn("| 收盤價 | 39,786 | 40,298 | -512 | TAIFEX Proxy |", merged)
+        self.assertIn("| 成交量 | 143,277 | 69,882 | +73,395 | TAIFEX Proxy |", merged)
+        self.assertNotIn("沿用前版", merged)
+        self.assertNotIn("同 T0 穩定", merged)
+
+    def test_night_derived_rows_still_freeze_when_values_change(self):
+        old = """# DATA_REPORT_20261106
+- T0 交易日期：`2026-11-06`
+- 產出盤別：`全日`
+
+## 三、期貨
+### 6．期貨與現貨關係
+| 項目 | 數值 | 資料來源 |
+|---|---|---|
+| 夜盤價格相對日盤收盤的變化 | +512 | 沿用前版（原來源：TAIFEX Proxy） |
+"""
+        new = old.replace("+512", "+520").replace("沿用前版（原來源：TAIFEX Proxy）", "TAIFEX Proxy")
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertIn("| 夜盤價格相對日盤收盤的變化 | +512 | 沿用前版（原來源：TAIFEX Proxy） |", merged)
+        self.assertNotIn("| 夜盤價格相對日盤收盤的變化 | +520 |", merged)
+        self.assertIn("同 T0 穩定", merged)
+
     def test_oi_snapshot_source_label_uses_chain_provenance_not_endpoint(self):
         chain = {"c_chg": 43511, "p_chg": 16839, "snapshot_date": "2026-11-05"}
         self.assertEqual(
