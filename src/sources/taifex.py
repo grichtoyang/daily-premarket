@@ -680,7 +680,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                                     "net": r.get("net_volume"),
                                     "long_amt_yi": _yi(r.get("long_amount")), "short_amt_yi": _yi(r.get("short_amount")),
                                     "net_amt_yi": _yi(r.get("net_amount"))}
-    notes.append("法人交易量變化無昨日交易端點，標 unavailable")
+    notes.append("法人交易量未提供前日變化端點；日盤、夜盤交易量及日夜淨額差仍照常列示")
 
     # ---------- 期貨 6：期現關係 ----------
     basis = None
