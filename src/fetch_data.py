@@ -1260,7 +1260,6 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
     for _coverage_line in _coverage_status_lines(s.get("partial", []), _all_unav):
         A(_coverage_line)
-    A(f"- 註記：{nn}")
     A("")
     A("## 五、資料來源、時間與完整性")
     A("")
