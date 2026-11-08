@@ -959,7 +959,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _ch = (_sg.get("chain") or {})
     A(_tbl([("Call 總成交量", _fi(_ot['c_vol']), SRC_FX if _ot['c_vol'] is not None else MISSING),
             ("Call 總未平倉量 OI", _fi(_ot['c_oi']), SRC_FX if _ot['c_oi'] is not None else MISSING),
-            ("Call OI 增減" + (f" ({_sdate}→{t0})" if _ch.get("c_chg") is not None else ""),
+            ("Call OI 增減（共同合約）" + (f" ({_sdate}→{t0})" if _ch.get("c_chg") is not None else ""),
              _f2s(_ch.get("c_chg")), SRC_SNAP if _ch.get("c_chg") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
     A("")
@@ -967,7 +967,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A(_tbl([("Put 總成交量", _fi(_ot['p_vol']), SRC_FX if _ot['p_vol'] is not None else MISSING),
             ("Put 總未平倉量 OI", _fi(_ot['p_oi']), SRC_FX if _ot['p_oi'] is not None else MISSING),
-            ("Put OI 增減" + (f" ({_sdate}→{t0})" if _ch.get("p_chg") is not None else ""),
+            ("Put OI 增減（共同合約）" + (f" ({_sdate}→{t0})" if _ch.get("p_chg") is not None else ""),
              _f2s(_ch.get("p_chg")), SRC_SNAP if _ch.get("p_chg") is not None else "端點未提供")],
            ("項目", "數值", "資料來源")))
     A("")
@@ -1080,17 +1080,17 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         if not x:
             return MISSING
         return f"{_fi(x['strike'])} ({_f2s(x['d_oi'])})"
-    A(_tbl([("Call OI 增加最多的履約價", _mv(_ch.get("c_up"), 1),
+    A(_tbl([("Call OI 增加最多的履約價（共同合約）", _mv(_ch.get("c_up"), 1),
              SRC_SNAP if _ch.get("c_up") else "端點未提供"),
-            ("Call OI 減少最多的履約價", _mv(_ch.get("c_dn"), 1),
+            ("Call OI 減少最多的履約價（共同合約）", _mv(_ch.get("c_dn"), 1),
              SRC_SNAP if _ch.get("c_dn") else "端點未提供")],
            ("項目", "履約價 (增減口數)", "資料來源")))
     A("")
     A("### 10．Put OI 增減集中區")
     A("")
-    A(_tbl([("Put OI 增加最多的履約價", _mv(_ch.get("p_up"), 1),
+    A(_tbl([("Put OI 增加最多的履約價（共同合約）", _mv(_ch.get("p_up"), 1),
              SRC_SNAP if _ch.get("p_up") else "端點未提供"),
-            ("Put OI 減少最多的履約價", _mv(_ch.get("p_dn"), 1),
+            ("Put OI 減少最多的履約價（共同合約）", _mv(_ch.get("p_dn"), 1),
              SRC_SNAP if _ch.get("p_dn") else "端點未提供")],
            ("項目", "履約價 (增減口數)", "資料來源")))
     A("")
