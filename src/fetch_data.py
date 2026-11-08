@@ -1219,7 +1219,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     if _delta_fetch_diag:
         A("")
         A("**TAIFEX Delta 原始資料與 Parser 階段診斷**")
-        A("`\x60\x60\x60json")
+        A("\x60\x60\x60json")
         A(json.dumps(_delta_fetch_diag, ensure_ascii=False, separators=(",", ":")))
         A("`\x60\x60\x60")
     _wide_flip_diag = _gm.get("wide_range_flip_diagnostics") or {}
