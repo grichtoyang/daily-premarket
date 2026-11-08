@@ -156,8 +156,8 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
     def test_futures_night_proxy_fields_only_show_source_when_available(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('("成交量", _fi(n["vol"]), "口", _source_if_available(n["vol"], SRC_FX))', source)
-        self.assertIn('("結算價", _fi(n["settle"]), "點", _source_if_available(n["settle"], SRC_FX))', source)
-        self.assertIn('("未平倉量", _fi(n["oi"]), "口", _source_if_available(n["oi"], SRC_FX))', source)
+        self.assertIn('("結算價", "不適用（夜盤不公布）", "點", "TAIFEX 制度：僅日盤公告")', source)
+        self.assertIn('("未平倉量", "不適用（夜盤不公布）", "口", "TAIFEX 制度：僅日盤公告")', source)
         self.assertIn('_nvia = "TAIFEX Proxy" if n.get("via") == "proxy" else SRC_FX_OFF', source)
         self.assertIn('_source_if_available(_diff2(n["high"], n["low"]), _nvia)', source)
         self.assertNotIn('("成交量", _fi(n["vol"]), SRC_FX)', source)
@@ -343,7 +343,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('_source_if_available(_vol_ratio_change, _pch_src)', source)
         self.assertIn('_source_if_available(_oi_ratio_change, _pch_src)', source)
-        self.assertIn('_gm_flip_src = f"{SRC_FX} ({_gm.get(\'src\', \'\')})" if _gm.get("flip") is not None else MISSING', source)
+        self.assertIn('_gm_flip_src = _gm.get("flip_src") or MISSING', source)
         self.assertIn('_gm_date_src = f"{SRC_FX} ({_gm.get(\'src\', \'\')})" if _gm.get("date") is not None else MISSING', source)
         self.assertIn('("Gamma Flip 價位", _f2(_gm[\'flip\']), _gm_flip_src)', source)
 
@@ -495,7 +495,7 @@ class DataReportSemanticRepairTests(unittest.TestCase):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertGreaterEqual(source.count('("項目", "數值", "單位", "資料來源")'), 2)
         self.assertIn('("成交量", _fi(n["vol"]), "口"', source)
-        self.assertIn('("未平倉量", _fi(n["oi"]), "口"', source)
+        self.assertIn('("未平倉量", "不適用（夜盤不公布）", "口"', source)
 
     def test_builder_rejects_wrong_futures_table_header(self):
         from scripts.v9_pro_builder import _extract_section_table_value
