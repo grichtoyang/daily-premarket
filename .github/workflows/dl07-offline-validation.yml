@@ -90,7 +90,8 @@ jobs:
           assert not legacy_p0_integration.exists()
           assert "permissions:\n  contents: write" in daily_data
           assert "git push" in daily_data
-          assert "python src/fetch_data.py" not in dl07
+          production_fetch_command = "python " + "src/" + "fetch_data.py"
+          assert production_fetch_command not in dl07
           print("PASS: DL-06/DL-07 are read-only; Dashboard branch/commit/deploy guards match current workflow")
           print("PASS: production daily_data workflow is identified as write-capable and excluded")
           print("NOT TESTED: legacy P0 integration workflow (referenced file is absent)")
