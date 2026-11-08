@@ -435,12 +435,18 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                             and old[1] == MISSING and cells[1] not in (MISSING, "")):
                         old = list(old)
                         old[-1] = MISSING
-                    # Gamma Flip 本次沒有零交叉時，日期必須與 unavailable 價位同步清空，
-                    # 不可由同 T0 保護機制回填前版 Flip 日期。
+                    # Gamma Flip 本次沒有零交叉時，價位與日期都必須維持 unavailable，
+                    # 不可由同 T0 保護機制回填前版 Flip 價位或日期。
                     _gamma_flip_section = any("Gamma Flip" in (part or "") for part in hkey)
-                    if _gamma_flip_section and _label == "資料日期":
+                    if _gamma_flip_section:
                         _flip_row = new_rows.get((hkey, "Gamma Flip 價位"))
-                        if _flip_row and len(_flip_row) > 1 and _flip_row[1] == MISSING:
+                        _flip_unavailable = (
+                            _flip_row and len(_flip_row) > 1
+                            and _flip_row[1] == MISSING
+                        )
+                        if ((_label == "Gamma Flip 價位" and len(cells) > 1
+                             and cells[1] == MISSING)
+                                or (_label == "資料日期" and _flip_unavailable)):
                             old = None
                 # T0 維持率來源優先序：TWSE 自建 > Blave > 同 T0 人工輸入。
                 # unavailable 必須清除舊值；較高優先級新來源可取代舊來源，低優先級不可倒灌。
