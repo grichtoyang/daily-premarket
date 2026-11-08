@@ -1211,7 +1211,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("模型納入 Call OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "call_oi")), "TAIFEX Gamma model（逐履約價）"),
             ("原始 Put OI（選定到期日全部有效 Chain 合約）", _fi(_gm_put_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
             ("模型納入 Put OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "put_oi")), "TAIFEX Gamma model（逐履約價）"),
-            ("資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
+            ("GEX 資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
            ("項目", "數值", "資料來源")))
     A("- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。")
     _flip_diag = _gm.get("flip_diagnostics") or {}
