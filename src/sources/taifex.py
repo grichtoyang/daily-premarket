@@ -186,6 +186,49 @@ def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
     return result, notes
 
 
+def _gamma_proxy_fallback(fetch, dates: list[str]) -> dict:
+    """Resolve Wall and Flip independently across fallback dates.
+
+    A date with Wall but no Flip must not stop the search for a later Flip.
+    Preserve the first payload for its surrounding compact-market data, then
+    merge the independently resolved Gamma proxy values and provenance dates.
+    """
+    payload = None
+    wall = flip = None
+    wall_date = flip_date = None
+    for day in dates:
+        candidate = fetch(day)
+        gamma = ((((candidate or {}).get("data") or {}).get("gamma")) or {})
+        candidate_wall = gamma.get("gamma_wall_proxy")
+        candidate_flip = gamma.get("gamma_flip_proxy")
+        if wall is None and candidate_wall is not None:
+            wall, wall_date = candidate_wall, day
+        if flip is None and candidate_flip is not None:
+            flip, flip_date = candidate_flip, day
+        if payload is None and (candidate_wall is not None or candidate_flip is not None):
+            payload = candidate
+        if wall is not None and flip is not None:
+            break
+
+    if payload is None:
+        return {"payload": None, "wall": None, "wall_date": None,
+                "flip": None, "flip_date": None}
+
+    merged = dict(payload)
+    data = dict(merged.get("data") or {})
+    gamma = dict(data.get("gamma") or {})
+    if wall is not None:
+        gamma["gamma_wall_proxy"] = wall
+    if flip is not None:
+        gamma["gamma_flip_proxy"] = flip
+    gamma["gamma_wall_proxy_date"] = wall_date
+    gamma["gamma_flip_proxy_date"] = flip_date
+    data["gamma"] = gamma
+    merged["data"] = data
+    return {"payload": merged, "wall": wall, "wall_date": wall_date,
+            "flip": flip, "flip_date": flip_date}
+
+
 def _complete_sum(values) -> int | float | None:
     """Sum only a non-empty collection of complete, non-None values; zero remains valid."""
     values = list(values)
@@ -565,18 +608,13 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         ]
         _summary = "；".join(str(x) for x in _parts if x)
         notes.append(f"GEX Worker 診斷：{_summary[:900]}")
-    # Market-structure-compact 仍保留 T-1/T-2 遞補（Gamma Wall proxy 來源）
-    c_pay, c_date = None, None
-    for _d in _prev_dates(t0, 2):
-        if c_pay is None:
-            _p = _get("options-market-structure-compact", _d)
-            _cg = (((_p or {}).get("data") or {}).get("gamma") or {})
-            _w = _cg.get("gamma_wall_proxy")
-            _f = _cg.get("gamma_flip_proxy")
-            if _w is not None or _f is not None:
-                c_pay, c_date = _p, _d
-        if c_pay is not None:
-            break
+    # Market-structure-compact 的 Wall/Flip 必須分欄位遞補：
+    # T-1 只有 Wall 時，仍須繼續查 T-2 的 Flip，不能因任一欄有值就停止。
+    _gamma_proxy = _gamma_proxy_fallback(
+        lambda _d: _get("options-market-structure-compact", _d),
+        _prev_dates(t0, 2))
+    c_pay = _gamma_proxy["payload"]
+    c_date = next((d for d in (_gamma_proxy["wall_date"], _gamma_proxy["flip_date"]) if d), None)
     P["options-gamma-levels"] = g_pay
     P["options-market-structure-compact"] = c_pay
     gamma_date = g_date or c_date
@@ -792,10 +830,16 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     flip = (gdata.get("gamma_flip") or {}).get("estimated_underlying")
     wall_src = "options-gamma-levels" if wall is not None else None
     flip_src = "options-gamma-levels" if flip is not None else None
-    if wall is None and cgamma.get("gamma_wall_proxy") is not None:
-        wall, wall_src = cgamma.get("gamma_wall_proxy"), "options-market-structure-compact (proxy)"
-    if flip is None and cgamma.get("gamma_flip_proxy") is not None:
-        flip, flip_src = cgamma.get("gamma_flip_proxy"), "options-market-structure-compact (proxy)"
+    wall_date = g_date if wall is not None else None
+    flip_date = g_date if flip is not None else None
+    if wall is None and _gamma_proxy["wall"] is not None:
+        wall = _gamma_proxy["wall"]
+        wall_date = _gamma_proxy["wall_date"]
+        wall_src = "options-market-structure-compact (proxy)"
+    if flip is None and _gamma_proxy["flip"] is not None:
+        flip = _gamma_proxy["flip"]
+        flip_date = _gamma_proxy["flip_date"]
+        flip_src = "options-market-structure-compact (proxy)"
     gsrc = " + ".join(dict.fromkeys(x for x in (wall_src, flip_src) if x)) or "TAIFEX Gamma endpoints"
     # Reconcile field-level availability only after primary + proxy resolution.
     # Primary endpoint failure is provenance, not final unavailability when proxy recovered values.
@@ -812,7 +856,8 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
              "levels": _gex_levels, "levels_count": len(_gex_levels),
              "diagnostics": gdata.get("gamma_diagnostics") if g_pay is not None else None,
              "gex_status": "available" if _gex_levels and _net_gex is not None and _gross_gex is not None else "unavailable",
-             "date": gamma_date, "src": gsrc, "wall_src": wall_src, "flip_src": flip_src}
+             "date": gamma_date, "wall_date": wall_date, "flip_date": flip_date,
+             "src": gsrc, "wall_src": wall_src, "flip_src": flip_src}
     if gamma["gex_status"] == "unavailable":
         notes.append("逐履約價 GEX／Net GEX／Gross GEX 未取得或資料不完整，標 unavailable（不以 Wall/Flip proxy 代替）")
     if gamma_date and gamma_date != t0:
