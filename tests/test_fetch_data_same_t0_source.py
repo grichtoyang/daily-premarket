@@ -17,14 +17,14 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         new = """# DATA_REPORT_20261106
 - 報告日期：`2026-11-08`
 - T0 交易日期：`2026-11-06`
-- 資料產出時間：`2026-11-08 11:04:09`
+- 首次資料產出時間：`2026-11-08 11:04:09`
 - 本次更新開始時間：`2026-11-08 11:04:09`
 - 產出盤別：`全日`
 
 ## 一、現貨
 """
         merged, _ = merge_same_t0(old, new, new_session="全日", protect=True)
-        self.assertIn("- 資料產出時間：`2026-11-08 10:38:08`", merged)
+        self.assertIn("- 首次資料產出時間：`2026-11-08 10:38:08`", merged)
         self.assertIn("- 本次更新開始時間：`2026-11-08 11:04:09`", merged)
         self.assertNotIn("- 本次更新開始時間：`2026-11-08 10:38:08`", merged)
 
