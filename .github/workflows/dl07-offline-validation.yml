@@ -158,7 +158,7 @@ jobs:
           assert 'fallback = _xml_yield(xml_field)' in treasury
           assert '("20Y", "20", "20 Yr")' in fetch_data
           assert 'yields[key]["yield"]' in fetch_data
-          assert "'extendedFlip': (gex_payload.get('wide_range_flip') or {}).get('estimated_underlying')" in builder
+          assert "'extendedFlip': ((gex_payload.get('wide_range_flip') or {}).get('estimated_underlying') if gamma_flip is None else None)" in builder
           template = Path("templates/v9-pro-react-template.html").read_text(encoding="utf-8")
           assert '延伸Flip ±15%' in template
           assert '延伸 Gamma Flip（±15%）' in template
