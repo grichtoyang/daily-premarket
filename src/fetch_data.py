@@ -1208,6 +1208,23 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_flip_diag.get('min_net_gex_1pct'))}／{_f2(_flip_diag.get('max_net_gex_1pct'))}")
         A(f"- 正負號交叉次數：{_flip_diag.get('zero_crossings', MISSING)}")
         A("- 解讀限制：此 Flip 僅代表目前 Call 正／Put 負假設下的模型零交叉；Aggregate OI 無法識別 Dealer 實際淨部位，不等同市場實際 Dealer Gamma Flip。")
+    _expiry_diag = _gm.get("expiry_selection_diagnostics") or {}
+    if _expiry_diag:
+        A("")
+        A("**GEX 到期日配對診斷（原始候選清單）**")
+        A("\x60\x60\x60json")
+        A(json.dumps(_expiry_diag, ensure_ascii=False, separators=(",", ":")))
+        A("\x60\x60\x60")
+    _wide_flip_diag = _gm.get("wide_range_flip_diagnostics") or {}
+    if _wide_flip_diag:
+        A("")
+        A("**擴大區間 Gamma Flip 診斷（±15%；不覆蓋正式 ±10% 結果）**")
+        A(f"- 搜尋標的區間：{_f2(_wide_flip_diag.get('search_lower_underlying'))}～{_f2(_wide_flip_diag.get('search_upper_underlying'))}")
+        A(f"- 搜尋步長／計算次數：{_f2(_wide_flip_diag.get('step'))}／{_wide_flip_diag.get('evaluations', MISSING)}")
+        A(f"- 起點／終點 Net GEX：{_f2(_wide_flip_diag.get('start_net_gex_1pct'))}／{_f2(_wide_flip_diag.get('end_net_gex_1pct'))}")
+        A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_wide_flip_diag.get('min_net_gex_1pct'))}／{_f2(_wide_flip_diag.get('max_net_gex_1pct'))}")
+        A(f"- 正負號交叉次數：{_wide_flip_diag.get('zero_crossings', MISSING)}")
+        A(f"- 擴大區間診斷 Flip：{_f2((_gm.get('wide_range_flip') or {}).get('estimated_underlying'))}")
     A("")
     A("### 14A．GEX 整體曝險與履約價分布")
     A("")
@@ -1240,6 +1257,10 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                       "net_gex_1pct": _gm.get("net_gex_1pct"),
                       "gross_gex_1pct": _gm.get("gross_gex_1pct"),
                        "gamma_diagnostics": _gm.get("diagnostics"),
+                       "formal_flip_diagnostics": _gm.get("flip_diagnostics"),
+                       "wide_range_flip": _gm.get("wide_range_flip"),
+                       "wide_range_flip_diagnostics": _gm.get("wide_range_flip_diagnostics"),
+                       "expiry_selection_diagnostics": _gm.get("expiry_selection_diagnostics"),
                       "levels": _gex_levels}, ensure_ascii=False, separators=(",", ":")))
         A("```")
     else:
