@@ -214,7 +214,7 @@ const expiryRows = (contract_month, expiry, type = "call") => ({
 
 const parseDeltaWithDiagnostics = new Function(
   "nullableNumber", "isoCompactDate",
-  `${declaration("parseTXODeltaRowsWithDiagnostics", "\\n\\nfunction parseTXODeltaRows")}; return parseTXODeltaRowsWithDiagnostics;`
+  `${declaration("parseTXODeltaRowsWithDiagnostics", "\n\nfunction parseTXODeltaRows")}; return parseTXODeltaRowsWithDiagnostics;`
 )(
   value => {
     if (value === null || value === undefined || value === "") return null;
@@ -223,8 +223,8 @@ const parseDeltaWithDiagnostics = new Function(
   },
   value => {
     const s = String(value ?? "").trim();
-    if (/^\\d{4}-\\d{2}-\\d{2}$/.test(s)) return s;
-    if (/^\\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    if (/^\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
     return null;
   }
 );
