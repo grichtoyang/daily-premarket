@@ -29,7 +29,8 @@ INST_ZH = {"foreign": "外資", "investment_trust": "投信", "dealer": "自營�
 
 def _missing_night_fields(night: dict) -> list[str]:
     """Return report-visible night-session fields that have no value."""
-    fields = ("open", "high", "low", "close", "change", "pct", "vol", "settle", "oi")
+    # TAIFEX does not publish daily settlement price or OI after the after-hours session.
+    fields = ("open", "high", "low", "close", "change", "pct", "vol")
     return [f"futures.night.{field}" for field in fields if night.get(field) is None]
 
 # F1（2026-10-19）：快照 bundle memoize。build() 與 snap_top10_change() 取的是同一份
@@ -491,8 +492,10 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     g_pay, g_date = None, None
     _p = _get("options-gamma-levels", t0)
     if _p is not None and (_p.get("date") or t0) == t0:
-        _w = (((_p or {}).get("data") or {}).get("gamma_wall") or {}).get("strike")
-        if _w is not None:
+        _gd = (_p or {}).get("data") or {}
+        _w = (_gd.get("gamma_wall") or {}).get("strike")
+        _f = (_gd.get("gamma_flip") or {}).get("estimated_underlying")
+        if _w is not None or _f is not None:
             g_pay, g_date = _p, t0
     elif _p is not None:
         notes.append(f"Gamma 端點日期 {_p.get('date')} 非 T0 {t0}，拒絕採用（避免舊值混入）")
@@ -514,8 +517,10 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     for _d in _prev_dates(t0, 2):
         if c_pay is None:
             _p = _get("options-market-structure-compact", _d)
-            _w = (((_p or {}).get("data") or {}).get("gamma") or {}).get("gamma_wall_proxy")
-            if _w is not None:
+            _cg = (((_p or {}).get("data") or {}).get("gamma") or {})
+            _w = _cg.get("gamma_wall_proxy")
+            _f = _cg.get("gamma_flip_proxy")
+            if _w is not None or _f is not None:
                 c_pay, c_date = _p, _d
         if c_pay is not None:
             break
@@ -733,10 +738,13 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     cgamma = cdata.get("gamma") or {}
     wall = (gdata.get("gamma_wall") or {}).get("strike")
     flip = (gdata.get("gamma_flip") or {}).get("estimated_underlying")
-    gsrc = "options-gamma-levels"
+    wall_src = "options-gamma-levels" if wall is not None else None
+    flip_src = "options-gamma-levels" if flip is not None else None
     if wall is None and cgamma.get("gamma_wall_proxy") is not None:
-        wall, flip = cgamma.get("gamma_wall_proxy"), cgamma.get("gamma_flip_proxy")
-        gsrc = "options-market-structure-compact (proxy)"
+        wall, wall_src = cgamma.get("gamma_wall_proxy"), "options-market-structure-compact (proxy)"
+    if flip is None and cgamma.get("gamma_flip_proxy") is not None:
+        flip, flip_src = cgamma.get("gamma_flip_proxy"), "options-market-structure-compact (proxy)"
+    gsrc = " + ".join(dict.fromkeys(x for x in (wall_src, flip_src) if x)) or "TAIFEX Gamma endpoints"
     # Reconcile field-level availability only after primary + proxy resolution.
     # Primary endpoint failure is provenance, not final unavailability when proxy recovered values.
     unav, _gamma_notes = _gamma_status(unav, gamma_endpoint_unavailable, wall, flip, gsrc)
@@ -752,7 +760,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
              "levels": _gex_levels, "levels_count": len(_gex_levels),
              "diagnostics": gdata.get("gamma_diagnostics") if g_pay is not None else None,
              "gex_status": "available" if _gex_levels and _net_gex is not None and _gross_gex is not None else "unavailable",
-             "date": gamma_date, "src": gsrc}
+             "date": gamma_date, "src": gsrc, "wall_src": wall_src, "flip_src": flip_src}
     if gamma["gex_status"] == "unavailable":
         notes.append("逐履約價 GEX／Net GEX／Gross GEX 未取得或資料不完整，標 unavailable（不以 Wall/Flip proxy 代替）")
     if gamma_date and gamma_date != t0:
