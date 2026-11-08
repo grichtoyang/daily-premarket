@@ -263,6 +263,50 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
     }
 
 
+def _options_chain_oi_change_diagnostic(current_chain, previous_chain, primary_month: str) -> dict:
+    """Explain why primary-expiry OI deltas cannot be calculated; never infer zero OI."""
+    import math
+    result = {"primary_month": primary_month, "current_count": 0, "previous_count": 0,
+              "current_only": 0, "previous_only": 0, "current_missing_oi": 0,
+              "previous_missing_oi": 0, "invalid_identity": 0, "duplicate_identity": 0, "reason": None}
+    if not primary_month:
+        result["reason"] = "primary_expiry_missing"
+        return result
+    if not isinstance(current_chain, list) or not isinstance(previous_chain, list):
+        result["reason"] = "chain_payload_missing"
+        return result
+    def index(rows, side):
+        out = {}
+        for row in rows:
+            if not isinstance(row, dict) or row.get("contract_month") != primary_month:
+                continue
+            key = (row.get("contract_month"), row.get("contract_expiry_date"), row.get("strike"), row.get("type"))
+            if any(value is None for value in key):
+                result["invalid_identity"] += 1
+                continue
+            if key in out:
+                result["duplicate_identity"] += 1
+                continue
+            oi = row.get("open_interest")
+            if isinstance(oi, bool) or not isinstance(oi, (int, float)) or not math.isfinite(float(oi)) or oi < 0:
+                result[side + "_missing_oi"] += 1
+                continue
+            out[key] = oi
+        result[side + "_count"] = len(out)
+        return out
+    current = index(current_chain, "current")
+    previous = index(previous_chain, "previous")
+    result["current_only"] = len(current.keys() - previous.keys())
+    result["previous_only"] = len(previous.keys() - current.keys())
+    if result["invalid_identity"]: reason = "invalid_contract_identity"
+    elif result["duplicate_identity"]: reason = "duplicate_contract_identity"
+    elif result["current_missing_oi"] or result["previous_missing_oi"]: reason = "open_interest_missing_or_invalid"
+    elif not current or not previous: reason = "primary_expiry_chain_empty"
+    elif result["current_only"] or result["previous_only"]: reason = "contract_set_mismatch"
+    else: reason = "aligned"
+    result["reason"] = reason
+    return result
+
 def _rows(payload: dict | None) -> list:
     d = (payload or {}).get("data")
     return d if isinstance(d, list) else []
@@ -773,6 +817,9 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _sdate = (_sb or {}).get("date")
     _sd = (_sb or {}).get("data") or {}
     snapchg = {"date": _sdate}
+    if not _sdate:
+        snapchg["chain_diagnostic"] = {"reason": "previous_snapshot_unavailable"}
+        notes.append("選擇權 OI 日對日變化 unavailable：前一日快照不存在或無法讀取（previous_snapshot_unavailable）")
     # C2 跨到期換月檢查：快照主力到期 vs 當前主力到期不同 → 日對日差值無意義
     # （實證：10-14 快照主力 202610W2，當前 202610F3；舊寫法會拿 F3 今值減 W2 舊值）。
     # 注意：不能只比到期集合是否相交（兩邊常同時含新舊合約），必須比主力。
@@ -790,9 +837,15 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         notes.append(f"前一日主力到期月份無法確認（快照值：{_roll_old or '缺失'}），日對日 OI/Walls 變化 unavailable")
     elif _sdate and _roll is False:
         # 只有前後日主力到期合約集合完整一致，且每筆 OI 都有效，才計算日對日差值。
-        snapchg["chain"] = _options_chain_oi_change(chain, _sd.get("chain", []), prim_month)
+        _previous_chain = _sd.get("chain", [])
+        snapchg["chain_diagnostic"] = _options_chain_oi_change_diagnostic(chain, _previous_chain, prim_month)
+        snapchg["chain"] = _options_chain_oi_change(chain, _previous_chain, prim_month)
         if snapchg["chain"] is None:
-            notes.append("選擇權 OI 日對日變化 unavailable：前後日合約集合不一致或 OI 缺值")
+            _diag = snapchg["chain_diagnostic"]
+            notes.append("選擇權 OI 日對日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; 僅本日/僅前日={}/{}; 本日/前日 OI 缺值={}/{}; 無效/重複識別={}/{}".format(
+                _diag["reason"], prim_month or "missing", _diag["current_count"], _diag["previous_count"],
+                _diag["current_only"], _diag["previous_only"], _diag["current_missing_oi"],
+                _diag["previous_missing_oi"], _diag["invalid_identity"], _diag["duplicate_identity"]))
         # 部位：日盤淨差值 (僅快照當日收集才可信)
         _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} \
             if (_sb or {}).get("trust_pos") else {}
