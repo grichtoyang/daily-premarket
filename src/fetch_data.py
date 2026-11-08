@@ -491,6 +491,9 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                         if (_label == "Gamma Flip 價位" and len(cells) > 1
                                 and cells[1] == MISSING):
                             old = None
+                        # GEX 資料日期描述本次輸入資料，不是 Flip 是否找到；每次以本次來源刷新。
+                        if _label == "GEX 資料日期":
+                            old = None
                 # T0 維持率來源優先序：TWSE 自建 > Blave > 同 T0 人工輸入。
                 # unavailable 必須清除舊值；較高優先級新來源可取代舊來源，低優先級不可倒灌。
                 if _label == "融資維持率":
