@@ -178,7 +178,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
     def test_options_timestamp_is_labeled_as_report_generation_time(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
-        self.assertIn('("報告產製時間", now, "本機")', source)
+        self.assertIn('("本次報告產製時間", now, "本機")', source)
         self.assertNotIn('("資料更新時間", now, "本機")', source)
 
     def test_taifex_report_generation_timestamp_label_and_legacy_freeze(self):
@@ -186,7 +186,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn(
-            'A(f"- 資料日期：{t0}；報告產製時間：{now}；時區：`Asia/Taipei`")',
+            'A(f"- 資料日期：{t0}；本次報告產製時間：{now}；時區：`Asia/Taipei`")',
             source,
         )
         self.assertIn("選擇權交易日期、到期日與報告產製時間", source)
