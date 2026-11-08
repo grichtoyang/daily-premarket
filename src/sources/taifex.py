@@ -167,7 +167,7 @@ def _valid_gex_levels(levels) -> list[dict]:
 
 
 def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
-                  wall, flip, source: str) -> tuple[list[str], list[str]]:
+                  wall, flip, source: str, gex_model_available: bool = False) -> tuple[list[str], list[str]]:
     """Resolve Gamma availability and provenance notes after primary/proxy fallback."""
     result = _sync_gamma_unavailable(unavailable, wall, flip)
     notes = []
@@ -182,7 +182,10 @@ def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
         if value is None:
             if field not in result:
                 result.append(field)
-            notes.append(f"{label} 無資料（原始端點與 Proxy 備援皆未取得），標 unavailable")
+            if gex_model_available:
+                notes.append(f"{label} 主模型與 Proxy 備援均未回傳價位；逐履約價 GEX 模型仍可用，屬 Flip 計算未產生結果，需檢查零交叉搜尋條件，標 unavailable")
+            else:
+                notes.append(f"{label} 原始端點與 Proxy 備援皆未取得有效價位，標 unavailable")
     return result, notes
 
 
@@ -843,7 +846,9 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     gsrc = " + ".join(dict.fromkeys(x for x in (wall_src, flip_src) if x)) or "TAIFEX Gamma endpoints"
     # Reconcile field-level availability only after primary + proxy resolution.
     # Primary endpoint failure is provenance, not final unavailability when proxy recovered values.
-    unav, _gamma_notes = _gamma_status(unav, gamma_endpoint_unavailable, wall, flip, gsrc)
+    unav, _gamma_notes = _gamma_status(
+        unav, gamma_endpoint_unavailable, wall, flip, gsrc,
+        gex_model_available=bool(g_pay is not None and gdata.get("levels")))
     notes.extend(_gamma_notes)
     _gex_levels = _valid_gex_levels(gdata.get("levels")) if g_pay is not None else []
     _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
