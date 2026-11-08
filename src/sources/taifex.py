@@ -186,8 +186,11 @@ def _gamma_expiry_metadata(gdata: dict | None, primary_month: str | None) -> dic
 
 
 def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
-                  wall, flip, source: str, gex_model_available: bool = False) -> tuple[list[str], list[str]]:
-    """Resolve Gamma availability and provenance notes after primary/proxy fallback."""
+                  wall, flip, source: str, gex_model_available: bool = False,
+                  flip_diagnostics: dict | None = None,
+                  wide_range_flip: dict | None = None,
+                  wide_range_diagnostics: dict | None = None) -> tuple[list[str], list[str]]:
+    """Resolve Gamma availability and describe formal/wide scan results accurately."""
     result = _sync_gamma_unavailable(unavailable, wall, flip)
     notes = []
     if endpoint_unavailable and (wall is not None or flip is not None):
@@ -201,8 +204,31 @@ def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
         if value is None:
             if field not in result:
                 result.append(field)
-            if gex_model_available:
-                notes.append(f"{label} 主模型與 Proxy 備援均未回傳價位；逐履約價 GEX 模型仍可用，屬 Flip 計算未產生結果，需檢查零交叉搜尋條件，標 unavailable")
+            if gex_model_available and field == "gamma_flip":
+                formal = flip_diagnostics or {}
+                wide = wide_range_diagnostics or {}
+                if wide_range_flip:
+                    estimated = wide_range_flip.get("estimated_underlying")
+                    notes.append(
+                        f"正式 Gamma Flip 搜尋範圍未找到零交叉（±10%；"
+                        f"搜尋區間 {formal.get('search_lower_underlying', '未提供')}–"
+                        f"{formal.get('search_upper_underlying', '未提供')}）；"
+                        f"擴大診斷範圍找到零交叉，估計價位 {estimated} "
+                        "（僅供診斷，不取代正式 ±10% 結果），正式欄位維持 unavailable"
+                    )
+                elif wide.get("found") is True or wide.get("zero_crossings", 0):
+                    notes.append(
+                        "正式 Gamma Flip 搜尋範圍未找到零交叉（±10%）；"
+                        "擴大診斷範圍有零交叉訊號但未提供估計價位，正式欄位維持 unavailable"
+                    )
+                else:
+                    notes.append(
+                        "正式 Gamma Flip 搜尋範圍未找到零交叉（±10%）；"
+                        "擴大診斷範圍亦未找到零交叉，僅能判定在已掃描區間內無交叉，"
+                        "不可推論整個價格範圍均不存在 Flip，正式欄位維持 unavailable"
+                    )
+            elif gex_model_available:
+                notes.append(f"{label} 未找到有效價位；逐履約價 GEX 模型仍可用，標 unavailable")
             else:
                 notes.append(f"{label} 原始端點與 Proxy 備援皆未取得有效價位，標 unavailable")
     return result, notes
@@ -910,7 +936,10 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # Primary endpoint failure is provenance, not final unavailability when proxy recovered values.
     unav, _gamma_notes = _gamma_status(
         unav, gamma_endpoint_unavailable, wall, flip, gsrc,
-        gex_model_available=bool(g_pay is not None and gdata.get("levels")))
+        gex_model_available=bool(g_pay is not None and gdata.get("levels")),
+        flip_diagnostics=gdata.get("gamma_flip_diagnostics"),
+        wide_range_flip=gdata.get("gamma_flip_wide_range"),
+        wide_range_diagnostics=gdata.get("gamma_flip_wide_range_diagnostics"))
     notes.extend(_gamma_notes)
     _gex_levels = _valid_gex_levels(gdata.get("levels")) if g_pay is not None else []
     _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
