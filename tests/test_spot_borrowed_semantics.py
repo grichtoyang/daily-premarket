@@ -3,10 +3,24 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
 
-from src.sources import spot_raw
+from src.sources import spot_raw, spot
 
 
 class SBLPublicationMetadataTests(unittest.TestCase):
+    def test_borrowed_source_shares_are_converted_to_thousand_share_lots(self):
+        self.assertEqual(spot._shares_to_lots(33203111), 33203.111)
+        self.assertEqual(spot._shares_to_lots(18225070), 18225.07)
+        self.assertEqual(spot._shares_to_lots(358193), 358.193)
+        self.assertIsNone(spot._shares_to_lots(None))
+
+    def test_listed_and_otc_lot_changes_sum_without_rounding(self):
+        total, status = spot._complete_market_sum(
+            spot._shares_to_lots(358193),
+            spot._shares_to_lots(2818),
+        )
+        self.assertEqual(total, 361.011)
+        self.assertEqual(status, "complete")
+
     def test_historical_data_available_after_schedule_is_not_unknown(self):
         now = datetime(2026, 11, 8, 10, 38, tzinfo=ZoneInfo("Asia/Taipei"))
         result = spot_raw._sbl_publication_metadata(
