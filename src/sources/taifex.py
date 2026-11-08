@@ -212,7 +212,7 @@ def _oi_distribution(rows: list, limit: int = 10) -> list[dict]:
 
 
 def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) -> dict | None:
-    """Calculate daily OI deltas only when both primary-expiry chains align completely."""
+    """Calculate OI deltas over valid common contracts; never zero-fill new or missing contracts."""
     import math
 
     if not primary_month or not isinstance(current_chain, list) or not isinstance(previous_chain, list):
@@ -239,15 +239,18 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
 
     current = _index(current_chain)
     previous = _index(previous_chain)
-    if not current or not previous or current.keys() != previous.keys():
+    if current is None or previous is None:
+        return None
+    common = current.keys() & previous.keys()
+    if not common:
         return None
 
     moves = []
-    for key, oi in current.items():
+    for key in common:
         kind = key[3]
         if kind not in ("call", "put"):
             return None
-        moves.append({"strike": key[2], "type": kind, "d_oi": oi - previous[key]})
+        moves.append({"strike": key[2], "type": kind, "d_oi": current[key] - previous[key]})
 
     calls = sorted((move for move in moves if move["type"] == "call"),
                    key=lambda move: move["d_oi"], reverse=True)
@@ -260,6 +263,12 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
         "c_dn": calls[-1] if calls and calls[-1]["d_oi"] < 0 else None,
         "p_up": puts[0] if puts and puts[0]["d_oi"] > 0 else None,
         "p_dn": puts[-1] if puts and puts[-1]["d_oi"] < 0 else None,
+        "matched_count": len(common),
+        "current_count": len(current),
+        "previous_count": len(previous),
+        "current_coverage": len(common) / len(current) if current else 0.0,
+        "previous_coverage": len(common) / len(previous) if previous else 0.0,
+        "partial": len(common) != len(current) or len(common) != len(previous),
     }
 
 
@@ -845,6 +854,12 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 _diag["reason"], prim_month or "missing", _diag["current_count"], _diag["previous_count"],
                 _diag["current_only"], _diag["previous_only"], _diag["current_missing_oi"],
                 _diag["previous_missing_oi"], _diag["invalid_identity"], _diag["duplicate_identity"]))
+        elif snapchg["chain"].get("partial"):
+            _diag = snapchg["chain_diagnostic"]
+            _chg = snapchg["chain"]
+            notes.append("選擇權 OI 日對日變化採共同合約計算：主力={}; 共同合約={}; 本日有效合約={}（覆蓋率 {:.1%}）；前日有效合約={}（覆蓋率 {:.1%}）；僅本日/僅前日={} / {}，未補零、未納入新增合約".format(
+                prim_month or "missing", _chg["matched_count"], _chg["current_count"], _chg["current_coverage"],
+                _chg["previous_count"], _chg["previous_coverage"], _diag["current_only"], _diag["previous_only"]))
         # 部位：日盤淨差值 (僅快照當日收集才可信)
         _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} \
             if (_sb or {}).get("trust_pos") else {}
