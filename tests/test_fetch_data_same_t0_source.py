@@ -41,7 +41,7 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("- 本次更新開始時間：`2026-11-08 11:04:09`", merged)
         self.assertNotIn("- 本次更新開始時間：`2026-11-08 10:38:08`", merged)
 
-    def test_carried_forward_value_is_not_labeled_as_fresh_source(self):
+    def test_borrowed_value_is_not_carried_forward_when_fresh_source_is_unavailable(self):
         old = """# DATA_REPORT_20261030
 - 報告日期：`2026-10-31`
 - T0 交易日期：`2026-10-30`
@@ -67,9 +67,9 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 | 借券賣出增減 | unavailable | 張 | TPEX margin_sbl |
 """
         merged, filled = merge_same_t0(old, new, new_session="全日", protect=True)
-        self.assertEqual(filled, 1)
-        self.assertIn("| 借券賣出增減 | -1,273 | 張 | 沿用前版（原來源：TWSE TWT93U + TPEX margin_sbl） |", merged)
-        self.assertNotIn("| 借券賣出增減 | -1,273 | 張 | TPEX margin_sbl |", merged)
+        self.assertEqual(filled, 0)
+        self.assertIn("| 借券賣出增減 | unavailable | 張 | TPEX margin_sbl |", merged)
+        self.assertNotIn("| 借券賣出增減 | -1,273 |", merged)
 
 
     def test_new_common_contract_oi_values_keep_their_snapshot_source(self):
