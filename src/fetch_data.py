@@ -375,6 +375,7 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
         old_norm[(hkey, _norm_label(first))] = cells
     filled = 0
     kept = 0
+    kept_rows: list[str] = []
     overwritten = 0
     out_lines = []
     hkey: tuple = (None, None, None)
@@ -444,6 +445,10 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                                 and new_cells[j] != old[j]):
                             new_cells[j] = old[j]
                             kept += 1
+                            _section = "／".join(x for x in hkey if x)
+                            _row_label = f"{_section}／{_label}" if _section else _label
+                            if _row_label not in kept_rows:
+                                kept_rows.append(_row_label)
                             _touched = True
                         elif (not prefer_new and not protect
                                 and old[j] not in (MISSING, "") and new_cells[j] not in (MISSING, "")
@@ -466,9 +471,10 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
             f"\n- 註記：同 T0 保護：{filled} 格沿用前版有值（本次抓取缺失不覆寫）\n- 未取得欄位 (",
             1)
     if kept:
+        _kept_detail = "；涉及資料列：" + "、".join(kept_rows) if kept_rows else ""
         merged = merged.replace(
             "\n- 未取得欄位 (",
-            f"\n- 註記：同 T0 穩定：{kept} 格新舊皆有值，沿用前版（不再靜默覆寫）\n- 未取得欄位 (",
+            f"\n- 註記：同 T0 穩定：{kept} 格新舊皆有值，沿用前版（不再靜默覆寫）{_kept_detail}\n- 未取得欄位 (",
             1)
     if overwritten:
         merged = merged.replace(
