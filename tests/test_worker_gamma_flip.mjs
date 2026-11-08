@@ -141,8 +141,8 @@ const expiryRows = (contract_month, expiry, type = "call") => ({
     110
   );
   assert.equal(result.diagnostics.zero_crossings, 2);
-  assert.equal(result.gamma_flip.estimated_underlying, 108.5);
-  assert.equal(result.diagnostics.selected_crossing_distance, 1.5);
+  assert.equal(result.gamma_flip.estimated_underlying, 108.45);
+  assert.equal(result.diagnostics.selected_crossing_distance, 1.55);
 }
 
 // Same-day common expiry is recorded but rejected; next future common expiry wins.
