@@ -452,6 +452,15 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
             if not is_sep and not is_hdr and cells:
                 _label = _norm_label(cells[0])
                 old = old_norm.get((hkey, _label))
+                # Borrowed-security balances are source-sensitive and unit-sensitive.
+                # Never carry forward an older T0 value: it may have legacy share/lot
+                # semantics. Use this run's validated source value, or keep unavailable.
+                _borrowed_row = (
+                    any("借券資料" in (part or "") for part in hkey)
+                    and _label in {"整體市場借券餘額", "借券賣出餘額", "借券賣出增減"}
+                )
+                if _borrowed_row:
+                    old = None
                 if old and len(old) == len(cells):
                     # 夜盤衍生欄位若數值完全相同、只有來源標籤改善，應更新來源欄，
                     # 不應把「沿用前版」凍結成永久標籤；數值有差異時仍走原同 T0 保護。
@@ -724,7 +733,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWT93U 與上櫃 tpex_margin_sbl，缺值市場不納入加總。")
     A("")
-    A(_tbl([("整體市場借券餘額", _fi(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))],
+    A(_tbl([("整體市場借券餘額", _f3(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))],
            ("項目", "數值", "單位", "資料來源")))
     A("")
     A(_sbl_market_table(sb))

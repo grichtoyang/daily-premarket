@@ -36,7 +36,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('SRC_SBL_BAL = _src.get("sbl_bal"', source)
         self.assertIn('SRC_SBL_SALE_BAL = _src.get("sbl_sale_bal"', source)
         self.assertIn('SRC_SBL_SALE_CHG = _src.get("sbl_sale_chg"', source)
-        self.assertIn('("整體市場借券餘額", _fi(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))', source)
+        self.assertIn('("整體市場借券餘額", _f3(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))', source)
         self.assertIn('def _sbl_market_table(sb: dict)', source)
         self.assertIn('sb.get("listed_sale_bal")', source)
         self.assertIn('sb.get("otc_sale_bal")', source)
@@ -955,6 +955,59 @@ class DataReportWriteSafetyTests(unittest.TestCase):
 
 
 class BorrowedShortLotPrecisionTests(unittest.TestCase):
+    def test_overall_market_balance_preserves_fractional_lot_precision(self):
+        from src.fetch_data import _f3
+        self.assertEqual(_f3(33203.111), "33,203.111")
+
+    def test_same_t0_merge_never_carries_forward_borrowed_values(self):
+        from src.fetch_data import merge_same_t0
+
+        def report(balance, listed, otc, total, change_listed, change_otc, change_total):
+            return "\n".join([
+                "# DATA_REPORT_20261106",
+                "- 產出盤別：`全日`",
+                "## 一、現貨",
+                "### 5. 借券資料",
+                "| 項目 | 數值 | 單位 | 資料來源 |",
+                "|---|---|---|---|",
+                f"| 整體市場借券餘額 | {balance} | 張 | TWSE TWT72U |",
+                "",
+                "| 項目 | 上市 | 上櫃 | 兩者合計 | 單位 |",
+                "|---|---|---|---|---|",
+                f"| 借券賣出餘額 | {listed} | {otc} | {total} | 張 |",
+                f"| 借券賣出增減 | {change_listed} | {change_otc} | {change_total} | 張 |",
+            ])
+
+        old = report("33,203,111", "18,225,070", "2,189,311",
+                     "20,414,381", "358,193", "2,818", "361,010")
+        fresh = report("33,203.111", "18,225.070", "2,189.311",
+                       "20,414.381", "358.193", "2.818", "361.011")
+        merged, _ = merge_same_t0(old, fresh, new_session="全日", protect=True)
+        self.assertIn("| 整體市場借券餘額 | 33,203.111 | 張 | TWSE TWT72U |", merged)
+        self.assertIn("| 借券賣出餘額 | 18,225.070 | 2,189.311 | 20,414.381 | 張 |", merged)
+        self.assertIn("| 借券賣出增減 | 358.193 | 2.818 | 361.011 | 張 |", merged)
+        self.assertNotIn("沿用前版", merged)
+
+    def test_same_t0_merge_does_not_backfill_unavailable_borrowed_values(self):
+        from src.fetch_data import merge_same_t0
+
+        old = "\n".join([
+            "# DATA_REPORT_20261106",
+            "- 產出盤別：`全日`",
+            "## 一、現貨",
+            "### 5. 借券資料",
+            "| 項目 | 數值 | 單位 | 資料來源 |",
+            "|---|---|---|---|",
+            "| 整體市場借券餘額 | 33,203,111 | 張 | 舊版來源 |",
+        ])
+        fresh = old.replace(
+            "| 整體市場借券餘額 | 33,203,111 | 張 | 舊版來源 |",
+            "| 整體市場借券餘額 | unavailable | 張 | unavailable |",
+        )
+        merged, _ = merge_same_t0(old, fresh, new_session="全日", protect=True)
+        self.assertIn("| 整體市場借券餘額 | unavailable | 張 | unavailable |", merged)
+        self.assertNotIn("33,203,111", merged)
+
     def test_market_table_preserves_fractional_lots_so_components_reconcile(self):
         from src.fetch_data import _sbl_market_table
 
