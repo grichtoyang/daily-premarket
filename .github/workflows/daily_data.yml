@@ -79,8 +79,12 @@ jobs:
               break
             fi
             T0FILE=''
-            echo "fetch incomplete or report validation failed, attempt $i/2; sleep 90s"
-            sleep 90
+            if [ "$i" -lt 2 ]; then
+              echo "fetch incomplete or report validation failed, attempt $i/2; sleep 90s before retry"
+              sleep 90
+            else
+              echo "fetch incomplete or report validation failed after final attempt $i/2; no further retry"
+            fi
           done
           if [ -z "${T0FILE:-}" ]; then
             echo "FATAL: no fresh DATA produced; failing loudly (do not silent-skip)"
