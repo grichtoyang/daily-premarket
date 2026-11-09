@@ -959,6 +959,11 @@ class BorrowedShortLotPrecisionTests(unittest.TestCase):
         from src.fetch_data import _f3
         self.assertEqual(_f3(33203.111), "33,203.111")
 
+    def test_twt72u_share_count_converts_to_thousand_share_lots(self):
+        from src.sources.spot import _shares_to_lots
+        # TWT72U raw field is shares; 33,203,111,000 shares = 33,203,111 lots.
+        self.assertEqual(_shares_to_lots(33203111000), 33203111)
+
     def test_same_t0_merge_never_carries_forward_borrowed_values(self):
         from src.fetch_data import merge_same_t0
 
@@ -978,12 +983,12 @@ class BorrowedShortLotPrecisionTests(unittest.TestCase):
                 f"| 借券賣出增減 | {change_listed} | {change_otc} | {change_total} | 張 |",
             ])
 
-        old = report("33,203,111", "18,225,070", "2,189,311",
+        old = report("33,203,110", "18,225,070", "2,189,311",
                      "20,414,381", "358,193", "2,818", "361,010")
-        fresh = report("33,203.111", "18,225.070", "2,189.311",
+        fresh = report("33,203,111", "18,225.070", "2,189.311",
                        "20,414.381", "358.193", "2.818", "361.011")
         merged, _ = merge_same_t0(old, fresh, new_session="全日", protect=True)
-        self.assertIn("| 整體市場借券餘額 | 33,203.111 | 張 | TWSE TWT72U |", merged)
+        self.assertIn("| 整體市場借券餘額 | 33,203,111 | 張 | TWSE TWT72U |", merged)
         self.assertIn("| 借券賣出餘額 | 18,225.070 | 2,189.311 | 20,414.381 | 張 |", merged)
         self.assertIn("| 借券賣出增減 | 358.193 | 2.818 | 361.011 | 張 |", merged)
         self.assertNotIn("沿用前版", merged)
