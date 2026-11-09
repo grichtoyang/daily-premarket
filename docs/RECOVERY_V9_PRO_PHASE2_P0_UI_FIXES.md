@@ -1266,3 +1266,16 @@ Commits：
 - 上述因子與日夜盤資訊是交叉檢查，不取代外資至少兩個可用市場同向且無反向訊號，以及 Put／Call Wall 突破／跌破後回測確認。
 - Browser Audit 增加「因子交叉檢查」「日夜盤確認」必要欄位。
 - 此輪自動化尚待最新 workflow 結果；實際手機畫面及多情境案例仍未驗證。
+
+
+## 2026-11-09 第二輪交易計畫連動最終 CI／部署結果
+- 最終 Dashboard Workflow：Run #557，ID 42570499929，head SHA 68c38c38a0d256eb364650d19f9773d5fbb7e40a。
+- Build：PASS；HTML／JavaScript validation：PASS。
+- Browser Audit：PASS；Desktop／Tablet／Mobile 六分頁及交易計畫新增欄位檢查通過。
+- Generated dashboard history commit：PASS。
+- Pages Artifact：PASS；GitHub Pages Deploy：PASS。
+- Workflow URL：https://github.com/grichtoyang/daily-premarket/actions/runs/42570499929
+- 本輪先前 Run #554 曾因更新文件時遠端分支前進，導致「Commit generated dashboard history」push rejected；該次 Browser Audit 已 PASS，但部署未執行。其後將文件與程式提交固定，最終 Run #557 成功完成 Build／Audit／Artifact／Deploy。不可把 Run #554 記為部署成功。
+- 最新 Template／Audit／Skill／Recovery 均已回讀確認。Workflow 自動產出的 Dashboard HTML 已由成功部署流程發布。
+- 資料層凍結維持不變；本輪沒有修改資料來源、Builder、DATA_REPORT、daily-data Workflow、Worker／Proxy／API。DL-07 維持 CLOSED。
+- 實際手機畫面與多種市場組合下的人工分析合理性：NOT TESTED，仍需使用者查看新版畫面。
