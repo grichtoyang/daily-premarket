@@ -915,3 +915,130 @@ P0 階段結束。後續若要處理 NOT TESTED 項目，另開資料來源稽�
 ## E. 後續交接第一優先規則
 
 新對話或新執行者開始工作時，必須先讀本補記及 V9 Pro Skill 的「資料層完成與嚴格凍結規則」。若任務涉及資料層，預設只能只讀檢查與提出方案；沒有使用者明確授權不得修改。任何不確定是否屬於資料層的檔案或設定，一律先視為凍結範圍並詢問，不得自行判斷為可改。
+
+---
+# 2026-11-09 補記：資料層凍結後，綜合分析分頁第一輪改善與區塊 B 結案
+
+更新分支：phase2-p0-ui-fixes。
+本補記優先於本 Recovery 中較早的「不部署／不 merge」歷史階段敘述；該敘述只適用當時任務，不可套用到本次已獲使用者授權的 Dashboard Build + Deploy 工作。資料層凍結規則持續有效且優先級最高。
+
+## 1. 工作範圍邊界
+
+- 使用者已確認 V9 Pro 資料層改進全部完成。未經使用者明確同意，嚴禁修改、增加、刪除或重構任何資料層內容，尤其是資料來源、資料擷取／轉換程式、Builder、DATA_REPORT、daily-data workflow、Worker／Proxy／API、資料層測試與設定。
+- 本輪授權範圍是分析層、視覺層及 Dashboard Build + Deploy Workflow；不得把此授權擴張到 daily-data workflow 或資料層程式。
+- DL-07 是資料層 issue，定義為對產出的 DATA_REPORT_20261106.md 做最後完整總檢查；已 PASS／CLOSE。不得把任何 GitHub Actions workflow/job 名稱含有 DL-07 字樣的項目混同此 issue，也不得因此重開 DL-07。
+- 本次不修改 scripts/v9_pro_builder.py，不修改任何 DATA_REPORT、Worker、Proxy 或 daily-data workflow。
+
+## 2. 本輪目標與已確認基準
+
+目標是讓目前 phase2-p0-ui-fixes 分支產出的 V9 Pro Dashboard「綜合分析」分頁，達到先前三市場參考分支的分析呈現水準；不是整體合併參考分支，也不是重新設計 Dashboard。
+
+參考分支主要分析結構包含：
+1. 三市場法人籌碼（現貨、期貨 OI／日夜盤交易流量、選擇權日夜盤交易流量），明確分離 OI 存量與交易流量。
+2. 選擇權法人多空力道金額（日夜盤分開），明確揭露契約金額代理值不等於淨權利金現金流、成交口數或 OI。
+3. 條件式日夜盤劇本；未經回測校準的情境不得包裝成統計機率。
+4. 三劇本條件路徑；Max Pain 只作磁吸參考，不當作支撐壓力或下跌目標。
+5. 有效多空因子方向貢獻（前 8 項）。
+6. 有足夠歷史樣本才呈現的相關性熱圖；矩陣缺值／維度不符時不得硬畫。
+7. 交易計畫與 Bias、Put Wall、Gamma Wall、Call Wall、Flip、Max Pain 等價位及條件。
+8. 解析文字使用觀察（look）、判讀（compass）、應對／觀察條件（target）結構。
+
+保留 P0 分支較嚴謹的缺值檢查、期貨 OI 完整性檢查、OI／流量分離及動態 factorTarget 描述；不複製參考分支的舊日期或舊數值。
+
+## 3. 已完成修改
+
+### 3.1 Dashboard Template
+
+檔案：templates/v9-pro-react-template.html
+
+- 新增外層 .v9-market-ab-grid 與 A 卡 .v9-market-a-card 標記。
+- 加入 @media (max-width: 1100px)，使區塊 A／C 在平板寬度改為單欄，避免 768～1100px 範圍仍並排造成擠壓。
+- v9ProSynthesisAnalysis() 使用既有 night.l 作第二層價格確認；有效時引用夜盤低點，缺值時明確 fallback 至日／夜收盤價，不填造數值。
+- 共用圖表元件 Hn 新增 decimals 顯示參數，選擇權法人多空力道區塊 B 指定 decimals:2；正負號與零值格式明確，且加寬數值標籤保留區，避免標籤遭裁切。
+- 其他呼叫 Hn 的圖表維持預設精度，不應因區塊 B 修正而全部改成兩位小數。
+- 保留 P0 原有動態 factorTarget、缺值保護及既有分析邏輯。
+
+### 3.2 Dashboard Build + Deploy Workflow
+
+檔案：.github/workflows/daily-premarket-v9-pro.yml
+
+- Deploy job 的 branch condition 加入 refs/heads/phase2-p0-ui-fixes。
+- 這是 Dashboard Build + Deploy workflow，不是 daily-data workflow；不可混淆兩者。
+- 首次 Deploy 失敗根因不是程式或 artifact，而是 GitHub Repository Settings → Environments → github-pages → Deployment branches and tags 未允許 phase2-p0-ui-fixes。
+- 使用者自行調整 Environment 設定後，Deploy 重跑成功。
+
+### 3.3 Browser Audit
+
+檔案：tests/browser_dashboard_audit.mjs
+
+- 加入 1024×900 tablet viewport。
+- 綜合分析頁加入主要區塊存在性檢查。
+- 加入 tablet 下 .v9-market-ab-grid 必須為單欄的檢查。
+- 首次修改後曾發現 helper 分號及 regex escape 兩項缺陷，已分別修正並回讀確認。
+
+## 4. 相關 commits
+
+| Commit | 內容 |
+|---|---|
+| 7ee409e890da982c9556793418b7f107e76c74ed | 綜合分析平板版面與夜盤低點確認 |
+| 91d62e3a1285c6508d270c9519f45f30ed4a5198 | Dashboard Build + Deploy 分支條件 |
+| 12d56a0bb4b7a0432502f28a591c152f4f1e46b3 | Browser Audit tablet 與綜合分析檢查 |
+| 84f0be6332a622b46941ae6a10a4b7cacaadad2f | 修正 helper 分號 |
+| 179f538f4a1bdef4ad1037fa80c32dbd1a5f0921 | 修正 tablet regex escape |
+| 61b77527a2c259d1a83bf530555563cdab42a0fe | 區塊 B 圖表標籤兩位小數 |
+
+## 5. Actions／部署驗證證據
+
+### 5.1 第一輪綜合分析修改部署
+
+- Workflow：Daily Premarket V9 Pro。
+- Run ID：42551931616，Run #537，branch：phase2-p0-ui-fixes。
+- 第一次 Deploy 失敗：GitHub Pages Environment branch protection 拒絕該分支；Build 已成功，Deploy 在 step 開始前被拒。
+- 使用者調整 Environment 設定後，attempt 2：Build、Browser Audit、Pages Artifact、Deploy 均 SUCCESS。
+
+### 5.2 區塊 B 精度修正部署
+
+- Commit：61b77527a2c259d1a83bf530555563cdab42a0fe。
+- Workflow Run ID：42556853022，Run #538。
+- Run conclusion：SUCCESS；Build、Browser Audit、Pages Artifact、GitHub Pages Deploy 均成功。
+- Browser Audit 覆蓋六分頁 Desktop／Mobile；這是自動化驗證，不替代使用者手機實際畫面驗收。
+
+## 6. 區塊 B 手機實際畫面最終驗收
+
+使用者先提供第一次部署後截圖，發現圖表標籤仍將 -0.11、+0.46 顯示成 -0、+0。表格原始顯示仍正確。其後以版本參數重新載入：
+
+https://grichtoyang.github.io/daily-premarket/p0/v9-pro-latest.html?v=61b77527
+
+使用者最新手機截圖確認圖表六列標籤已正確顯示兩位小數，且與表格、分析文字一致：
+
+| 項目 | 圖表顯示 | 結果 |
+|---|---:|---|
+| 外資日淨 | +1.06 億元 | PASS |
+| 外資夜淨 | -0.11 億元 | PASS |
+| 投信日淨 | -10.86 億元 | PASS |
+| 投信夜淨 | 0.00 億元 | PASS |
+| 自營商日淨 | +7.59 億元 | PASS |
+| 自營商夜淨 | +0.46 億元 | PASS |
+
+因此區塊 B 的小數精度、正負號、零值呈現及手機實際畫面均 PASS，該項正式結案。不得再把此項列為待辦，除非後續有新的回歸證據。
+
+## 7. 當前驗收狀態與後續工作
+
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| 區塊 A／C 平板單欄版面 | PASS（程式與 Browser Audit） | 1024px tablet audit 已納入；本補記未宣稱使用者逐尺寸人工驗收 |
+| 夜盤低點第二層價格確認 | PASS（程式存在） | 使用既有分析層欄位；缺值有明確 fallback；未修改資料層 |
+| Build／Browser Audit／Deploy | PASS | Run 42551931616 attempt 2 及 Run 42556853022 均成功 |
+| 區塊 B 六筆圖表數值精度 | PASS | 使用者手機截圖確認兩位小數，並與表格／分析文字一致 |
+| 綜合分析分頁所有分析邏輯全量驗收 | NOT TESTED | 七個主要區塊已呈現，但尚未完成所有數值推導、情境合理性及各區塊手機細節的全量稽核 |
+| 資料層 | FROZEN | 本輪未修改任何資料層程式、Workflow、DATA_REPORT、Worker／Proxy／API |
+| DL-07 | CLOSED | 不得重開或與 workflow/job 名稱混淆 |
+
+### 下一步
+
+1. 繼續只針對綜合分析其他區塊，逐項比對三市場參考分支的分析品質與視覺呈現；只修正有明確證據的差異。
+2. 不重做區塊 B 精度修正，不重新調查已結案項目。
+3. 每次修改僅限分析層／視覺層及 Dashboard Build + Deploy 相關檔案；先列精確檔案範圍。
+4. 不執行、不修改 daily-data workflow；不修改 Builder、資料來源、DATA_REPORT、Worker／Proxy／API。
+5. Actions PASS 後，若需驗收實際手機視覺，仍請使用者提供部署後截圖；不得以 Browser Audit 代替人工視覺驗收。
+6. 本輪只有單一模型進行 Supervisor／Worker／Auditor 分工式自我審查；沒有獨立多模型委派。
