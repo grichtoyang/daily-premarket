@@ -91,12 +91,24 @@ try {
           "三市場狀態",
           "交易前提",
           "觸發／取消",
-          "決策鏈"
+          "決策鏈",
+          "外資同一法人群跨市場",
+          "全體法人背景"
         ];
         const missingSections = requiredSections.filter(section => !synthesisText.includes(section));
         if (missingSections.length) {
           throw new Error(`${viewport.name} / 綜合分析: missing sections: ${missingSections.join(", ")}`);
         }
+        const decisionCards = page.locator(".v9-decision-chain a");
+        const decisionCount = await decisionCards.count();
+        if (decisionCount !== 4) throw new Error(viewport.name + " / 綜合分析: expected 4 decision navigation cards, got " + decisionCount);
+        const decisionLinks = await decisionCards.evaluateAll(nodes => nodes.map(node => ({
+          href: node.getAttribute("href"),
+          summary: node.innerText.trim(),
+          targetExists: !!document.querySelector(node.getAttribute("href"))
+        })));
+        const invalidDecisionLinks = decisionLinks.filter(item => !item.href?.startsWith("#v9-step-") || !item.targetExists || item.summary.length < 30);
+        if (invalidDecisionLinks.length) throw new Error(viewport.name + " / 綜合分析: decision cards must have live summaries and valid in-page targets: " + JSON.stringify(invalidDecisionLinks));
         if (viewport.name === "tablet") {
           const columns = await page.locator(".v9-market-ab-grid").evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length);
           if (columns !== 1) throw new Error(`tablet / 綜合分析: expected one-column synthesis layout, got ${columns}`);
