@@ -1139,3 +1139,75 @@ Browser Audit 改善：
 | DL-07 | CLOSED | 維持結案 |
 
 在使用者完成實際手機畫面驗收前，不得宣稱本輪視覺與交易案例全量驗收完成。
+
+
+---
+
+# 2026-11-09 補記：綜合分析 01～04 動態決策導航與三市場口徑修正
+
+## 1. 使用者驗收發現
+使用者指出綜合分析置頂 01～04 不清楚用途。檢查實際程式確認原本只是四張靜態說明卡，沒有顯示當日結論，也沒有頁內導覽功能。另發現不同區塊的方向結論混用了外資與全體法人資料，導致「外資跨市場分歧」與「三市場同向偏空」可能同時出現而未交代統計範圍。
+
+## 2. 本輪修改範圍
+只修改：
+- `templates/v9-pro-react-template.html`
+- `tests/browser_dashboard_audit.mjs`
+- 本 Skill 文件
+- 本 Recovery 文件
+
+未修改 Builder、資料來源、DATA_REPORT、daily-data Workflow、Worker／Proxy／API、資料層測試或設定。Dashboard Build + Deploy Workflow 本身未修改。
+
+## 3. 實際改善內容
+### 3.1 01～04 轉為動態決策導航
+- 01：顯示外資現貨、外資期貨日夜流量、外資選擇權日夜流量的同法人群跨市場判讀；另列全體法人現貨／選擇權背景。
+- 02：顯示 Bias、有效因子數、圖表前 8 項限制及相關性有效樣本數。
+- 03：顯示現價相對 Put／Call Wall 的位置及日夜盤價格變化。
+- 04：顯示當前交易計畫狀態及等待的觸發／確認條件。
+- 四張卡均改為可點擊頁內導覽，分別跳轉到下方對應分析區塊；目標元素使用穩定 id。
+- 導覽卡摘要由當日分析結果產生，不再只顯示固定說明文字。
+
+### 3.2 三市場比較口徑統一
+- 外資跨市場投票採同一法人群：現貨外資、期貨外資日夜淨交易、選擇權外資日夜淨交易。
+- 全體法人現貨／選擇權合計另作背景資訊，不與期貨外資資料混成同一個法人群投票。
+- 選擇權口數與契約金額代理值比較時，使用同一法人列；契約金額缺值時明確顯示無法交叉確認。
+- OI 持續作為存量獨立觀察，不納入日夜交易流量投票。
+- 交易方向至少需要兩個外資市場訊號同向且沒有反向訊號；即使符合，仍必須等待關鍵價位突破／跌破及回測確認。資料不足或背離時維持低信心／觀望。
+- 相關性樣本數解析兼容「有效樣本僅 N 筆」文字格式，避免導覽摘要錯誤顯示樣本數未提供。
+
+## 4. 本輪程式 commits
+- `c24d9db4943ef03bb1544b5bb4dbea6cef8a1d2a`：初版動態決策導航、跨市場同法人群判讀及頁內錨點。
+- `3ec7bbe38f5118ff6d5e807e76b3b715b83a2036`：修正交叉判讀文字及交易狀態動態摘要。
+- `bcb792f695838c2cc29dff83aea8b1b4921f293c`：調整兩個以上同向訊號門檻，確保選擇權口數／契約金額代理值同法人比較，清除重複敘事鍵。
+- `6a8661ca09f49425ef8f7aaeb39cea48cef79097`：修正相關性樣本數解析與金額代理缺值提示。
+- `ff19356bb6c27c6e990ad7f254db7035a1d53200`：統一區間交易條件的外資跨市場確認口徑。
+- Browser Audit：`e57bdc67f38b23de5aaf104739e5cf29a139c6af`，檢查 4 張決策卡、動態摘要、頁內目標存在及法人範圍文字。
+
+## 5. 最終自動化與部署驗證
+- Dashboard Workflow Run：`42568580304`（Run #552）。
+- Head SHA：`ff19356bb6c27c6e990ad7f254db7035a1d53200`。
+- Build：PASS。
+- HTML／JavaScript validation：PASS。
+- Browser Audit（Desktop／Tablet／Mobile 六分頁）：PASS；新增的決策卡與目標檢查通過。
+- Pages Artifact：PASS。
+- GitHub Pages Deploy：PASS。
+- Workflow URL：https://github.com/grichtoyang/daily-premarket/actions/runs/42568580304
+- Workflow 自動提交的產出只有 `dashboards/index.html`、`dashboards/v9-pro-20261106.html`、`dashboards/v9-pro-latest.html`；相對於 template commit 的 compare 僅顯示這三個 Dashboard HTML 產出檔，未變更資料層程式／Workflow。
+
+## 6. 驗收狀態
+| 項目 | 狀態 | 說明 |
+|---|---|---|
+| 01～04 動態摘要 | PASS（自動化） | 四張卡內容依當日分析結果產生 |
+| 01～04 頁內導覽目標 | PASS（自動化） | Browser Audit 確認四個 href 對應目標存在 |
+| 外資同法人群跨市場口徑 | PASS（程式／自動化） | 現貨、期貨、選擇權均取外資欄位 |
+| 全體法人背景與外資方向區分 | PASS（程式／自動化） | 不再混成同一方向投票 |
+| 選擇權口數／契約金額代理值核對 | PASS（程式檢查） | 同一法人列比較；缺值明確提示 |
+| Build／Browser Audit／Deploy | PASS | Run #552 |
+| 實際手機視覺 | NOT TESTED | 等待使用者開啟新部署並提供畫面 |
+| 多種市場組合案例合理性 | NOT TESTED | 尚未逐一驗證多空一致、背離、資料不足等情境 |
+| 資料層 | FROZEN | 未修改資料層內容 |
+| DL-07 | CLOSED | 維持結案，不重開 |
+
+## 7. 最新 Dashboard
+https://grichtoyang.github.io/daily-premarket/p0/v9-pro-latest.html?v=ff19356b
+
+使用者需實際確認手機上 01～04 是否易讀、動態摘要是否正確，以及點擊各卡是否跳到正確區塊。自動化測試通過不能取代人工畫面與真實市場案例驗收。
