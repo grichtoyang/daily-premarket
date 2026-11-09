@@ -339,7 +339,7 @@ function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis}) {
         ?"夜盤低點缺值，僅以日夜收盤價作初步觀察：開盤先觀察能否收復日盤收盤 "+priceFmt(closeDay,0)+"；若無法收復，夜盤偏弱訊號仍待確認；若重新站回並守穩，弱勢判讀應降級。"
         :nightDelta>0
           ?"夜盤低點缺值，僅以日夜收盤價作初步觀察：開盤先觀察能否守住日盤收盤 "+priceFmt(closeDay,0)+"；若跌回其下，夜盤偏強訊號尚未獲現貨確認；若回測守住並續強，才提高偏強延續判斷。"
-          :"夜盤低點缺值，日夜盤收盤差距不明顯；先觀察日盤收盤 "+priceFmt(closeDay,0)+" 附近的價格反應，不單憑量能占比推斷方向。"
+          :"夜盤低點缺值，日夜盤收盤差距不明顯；先觀察日盤收盤 "+priceFmt(closeDay,0)+" 附近的價格反應，不單憑量能占比推斷方向。";
   const current=num(spot?.close), put=num(options?.putWall), call=num(options?.callWall), flip=num(options?.flip), gamma=num(options?.gammaWall);
   const currentReady=valid(current);
   const upper=[gamma,call].filter(x=>valid(x)&&currentReady&&x>current).sort((a,b)=>a-b)[0]??null;
