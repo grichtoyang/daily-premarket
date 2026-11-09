@@ -377,7 +377,7 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const strongestNegative=pairs.filter(x=>x.v<0).sort((a,b)=>a.v-b.v)[0]||null;
   const pairText=x=>x?x.a+"／"+x.b+" "+(x.v>0?"+":"")+fmt(x.v,2):"無有效配對";
   const corrDesc=analysis?.correlation?.desc||"";
-  const sampleMatch=corrDesc.match(/(?:有效樣本|樣本)\s*(\d+)\s*筆/);
+  const sampleMatch=corrDesc.match(/(?:有效樣本|樣本)\s*(\d+)(?:\/\d+)?\s*筆/);
   const corrSamples=sampleMatch?Number(sampleMatch[1]):null;
   const corrCaution=corrSamples==null?"樣本數未提供，無法評估穩定性。":corrSamples<10?"有效樣本僅 "+corrSamples+" 筆，僅能作探索性觀察，相關係數高度不穩定。":corrSamples<30?"有效樣本 "+corrSamples+" 筆，仍屬有限樣本，避免將高相關視為穩定關係。":"有效樣本 "+corrSamples+" 筆；仍須留意期間、離群值與結構變化。";
   const corrLook=correlationReady?"矩陣 "+labels.length+"×"+labels.length+"；最強正相關："+pairText(strongestPositive)+"；最強負相關："+pairText(strongestNegative)+"。"+corrDesc+" "+corrCaution:"目前沒有可用的日期對齊相關性矩陣（缺值或維度不一致）；不以空白或預設值推論市場連動。"+corrCaution;
