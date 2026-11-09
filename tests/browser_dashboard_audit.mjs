@@ -95,7 +95,7 @@ try {
           throw new Error(`${viewport.name} / 綜合分析: missing sections: ${missingSections.join(", ")}`);
         }
         if (viewport.name === "tablet") {
-          const columns = await page.locator(".v9-market-ab-grid").evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).length);
+          const columns = await page.locator(".v9-market-ab-grid").evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length);
           if (columns !== 1) throw new Error(`tablet / 綜合分析: expected one-column synthesis layout, got ${columns}`);
         }
       }
