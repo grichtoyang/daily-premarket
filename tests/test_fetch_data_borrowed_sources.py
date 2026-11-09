@@ -961,8 +961,8 @@ class BorrowedShortLotPrecisionTests(unittest.TestCase):
 
     def test_twt72u_share_count_converts_to_thousand_share_lots(self):
         from src.sources.spot import _shares_to_lots
-        # TWT72U raw field is shares; 33,203,111,000 shares = 33,203,111 lots.
-        self.assertEqual(_shares_to_lots(33203111000), 33203111)
+        # Same TWT72U raw fixture used by the parser test: shares -> thousand-share lots.
+        self.assertEqual(_shares_to_lots(30037685000), 30037685)
 
     def test_same_t0_merge_never_carries_forward_borrowed_values(self):
         from src.fetch_data import merge_same_t0
