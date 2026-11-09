@@ -88,6 +88,9 @@ try {
           "多空因子方向貢獻",
           "相關性熱圖",
           "交易計畫",
+          "三市場狀態",
+          "交易前提",
+          "觸發／取消",
           "決策鏈"
         ];
         const missingSections = requiredSections.filter(section => !synthesisText.includes(section));
