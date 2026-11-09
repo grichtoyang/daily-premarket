@@ -1042,3 +1042,70 @@ https://grichtoyang.github.io/daily-premarket/p0/v9-pro-latest.html?v=61b77527
 4. 不執行、不修改 daily-data workflow；不修改 Builder、資料來源、DATA_REPORT、Worker／Proxy／API。
 5. Actions PASS 後，若需驗收實際手機視覺，仍請使用者提供部署後截圖；不得以 Browser Audit 代替人工視覺驗收。
 6. 本輪只有單一模型進行 Supervisor／Worker／Auditor 分工式自我審查；沒有獨立多模型委派。
+
+
+## 8. 2026-11-09 綜合分析決策鏈第二輪改善（CI／視覺驗收待完成）
+
+### 8.1 使用者確認的改善方向
+
+使用者要求先改善五項分析問題，特別優先處理：
+1. Gamma Flip 缺值與 0 的視覺矛盾。
+2. Bias 分數與多空因子貢獻的解釋鏈。
+3. 相關性熱圖有效樣本數與可信度提示。
+4. 三市場籌碼、選擇權力道的交叉判讀。
+5. 交易計畫明確連結前述分析，具備觸發、取消及觀望條件。
+
+並要求依使用者提供的流程圖，建立四階段決策鏈：
+「三市場籌碼與選擇權力道 → 多空因子與市場關係 → Bias 與日夜盤情境 → 交易計畫與風險條件」。
+
+### 8.2 本輪實際修改範圍
+
+只修改以下兩個程式檔案：
+- `templates/v9-pro-react-template.html`
+- `tests/browser_dashboard_audit.mjs`
+
+另更新本 Recovery 文件及 Skill 文件。沒有修改 Builder、資料來源、DATA_REPORT、daily-data workflow、Worker／Proxy／API 或其他資料層內容。
+
+Template 改善：
+- 增加四階段決策鏈導覽卡片，桌面四欄、窄螢幕自動換行。
+- 新增「三市場交叉判讀」卡：現貨三法人合計、期貨外資日夜淨交易流量、選擇權三法人日夜淨交易口數；另列選擇權契約金額代理值方向交叉核對。
+- OI 明確定義為存量，不納入日夜交易流量方向投票；契約金額代理值不等同權利金現金流。
+- 當選擇權淨交易口數與契約金額代理值方向相反時，顯示背離提醒。
+- 三市場方向不一致時降低方向信心；交易計畫候選條件要求至少兩個市場同向且沒有反向市場訊號，並等待關鍵價位突破／跌破後回測確認。
+- 交易計畫列出市場狀態、執行前提、觸發／取消、支撐／壓力失效條件；Bias 僅為背景評分。
+- Gamma Flip 僅在有效正價位時繪製；0／缺值不當成價位標記，表格顯示缺值／不畫價位。
+- Bias 解釋補上 50 分中性基準、有效因子數及前 8 項圖表限制；不把前 8 項合計當作全部 17 項因子總貢獻，也不把 Bias 當勝率。
+- 相關性說明解析既有描述中的有效樣本數，對少於 10 筆標示探索性觀察、10 至 29 筆標示有限樣本；不更動歷史資料或相關性計算。
+
+Browser Audit 改善：
+- 成功切換至綜合分析後，檢查三市場交叉判讀及決策鏈等必要區塊是否實際渲染。
+- Tablet 1024px 維持 A／C 單欄檢查；regex 使用正確的 whitespace pattern。
+
+### 8.3 本輪 commits
+
+| Commit | 內容 |
+|---|---|
+| `f4b9018585bfcd11ac73eb9e23fe56e1c7c33644` | 初版三市場交叉判讀、交易計畫條件、樣本警示與 Bias 解釋 |
+| `e193c0606d645d2b5d0b12b5ec4f9d711841a753` | 綁定既有 institutional 資料並新增四階段決策鏈導覽 |
+| `1fe9405d00a2b082786dcba6360b5f9d707b85ea` | 加入兩市場同向且無反向訊號條件、選擇權口數／金額背離提示及交易計畫前提 |
+| `abab35be096159a8aaf9ed1774d8f27a7600ee92` | 修正交易計畫 Gamma Flip 缺值顯示，避免區塊內引用未定義 helper |
+| `5ed957b9f6651d73cde1586ec3cbbd0074f18640` | Browser Audit 增加決策鏈及交叉判讀區塊檢查 |
+| `15792b820fda27e46f48abfd9f4439da11341686` | 修正 tablet grid regex |
+| `18162d781d1e180964056ce7f47f7f0ecdea9749` | Skill 文件補記本輪改善規範 |
+
+### 8.4 驗收狀態
+
+| 項目 | 狀態 | 說明 |
+|---|---|---|
+| Template 修改 | PASS（已提交／回讀） | 尚未等同瀏覽器執行驗證 |
+| Browser Audit 修改 | PASS（已提交／回讀） | 尚待 CI 實際執行 |
+| 三市場交叉數值邏輯 | NOT TESTED | 需以實際 Dashboard JSON 與畫面核對 |
+| Gamma Flip 0／缺值顯示 | NOT TESTED | 需瀏覽器實際渲染驗證 |
+| Bias 與因子說明 | NOT TESTED | 需核對輸出文字與有效因子數 |
+| 相關性樣本警示 | NOT TESTED | 需核對 5、10、30 筆邊界情況 |
+| 交易計畫條件鏈 | NOT TESTED | 需核對多空同向、背離、資料不足等案例 |
+| 手機／平板實際畫面 | NOT TESTED | 等待 Browser Audit 及部署後畫面確認 |
+| 資料層 | FROZEN | 本輪未修改任何資料層程式或 Workflow |
+| DL-07 | CLOSED | 不得重開 |
+
+注意：本輪多個連續 commits 會觸發多次 Dashboard workflow；只以最新 head SHA 對應的最終 run 判定，不將舊 commit 的取消或失敗誤認為最新成果狀態。不可執行或修改 daily-data。
