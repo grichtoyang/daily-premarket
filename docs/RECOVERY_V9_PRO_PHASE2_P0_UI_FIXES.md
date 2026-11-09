@@ -1109,3 +1109,33 @@ Browser Audit 改善：
 | DL-07 | CLOSED | 不得重開 |
 
 注意：本輪多個連續 commits 會觸發多次 Dashboard workflow；只以最新 head SHA 對應的最終 run 判定，不將舊 commit 的取消或失敗誤認為最新成果狀態。不可執行或修改 daily-data。
+
+
+### 8.5 Dashboard Build／Browser Audit／Deploy 自動驗收結果
+
+- 最終 Dashboard Workflow Run：`42561211616`（Run #546），head SHA：`ce11f3c428f08eaadd18858b846683325411a7ac`。
+- Build：SUCCESS。
+- HTML／JavaScript validation：SUCCESS。
+- Browser Audit：SUCCESS；六分頁 Desktop／Tablet／Mobile 測試通過，且新增的三市場交叉判讀、交易前提、觸發／取消及決策鏈必要文字均通過。
+- Browser Audit 證據上傳：SUCCESS。
+- Dashboard Pages artifact：SUCCESS。
+- GitHub Pages Deploy：SUCCESS。
+- Workflow URL：https://github.com/grichtoyang/daily-premarket/actions/runs/42561211616
+- 預期部署頁：https://grichtoyang.github.io/daily-premarket/p0/v9-pro-latest.html?v=ce11f3c4
+- Build workflow 在成功完成後自動更新三個 Dashboard HTML 輸出檔（`dashboards/index.html`、`dashboards/v9-pro-20261106.html`、`dashboards/v9-pro-latest.html`）；未變更 Builder、DATA_REPORT 或任何資料層程式／Workflow。
+
+### 8.6 最終驗收狀態更新
+
+| 項目 | 狀態 | 說明 |
+|---|---|---|
+| Dashboard Build | PASS | Run 42561211616 |
+| HTML／JavaScript validation | PASS | Run 42561211616 |
+| Browser Audit | PASS | Desktop／Tablet／Mobile、六分頁及新增決策鏈內容檢查 |
+| Pages Artifact | PASS | Run 42561211616 |
+| GitHub Pages Deploy | PASS | Run 42561211616 |
+| 實際手機畫面人工驗收 | NOT TESTED | 仍需使用者開啟部署頁並確認畫面、數值及文字 |
+| 三市場交叉判讀的案例正確性 | NOT TESTED | 自動化檢查確認渲染，不代表各種市場多空／背離案例均已逐筆驗證 |
+| 資料層 | FROZEN | 未修改資料層程式、來源、DATA_REPORT、daily-data workflow、Worker／Proxy／API |
+| DL-07 | CLOSED | 維持結案 |
+
+在使用者完成實際手機畫面驗收前，不得宣稱本輪視覺與交易案例全量驗收完成。
