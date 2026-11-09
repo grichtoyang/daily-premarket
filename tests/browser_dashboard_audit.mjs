@@ -105,6 +105,9 @@ try {
         if (missingSections.length) {
           throw new Error(`${viewport.name} / 綜合分析: missing sections: ${missingSections.join(", ")}`);
         }
+        const staleTradeRules = ["重新站回則取消偏空候選", "跌回其下則取消偏多候選"];
+        const staleTradeText = staleTradeRules.filter(rule => synthesisText.includes(rule));
+        if (staleTradeText.length) throw new Error(`${viewport.name} / 綜合分析: stale non-scenario-specific trade rules: ${staleTradeText.join(", ")}`);
         const decisionCards = page.locator(".v9-decision-chain a");
         const decisionCount = await decisionCards.count();
         if (decisionCount !== 4) throw new Error(viewport.name + " / 綜合分析: expected 4 decision navigation cards, got " + decisionCount);
