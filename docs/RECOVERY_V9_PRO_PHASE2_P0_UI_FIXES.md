@@ -1211,3 +1211,48 @@ Browser Audit 改善：
 https://grichtoyang.github.io/daily-premarket/p0/v9-pro-latest.html?v=ff19356b
 
 使用者需實際確認手機上 01～04 是否易讀、動態摘要是否正確，以及點擊各卡是否跳到正確區塊。自動化測試通過不能取代人工畫面與真實市場案例驗收。
+
+
+---
+
+# 2026-11-09 補記：三劇本與交易計畫連動（第二輪）
+
+## 1. 本輪發現
+檢查 v9ProSynthesisAnalysis() 發現外資跨市場方向共識的文字門檻不一致：交易候選可接受至少兩個可用市場同向且無反向訊號，但交叉判讀文字在部分分支要求三市場全數可用。這會使同一份 Dashboard 對兩個已知同向、第三市場缺值的情況產生矛盾敘述。
+
+## 2. 修改範圍與 commits
+僅修改：
+- templates/v9-pro-react-template.html
+- tests/browser_dashboard_audit.mjs
+- 本 Skill 與本 Recovery 文件
+
+Commits：
+- 151118b8302fa5f0bb584d7ed83ac27f200acdad：統一 2-of-3 可用市場共識文字；選擇權口數與契約金額代理值方向背離時，阻止交易流量確認；新增多方／空方觸發、流量門檻、劇本失效及風險控制文字；移除不分情境的固定支撐／壓力失效描述。
+- f369c1959d7acd9527fa27b38c458aa5313e3462：Browser Audit 新增交易計畫五項欄位的渲染檢查。
+- Skill／Recovery 文件補記本輪決策規則及限制。
+
+## 3. 新交易計畫規則
+- 多方候選：現價須有效站上 Call Wall 並回測守穩；外資至少兩個可用市場同向偏多、沒有反向訊號；選擇權口數與契約金額代理值不得背離。
+- 空方候選：現價須有效跌破 Put Wall 並反抽無法收復；外資至少兩個可用市場同向偏空、沒有反向訊號；選擇權口數與契約金額代理值不得背離。
+- 區間內：以區間觀察為主，不追價；等待邊界突破／跌破及回測確認。
+- 方向確認少於兩個可用市場、出現反向市場訊號，或選擇權口數／金額方向背離時，不提供方向確認。
+- 未有波動停損依據時，不虛構固定停損點數；僅列出劇本失效條件，並提示實際停損距離需按商品波動及風險額度設定。
+
+## 4. 驗收狀態
+| 項目 | 狀態 | 說明 |
+|---|---|---|
+| Template 更新 | PASS（提交） | Commit 151118b |
+| Browser Audit 更新 | PASS（提交） | Commit f369c19 |
+| 2-of-3 與缺值文字一致性 | PASS（靜態檢查） | 已統一為至少兩個可用市場且無反向訊號 |
+| 口數／金額背離阻擋交易確認 | PASS（靜態檢查） | tradeBullConfirm／tradeBearConfirm 加入背離 gate |
+| 多空觸發／流量門檻／失效／風險欄位 | PASS（靜態檢查） | 已接入交易計畫表格 |
+| Dashboard Build／Browser Audit／Deploy | NOT TESTED | 等待 GitHub Actions 結果 |
+| 實際手機畫面 | NOT TESTED | 等待部署後人工驗收 |
+| 多種市場情境案例測試 | NOT TESTED | 尚未完成獨立案例測試 |
+| 資料層 | FROZEN | 未修改資料來源、Builder、DATA_REPORT、daily-data、Worker／Proxy／API |
+| DL-07 | CLOSED | 維持結案 |
+
+## 5. 風險與限制
+- 目前交易觸發使用既有 Put Wall／Call Wall，不新增資料欄位，也不產生固定停損點數。
+- Bias 仍為背景評分，不作勝率或單獨進場依據。
+- 這輪審查為單一模型自我覆核，並非獨立多模型審核。
