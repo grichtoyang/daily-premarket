@@ -272,12 +272,11 @@ function v2({data:e}){let{tx:n,futures:r}=e;const narrative=v9ProSynthesisAnalys
 
   const gw=n(options?.gammaWall),flip=n(options?.flip),mp=n(options?.maxPain);
   const wallVals=[pw,flip,mp,gw,cw];
-  const flipLabel=flipInfo.estimated?"擴大範圍估算 Gamma Flip（±15%）":"Gamma Flip";
-  const wallLook=wallVals.every(x=>x!=null)?`現價 ${f(close)} 點；Put Wall ${f(pw)} 點；${flipLabel} ${f(flip,2)} 點；Max Pain ${f(mp)} 點；Gamma Wall ${f(gw)} 點；Call Wall ${f(cw)} 點。`:`關鍵價位資料不完整：Put Wall ${f(pw)}；${flipLabel} ${f(flip)}；Max Pain ${f(mp)}；Gamma Wall ${f(gw)}；Call Wall ${f(cw)}。`;
+  const wallLook=wallVals.every(x=>x!=null)?`現價 ${f(close)} 點；Put Wall ${f(pw)} 點；Gamma Flip ${f(flip,2)} 點；Max Pain ${f(mp)} 點；Gamma Wall ${f(gw)} 點；Call Wall ${f(cw)} 點。`:`關鍵價位資料不完整：Put Wall ${f(pw)}；Flip ${f(flip)}；Max Pain ${f(mp)}；Gamma Wall ${f(gw)}；Call Wall ${f(cw)}。`;
   const wallCompass=close!=null&&wallVals.every(x=>x!=null)
-    ?`現價${close>flip?"高於":close<flip?"低於":"位於"}${flipInfo.estimated?"擴大範圍估算 Flip（次級參考）":"Gamma Flip"}、${close>gw?"高於":close<gw?"低於":"位於"} Gamma Wall；相對 Put／Call Wall 位置依圖表價位判讀。${flipInfo.estimated?"此 Flip 來自 ±15% 擴大搜尋範圍，僅作次級參考，須再由價格反應確認。 ":""}Max Pain 僅是到期損益分布的磁吸參考，不作為支撐、壓力或價格目標。`
+    ?`現價${close>flip?"高於":close<flip?"低於":"位於"} Gamma Flip、${close>gw?"高於":close<gw?"低於":"位於"} Gamma Wall；相對 Put／Call Wall 位置依圖表價位判讀。Max Pain 僅是到期損益分布的磁吸參考，不作為支撐、壓力或價格目標。`
     :"現價或關鍵價位缺值，無法判斷相對位置；Max Pain 不作為支撐、壓力或價格目標。";
-  const wallTarget=close!=null&&wallVals.every(x=>x!=null)?`觀察現價對${flipInfo.estimated?"擴大範圍估算 Flip（次級參考）":"Gamma Flip"} ${f(flip,2)} 點及 Gamma Wall ${f(gw)} 點的站回／跌破確認，並留意 Put Wall ${f(pw)} 點與 Call Wall ${f(cw)} 點；${flipInfo.estimated?"估算 Flip 須等待價格反應確認，不單獨作方向觸發；":""}Max Pain 不作交易觸發價。`:"待取得有效現價與關鍵價位後，再設定條件；缺值時不建立固定交易觸發價。";
+  const wallTarget=close!=null&&wallVals.every(x=>x!=null)?`觀察現價對 Gamma Flip ${f(flip,2)} 點及 Gamma Wall ${f(gw)} 點的站回／跌破確認，並留意 Put Wall ${f(pw)} 點與 Call Wall ${f(cw)} 點；Max Pain 不作交易觸發價。`:"待取得有效現價與關鍵價位後，再設定條件；缺值時不建立固定交易觸發價。";
 
   const inst=arr(options?.instOpt),names=["外資","投信","自營商"],parts=inst.filter(x=>names.includes(String(x?.[0]))),total=inst.find(x=>String(x?.[0])==="三大法人合計");
   const dayTotal=n(total?.[3]),nightTotal=n(total?.[6]);
