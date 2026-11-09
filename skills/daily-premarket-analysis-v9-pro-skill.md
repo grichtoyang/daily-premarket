@@ -226,3 +226,48 @@ Phase 2 應採增量開發。先確認現況與驗收標準，再修改程式；
 ### 13.4 解除凍結
 
 只有使用者明確要求解除或調整凍結範圍，才可恢復相應資料層修改。未取得明確授權時，預設狀態永遠是凍結。
+
+
+## 14. 2026-11-09 分析層／視覺層工作範圍與最新驗收狀態
+
+### 14.1 當前工作範圍
+
+- 目前工作目標：只改善 `phase2-p0-ui-fixes` 分支的 V9 Pro Dashboard 分析層與視覺層，優先使「綜合分析」分頁達到既有三市場參考分支的呈現水準。
+- 不得把參考分支整體合併過來；只選擇性移植已確認有價值的分析呈現或視覺行為，並保留 P0 分支較嚴謹的缺值、OI／流量分離、完整性檢查及動態分析描述。
+- 嚴禁碰觸 DATA LAYER FROZEN 範圍。尤其不可修改 `scripts/v9_pro_builder.py`、資料來源／轉換程式、DATA_REPORT、daily-data workflow、Worker／Proxy／API 或資料層測試。若不確定檔案歸屬，先視為凍結。
+- 本任務可修改的範圍限於 Dashboard Template、Dashboard Build + Deploy Workflow（不含 daily-data workflow）、Browser Audit／UI 測試及分析層／視覺層文件；每次仍須先列明確檔案清單。
+
+### 14.2 已完成的綜合分析分頁改善
+
+工作分支：`phase2-p0-ui-fixes`。
+
+1. Template `templates/v9-pro-react-template.html`：
+   - 綜合分析區塊 A／C 在 1100px 以下改為單欄排列，改善平板寬度下的版面擠壓。
+   - 分析敘述加入夜盤低點作為第二層價格確認；夜盤低點缺值時明確 fallback 至日／夜收盤價，不虛構價格。
+   - 保留 P0 原有動態 `factorTarget`、缺值防護及 OI／交易流量分離解讀。
+   - 選擇權法人多空力道圖表支援指定小數位；區塊 B 設為小數點後兩位，正負號與零值格式明確，避免 `-0`、`+0` 遮蔽小額淨值。
+2. Build + Deploy Workflow `.github/workflows/daily-premarket-v9-pro.yml：允許目前工作分支執行 Dashboard 部署條件；Repository `github-pages` Environment 的 branch protection 亦由使用者自行調整允許此分支。這不是 daily-data workflow。
+3. Browser Audit `tests/browser_dashboard_audit.mjs`：加入 1024px tablet viewport、綜合分析主要區塊檢查及 A／C 單欄版面斷言。
+
+相關提交：
+- `7ee409e890da982c9556793418b7f107e76c74ed`：分析區塊平板版面與夜盤低點確認。
+- `91d62e3a1285c6508d270c9519f45f30ed4a5198`：Dashboard Build + Deploy 分支條件。
+- `12d56a0bb4b7a0432502f28a591c152f4f1e46b3`：Browser Audit tablet／綜合分析檢查。
+- `84f0be6332a622b46941ae6a10a4b7cacaadad2f`、`179f538f4a1bdef4ad1037fa80c32dbd1a5f0921`：修正 helper 分號及 tablet regex。
+- `61b77527a2c259d1a83bf530555563cdab42a0fe`：區塊 B 圖表標籤精度修正。
+
+### 14.3 Build／Browser Audit／Deploy 證據
+
+- 首次 Deploy 曾因 GitHub Pages Environment 未允許 `phase2-p0-ui-fixes` 而在步驟開始前遭拒；使用者調整 Environment branch protection 後，重跑成功。
+- 綜合分析第一輪部署 Run：`42551931616`，attempt 2；Build、Browser Audit、Pages Artifact、Deploy 均 SUCCESS。
+- 區塊 B 精度修正部署 Run：`42556853022`；Build、Browser Audit、Pages Artifact、Deploy 均 SUCCESS，head SHA `61b77527a2c259d1a83bf530555563cdab42a0fe`。
+- 使用者其後提供實際手機截圖，並以 `?v=61b77527` 重新載入頁面；六列圖表標籤均正確顯示兩位小數：外資日 +1.06、外資夜 -0.11、投信日 -10.86、投信夜 0.00、自營商日 +7.59、自營商夜 +0.46 億元，與表格及分析文字一致。
+- 區塊 B 圖表數值精度及手機實際畫面驗收：PASS。這只代表此項顯示缺陷結案，不代表整個綜合分析分頁的所有分析品質均已完成全量驗收。
+
+### 14.4 下一步規則
+
+- 後續繼續改善其他綜合分析區塊時，先以使用者提供的三市場參考畫面及目前 P0 畫面作逐項比對；只處理有明確證據的分析層／視覺層差異。
+- 不重做已通過的區塊 B 小數精度，不重開已結案項目；除非新證據顯示回歸。
+- 每次修改只跑與修改範圍相符的 Dashboard Build／Browser Audit／Deploy 驗證，不執行或修改 daily-data。
+- Browser Audit／Actions PASS 不等於實際手機視覺 PASS；需要實際畫面時，仍須由使用者提供部署頁面截圖完成驗收。
+- 本專案目前只有單一 ChatGPT 模型可執行本輪工作；若未實際呼叫獨立 Agent／模型，不得描述為獨立多模型審核。可做 Supervisor／Worker／Auditor 分工式自我審查，並如實標示。
