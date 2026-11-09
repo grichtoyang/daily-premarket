@@ -271,3 +271,20 @@ Phase 2 應採增量開發。先確認現況與驗收標準，再修改程式；
 - 每次修改只跑與修改範圍相符的 Dashboard Build／Browser Audit／Deploy 驗證，不執行或修改 daily-data。
 - Browser Audit／Actions PASS 不等於實際手機視覺 PASS；需要實際畫面時，仍須由使用者提供部署頁面截圖完成驗收。
 - 本專案目前只有單一 ChatGPT 模型可執行本輪工作；若未實際呼叫獨立 Agent／模型，不得描述為獨立多模型審核。可做 Supervisor／Worker／Auditor 分工式自我審查，並如實標示。
+
+
+### 14.5 2026-11-09 綜合分析決策鏈第二輪改善（待 CI／手機驗收）
+
+本輪由使用者指定優先改善五項，特別強調三市場交叉判讀與交易計畫必須連成決策鏈；並要求依其提供的流程圖方向，將現有內容組成「三市場籌碼與選擇權力道 → 多空因子與市場關係 → Bias 與日夜盤情境 → 交易計畫與風險條件」。
+
+目前修改僅限：
+- `templates/v9-pro-react-template.html`：加入四階段決策鏈導覽；新增三市場交叉判讀卡，使用既有 institutional、futures、options 欄位，區分現貨法人合計、期貨日夜交易流量、選擇權日夜淨交易口數及契約金額代理值；期貨 OI 明確保留為存量，不加入流量投票。當選擇權口數與契約金額代理值方向相反時，明確提示背離。
+- 同一 Template：交易計畫納入三市場狀態、價位觸發、回測確認及取消條件；偏多／偏空候選要求至少兩個市場同向且沒有反向市場訊號，仍須價格突破／跌破後回測確認。Bias 僅作背景評分，不直接作進場訊號。
+- 同一 Template：Gamma Flip 僅在有效正價位時顯示，0／缺值不再繪製成價格標記，表格顯示「缺值／不畫價位」。
+- 同一 Template：Bias 敘述補充 50 分中性基準、有效因子數及圖表只顯示前 8 項；不把前 8 項加總誤稱全部因子貢獻，也不把 Bias 當勝率。
+- 同一 Template：相關性敘述依可取得的有效樣本數增加探索性／有限樣本警示；不更動相關性歷史資料或計算流程。
+- `tests/browser_dashboard_audit.mjs`：將三市場交叉判讀及決策鏈納入實際成功渲染後的必要區塊檢查，並保留 tablet 單欄檢查。
+
+明確禁止：不得修改 `scripts/v9_pro_builder.py`、資料來源、DATA_REPORT、daily-data workflow、Worker／Proxy／API 或任何資料層邏輯。這些分析均只讀取 Dashboard 已有欄位。
+
+本輪目前狀態：程式已提交；CI／Browser Audit／部署及實際手機畫面尚待驗證。不得提前宣稱 PASS 或 CLOSE。
