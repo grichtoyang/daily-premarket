@@ -26,7 +26,7 @@ jobs:
       - name: Checkout isolated futures UI preview source
         uses: actions/checkout@v4
         with:
-          ref: preview/v9-pro-futures-ui-only
+          ref: ${{ github.sha }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -83,7 +83,7 @@ jobs:
       - name: Install Playwright Chromium
         run: |
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
 
       - name: Run six-tab Desktop, Tablet and Mobile browser audit
         env:
