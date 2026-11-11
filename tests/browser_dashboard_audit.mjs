@@ -90,7 +90,7 @@ try {
         const invalidOptionLinks = await optionLinks.evaluateAll(nodes => nodes.filter(node => {
           const href = node.getAttribute("href");
           return !href?.startsWith("#v9-option-step-") || !document.querySelector(href) || node.innerText.trim().length < 30;
-        }).map(node => ({ href: node.getAttribute("href"), text: node.innerText.trim() }));
+        }).map(node => ({ href: node.getAttribute("href"), text: node.innerText.trim() })));
         if (invalidOptionLinks.length) throw new Error(`${viewport.name} / 選擇權: invalid analysis navigation targets: ${JSON.stringify(invalidOptionLinks)}`);
       }
       if (tab.key === "synthesis") {
