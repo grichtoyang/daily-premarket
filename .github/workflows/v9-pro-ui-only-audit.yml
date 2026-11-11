@@ -1,0 +1,107 @@
+name: V9 Pro UI-only Browser Audit
+
+on:
+  push:
+    branches:
+      - phase2-p0-ui-fixes
+    paths:
+      - '.github/workflows/v9-pro-ui-only-audit.yml'
+      - 'templates/v9-pro-react-template.html'
+      - 'tests/browser_dashboard_audit.mjs'
+      - 'tests/validate_react_html_js.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v9-pro-ui-only-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ui-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build UI fixture from existing dashboard JSON only
+        run: |
+          set -euo pipefail
+          DATA_FILE="$(find dashboards -maxdepth 1 -type f -name 'data-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].json' -print | sort -r | head -n1)"
+          if [ -z "$DATA_FILE" ] || [ ! -s "$DATA_FILE" ]; then
+            echo "No existing dated Dashboard JSON found; UI-only audit cannot proceed."
+            exit 1
+          fi
+          export DATA_FILE
+          mkdir -p artifacts/ui-only
+          python3 <<'PY'
+          import json, os, pathlib
+          data_path = pathlib.Path(os.environ["DATA_FILE"])
+          template_path = pathlib.Path("templates/v9-pro-react-template.html")
+          template = template_path.read_text(encoding="utf-8")
+          data_obj = json.loads(data_path.read_text(encoding="utf-8"))
+          if data_obj.get("meta", {}).get("version") != "v9-pro-17F":
+              raise SystemExit("Unexpected dashboard data version")
+          if "var vf=window.DASHBOARD_DATA;" not in template:
+              raise SystemExit("Template must read injected DASHBOARD_DATA directly")
+          required_tabs = ["總覽", "現貨", "重要市場", "期貨", "選擇權", "綜合分析"]
+          missing = [tab for tab in required_tabs if tab not in template]
+          if missing:
+              raise SystemExit(f"Template missing tabs: {missing}")
+          options = data_obj.get("options", {})
+          if "extendedFlip" not in options:
+              raise SystemExit("Existing Dashboard JSON is missing options.extendedFlip")
+          if options.get("flip") is not None and options.get("extendedFlip") is not None:
+              raise SystemExit("Extended Gamma Flip must be suppressed when formal Flip exists")
+          payload = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+          injection = f"<script>window.DASHBOARD_DATA={payload};</script>\\n"
+          if "</head>" not in template:
+              raise SystemExit("Template has no closing </head>")
+          html = template.replace("</head>", injection + "</head>", 1)
+          output = pathlib.Path("artifacts/ui-only/v9-pro-ui-only.html")
+          output.write_text(html, encoding="utf-8")
+          print(f"UI fixture: {output}; source JSON: {data_path}; bytes: {output.stat().st_size}")
+          PY
+
+      - name: Validate generated HTML inline JavaScript
+        run: python tests/validate_react_html_js.py artifacts/ui-only/v9-pro-ui-only.html
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run six-tab Desktop, Tablet and Mobile browser audit
+        env:
+          DASHBOARD_HTML: artifacts/ui-only/v9-pro-ui-only.html
+          AUDIT_OUT: artifacts/ui-only/browser-audit
+        run: node tests/browser_dashboard_audit.mjs
+
+      - name: Verify data-layer files and dashboard source artifacts remain unchanged
+        if: always()
+        run: |
+          set -euo pipefail
+          git diff --exit-code -- data_reports/ src/ scripts/ workers/ dashboards/ .github/workflows/daily_data.yml
+
+      - name: Upload UI-only browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v9-pro-ui-only-audit-${{ github.run_id }}
+          path: artifacts/ui-only/
+          if-no-files-found: warn
+          retention-days: 14
