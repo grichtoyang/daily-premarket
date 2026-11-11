@@ -359,7 +359,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     }
   }
   const scenarioLook=`${scenarioTitle}；夜盤相對日盤變化 ${signed(nightDelta)} 點；外資夜盤淨交易 ${signed(nightFlow)} 口；夜盤成交量占日夜總量 ${nightShare==null?"缺值":nightShare.toFixed(2)+"%"}。`;
-  const scenarioTarget=`${scenarioTrigger} ${scenarioConfirm} ${scenarioInvalid} 以上為條件式觀察，不是進場指令或回測勝率。`;
+  const scenarioTarget=`觸發條件：${scenarioTrigger} 確認條件：${scenarioConfirm} 失效條件：${scenarioInvalid} 以上為條件式觀察，不是進場指令或回測勝率。`;
 
   return {
     day:{look:dayLook,compass:dayCompass,target:dayTarget},
