@@ -92,6 +92,21 @@ try {
           return !href?.startsWith("#v9-option-step-") || !document.querySelector(href) || node.innerText.trim().length < 30;
         }).map(node => ({ href: node.getAttribute("href"), text: node.innerText.trim() })));
         if (invalidOptionLinks.length) throw new Error(`${viewport.name} / 選擇權: invalid analysis navigation targets: ${JSON.stringify(invalidOptionLinks)}`);
+        const optionsSummary = page.locator("#main-content .group.relative").first();
+        const summaryText = await optionsSummary.innerText();
+        const requiredCrossChecks = [
+          "成交量反映當日交易活躍度",
+          "OI PCR 與履約價分布反映未平倉存量",
+          "日夜盤法人合計方向相反",
+          "只有價格確認、法人日夜盤流量未持續背離"
+        ];
+        const missingCrossChecks = requiredCrossChecks.filter(item => !summaryText.includes(item));
+        if (missingCrossChecks.length) throw new Error(`${viewport.name} / 選擇權: missing integrated synthesis checks: ${missingCrossChecks.join(", ")}`);
+        for (const sectionIndex of [0, 3]) {
+          const sectionGrid = optionSections.nth(sectionIndex).locator(":scope > div").nth(1);
+          const columns = await sectionGrid.evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).length);
+          if (columns !== 1) throw new Error(`${viewport.name} / 選擇權: single-card section ${sectionIndex + 1} must use one full-width column, got ${columns}`);
+        }
       }
       if (tab.key === "synthesis") {
         const synthesisText = await page.locator("#main-content").innerText();
