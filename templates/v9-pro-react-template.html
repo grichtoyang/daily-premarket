@@ -300,8 +300,8 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     : `外資日盤淨交易 ${signed(dayFlow)} 口；夜盤淨交易 ${signed(nightFlow)} 口；日夜流量資料不完整。`;
   let flowCompass="日／夜盤流量資料不足，無法判斷時段間方向是否一致。";
   if(flowComplete){
-    if(dayFlow>0&&nightFlow<0)flowCompass="外資日盤淨買超、夜盤淨賣超，兩個時段方向反轉；不能用日盤流量抵銷夜盤流量，應分別對照各時段價格反應。";
-    else if(dayFlow<0&&nightFlow>0)flowCompass="外資日盤淨賣超、夜盤淨買超，兩個時段方向反轉；不能用夜盤流量抵銷日盤流量，應分別對照各時段價格反應。";
+    if(dayFlow>0&&nightFlow<0)flowCompass="外資日盤淨買超、夜盤淨賣超，日夜流量方向反轉；不能用日盤流量抵銷夜盤流量，應分別對照各時段價格反應。";
+    else if(dayFlow<0&&nightFlow>0)flowCompass="外資日盤淨賣超、夜盤淨買超，日夜流量方向反轉；不能用夜盤流量抵銷日盤流量，應分別對照各時段價格反應。";
     else if(dayFlow===0&&nightFlow===0)flowCompass="外資日盤與夜盤淨交易均為零，未形成方向性流量訊號。";
     else if(dayFlow<0&&nightFlow<0)flowCompass="外資日盤與夜盤皆為淨賣超，兩個時段方向一致；但流量不等於新增空單，仍須比較前後 OI 變化及期貨價格確認。";
     else if(dayFlow>0&&nightFlow>0)flowCompass="外資日盤與夜盤皆為淨買超，兩個時段方向一致；但流量不等於新增多單，仍須比較前後 OI 變化及期貨價格確認。";
