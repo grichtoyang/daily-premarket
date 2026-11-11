@@ -1352,3 +1352,10 @@ Commits：
 - 現有隔離 Browser Visual Audit workflow 固定下載舊的 Pages artifact run ID（`42436118367`），並非本輪最新 Template 的產物；不能把該 workflow 的結果當成新版本驗收。
 - 本輪尚未取得可用的 UI-only 最新版本 Build／Browser Audit／Deploy 執行證據。不得宣稱部署完成。
 - 下一步應建立／使用不執行資料層程式與測試、直接針對最新 UI Template 與既有 Dashboard JSON 產生頁面的 UI-only 驗收路徑；任何 Workflow 修改仍須先確認不會觸及資料層凍結範圍。
+
+
+### 2026-11-11 期貨跨盤操作文字邊界補充
+- 若夜盤收盤高於日盤收盤，次日觀察能否守在日盤收盤之上；若低於，觀察能否重新站回；若兩者相等，文字改為等待有效站上或跌破，不再錯寫成「守在日盤收盤之上」。
+- Template commit：`7d0823e1815639fcde5177b7abb00a20d0e73850`。
+- Skill 文件補充：`9e915ebca21ff51581f50c06cdd348d68276cc3f`。
+- 此邊界已納入本輪分析邏輯；瀏覽器實際渲染仍為 NOT TESTED。
