@@ -48,6 +48,12 @@
 #v9-step-01, #v9-step-02, #v9-step-03, #v9-step-04 { scroll-margin-top: 84px; }
 html { scroll-behavior: smooth; }
 </style>
+<style>
+/* Futures page only: preserve readable card width on tablet and mobile. */
+@media (max-width: 1100px) {
+  .v9-futures-grid { grid-template-columns: minmax(0, 1fr) !important; }
+}
+</style>
 </head>
 <body>
   <div id="root"></div>
@@ -399,7 +405,7 @@ function v2({data:e}){
     {l:"外資日盤淨",v:num(r.foreign_day),extra:"口",color:num(r.foreign_day)==null?"#8ea7c3":num(r.foreign_day)>=0?"#ff6b6b":"#3dd68c"},
     {l:"外資夜盤淨",v:num(r.foreign_night),extra:"口",color:num(r.foreign_night)==null?"#8ea7c3":num(r.foreign_night)>=0?"#ff6b6b":"#3dd68c"}
   ].filter(item=>item.v!=null);
-  return O("div",{className:"grid md:grid-cols-2 gap-4",children:[
+  return O("div",{className:"grid md:grid-cols-2 gap-4 v9-futures-grid",children:[
     p(V,{title:"台指期日盤",subtitle:`收 ${g(n.day.c)}點 · 相對前結算 ${g(n.day.diff)}點`,chart:p(Pt,{o:n.day.o,h:n.day.h,l:n.day.l,c:n.day.c,vol:n.day.vol,basis:n.day.basis,height:220}),chartNote:`開＝開盤、H＝最高、L＝最低、C＝收盤；K棒實體看開盤到收盤的變化，上下影線看盤中高低點。表格「漲跌」則是相對前結算價，兩種比較基準不同。本例日盤收盤${num(n.day.c)>num(n.day.o)?"高於":num(n.day.c)<num(n.day.o)?"低於":"等於"}開盤；相對前結算${num(n.day.diff)==null?"缺值":num(n.day.diff)>0?"上漲":num(n.day.diff)<0?"下跌":"持平"}${num(n.day.diff)==null?"": " "+g(Math.abs(num(n.day.diff)))+" 點"}（${he(n.day.pct)}）。兩者基準不同，不代表數據矛盾。價格／基差：點；成交量：口。`,table:p(ee,{rows:[["開",`${g(n.day.o)}點`],["高",`${g(n.day.h)}點`],["低",`${g(n.day.l)}點`],["收",`${g(n.day.c)}點`],["漲跌",`${g(n.day.diff)}點（${he(n.day.pct)}）`],["成交量",`${g(n.day.vol)}口`],["基差",`${B(n.day.basis,2)}點`]]}),analysis:futuresNarrative.day}),
     p(V,{title:"台指期夜盤",subtitle:`收 ${g(n.night.c)}點 · 相對日盤 ${g(futuresNarrative.nightDelta)}點`,chart:p(Pt,{o:n.night.o,h:n.night.h,l:n.night.l,c:n.night.c,vol:n.night.vol,basis:futuresNarrative.nightDelta,basisLabel:"相對日盤",height:220}),chartNote:`夜盤有三種比較：K棒＝收盤−開盤；表格漲跌＝相對前結算；跨盤變化＝夜盤收盤−日盤收盤。本例分別為 ${num(n.night.c-n.night.o)>0?"+":""}${g(n.night.c-n.night.o)}、${num(n.night.diff)>0?"+":""}${g(n.night.diff)}、${num(futuresNarrative.nightDelta)>0?"+":""}${g(futuresNarrative.nightDelta)} 點，基準不同不可混用。價格：點；成交量：口。`,table:p(ee,{rows:[["開",`${g(n.night.o)}點`],["高",`${g(n.night.h)}點`],["低",`${g(n.night.l)}點`],["收",`${g(n.night.c)}點`],["漲跌",`${g(n.night.diff)}點（${he(n.night.pct)}）`],["成交量",`${g(n.night.vol)}口`],["夜盤相對日盤收盤",`${g(futuresNarrative.nightDelta)}點`]]}),analysis:futuresNarrative.night}),
     p(V,{title:"基差與跨盤變化",subtitle:`基差 ${B(n.day.basis,2)}`,chart:p("div",{className:"grid grid-cols-2 gap-3",children:[
