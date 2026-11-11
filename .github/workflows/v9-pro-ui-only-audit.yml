@@ -63,7 +63,7 @@ jobs:
           if options.get("flip") is not None and options.get("extendedFlip") is not None:
               raise SystemExit("Extended Gamma Flip must be suppressed when formal Flip exists")
           payload = json.dumps(data_obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
-          injection = f"<script>window.DASHBOARD_DATA={payload};</script>\\n"
+          injection = f"<script>window.DASHBOARD_DATA={payload};</script>\n"
           if "</head>" not in template:
               raise SystemExit("Template has no closing </head>")
           html = template.replace("</head>", injection + "</head>", 1)
