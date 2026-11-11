@@ -102,6 +102,23 @@ try {
         if (oiChartColors.red < 3 || oiChartColors.green < 3) {
           throw new Error(`${viewport.name} / 選擇權: OI comparison chart must visibly render both Call(red) and Put(green) series; pixels=${JSON.stringify(oiChartColors)}`);
         }
+        const volumeShareChart = page.locator('#main-content canvas[data-chart="option-volume-share"]');
+        if (await volumeShareChart.count() !== 1) throw new Error(`${viewport.name} / 選擇權: missing PCR／成交量占比 chart`);
+        const volumeShareColors = await volumeShareChart.evaluate(canvas => {
+          const ctx = canvas.getContext("2d");
+          if (!ctx || !canvas.width || !canvas.height) return { blue: 0, yellow: 0 };
+          const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          let blue = 0, yellow = 0;
+          for (let i = 0; i < pixels.length; i += 4) {
+            const [r, g, b, a] = pixels.slice(i, i + 4);
+            if (a > 0 && r >= 65 && r <= 155 && g > 135 && b > 195) blue++;
+            if (a > 0 && r > 220 && g > 165 && g < 240 && b < 130) yellow++;
+          }
+          return { blue, yellow };
+        });
+        if (volumeShareColors.blue < 20 || volumeShareColors.yellow < 20) {
+          throw new Error(`${viewport.name} / 選擇權: PCR／成交量占比 chart must visibly render both Call(blue) and Put(yellow) bars; pixels=${JSON.stringify(volumeShareColors)}`);
+        }
         const optionCards = page.locator("#main-content .v9-option-section .group.relative");
         const optionCardCount = await optionCards.count();
         if (optionCardCount !== 8) throw new Error(`${viewport.name} / 選擇權: expected 8 existing analysis cards, got ${optionCardCount}`);
