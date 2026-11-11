@@ -23,10 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout triggering commit
+      - name: Checkout isolated futures UI preview source
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: preview/v9-pro-futures-ui-only
 
       - name: Setup Python
         uses: actions/setup-python@v5
