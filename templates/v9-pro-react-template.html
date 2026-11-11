@@ -555,7 +555,7 @@ function v9ProOptionsSynthesis({options,spot}){
     :dayTotal===0||nightTotal===0?"日夜盤至少一個時段合計為零，不能視為明確同向；仍應分別看各法人淨流量。"
     :(dayTotal>0)===(nightTotal>0)
       ?"日夜盤法人合計同為"+(dayTotal>0?"淨買方":"淨賣方")+"；日盤主要"+(dayTotal>0?"買方":"賣方")+"為"+(dayTotal>0?(dayBuyer?.name||"無明確主導者"):(daySeller?.name||"無明確主導者"))+"，夜盤主要"+(nightTotal>0?"買方":"賣方")+"為"+(nightTotal>0?(nightBuyer?.name||"無明確主導者"):(nightSeller?.name||"無明確主導者"))+"。合計同向不代表各法人立場一致，仍須檢查分項及價格反應。"
-      :"日盤合計"+(dayTotal>0?"偏多":"偏空")+"、夜盤合計"+(nightTotal>0?"偏多":"偏空")+"，方向反轉；日盤主要"+(dayTotal>0?"買方":"賣方")+"為"+(dayTotal>0?(dayBuyer?.name||"無明確主導者"):(daySeller?.name||"無明確主導者"))+"，夜盤主要"+(nightTotal>0?"買方":"賣方")+"為"+(nightTotal>0?(nightBuyer?.name||"無明確主導者"):(nightSeller?.name||"無明確主導者"))+"。必須拆開時段與法人來源，不可用單一合計掩蓋背離。";
+      :"日夜盤法人合計方向相反；日盤合計"+(dayTotal>0?"偏多":"偏空")+"、夜盤合計"+(nightTotal>0?"偏多":"偏空")+"，方向反轉；日盤主要"+(dayTotal>0?"買方":"賣方")+"為"+(dayTotal>0?(dayBuyer?.name||"無明確主導者"):(daySeller?.name||"無明確主導者"))+"，夜盤主要"+(nightTotal>0?"買方":"賣方")+"為"+(nightTotal>0?(nightBuyer?.name||"無明確主導者"):(nightSeller?.name||"無明確主導者"))+"。必須拆開時段與法人來源，不可用單一合計掩蓋背離。";
   const volumeState=callShare==null||putShare==null?"成交量占比缺值，無法比較當日活躍度。"
     :Math.abs(callShare-putShare)<=5?"Call／Put 成交量占比接近均衡。"
     :callShare>putShare?"Call 成交量較活躍，但成交方向本身不等於看漲。":"Put 成交量較活躍，但成交方向本身不等於看跌。";
