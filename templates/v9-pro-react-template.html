@@ -78,9 +78,9 @@ Error generating stack: `+u.message+`
     }));
     const marker=(value,color)=>{const v=Number(value);if(!Number.isFinite(v)||v<=0||v<minStrike||v>maxStrike)return;const xx=x(v);ctx.strokeStyle=color;ctx.lineWidth=1.1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(xx,top);ctx.lineTo(xx,base);ctx.stroke();ctx.setLineDash([]);};
     marker(callWall,"#ff6b6b");marker(putWall,"#3dd68c");marker(current,"#ffd93d");
-    const strikes=[...new Set(all.map(row=>row.strike))].sort((a,b)=>a-b),stride=Math.max(1,Math.ceil(strikes.length/7));
+    const strikes=[...new Set(all.map(row=>row.strike))].sort((a,b)=>a-b),maxLabels=width<420?3:width<600?4:width<900?6:8,stride=Math.max(1,Math.ceil(strikes.length/maxLabels));
     ctx.fillStyle="#8ea7c3";ctx.font="9px JetBrains Mono";ctx.textAlign="center";ctx.textBaseline="alphabetic";
-    strikes.filter((value,index)=>index%stride===0||index===strikes.length-1).forEach(value=>ctx.fillText(g(value),x(value),h-8));
+    strikes.filter((value,index)=>index===0||index===strikes.length-1||index%stride===0).forEach(value=>ctx.fillText(g(value),x(value),h-8));
   },[callData,putData,current,callWall,putWall]);
   return p("canvas",{ref,role:"img","aria-label":"Call 與 Put OI 離散集中比較圖","data-chart":"oi-call-put-comparison",style:{width:"100%",height,display:"block",maxWidth:"100%"}});
 }
@@ -96,9 +96,9 @@ function Ct({data:e,current:n,callWall:r,putWall:l,height:o=220,type:u="call"}){
     rows.forEach(row=>{const xx=x(row.strike),yy=y(row.oi);t.strokeStyle=color;t.lineWidth=2;t.beginPath();t.moveTo(xx,base);t.lineTo(xx,yy);t.stroke();t.beginPath();t.arc(xx,yy,4,0,Math.PI*2);t.fillStyle=color;t.fill();t.strokeStyle="#d6e2f0";t.lineWidth=1;t.stroke();});
     const marker=(value,markerColor)=>{const v=Number(value);if(!Number.isFinite(v)||v<=0||v<minStrike||v>maxStrike)return;const xx=x(v);t.strokeStyle=markerColor;t.lineWidth=1.1;t.setLineDash([3,4]);t.beginPath();t.moveTo(xx,top);t.lineTo(xx,base);t.stroke();t.setLineDash([]);};
     marker(n,"#ffd93d");marker(r,"#ff6b6b");marker(l,"#3dd68c");
-    const strikes=[...new Set(rows.map(row=>row.strike))],stride=Math.max(1,Math.ceil(strikes.length/7));
+    const strikes=[...new Set(rows.map(row=>row.strike))],maxLabels=s<420?3:s<600?4:s<900?6:8,stride=Math.max(1,Math.ceil(strikes.length/maxLabels));
     t.fillStyle="#8ea7c3";t.font="9px JetBrains Mono";t.textAlign="center";t.textBaseline="alphabetic";
-    strikes.filter((value,index)=>index%stride===0||index===strikes.length-1).forEach(value=>t.fillText(g(value),x(value),d-8));
+    strikes.filter((value,index)=>index===0||index===strikes.length-1||index%stride===0).forEach(value=>t.fillText(g(value),x(value),d-8));
   },[e,n,r,l,u]);
   return p("canvas",{ref:i,role:"img","aria-label":u==="call"?"Call OI 履約價離散分布圖":"Put OI 履約價離散分布圖","data-chart":"oi-single-side-distribution",style:{width:"100%",height:o,display:"block",maxWidth:"100%"}});
 }
@@ -382,7 +382,8 @@ function v9ProOptionsSynthesis({options,spot}){
   const gexReady=options?.gexStatus==="available"&&netGex!=null&&grossGex!=null&&levels.length>0;
   const largestPositive=levels.filter(x=>x.net>0).sort((a,b)=>b.net-a.net)[0]||null;
   const largestNegative=levels.filter(x=>x.net<0).sort((a,b)=>a.net-b.net)[0]||null;
-  const callDist=arr(options?.callOiDist),putDist=arr(options?.putOiDist);
+  const topStrike=rows=>arr(rows).map(row=>({strike:n(row?.[1]),oi:n(row?.[2])})).filter(row=>row.strike!=null&&row.oi!=null).sort((a,b)=>b.oi-a.oi)[0]||null;
+  const callTop=topStrike(options?.callOiDist),putTop=topStrike(options?.putOiDist);
   const flowText=dayTotal!=null&&nightTotal!=null
     ?`法人日盤淨交易 ${signed(dayTotal)} 口、夜盤 ${signed(nightTotal)} 口`
     :"法人日／夜盤合計缺值";
@@ -402,17 +403,23 @@ function v9ProOptionsSynthesis({options,spot}){
     :close>=callWall?"現價位於 Call Wall 上方或其上緣，需觀察突破能否回測守穩。":"現價與 Wall 的相對位置未能完整判定。";
   const look=`現價 ${f(close)} 點；Call／Put 成交量 ${callVol==null?"缺值":f(callVol)+"／"+f(putVol)+" 口"}（占比 ${callShare==null?"缺值":callShare.toFixed(1)+"%／"+putShare.toFixed(1)+"%"}）；Call／Put OI ${callOi==null?"缺值":f(callOi)+"／"+f(putOi)+" 口"}；OI PCR ${f(pcr,2)} 倍；${flowText}；Net／Gross GEX ${gexReady?signed(netGex)+"／"+signed(grossGex)+" NT$／標的變動 1%":"不可用"}。`;
   const volumeOiConflict=callShare!=null&&pcr!=null&&((callShare>55&&pcr>1)||(putShare>55&&pcr<1));
+  const gexLocation=(item,label)=>!item?"無有效"+label+"。":close==null?label+"履約價 "+f(item.strike)+" 點；現價缺值，無法比較距離。":label+"履約價 "+f(item.strike)+" 點，位於現價"+(item.strike>close?"上方":"下方")+" "+f(Math.abs(item.strike-close))+" 點。";
+  const overlapRows=[];
+  if(largestPositive&&[callTop,putTop].some(row=>row&&row.strike===largestPositive.strike))overlapRows.push("最大正 GEX 與 "+(callTop?.strike===largestPositive.strike?"Call":"Put")+" OI 最大集中履約價同為 "+f(largestPositive.strike)+" 點");
+  if(largestNegative&&[callTop,putTop].some(row=>row&&row.strike===largestNegative.strike))overlapRows.push("最大負 GEX 與 "+(callTop?.strike===largestNegative.strike?"Call":"Put")+" OI 最大集中履約價同為 "+f(largestNegative.strike)+" 點");
+  const overlapText=gexReady
+    ?(overlapRows.length?overlapRows.join("；")+"。":"最大正／負 GEX 與 Call／Put 各自最大 OI 集中履約價沒有完全重合；兩種統計焦點應分開觀察，不代表彼此抵銷或形成支撐／壓力。")
+    :"GEX 或 OI 履約價資料不足，無法檢查 OI／GEX 履約價重合情形。";
   const gexText=gexReady
-    ?`GEX 資料日期 ${options.gexDate||"缺值"}，最大正曝險 ${largestPositive?f(largestPositive.strike)+" 點 "+signed(largestPositive.net)+" NT$":"無正值"}；最大負曝險 ${largestNegative?f(largestNegative.strike)+" 點 "+signed(largestNegative.net)+" NT$":"無負值"}。`
+    ?`GEX 資料日期 ${options.gexDate||"缺值"}；${gexLocation(largestPositive,"最大正曝險")} ${gexLocation(largestNegative,"最大負曝險")} ${overlapText}`
     :"GEX 狀態、日期或逐履約價資料不完整，不判定曝險方向。";
   const compass=`成交量反映當日交易活躍度，OI PCR 與履約價分布反映未平倉存量；兩者不可混為同一方向訊號。${volumeState}${inventoryState}${volumeOiConflict?" 成交量主導側與 OI 存量比例呈現不同傾向，屬結構分歧，不能以其中一項覆蓋另一項。":""}${pcrMismatch?" PCR 欄位與 Put OI／Call OI 重算值差異超過 0.02，應先核對來源口徑。":""} ${position} ${flowState} 法人日夜盤口數是交易流量，不是 OI 存量或契約金額；前十大交易人淨 OI 是特定群體部位差。${gexText} GEX 是模型曝險估值，不是真實造市商持倉，也不直接預測指數方向。因此目前只描述各訊號是否一致，不以單一 PCR、法人合計或 GEX 直接產生多空結論。`;
   const target=close!=null&&putWall!=null&&callWall!=null
-    ?`以現價 ${f(close)} 點為基準：靠近 Put Wall ${f(putWall)} 點時，觀察是否止跌並重新站回；靠近 Call Wall ${f(callWall)} 點時，觀察是否受壓或有效突破後回測守穩。只有價格確認、法人日夜盤流量未持續背離，且履約價／GEX 訊號沒有明顯反向時，才提高順勢判讀權重；若價格重新跌回突破位內或流量背離擴大，取消該方向劇本。`
+    ?`以現價 ${f(close)} 點為基準：靠近 Put Wall ${f(putWall)} 點時，觀察是否止跌並重新站回；靠近 Call Wall ${f(callWall)} 點時，觀察是否受壓或有效突破後回測守穩。${gexReady?" 價格接近最大正／負 GEX 履約價時，先核對其與 OI 集中履約價是否重合，再觀察實際價格反應；GEX 僅作曝險背景，不單獨作進場觸發。":""}只有價格確認、法人日夜盤流量未持續背離，且履約價／GEX 訊號沒有明顯反向時，才提高順勢判讀權重；若價格重新跌回突破位內或流量背離擴大，取消該方向劇本。`
     :"現價或 Put／Call Wall 缺值，暫不設定固定價位觸發條件；待有效價位齊備後，再建立可驗證的觀察區間。";
   const follow=`後續確認：成交量占比與 OI PCR 是否同步變化；法人日／夜盤流量是否延續；前十大 OI 僅在相同契約月份與到期週下比較；GEX 先確認資料日期及模型狀態。Max Pain 僅作磁吸參考，不作支撐、壓力或交易目標。`;
   return {look,compass,target:target+" "+follow};
 }
-
 function m2({data:e}){
   let{options:n,spot:r}=e;
   const optionsNarrative=v9ProOptionsAnalysis({options:n,spot:r});
