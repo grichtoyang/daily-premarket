@@ -266,22 +266,9 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const computedNightChange=nc!=null&&c!=null?nc-c:null;
   const nightDelta=computedNightChange;
   const nightDeltaPct=computedNightChange!=null&&c>0?computedNightChange/c*100:null;
-  // Cross-market confirmation uses only fields already present in the dashboard JSON.
-  const spotClose=valueOf(spot?.close),spotDiff=valueOf(spot?.diff),spotPct=valueOf(spot?.pct);
-  const spotUp=valueOf(spot?.up),spotDown=valueOf(spot?.down);
-  const foreignSpot=valueOf(institutional?.foreign),trustSpot=valueOf(institutional?.trust),dealerSpot=valueOf(institutional?.dealer);
-  const pcr=valueOf(options?.pcr),callWall=valueOf(options?.callWall),putWall=valueOf(options?.putWall);
-  const spotContext=spotClose!=null&&spotDiff!=null
-    ? `加權現貨收 ${fmt(spotClose)} 點，較前收 ${signed(spotDiff)} 點（${signed(spotPct,2)}%）${spotUp!=null&&spotDown!=null?`，上漲家數 ${fmt(spotUp)}、下跌家數 ${fmt(spotDown)}`:""}`
-    : "加權現貨收盤或漲跌資料不足，無法完成期現方向確認";
-  const spotDir=spotDiff==null?null:spotDiff>0?1:spotDiff<0?-1:0;
-  const breadthDir=spotUp==null||spotDown==null?null:spotUp>spotDown?1:spotUp<spotDown?-1:0;
-  const foreignSpotText=foreignSpot==null?"外資現貨買賣超缺值":`外資現貨 ${signed(foreignSpot,1)} 億元`;
-  const spotFlowText=foreignSpot==null?"":foreignSpot<0?"，外資現貨為賣超":foreignSpot>0?"，外資現貨為買超":"，外資現貨接近持平";
-  const optionsContext=pcr==null?"選擇權 OI PCR 缺值，不加入方向判讀":`選擇權 OI PCR ${fmt(pcr,2)} 倍（Put OI／Call OI）；${pcr<1?"Put OI 少於 Call OI":pcr>1?"Put OI 多於 Call OI":"兩側 OI 相近"}，只描述未平倉結構，不等同當日買賣方向`;
-  const wallContext=putWall!=null&&callWall!=null?`；Put Wall ${fmt(putWall)}、Call Wall ${fmt(callWall)} 點為 OI 集中觀察位，不保證支撐／壓力`:"";
-  const crossMarketContext=`${spotContext}；${foreignSpotText}${spotFlowText}；${optionsContext}${wallContext}。`;
-
+  const nightCandleChange=nightReady&&no!=null?nc-no:null;
+  const nightCandleDir=nightCandleChange==null?null:nightCandleChange>0?1:nightCandleChange<0?-1:0;
+  const nightFlowDir=nightFlow==null?null:nightFlow>0?1:nightFlow<0?-1:0;
   const changeMismatch=nchange!=null&&computedNightChange!=null&&Math.abs(nchange-computedNightChange)>1;
   const nightLook=nightReady
     ? `日盤收盤 ${fmt(c)} 點；夜盤 O/H/L/C ${fmt(no)} / ${fmt(nh)} / ${fmt(nl)} / ${fmt(nc)} 點；相對日盤收盤變化 ${signed(nightDelta)} 點（${signed(nightDeltaPct,2)}%）；夜盤成交量 ${fmt(nvol)} 口。`
@@ -289,8 +276,8 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const nearLow=nightReady&&nh>nl&&(nc-nl)/(nh-nl)<=0.1;
   const nearHigh=nightReady&&nh>nl&&(nh-nc)/(nh-nl)<=0.1;
   const nightCompass=nightReady&&validPrice(c)
-    ? `夜盤收盤${nc<c?"低於":nc>c?"高於":"接近"}日盤收盤，代表夜盤最後成交價相對日盤收盤的位置，不是夜盤自身漲跌幅，也不代表隔日日盤一定同方向開盤；${nearLow?"收盤靠近夜盤區間下緣，表示收盤前價格偏弱":nearHigh?"收盤靠近夜盤區間上緣，表示收盤前價格偏強":"收盤位於夜盤高低點中段，尚未靠近區間任一端"}。${changeMismatch?"來源跨盤變化欄與收盤價差不一致，因此以夜盤收盤減日盤收盤計算。":"跨盤比較統一用夜盤收盤減日盤收盤，不混用夜盤自身漲跌幅。"}`
-    : "夜盤或日盤收盤缺值，無法比較兩個交易時段；不得推定夜盤方向。";
+    ? `夜盤 K 棒收盤${nc>no?"高於":nc<no?"低於":"等於"}開盤（${signed(nightCandleChange)} 點），反映夜盤自身開收表現；夜盤收盤另${nc>c?"高於":nc<c?"低於":"等於"}日盤收盤 ${fmt(c)} 點（跨盤差 ${signed(nightDelta)} 點），這是兩個時段收盤價差，不能代替夜盤自身漲跌。收盤${nearLow?"靠近夜盤區間下緣":nearHigh?"靠近夜盤區間上緣":"位於夜盤高低點中段"}；此位置只描述收盤位置，不代表隔日日盤必然同方向。${changeMismatch?"來源跨盤變化欄與收盤價差不一致，因此以夜盤收盤減日盤收盤計算。":""}`
+    : "夜盤或日盤收盤缺值，無法比較夜盤自身開收與跨盤位置；不得推定方向。";
   const nightTarget=nightReady&&validPrice(c)
     ? `次日日盤開盤後，先以日盤收盤 ${fmt(c)} 點作跨盤參考，再觀察夜盤高點 ${fmt(nh)} 點／低點 ${fmt(nl)} 點是否有效突破或跌破；突破後須守穩或回測確認。同步檢查加權現貨方向、漲跌家數及外資日盤淨交易是否呼應。期貨與現貨點位不同，只比較方向，不直接比較點數；若價格與流量背離，先等待，不追價。`
     : "夜盤 OHLC 或日盤收盤資料不足，暫不設定跨時段價格觸發條件。"
@@ -307,8 +294,8 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     ? `這裡的淨未平倉部位（淨 OI）是多空未平倉部位相抵後的淨額；正值代表淨多部位較多，負值代表淨空部位較多。它是持倉存量，不是當天買賣量。外資${foreign<0?"呈淨空部位":foreign>0?"呈淨多部位":"淨部位接近中性"} ${signed(foreign)} 口；投信${trust<0?"淨空":trust>0?"淨多":"中性"}；自營商${dealer<0?"淨空":dealer>0?"淨多":"中性"}；${totalDirection}。${oiSplit?"外資與投信方向相反，代表法人持倉分歧，不能只看合計就認定市場一致看多或看空。":"外資與投信方向未呈現相反，但仍須觀察各自變化。"}${top10!=null?"前十大是另一統計群體，獨立列示，不與三大法人合計相加。":""}負數代表目前淨空部位較多，正數代表目前淨多部位較多；這是持倉狀態，不代表當天新增或減少相同口數的部位。`
     : "法人 OI 欄位不完整，無法判斷法人間的部位分歧；資料不足時不推定方向。";
   const oiTarget=oiComplete
-    ? "把今天與前一個有效交易日的 OI 放在相同契約月份、相同統計口徑下比較：淨部位數值往正方向移動，代表部位往多方移動（可能是淨多擴大，也可能是淨空縮小）；往負方向移動，代表部位往空方移動（可能是淨空擴大，也可能是淨多縮小）。不能只看數字變大或變小，必須同時看正負號與變化量。再對照日／夜盤交易流量與期貨價格，確認部位變化是否伴隨價格走勢。前十大與三大法人分開比較，不混合加總。"
-    : "待補齊外資、投信及自營 OI 後再判斷法人部位結構；資料補齊後，淨部位數值往正方向移動代表部位往多方移動，往負方向移動代表部位往空方移動，須同時看正負號與變化量。"
+    ? "目前 Dashboard 只有當期 OI 存量，沒有同契約月份、同統計口徑的前一期 OI 可供比較，因此不能判定外資、投信或自營商當日是加碼還是減碼。現階段只能辨識淨多／淨空存量及法人間是否分歧；取得可比前值後，才比較淨部位往正方向（偏多移動）或負方向（偏空移動）的變化量，再與日夜盤價格及流量交叉確認。前十大是不同統計群體，獨立觀察，不與三大法人合計。"
+    : "法人 OI 欄位不完整，且缺少可比前一期存量；目前不能判斷部位變化或完整法人結構。資料補齊後仍須使用相同契約月份及統計口徑比較，不能以缺值補零。";
 
   const dayFlow=valueOf(futures?.foreign_day),nightFlow=valueOf(futures?.foreign_night);
   const flowComplete=dayFlow!=null&&nightFlow!=null;
@@ -346,17 +333,17 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
         : "基差接近平價；持續觀察期現價格是否形成穩定價差，不單憑單一時點推定多空或套利機會。";
 
   const priceReady=dayReady&&nightReady&&validPrice(c)&&validPrice(nc);
-  const priceDir=priceReady?(nc>c?1:nc<c?-1:0):0;
+  const priceDir=priceReady?(nightCandleDir??0):0;
   const flowDir=nightFlow==null?0:(nightFlow>0?1:nightFlow<0?-1:0);
   const flowTargetFinal=!flowComplete
-    ? "外資日盤或夜盤淨交易資料缺值；先補齊同一交易日的兩個時段，再判斷方向，缺值不補零。"
-    : !priceReady
-      ? "外資日夜盤交易流量雖完整，但期貨日盤／夜盤收盤價不足，無法確認價格是否配合；先補齊價格，再判斷是否追隨流量。"
-      : flowDir===0
-        ? "外資夜盤淨交易為零，沒有明確流量方向；下一交易日先觀察日盤流量與價格是否形成同方向訊號，不預設多空。"
-        : priceDir===flowDir
-          ? `目前夜盤價格與外資流量方向一致（${priceDir>0?"價格上升、外資淨買超":"價格下降、外資淨賣超"}），但仍只是初步呼應。下一交易日先看外資日盤淨交易是否延續，再確認期貨價格能否守住同方向；若流量轉向或價格失守，不追價。OI 是持倉存量，日／夜盤淨交易是時段流量，不可相加或相減。`
-          : `目前夜盤價格與外資流量方向背離（${priceDir>0?"價格上升、外資卻淨賣超":"價格下降、外資卻淨買超"}），代表價格尚未獲外資流量確認。下一交易日先等待流量轉向並由價格確認，或價格回到流量支持的方向；確認前不追多也不追空。OI 是持倉存量，日／夜盤淨交易是時段流量，不可相加或相減。`;
+    ? "外資日盤或夜盤淨交易資料缺值；缺值不補零，暫停日夜流量方向判斷。"
+    : !dayReady||!nightReady||diff==null||nightCandleDir==null
+      ? "期貨日盤漲跌或夜盤開收價資料不足，無法將各時段流量與同時段價格反應配對；先等待資料完整。"
+      : nightFlowDir===0
+        ? "夜盤外資淨交易為零，沒有明確夜盤流量方向；日盤流量仍須單獨對照日盤漲跌，不以夜盤零流量補成多空訊號。"
+        : nightCandleDir===nightFlowDir
+          ? `夜盤 K 棒開收方向與外資夜盤流量同向（${nightCandleDir>0?"收高且淨買超":"收低且淨賣超"}），只是初步呼應；下一交易日仍須觀察價格能否守住夜盤區間，並確認日盤外資流量是否延續。若價格失守或流量轉向，不追價。`
+          : `夜盤 K 棒開收方向與外資夜盤流量背離（${nightCandleDir>0?"收高但淨賣超":"收低但淨買超"}）；相對日盤收盤的價差不能取代夜盤自身開收比較。下一交易日等待價格與流量重新同向，確認前不追多也不追空。`;
   const dayVolume=valueOf(day?.vol),nightVolume=valueOf(night?.vol);
   const volumeReady=dayVolume!=null&&nightVolume!=null&&dayVolume>=0&&nightVolume>=0&&dayVolume+nightVolume>0;
   const nightShare=volumeReady?nightVolume/(dayVolume+nightVolume)*100:null;
@@ -374,19 +361,19 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       scenarioInvalid="價格重新回到夜盤區間內，突破訊號失效。";
     }else if(priceDir===flowDir&&priceDir>0){
       scenarioTitle="偏多條件對齊";
-      scenarioCompass="夜盤收盤高於日盤收盤，且外資夜盤淨交易偏多；屬方向一致的觀察情境，不代表已確認趨勢。";
+      scenarioCompass=`夜盤 K 棒收高（開收差 ${signed(nightCandleChange)} 點），且外資夜盤淨交易偏多；屬方向一致的觀察情境，跨盤收盤差另為 ${signed(nightDelta)} 點，不代表已確認趨勢。`;
       scenarioTrigger=`觀察有效突破夜盤高點 ${fmt(nh)} 點。`;
       scenarioConfirm=`突破後守穩夜盤高點，並持續位於日盤收盤 ${fmt(c)} 點之上。`;
-      scenarioInvalid=`價格跌回日盤收盤 ${fmt(c)} 點下方，偏多條件失效。`;
+      scenarioInvalid=`突破後重新跌回夜盤高點 ${fmt(nh)} 點下方並回到原區間，偏多條件失效。`;
     }else if(priceDir===flowDir&&priceDir<0){
       scenarioTitle="偏空條件對齊";
-      scenarioCompass="夜盤收盤低於日盤收盤，且外資夜盤淨交易偏空；屬方向一致的觀察情境，不代表已確認趨勢。";
+      scenarioCompass=`夜盤 K 棒收低（開收差 ${signed(nightCandleChange)} 點），且外資夜盤淨交易偏空；屬方向一致的觀察情境，跨盤收盤差另為 ${signed(nightDelta)} 點，不代表已確認趨勢。`;
       scenarioTrigger=`觀察有效跌破夜盤低點 ${fmt(nl)} 點。`;
       scenarioConfirm=`跌破後無法收復夜盤低點，並持續位於日盤收盤 ${fmt(c)} 點之下。`;
-      scenarioInvalid=`價格收復日盤收盤 ${fmt(c)} 點上方，偏空條件失效。`;
+      scenarioInvalid=`跌破後重新收復夜盤低點 ${fmt(nl)} 點並回到原區間，偏空條件失效。`;
     }else{
       scenarioTitle="價格與籌碼背離";
-      scenarioCompass=`夜盤價格${priceDir>0?"上漲":"下跌"} ${signed(nightDelta)} 點，但外資夜盤淨交易 ${signed(nightFlow)} 口，價格與外資流量方向背離；價格尚未獲流量確認，不宜追價。`;
+      scenarioCompass=`夜盤價格${priceDir>0?"收高":"收低"}，開收差 ${signed(nightCandleChange)} 點，但外資夜盤淨交易 ${signed(nightFlow)} 口，價格與外資流量方向背離；價格尚未獲流量確認，不宜追價。`;
       scenarioTrigger=`觀察夜盤區間 ${fmt(nl)}–${fmt(nh)} 點的有效突破。`;
       scenarioConfirm=`向上突破 ${fmt(nh)} 點後，須維持在區間上方，且後續外資淨交易轉為淨買超或賣壓明顯收斂；若向下跌破 ${fmt(nl)} 點，則觀察淨賣超是否延續。`;
       scenarioInvalid=`價格突破後重新回到 ${fmt(nl)}–${fmt(nh)} 點區間，或後續流量未配合，方向確認失敗。`;
@@ -395,18 +382,37 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const scenarioLook=`${scenarioTitle}；夜盤相對日盤變化 ${signed(nightDelta)} 點；外資夜盤淨交易 ${signed(nightFlow)} 口；夜盤成交量占日夜總量 ${nightShare==null?"缺值":nightShare.toFixed(2)+"%"}。`;
   const scenarioTarget=`第一步｜觸發：${scenarioTrigger} 第二步｜確認：${scenarioConfirm} 第三步｜失效：${scenarioInvalid}。未完成確認前先觀察，不把劇本當成直接進場指令；以上條件未經回測校準，不代表勝率。`;
 
-  // Keep the three narrative layers distinct: observation, cross-check, then conditional action.
-  const dayCross=spotDir==null?"現貨方向缺值，日盤判讀只依期貨 OHLC，信心有限。":spotDir===0?"現貨較前收持平，未提供額外方向確認。":spotDir>0?"現貨較前收上漲；若期貨日內走勢與現貨同向，才算價格面初步呼應。":"現貨較前收下跌；若期貨日內反彈，須留意期現背離，不宜只憑 K 棒轉強認定反轉。";
-  const oiCross=foreign==null||foreignSpot==null?"外資期貨淨 OI 或現貨買賣超缺值，無法比較跨市場配置。":foreign<0&&foreignSpot<0?"外資期貨淨 OI 偏空、現貨亦賣超，兩市場方向一致；仍須比較 OI 前後變化，不能把存量當成當日新增空單。":foreign>0&&foreignSpot>0?"外資期貨淨 OI 偏多、現貨亦買超，兩市場方向一致；仍須確認後續價格與持倉變化。":"外資期貨淨 OI 與現貨買賣超方向不一致，可能是跨市場配置或避險；目前不能直接推定整體淨曝險。";
-  const flowCross=foreignSpot==null?"外資現貨流量缺值，跨市場流量確認不足。":foreignSpot<0?"外資現貨賣超；即使期貨夜盤上漲，也要等現貨賣壓收斂或期貨流量轉為持續淨買，才提高多方信心。":foreignSpot>0?"外資現貨買超；若期貨夜盤下跌，須確認現貨買盤是否延續，不能單靠單一市場判定反轉。":"外資現貨接近持平，暫無明確現貨流量方向。";
-  const optionCross=pcr==null?"選擇權 OI PCR 缺值，無法加入選擇權結構交叉檢查。":pcr<1?"選擇權 Put OI 少於 Call OI，但 PCR 是存量比值，不可當成當日買方力道或直接看多訊號。":pcr>1?"選擇權 Put OI 多於 Call OI，但 PCR 是存量比值，不可直接當成當日賣壓或看空訊號。":"選擇權兩側 OI 接近，未提供明確方向性結構。";
+  // Keep the futures page focused on futures evidence; full spot/futures/options synthesis belongs to the synthesis tab.
+  const dayFuturesDir=diff==null?null:diff>0?1:diff<0?-1:0;
+  const dayCross=dayFuturesDir==null||dayFlow==null
+    ? "日盤價格漲跌或外資日盤淨流量缺值，無法完成同時段交叉確認。"
+    : dayFuturesDir===0||dayFlow===0
+      ? "日盤價格或外資淨流量至少一項接近零，尚無明確方向確認。"
+      : dayFuturesDir===Math.sign(dayFlow)
+        ? "日盤相對前結算的價格方向與外資日盤淨流量同向，屬初步呼應；仍須觀察下一時段是否延續。"
+        : "日盤相對前結算的價格方向與外資日盤淨流量背離，價格表現未獲同時段流量確認，不宜只依價格方向追價。";
+  const nightFlowCross=nightCandleDir==null||nightFlowDir==null
+    ? "夜盤開收價或外資夜盤淨流量缺值，無法確認同時段價格與流量是否一致。"
+    : nightCandleDir===0||nightFlowDir===0
+      ? "夜盤開收價或外資淨流量至少一項為零，沒有完整方向確認。"
+      : nightCandleDir===nightFlowDir
+        ? "夜盤 K 棒開收方向與外資夜盤淨流量同向，屬初步呼應，仍須看後續價格能否守穩。"
+        : "夜盤 K 棒開收方向與外資夜盤淨流量背離；收盤高於日盤不等於夜盤籌碼轉多，須等待價格與流量重新確認。";
+  const oiCross=foreign==null
+    ? "外資淨 OI 缺值，無法判讀目前持倉存量方向。"
+    : foreign<0
+      ? "外資期貨淨 OI 為負，代表目前淨空存量較多；但缺少可比前值，不能推論當日新增空單。"
+      : foreign>0
+        ? "外資期貨淨 OI 為正，代表目前淨多存量較多；但缺少可比前值，不能推論當日新增多單。"
+        : "外資期貨淨 OI 為零，未提供明確淨部位方向。";
+  const scenarioFuturesContext=`${basis==null?"基差缺值，無法比較期貨相對現貨的價差。":basis>0?"日盤基差為正，只表示期貨相對現貨呈正價差，不能單獨確認多方趨勢。":basis<0?"日盤基差為負，只表示期貨相對現貨呈逆價差，不能單獨確認空方趨勢。":"日盤基差接近平價，沒有明顯期現價差方向。"} ${oiCross} 日盤流量：${dayCross} 夜盤流量：${nightFlowCross}`;
   return {
-    day:{look:dayLook,compass:`${dayCompass} ${crossMarketContext} ${dayCross}`,target:dayTarget},
-    night:{look:nightLook,compass:`${nightCompass} ${crossMarketContext}`,target:nightTarget},
-    basis:{look:basisLook,compass:`${basisCompass} ${spotContext}；${foreignSpotText}。期現方向與法人流量需同時觀察，單一基差不能確認趨勢。`,target:basisTarget},
+    day:{look:dayLook,compass:`${dayCompass} ${dayCross}`,target:dayTarget},
+    night:{look:nightLook,compass:`${nightCompass} ${nightFlowCross}`,target:nightTarget},
+    basis:{look:basisLook,compass:`${basisCompass} 基差描述同一時點期貨相對現貨的價差，不是趨勢訊號；不能用單一正逆價差推定後續方向。`,target:basisTarget},
     oi:{look:oiLook,compass:`${oiCompass} ${oiCross}`,target:oiTarget},
-    flow:{look:flowLook,compass:`${flowCompass} ${flowCross} ${optionCross}`,target:flowTargetFinal},
-    scenario:{look:scenarioLook,compass:`${scenarioCompass} ${oiCross} ${optionCross}`,target:scenarioTarget,title:scenarioTitle},
+    flow:{look:flowLook,compass:`${flowCompass} ${dayCross} ${nightFlowCross}`,target:flowTargetFinal},
+    scenario:{look:scenarioLook,compass:`${scenarioCompass} ${scenarioFuturesContext}`,target:scenarioTarget,title:scenarioTitle},
     nightDelta,nightDeltaPct
   };
 }

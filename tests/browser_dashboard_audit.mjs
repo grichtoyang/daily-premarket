@@ -78,14 +78,29 @@ try {
           throw new Error(`${viewport.name} / 期貨: missing plain-language explanations or decision steps: ${missingExplanations.join(", ")}`);
         }
         const flowDecisionStates = [
-          "目前夜盤價格與外資流量方向一致",
-          "目前夜盤價格與外資流量方向背離",
-          "外資夜盤淨交易為零",
+          "夜盤 K 棒開收方向與外資夜盤淨流量同向",
+          "夜盤 K 棒開收方向與外資夜盤淨流量背離",
+          "夜盤外資淨交易為零",
           "外資日盤或夜盤淨交易資料缺值",
-          "外資日夜盤交易流量雖完整，但期貨日盤／夜盤收盤價不足"
+          "期貨日盤漲跌或夜盤開收價資料不足"
         ];
         if (!flowDecisionStates.some(item => futuresText.includes(item))) {
-          throw new Error(`${viewport.name} / 期貨: flow guidance is not linked to the actual price-flow state`);
+          throw new Error(`${viewport.name} / 期貨: flow guidance is not linked to the actual same-session price-flow state`);
+        }
+        if (!futuresText.includes("目前 Dashboard 只有當期 OI 存量")) {
+          throw new Error(`${viewport.name} / 期貨: OI text must disclose that historical comparable inventory is unavailable`);
+        }
+        if (!futuresText.includes("日盤流量：") || !futuresText.includes("夜盤流量：")) {
+          throw new Error(`${viewport.name} / 期貨: night scenario must summarize both futures session flows`);
+        }
+        const futuresGrid = page.locator("#main-content .v9-futures-grid");
+        if (await futuresGrid.count() !== 1) {
+          throw new Error(`${viewport.name} / 期貨: expected exactly one preserved futures grid`);
+        }
+        const futuresColumns = await futuresGrid.evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(" ").length);
+        const expectedColumns = viewport.width >= 768 ? 2 : 1;
+        if (futuresColumns !== expectedColumns) {
+          throw new Error(`${viewport.name} / 期貨: expected ${expectedColumns} column(s) at ${viewport.width}px, got ${futuresColumns}`);
         }
       }
       if (tab.key === "options") {
