@@ -308,8 +308,13 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     else flowCompass="外資日盤與夜盤至少一個時段為零，方向訊號不完整；仍須與價格反應及 OI 變化確認。";
     if(foreign!=null)flowCompass+=foreign<0?" 外資淨 OI 存量偏空，與單一時段流量需分開解讀。":foreign>0?" 外資淨 OI 存量偏多，與單一時段流量需分開解讀。":" 外資淨 OI 為零，不提供存量方向。";
   }
+  const flowDivergenceGuide=nightFlow<0
+    ? "若外資仍淨賣超、價格卻不跌反升，代表賣壓未獲價格確認，先不追空。"
+    : nightFlow>0
+      ? "若外資仍淨買超、價格卻不漲反跌，代表買盤未獲價格確認，先不追多。"
+      : "若價格與流量沒有同方向反應，先等待下一個有效訊號。";
   const flowTarget=flowComplete
-    ? "下一交易日先看外資日盤淨交易是否延續夜盤方向，再看期貨價格有沒有同步反應。若外資持續淨賣超、價格卻不跌甚至走高，代表賣壓尚未得到價格確認，先觀察、不追空。OI 是持倉存量，日／夜盤淨交易是時段流量，兩者不可相加或相減。"
+    ? `下一交易日先看外資日盤淨交易是否延續夜盤方向，再看期貨價格有沒有同步反應。${flowDivergenceGuide} OI 是持倉存量，日／夜盤淨交易是時段流量，兩者不可相加或相減。`
     : "待取得完整日盤及夜盤淨交易資料後，再判斷流量方向；缺值不補零。";
 
   const basisLook=basis==null
