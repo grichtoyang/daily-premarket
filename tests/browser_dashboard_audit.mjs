@@ -177,6 +177,15 @@ try {
         if (missingSections.length) {
           throw new Error(`${viewport.name} / 綜合分析: missing sections: ${missingSections.join(", ")}`);
         }
+        const nightScenarioStatus = synthesisText.match(/目前分類：夜(?:漲|跌)＋外資期貨淨交易偏(?:多|空)|至少一項訊號中性，未高亮劇本|資料不足，未分類/);
+        if (!nightScenarioStatus) throw new Error(`${viewport.name} / 綜合分析: missing explicit dynamic night-scenario classification status`);
+        const activeScenarioBadges = await page.locator("#main-content canvas").count();
+        if (activeScenarioBadges < 1) throw new Error(`${viewport.name} / 綜合分析: missing night-scenario chart canvas`);
+        const activeScenarioCount = (synthesisText.match(/目前分類/g) || []).length;
+        const hasDirectionalScenario = nightScenarioStatus[0].startsWith("目前分類：");
+        if (activeScenarioCount !== (hasDirectionalScenario ? 1 : 0)) {
+          throw new Error(`${viewport.name} / 綜合分析: expected exactly one highlighted scenario only when both directions are valid; status=${nightScenarioStatus[0]}, active labels=${activeScenarioCount}`);
+        }
         const staleTradeRules = ["重新站回則取消偏空候選", "跌回其下則取消偏多候選"];
         const staleTradeText = staleTradeRules.filter(rule => synthesisText.includes(rule));
         if (staleTradeText.length) throw new Error(`${viewport.name} / 綜合分析: stale non-scenario-specific trade rules: ${staleTradeText.join(", ")}`);
