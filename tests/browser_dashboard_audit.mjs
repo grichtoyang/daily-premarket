@@ -85,8 +85,8 @@ try {
         if (await oiCompareChart.count() !== 1) throw new Error(`${viewport.name} / 選擇權: missing dedicated Call／Put OI comparison chart`);
         const oiSingleSideCharts = page.locator('#main-content canvas[data-chart="oi-single-side-distribution"]');
         if (await oiSingleSideCharts.count() !== 2) throw new Error(`${viewport.name} / 選擇權: expected separate Call／Put OI Top10 charts, got ${await oiSingleSideCharts.count()}`);
-        const optionChartWidths = await page.locator("#main-content .v9-option-section canvas").evaluateAll(nodes => nodes.map(node => Math.round(node.getBoundingClientRect().width)));
-        if (optionChartWidths.some(width => width < 1 || width > window.innerWidth)) throw new Error(`${viewport.name} / 選擇權: invalid responsive chart widths: ${JSON.stringify(optionChartWidths)}`);
+        const optionChartWidths = await page.locator("#main-content .v9-option-section canvas").evaluateAll((nodes, maxWidth) => nodes.map(node => ({ width: Math.round(node.getBoundingClientRect().width), maxWidth })), viewport.width);
+        if (optionChartWidths.some(item => item.width < 1 || item.width > item.maxWidth)) throw new Error(`${viewport.name} / 選擇權: invalid responsive chart widths: ${JSON.stringify(optionChartWidths)}`);
         const oiChartColors = await oiCompareChart.evaluate(canvas => {
           const ctx = canvas.getContext("2d");
           if (!ctx || !canvas.width || !canvas.height) return { red: 0, green: 0 };
