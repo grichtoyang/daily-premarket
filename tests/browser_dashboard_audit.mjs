@@ -104,7 +104,7 @@ try {
         if (missingCrossChecks.length) throw new Error(`${viewport.name} / 選擇權: missing integrated synthesis checks: ${missingCrossChecks.join(", ")}`);
         for (const sectionIndex of [0, 3]) {
           const sectionGrid = optionSections.nth(sectionIndex).locator(":scope > div").nth(1);
-          const columns = await sectionGrid.evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(/\\s+/).length);
+          const columns = await sectionGrid.evaluate(el => getComputedStyle(el).gridTemplateColumns.trim().split(/\s+/).length);
           if (columns !== 1) throw new Error(`${viewport.name} / 選擇權: single-card section ${sectionIndex + 1} must use one full-width column, got ${columns}`);
         }
       }
