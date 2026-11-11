@@ -83,6 +83,10 @@ try {
         if (sectionCount !== 4) throw new Error(`${viewport.name} / 選擇權: expected 4 analysis sections, got ${sectionCount}`);
         const oiCompareChart = page.locator('#main-content canvas[data-chart="oi-call-put-comparison"]');
         if (await oiCompareChart.count() !== 1) throw new Error(`${viewport.name} / 選擇權: missing dedicated Call／Put OI comparison chart`);
+        const oiSingleSideCharts = page.locator('#main-content canvas[data-chart="oi-single-side-distribution"]');
+        if (await oiSingleSideCharts.count() !== 2) throw new Error(`${viewport.name} / 選擇權: expected separate Call／Put OI Top10 charts, got ${await oiSingleSideCharts.count()}`);
+        const optionChartWidths = await page.locator("#main-content .v9-option-section canvas").evaluateAll(nodes => nodes.map(node => Math.round(node.getBoundingClientRect().width)));
+        if (optionChartWidths.some(width => width < 1 || width > window.innerWidth)) throw new Error(`${viewport.name} / 選擇權: invalid responsive chart widths: ${JSON.stringify(optionChartWidths)}`);
         const oiChartColors = await oiCompareChart.evaluate(canvas => {
           const ctx = canvas.getContext("2d");
           if (!ctx || !canvas.width || !canvas.height) return { red: 0, green: 0 };
@@ -115,6 +119,9 @@ try {
           "成交量反映當日交易活躍度",
           "OI PCR 與履約價分布反映未平倉存量",
           "日夜盤法人合計方向相反",
+          "最大正曝險",
+          "最大負曝險",
+          "OI／GEX 履約價",
           "只有價格確認、法人日夜盤流量未持續背離"
         ];
         const missingCrossChecks = requiredCrossChecks.filter(item => !summaryText.includes(item));
