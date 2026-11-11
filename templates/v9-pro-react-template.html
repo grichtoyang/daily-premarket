@@ -408,7 +408,7 @@ function v9ProOptionsSynthesis({options,spot}){
   if(largestPositive&&[callTop,putTop].some(row=>row&&row.strike===largestPositive.strike))overlapRows.push("最大正 GEX 與 "+(callTop?.strike===largestPositive.strike?"Call":"Put")+" OI 最大集中履約價同為 "+f(largestPositive.strike)+" 點");
   if(largestNegative&&[callTop,putTop].some(row=>row&&row.strike===largestNegative.strike))overlapRows.push("最大負 GEX 與 "+(callTop?.strike===largestNegative.strike?"Call":"Put")+" OI 最大集中履約價同為 "+f(largestNegative.strike)+" 點");
   const overlapText=gexReady
-    ?(overlapRows.length?overlapRows.join("；")+"。":"最大正／負 GEX 與 Call／Put 各自最大 OI 集中履約價沒有完全重合；兩種統計焦點應分開觀察，不代表彼此抵銷或形成支撐／壓力。")
+    ?"OI／GEX 履約價重合檢查："+(overlapRows.length?overlapRows.join("；")+"。":"最大正／負 GEX 與 Call／Put 各自最大 OI 集中履約價沒有完全重合；兩種統計焦點應分開觀察，不代表彼此抵銷或形成支撐／壓力。")
     :"GEX 或 OI 履約價資料不足，無法檢查 OI／GEX 履約價重合情形。";
   const gexText=gexReady
     ?`GEX 資料日期 ${options.gexDate||"缺值"}；${gexLocation(largestPositive,"最大正曝險")} ${gexLocation(largestNegative,"最大負曝險")} ${overlapText}`
