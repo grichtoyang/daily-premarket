@@ -57,6 +57,42 @@ try {
         }));
         throw new Error(`${viewport.name} / ${tab.label}: tab content did not become ready; state=${JSON.stringify(state)}; pageErrors=${errors.join(" | ")}; cause=${error.message}`);
       }
+      if (tab.key === "options") {
+        const optionsText = await page.locator("#main-content").innerText();
+        const requiredOptions = [
+          "選擇權整體判讀",
+          "成交與 PCR 結構",
+          "OI 集中與關鍵價位",
+          "法人與大額交易人",
+          "GEX 曝險分布",
+          "PCR／成交量結構",
+          "主要 OI 集中",
+          "Call OI 分布 Top10",
+          "Put OI 分布 Top10",
+          "選擇權法人交易",
+          "前十大選擇權",
+          "履約價 GEX 分布",
+          "分析",
+          "判斷",
+          "操作"
+        ];
+        const missingOptions = requiredOptions.filter(section => !optionsText.includes(section));
+        if (missingOptions.length) throw new Error(`${viewport.name} / 選擇權: missing sections: ${missingOptions.join(", ")}`);
+        const optionSections = page.locator("#main-content .v9-option-section");
+        const sectionCount = await optionSections.count();
+        if (sectionCount !== 4) throw new Error(`${viewport.name} / 選擇權: expected 4 analysis sections, got ${sectionCount}`);
+        const optionCards = page.locator("#main-content .v9-option-section .group.relative");
+        const optionCardCount = await optionCards.count();
+        if (optionCardCount !== 8) throw new Error(`${viewport.name} / 選擇權: expected 8 existing analysis cards, got ${optionCardCount}`);
+        const optionLinks = page.locator("#main-content .v9-decision-chain a");
+        const optionLinkCount = await optionLinks.count();
+        if (optionLinkCount !== 4) throw new Error(`${viewport.name} / 選擇權: expected 4 analysis navigation cards, got ${optionLinkCount}`);
+        const invalidOptionLinks = await optionLinks.evaluateAll(nodes => nodes.filter(node => {
+          const href = node.getAttribute("href");
+          return !href?.startsWith("#v9-option-step-") || !document.querySelector(href) || node.innerText.trim().length < 30;
+        }).map(node => ({ href: node.getAttribute("href"), text: node.innerText.trim() }));
+        if (invalidOptionLinks.length) throw new Error(`${viewport.name} / 選擇權: invalid analysis navigation targets: ${JSON.stringify(invalidOptionLinks)}`);
+      }
       if (tab.key === "synthesis") {
         const synthesisText = await page.locator("#main-content").innerText();
         const requiredSections = [
