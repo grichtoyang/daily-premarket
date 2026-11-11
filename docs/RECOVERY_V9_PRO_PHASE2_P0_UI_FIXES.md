@@ -1359,3 +1359,11 @@ Commits：
 - Template commit：`7d0823e1815639fcde5177b7abb00a20d0e73850`。
 - Skill 文件補充：`9e915ebca21ff51581f50c06cdd348d68276cc3f`。
 - 此邊界已納入本輪分析邏輯；瀏覽器實際渲染仍為 NOT TESTED。
+
+
+### 2026-11-11 UI-only Browser Audit 路徑建立
+- 新增 `.github/workflows/v9-pro-ui-only-audit.yml`，只讀取既有最新日期版 `dashboards/data-YYYYMMDD.json`，直接注入目前 Template，產生暫存 HTML 後執行 inline JavaScript validation 與六分頁 Desktop／Tablet／Mobile Playwright Browser Audit。
+- 此 workflow 不執行 Builder、不呼叫資料來源、不執行資料層測試、不修改 DATA_REPORT／Dashboard JSON／Worker／Proxy／API，也不部署 Pages。
+- Workflow 以 `git diff --exit-code` 檢查 `data_reports/`、`src/`、`scripts/`、`workers/`、`dashboards/` 及 `daily_data.yml` 未被修改；瀏覽器報告與截圖只輸出至暫存 artifacts 並上傳。
+- Workflow commit：`2c387f35faf2d4c7dabfde7d3b4bc29e5dd1b4fc`；修正注入換行字元 commit：`9048dd56dcc22e5546ae527c8af2fda4292ac21f`。
+- 新 workflow 的 GitHub Actions 實際執行結果尚未取得，狀態 NOT TESTED；不可宣稱 Browser Audit 已通過。若自動 push 觸發成功，需檢查該次 run 的每個 step 與上傳 artifact。
