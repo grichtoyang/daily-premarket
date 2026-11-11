@@ -266,6 +266,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const computedNightChange=nc!=null&&c!=null?nc-c:null;
   const nightDelta=computedNightChange;
   const nightDeltaPct=computedNightChange!=null&&c>0?computedNightChange/c*100:null;
+  const dayFlow=valueOf(futures?.foreign_day),nightFlow=valueOf(futures?.foreign_night);
   const nightCandleChange=nightReady&&no!=null?nc-no:null;
   const nightCandleDir=nightCandleChange==null?null:nightCandleChange>0?1:nightCandleChange<0?-1:0;
   const nightFlowDir=nightFlow==null?null:nightFlow>0?1:nightFlow<0?-1:0;
@@ -294,10 +295,9 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     ? `這裡的淨未平倉部位（淨 OI）是多空未平倉部位相抵後的淨額；正值代表淨多部位較多，負值代表淨空部位較多。它是持倉存量，不是當天買賣量。外資${foreign<0?"呈淨空部位":foreign>0?"呈淨多部位":"淨部位接近中性"} ${signed(foreign)} 口；投信${trust<0?"淨空":trust>0?"淨多":"中性"}；自營商${dealer<0?"淨空":dealer>0?"淨多":"中性"}；${totalDirection}。${oiSplit?"外資與投信方向相反，代表法人持倉分歧，不能只看合計就認定市場一致看多或看空。":"外資與投信方向未呈現相反，但仍須觀察各自變化。"}${top10!=null?"前十大是另一統計群體，獨立列示，不與三大法人合計相加。":""}負數代表目前淨空部位較多，正數代表目前淨多部位較多；這是持倉狀態，不代表當天新增或減少相同口數的部位。`
     : "法人 OI 欄位不完整，無法判斷法人間的部位分歧；資料不足時不推定方向。";
   const oiTarget=oiComplete
-    ? "目前 Dashboard 只有當期 OI 存量，沒有同契約月份、同統計口徑的前一期 OI 可供比較，因此不能判定外資、投信或自營商當日是加碼還是減碼。現階段只能辨識淨多／淨空存量及法人間是否分歧；取得可比前值後，才比較淨部位往正方向（偏多移動）或負方向（偏空移動）的變化量，再與日夜盤價格及流量交叉確認。前十大是不同統計群體，獨立觀察，不與三大法人合計。"
+    ? "目前 Dashboard 只有當期 OI 存量，沒有同契約月份、同統計口徑的前一期 OI 可供比較，因此不能判定外資、投信或自營商當日是加碼還是減碼。現階段只能辨識淨多／淨空存量及法人間是否分歧；取得可比前值後，才比較淨部位往正方向移動（偏多）或往負方向移動（偏空）的變化量，再與日夜盤價格及流量交叉確認。前十大是不同統計群體，獨立觀察，不與三大法人合計。"
     : "法人 OI 欄位不完整，且缺少可比前一期存量；目前不能判斷部位變化或完整法人結構。資料補齊後仍須使用相同契約月份及統計口徑比較，不能以缺值補零。";
 
-  const dayFlow=valueOf(futures?.foreign_day),nightFlow=valueOf(futures?.foreign_night);
   const flowComplete=dayFlow!=null&&nightFlow!=null;
   const flowLook=flowComplete
     ? `外資日盤淨交易 ${signed(dayFlow)} 口；夜盤淨交易 ${signed(nightFlow)} 口。法人淨未平倉部位為另一種存量統計，獨立列示、不與流量合併作圖或加總。`
