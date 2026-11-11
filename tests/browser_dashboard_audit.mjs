@@ -57,6 +57,24 @@ try {
         }));
         throw new Error(`${viewport.name} / ${tab.label}: tab content did not become ready; state=${JSON.stringify(state)}; pageErrors=${errors.join(" | ")}; cause=${error.message}`);
       }
+      if (tab.key === "futures") {
+        const futuresText = await page.locator("#main-content").innerText();
+        const requiredExplanations = [
+          "開＝開盤、H＝最高、L＝最低、C＝收盤",
+          "OI＝未平倉量",
+          "不是當日買賣口數",
+          "交易流量",
+          "持倉存量",
+          "基差回答的是",
+          "第一步｜觸發",
+          "第二步｜確認",
+          "第三步｜失效"
+        ];
+        const missingExplanations = requiredExplanations.filter(item => !futuresText.includes(item));
+        if (missingExplanations.length) {
+          throw new Error(`${viewport.name} / 期貨: missing plain-language explanations or decision steps: ${missingExplanations.join(", ")}`);
+        }
+      }
       if (tab.key === "options") {
         const optionsText = await page.locator("#main-content").innerText();
         const requiredOptions = [
