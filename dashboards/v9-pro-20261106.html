@@ -542,13 +542,21 @@ function v9ProOptionsSynthesis({options,spot}){
   const largestNegative=levels.filter(x=>x.net<0).sort((a,b)=>a.net-b.net)[0]||null;
   const topStrike=rows=>arr(rows).map(row=>({strike:n(row?.[1]),oi:n(row?.[2])})).filter(row=>row.strike!=null&&row.oi!=null).sort((a,b)=>b.oi-a.oi)[0]||null;
   const callTop=topStrike(options?.callOiDist),putTop=topStrike(options?.putOiDist);
+  const dealerFlows=arr(options?.instOpt).filter(x=>["外資","投信","自營商"].includes(String(x?.[0]))).map(x=>({name:String(x[0]),day:n(x[3]),night:n(x[6])}));
+  const flowDetail=dealerFlows.length===3&&dealerFlows.every(x=>x.day!=null&&x.night!=null)
+    ?dealerFlows.map(x=>x.name+"日盤 "+signed(x.day)+" 口／夜盤 "+signed(x.night)+" 口").join("；")
+    :"法人分項日／夜盤數值不完整";
+  const flowLeader=(key,positive)=>dealerFlows.filter(x=>x[key]!=null&&(positive?x[key]>0:x[key]<0)).sort((a,b)=>positive?b[key]-a[key]:a[key]-b[key])[0]||null;
+  const dayBuyer=flowLeader("day",true),daySeller=flowLeader("day",false),nightBuyer=flowLeader("night",true),nightSeller=flowLeader("night",false);
   const flowText=dayTotal!=null&&nightTotal!=null
-    ?`法人日盤淨交易 ${signed(dayTotal)} 口、夜盤 ${signed(nightTotal)} 口`
-    :"法人日／夜盤合計缺值";
+    ?"法人日盤淨交易 "+signed(dayTotal)+" 口、夜盤 "+signed(nightTotal)+" 口；分項："+flowDetail+"。"
+    :"法人日／夜盤合計缺值；分項："+flowDetail+"。";
   const flowState=dayTotal==null||nightTotal==null?"日夜盤法人流量資料不完整，無法比較時段方向。"
-    :dayTotal===0||nightTotal===0?"日夜盤至少一個時段為零，不能視為明確同向。"
-    :(dayTotal>0)===(nightTotal>0)?"日夜盤法人合計同號，但仍須檢查各法人分項及價格反應。"
-    :"日夜盤法人合計方向相反，屬時段背離，應分開觀察，不宜合併成單一方向。";
+    :dealerFlows.length!==3||dealerFlows.some(x=>x.day==null||x.night==null)?"日夜盤合計雖有數值，但法人分項不完整，不能確認是哪一類法人主導。"
+    :dayTotal===0||nightTotal===0?"日夜盤至少一個時段合計為零，不能視為明確同向；仍應分別看各法人淨流量。"
+    :(dayTotal>0)===(nightTotal>0)
+      ?"日夜盤法人合計同為"+(dayTotal>0?"淨買方":"淨賣方")+"；日盤主要"+(dayTotal>0?"買方":"賣方")+"為"+(dayTotal>0?(dayBuyer?.name||"無明確主導者"):(daySeller?.name||"無明確主導者"))+"，夜盤主要"+(nightTotal>0?"買方":"賣方")+"為"+(nightTotal>0?(nightBuyer?.name||"無明確主導者"):(nightSeller?.name||"無明確主導者"))+"。合計同向不代表各法人立場一致，仍須檢查分項及價格反應。"
+      :"日夜盤法人合計方向相反；日盤合計"+(dayTotal>0?"偏多":"偏空")+"、夜盤合計"+(nightTotal>0?"偏多":"偏空")+"，方向反轉；日盤主要"+(dayTotal>0?"買方":"賣方")+"為"+(dayTotal>0?(dayBuyer?.name||"無明確主導者"):(daySeller?.name||"無明確主導者"))+"，夜盤主要"+(nightTotal>0?"買方":"賣方")+"為"+(nightTotal>0?(nightBuyer?.name||"無明確主導者"):(nightSeller?.name||"無明確主導者"))+"。必須拆開時段與法人來源，不可用單一合計掩蓋背離。";
   const volumeState=callShare==null||putShare==null?"成交量占比缺值，無法比較當日活躍度。"
     :Math.abs(callShare-putShare)<=5?"Call／Put 成交量占比接近均衡。"
     :callShare>putShare?"Call 成交量較活躍，但成交方向本身不等於看漲。":"Put 成交量較活躍，但成交方向本身不等於看跌。";
@@ -563,10 +571,15 @@ function v9ProOptionsSynthesis({options,spot}){
   const volumeOiConflict=callShare!=null&&pcr!=null&&((callShare>55&&pcr>1)||(putShare>55&&pcr<1));
   const gexLocation=(item,label)=>!item?"無有效"+label+"。":close==null?label+"履約價 "+f(item.strike)+" 點；現價缺值，無法比較距離。":label+"履約價 "+f(item.strike)+" 點，位於現價"+(item.strike>close?"上方":"下方")+" "+f(Math.abs(item.strike-close))+" 點。";
   const overlapRows=[];
-  if(largestPositive&&[callTop,putTop].some(row=>row&&row.strike===largestPositive.strike))overlapRows.push("最大正 GEX 與 "+(callTop?.strike===largestPositive.strike?"Call":"Put")+" OI 最大集中履約價同為 "+f(largestPositive.strike)+" 點");
-  if(largestNegative&&[callTop,putTop].some(row=>row&&row.strike===largestNegative.strike))overlapRows.push("最大負 GEX 與 "+(callTop?.strike===largestNegative.strike?"Call":"Put")+" OI 最大集中履約價同為 "+f(largestNegative.strike)+" 點");
+  const addOverlap=(gexItem,gexLabel)=>{
+    if(!gexItem)return;
+    const matches=[{label:"Call OI 最大集中",row:callTop},{label:"Put OI 最大集中",row:putTop}].filter(x=>x.row&&x.row.strike===gexItem.strike);
+    if(matches.length)overlapRows.push(gexLabel+" "+f(gexItem.strike)+" 點與"+matches.map(x=>x.label).join("及")+"履約價重合");
+  };
+  addOverlap(largestPositive,"最大正 GEX");
+  addOverlap(largestNegative,"最大負 GEX");
   const overlapText=gexReady
-    ?"OI／GEX 履約價重合檢查："+(overlapRows.length?overlapRows.join("；")+"。":"最大正／負 GEX 與 Call／Put 各自最大 OI 集中履約價沒有完全重合；兩種統計焦點應分開觀察，不代表彼此抵銷或形成支撐／壓力。")
+    ?"OI／GEX 履約價交叉檢查："+(overlapRows.length?overlapRows.join("；")+"。重合代表部位集中與模型曝險集中落在同一履約價，應列為優先觀察區；OI 是未平倉部位分布，GEX 是模型估計曝險，兩者不是同一指標，也不代表該價位必然支撐、壓力或反轉。":"最大正／負 GEX 與 Call／Put 各自最大 OI 集中履約價未重合；OI 是部位分布、GEX 是模型曝險，應分開觀察，不代表彼此抵銷或形成支撐／壓力。")
     :"GEX 或 OI 履約價資料不足，無法檢查 OI／GEX 履約價重合情形。";
   const gexText=gexReady
     ?`GEX 資料日期 ${options.gexDate||"缺值"}；${gexLocation(largestPositive,"最大正曝險")} ${gexLocation(largestNegative,"最大負曝險")} ${overlapText}`
