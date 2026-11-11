@@ -276,8 +276,8 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     ? `夜盤收盤${nc<c?"低於":nc>c?"高於":"接近"}日盤收盤；${nearLow?"收盤位於夜盤區間下緣":nearHigh?"收盤位於夜盤區間上緣":"收盤位於夜盤區間中段"}。${changeMismatch?"夜盤變化來源欄與收盤價差不一致，跨時段比較以夜盤收盤減日盤收盤計算。":"跨時段漲跌幅以日盤收盤為基準計算，不混用夜盤自身漲跌幅。"}`
     : "夜盤或日盤收盤缺值，無法比較兩個交易時段；不得推定夜盤方向。";
   const nightTarget=nightReady&&validPrice(c)
-    ? `以夜盤高點 ${fmt(nh)} 點與低點 ${fmt(nl)} 點作觀察區間；現貨開盤後確認價格能否${nc>=c?"守穩":"收復"}日盤收盤 ${fmt(c)} 點，未確認前不把夜盤變化當成日盤方向預測。`
-    : "夜盤 OHLC 或日盤收盤資料不足，暫不設定跨時段價格觸發條件。";
+    ? `以夜盤高點 ${fmt(nh)} 點與低點 ${fmt(nl)} 點作觀察區間；次日日盤開盤後，先以台指期價格確認是否能${nc>=c?"維持在":"重新站回"}前一日日盤收盤 ${fmt(c)} 點之上，再確認加權指數現貨走勢是否同步。期貨與現貨點位不同，不可直接比較點數。`
+    : "夜盤 OHLC 或日盤收盤資料不足，暫不設定跨時段價格觸發條件。"
 
   const foreign=valueOf(futures?.foreign_oi),trust=valueOf(futures?.trust_oi),dealer=valueOf(futures?.dealer_oi),top10=valueOf(futures?.top10);
   const oiComplete=[foreign,trust,dealer].every(v=>v!=null);
@@ -288,11 +288,11 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const oiSplit=foreign!=null&&trust!=null&&foreign*trust<0;
   const totalDirection=threeNet==null?"":threeNet>0?"三大法人合計偏多":threeNet<0?"三大法人合計偏空":"三大法人合計為零";
   const oiCompass=oiComplete
-    ? `${oiSplit?"外資與投信淨 OI 方向相反，法人部位分歧。":"外資與投信淨 OI 方向未呈現相反。"}${totalDirection}${top10!=null&&foreign!=null&&top10*foreign<0?"，且前十大與外資方向相反":""}；OI 是部位存量，不代表當日新增交易。`
+    ? `外資淨 OI ${foreign<0?"偏空":foreign>0?"偏多":"中性"}；投信${trust<0?"淨空":trust>0?"淨多":"中性"}；自營商${dealer<0?"淨空":dealer>0?"淨多":"中性"}；${totalDirection}。${oiSplit?"外資與投信方向相反，顯示法人部位分歧。":"外資與投信方向未呈現相反。"}${top10!=null?"前十大屬另一統計群體，獨立列示，不與三大法人合計相加。":""}以上均為未平倉存量；單日數值不能判斷當日增減倉。`
     : "法人 OI 欄位不完整，無法判斷法人間的部位分歧；資料不足時不推定方向。";
   const oiTarget=oiComplete
-    ? "觀察下一交易日各法人 OI 的變化，再與日／夜盤淨交易流量及期貨價格分開交叉確認；單日快照不等同新增部位。"
-    : "待補齊外資、投信及自營 OI 後再判斷法人部位結構。";
+    ? "比較前一有效交易日同一統計口徑的 OI，才能判斷增倉或減倉；再與日／夜盤淨交易流量及期貨價格交叉確認。前十大與三大法人分開比較，不混合加總。"
+    : "待補齊外資、投信及自營 OI 後再判斷法人部位結構。"
 
   const dayFlow=valueOf(futures?.foreign_day),nightFlow=valueOf(futures?.foreign_night);
   const flowComplete=dayFlow!=null&&nightFlow!=null;
@@ -301,10 +301,12 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     : `外資日盤淨交易 ${signed(dayFlow)} 口；夜盤淨交易 ${signed(nightFlow)} 口；日夜流量資料不完整。`;
   let flowCompass="日／夜盤流量資料不足，無法判斷時段間方向是否一致。";
   if(flowComplete){
-    if(dayFlow>0&&nightFlow<0)flowCompass="外資日盤淨交易偏多、夜盤淨交易偏空，日夜流量方向反轉；應與夜盤價格及次日日盤反應確認。";
-    else if(dayFlow<0&&nightFlow>0)flowCompass="外資日盤淨交易偏空、夜盤淨交易偏多，日夜流量方向反轉；應與夜盤價格及次日日盤反應確認。";
+    if(dayFlow>0&&nightFlow<0)flowCompass="外資日盤淨買超、夜盤淨賣超，兩個時段方向反轉；不能用日盤流量抵銷夜盤流量，應分別對照各時段價格反應。";
+    else if(dayFlow<0&&nightFlow>0)flowCompass="外資日盤淨賣超、夜盤淨買超，兩個時段方向反轉；不能用夜盤流量抵銷日盤流量，應分別對照各時段價格反應。";
     else if(dayFlow===0&&nightFlow===0)flowCompass="外資日盤與夜盤淨交易均為零，未形成方向性流量訊號。";
-    else flowCompass="外資日盤與夜盤淨交易方向一致或其中一時段為零；仍須與價格反應確認，不能單憑流量推定趨勢。";
+    else if(dayFlow<0&&nightFlow<0)flowCompass="外資日盤與夜盤皆為淨賣超，兩個時段方向一致；但流量不等於新增空單，仍須比較前後 OI 變化及期貨價格確認。";
+    else if(dayFlow>0&&nightFlow>0)flowCompass="外資日盤與夜盤皆為淨買超，兩個時段方向一致；但流量不等於新增多單，仍須比較前後 OI 變化及期貨價格確認。";
+    else flowCompass="外資日盤與夜盤至少一個時段為零，方向訊號不完整；仍須與價格反應及 OI 變化確認。";
     if(foreign!=null)flowCompass+=foreign<0?" 外資淨 OI 存量偏空，與單一時段流量需分開解讀。":foreign>0?" 外資淨 OI 存量偏多，與單一時段流量需分開解讀。":" 外資淨 OI 為零，不提供存量方向。";
   }
   const flowTarget=flowComplete
@@ -321,7 +323,13 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       : basis<0&&nightDelta!=null&&nightDelta>0
         ? "日盤呈逆價差，但夜盤價格相對日盤收盤上升；兩者屬不同時點，逆價差不能單獨作為偏空確認。"
         : `日盤為${basis>0?"正價差":basis<0?"逆價差":"平價"}；單一時點的基差只描述期現價格差，不足以判定趨勢。`;
-  const basisTarget="連續比較期現基差與期貨價格變化，確認價差收斂或擴大；單一時點不推定套利壓力或交易方向。";
+  const basisTarget=basis==null
+    ? "待取得有效期貨與現貨收盤價後，再計算基差；缺值不推定正價差或逆價差。"
+    : basis>0
+      ? "後續比較正價差是否擴大或收斂：擴大代表期貨相對現貨走強，收斂代表相對強勢減弱；仍須同步確認現貨方向與成交量，不把單次基差當成買進訊號。"
+      : basis<0
+        ? "後續比較逆價差絕對值是否擴大或收斂：擴大代表期貨相對現貨更弱，收斂代表弱勢減輕；仍須同步確認現貨方向與成交量，不把單次基差當成賣出訊號。"
+        : "基差接近平價；持續觀察期現價格是否形成穩定價差，不單憑單一時點推定多空或套利機會。";
 
   const priceReady=dayReady&&nightReady&&validPrice(c)&&validPrice(nc);
   const priceDir=priceReady?(nc>c?1:nc<c?-1:0):0;
@@ -355,10 +363,10 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       scenarioInvalid=`價格收復日盤收盤 ${fmt(c)} 點上方，偏空條件失效。`;
     }else{
       scenarioTitle="價格與籌碼背離";
-      scenarioCompass="夜盤價格方向與外資夜盤淨交易方向相反；不追價，等待下一交易時段確認是否為短暫背離或方向轉折。";
-      scenarioTrigger=`觀察夜盤區間 ${fmt(nl)}–${fmt(nh)} 點是否被有效突破。`;
-      scenarioConfirm="價格突破方向須獲得後續法人流量或下一交易時段價格確認。";
-      scenarioInvalid="價格回到區間內且流量未改善，背離訊號不成立。";
+      scenarioCompass=`夜盤價格${priceDir>0?"上漲":"下跌"} ${signed(nightDelta)} 點，但外資夜盤淨交易 ${signed(nightFlow)} 口，價格與外資流量方向背離；價格尚未獲流量確認，不宜追價。`;
+      scenarioTrigger=`觀察夜盤區間 ${fmt(nl)}–${fmt(nh)} 點的有效突破。`;
+      scenarioConfirm=`向上突破 ${fmt(nh)} 點後，須維持在區間上方，且後續外資淨交易轉為淨買超或賣壓明顯收斂；若向下跌破 ${fmt(nl)} 點，則觀察淨賣超是否延續。`;
+      scenarioInvalid=`價格突破後重新回到 ${fmt(nl)}–${fmt(nh)} 點區間，或後續流量未配合，方向確認失敗。`;
     }
   }
   const scenarioLook=`${scenarioTitle}；夜盤相對日盤變化 ${signed(nightDelta)} 點；外資夜盤淨交易 ${signed(nightFlow)} 口；夜盤成交量占日夜總量 ${nightShare==null?"缺值":nightShare.toFixed(2)+"%"}。`;
@@ -386,12 +394,12 @@ function v2({data:e}){
     {l:"外資夜盤淨",v:num(r.foreign_night),extra:"口",color:num(r.foreign_night)==null?"#8ea7c3":num(r.foreign_night)>=0?"#ff6b6b":"#3dd68c"}
   ].filter(item=>item.v!=null);
   return O("div",{className:"grid md:grid-cols-2 gap-4",children:[
-    p(V,{title:"台指期日盤",subtitle:`收 ${g(n.day.c)}點 · 相對前結算 ${g(n.day.diff)}點`,chart:p(Pt,{o:n.day.o,h:n.day.h,l:n.day.l,c:n.day.c,vol:n.day.vol,basis:n.day.basis,height:220}),chartNote:"K棒標示為開收差（收盤−開盤）；表格漲跌為相對前結算，兩者基準不同。價格／漲跌／基差：點；成交量：口。",table:p(ee,{rows:[["開",`${g(n.day.o)}點`],["高",`${g(n.day.h)}點`],["低",`${g(n.day.l)}點`],["收",`${g(n.day.c)}點`],["漲跌",`${g(n.day.diff)}點（${he(n.day.pct)}）`],["成交量",`${g(n.day.vol)}口`],["基差",`${B(n.day.basis,2)}點`]]}),analysis:futuresNarrative.day}),
-    p(V,{title:"台指期夜盤",subtitle:`收 ${g(n.night.c)}點 · 相對日盤 ${g(futuresNarrative.nightDelta)}點`,chart:p(Pt,{o:n.night.o,h:n.night.h,l:n.night.l,c:n.night.c,vol:n.night.vol,basis:futuresNarrative.nightDelta,basisLabel:"相對日盤",height:220}),chartNote:"K棒標示為夜盤開收差；表格漲跌為相對前結算；跨時段變化為夜盤收盤−日盤收盤，三者基準不同。價格／漲跌：點；成交量：口。",table:p(ee,{rows:[["開",`${g(n.night.o)}點`],["高",`${g(n.night.h)}點`],["低",`${g(n.night.l)}點`],["收",`${g(n.night.c)}點`],["漲跌",`${g(n.night.diff)}點（${he(n.night.pct)}）`],["成交量",`${g(n.night.vol)}口`],["夜盤相對日盤收盤",`${g(futuresNarrative.nightDelta)}點`]]}),analysis:futuresNarrative.night}),
+    p(V,{title:"台指期日盤",subtitle:`收 ${g(n.day.c)}點 · 相對前結算 ${g(n.day.diff)}點`,chart:p(Pt,{o:n.day.o,h:n.day.h,l:n.day.l,c:n.day.c,vol:n.day.vol,basis:n.day.basis,height:220}),chartNote:`K棒看收盤與開盤的差；表格漲跌看相對前結算。本例日盤收盤${num(n.day.c)>num(n.day.o)?"高於":num(n.day.c)<num(n.day.o)?"低於":"等於"}開盤；相對前結算${num(n.day.diff)==null?"缺值":num(n.day.diff)>0?"上漲":num(n.day.diff)<0?"下跌":"持平"}${num(n.day.diff)==null?"": " "+g(Math.abs(num(n.day.diff)))+" 點"}（${he(n.day.pct)}）。兩者基準不同，不代表數據矛盾。價格／基差：點；成交量：口。`,table:p(ee,{rows:[["開",`${g(n.day.o)}點`],["高",`${g(n.day.h)}點`],["低",`${g(n.day.l)}點`],["收",`${g(n.day.c)}點`],["漲跌",`${g(n.day.diff)}點（${he(n.day.pct)}）`],["成交量",`${g(n.day.vol)}口`],["基差",`${B(n.day.basis,2)}點`]]}),analysis:futuresNarrative.day}),
+    p(V,{title:"台指期夜盤",subtitle:`收 ${g(n.night.c)}點 · 相對日盤 ${g(futuresNarrative.nightDelta)}點`,chart:p(Pt,{o:n.night.o,h:n.night.h,l:n.night.l,c:n.night.c,vol:n.night.vol,basis:futuresNarrative.nightDelta,basisLabel:"相對日盤",height:220}),chartNote:`夜盤有三種比較：K棒＝收盤−開盤；表格漲跌＝相對前結算；跨盤變化＝夜盤收盤−日盤收盤。本例分別為 ${num(n.night.c-n.night.o)>0?"+":""}${g(n.night.c-n.night.o)}、${num(n.night.diff)>0?"+":""}${g(n.night.diff)}、${num(futuresNarrative.nightDelta)>0?"+":""}${g(futuresNarrative.nightDelta)} 點，基準不同不可混用。價格：點；成交量：口。`,table:p(ee,{rows:[["開",`${g(n.night.o)}點`],["高",`${g(n.night.h)}點`],["低",`${g(n.night.l)}點`],["收",`${g(n.night.c)}點`],["漲跌",`${g(n.night.diff)}點（${he(n.night.pct)}）`],["成交量",`${g(n.night.vol)}口`],["夜盤相對日盤收盤",`${g(futuresNarrative.nightDelta)}點`]]}),analysis:futuresNarrative.night}),
     p(V,{title:"基差與跨盤變化",subtitle:`基差 ${B(n.day.basis,2)}`,chart:p("div",{className:"grid grid-cols-2 gap-3",children:[
       p("div",{children:[p("div",{className:"text-[10px] text-[var(--muted)] text-center pb-1",children:"日盤基差"}),p(Ol,{items:[{l:"基差",v:num(n.day.basis)}],height:140})]}),
       p("div",{children:[p("div",{className:"text-[10px] text-[var(--muted)] text-center pb-1",children:"夜盤相對日盤"}),p(Ol,{items:[{l:"變化",v:num(n.night.c)!=null&&num(n.day.c)!=null?num(n.night.c)-num(n.day.c):null}],height:140})]})
-    ]}),chartNote:"① 日盤基差｜比較期貨與現貨\n公式：台指期貨日盤價格－加權指數（現貨）。\n本例 +84.36 點：期貨比現貨高 84.36 點，稱為正價差；負值代表期貨低於現貨，稱為逆價差。\n② 夜盤相對日盤｜比較同一商品的兩個時段\n公式：夜盤收盤價－日盤收盤價。\n本例 +512 點：夜盤收盤比日盤收盤高 512 點；負值代表夜盤收盤較低。\n注意：正價差不等於必然看多，夜盤收高也不保證次日日盤開高；仍須搭配價格、成交量與後續走勢判讀。",table:p(ee,{rows:[["日盤基差",`${B(n.day.basis,2)}點`],["正逆價差",`${n.day.prem==null?"缺值":n.day.prem}%`],["夜盤相對日盤收盤",`${futuresNarrative.nightDelta==null?"缺值":g(futuresNarrative.nightDelta)+"點"}`]]}),analysis:futuresNarrative.basis}),
+    ]}),chartNote:`① 日盤基差｜比較期貨與現貨\n公式：台指期貨日盤收盤價－加權指數現貨收盤價。\n基差比例＝基差 ÷ 加權指數現貨收盤價 × 100%。\n本例 ${num(n.day.basis)>0?"+":""}${B(n.day.basis,2)} 點（${n.day.prem==null?"缺值":(num(n.day.prem)>0?"+":"")+B(n.day.prem,2)+"%"}）：期貨高於現貨為正價差；低於現貨為逆價差。\n② 夜盤相對日盤｜比較同一商品的兩個時段\n公式：夜盤收盤價－日盤收盤價。\n本例 ${num(futuresNarrative.nightDelta)>0?"+":""}${g(futuresNarrative.nightDelta)} 點：夜盤收盤較日盤高；負值則較低。\n注意：基差受資金成本、到期日與市場流動性影響，不等於必然看多；夜盤收高也不保證次日日盤開高。`,table:p(ee,{rows:[["日盤基差",`${B(n.day.basis,2)}點`],["正逆價差",`${n.day.prem==null?"缺值":n.day.prem}%`],["夜盤相對日盤收盤",`${futuresNarrative.nightDelta==null?"缺值":g(futuresNarrative.nightDelta)+"點"}`]]}),analysis:futuresNarrative.basis}),
     p(V,{title:"法人OI",subtitle:`外資 ${g(r.foreign_oi)}口`,chart:p(Hn,{items:[{l:"外資",v:num(r.foreign_oi),extra:"口",color:num(r.foreign_oi)==null?"#8ea7c3":num(r.foreign_oi)>=0?"#ff6b6b":"#3dd68c"},{l:"投信",v:num(r.trust_oi),extra:"口",color:num(r.trust_oi)==null?"#8ea7c3":num(r.trust_oi)>=0?"#ff6b6b":"#3dd68c"},{l:"自營",v:num(r.dealer_oi),extra:"口",color:num(r.dealer_oi)==null?"#8ea7c3":num(r.dealer_oi)>=0?"#ff6b6b":"#3dd68c"},{l:"前十大",v:num(r.top10),extra:"口",color:num(r.top10)==null?"#8ea7c3":num(r.top10)>=0?"#ff6b6b":"#3dd68c"}],height:220}),chartNote:"未平倉淨口數（存量）；紅色代表淨多，綠色代表淨空。日夜盤淨交易流量另行呈現。",table:p(ee,{rows:[["外資",`${g(r.foreign_oi)}口`],["投信",`${g(r.trust_oi)}口`],["自營",`${g(r.dealer_oi)}口`],["前十大",`${g(r.top10)}口`],["三大法人合計",oiSum==null?"缺值":`${g(oiSum)}口`]]}),analysis:futuresNarrative.oi}),
     p(V,{title:"日夜法人交易",subtitle:"外資日盤／夜盤淨交易流量；OI 存量獨立列示",chart:p("div",{className:"space-y-2",children:[
       p("div",{className:"text-[10px] text-[var(--muted)] px-1",children:"外資日夜盤淨交易流量（紅＝淨多；綠＝淨空）"}),
@@ -399,7 +407,7 @@ function v2({data:e}){
       p("div",{className:"text-[10px] text-[var(--muted)] px-1 pt-2 border-t border-[#1e2e47]/60",children:"法人 OI 存量（不與交易流量共用圖表）"}),
       p(ee,{rows:[["外資 OI",`${g(r.foreign_oi)}口`],["投信 OI",`${g(r.trust_oi)}口`],["自營 OI",`${g(r.dealer_oi)}口`],["前十大 OI",`${g(r.top10)}口`]]})
     ]}),chartNote:"上方為外資日／夜盤淨交易流量；下方為法人 OI 存量。兩者均以口數表示，但統計意義不同，不加總、不相減。",table:p(ee,{rows:[["外資日盤淨",`${g(r.foreign_day)}口`],["外資夜盤淨",`${g(r.foreign_night)}口`],["外資 OI",`${g(r.foreign_oi)}口`],["日夜流量方向",r.foreign_day==null||r.foreign_night==null?"資料不足":num(r.foreign_day)*num(r.foreign_night)<0?"方向反轉":num(r.foreign_day)===0||num(r.foreign_night)===0?"至少一時段中性":"方向一致"]]}),analysis:futuresNarrative.flow}),
-    p(V,{title:"夜盤劇本",subtitle:"條件式情境；不代表回測機率或直接進場訊號",chart:p(Sf,{day:n.day.c,night:n.night.c,foreignNight:r.foreign_night}),chartNote:"以夜盤相對日盤收盤的價格方向，交叉外資夜盤淨交易方向；價格與籌碼背離時不追價。",table:p(ee,{rows:[["目前情境",futuresNarrative.scenario.title],["日盤收盤",`${g(n.day.c)}點`],["夜盤高／低",`${g(n.night.h)}／${g(n.night.l)}點`],["外資夜盤淨",`${g(r.foreign_night)}口`],["夜盤量占比",num(n.day.vol)!=null&&num(n.night.vol)!=null&&num(n.day.vol)+num(n.night.vol)>0?((num(n.night.vol)/(num(n.day.vol)+num(n.night.vol)))*100).toFixed(2)+"%":"缺值"]]}),analysis:futuresNarrative.scenario})
+    p(V,{title:"夜盤劇本",subtitle:"條件式情境；不代表回測機率或直接進場訊號",chart:p(Sf,{day:n.day.c,night:n.night.c,foreignNight:r.foreign_night}),chartNote:"以夜盤相對日盤收盤的價格方向，交叉外資夜盤淨交易方向；夜盤成交量占比只表示成交量分布，不代表多空力道。價格與籌碼背離時先等待確認，不追價。",table:p(ee,{rows:[["目前情境",futuresNarrative.scenario.title],["日盤收盤",`${g(n.day.c)}點`],["夜盤高／低",`${g(n.night.h)}／${g(n.night.l)}點`],["外資夜盤淨",`${g(r.foreign_night)}口`],["夜盤量占比",num(n.day.vol)!=null&&num(n.night.vol)!=null&&num(n.day.vol)+num(n.night.vol)>0?((num(n.night.vol)/(num(n.day.vol)+num(n.night.vol)))*100).toFixed(2)+"%":"缺值"]]}),analysis:futuresNarrative.scenario})
   ]});
 }function v9ProOptionsAnalysis({options,spot}){
   const n=v=>{if(v==null||v==="")return null;const x=typeof v==="number"?v:Number(String(v).replace(/,/g,"").replace(/%$/,"").trim());return Number.isFinite(x)?x:null;};
