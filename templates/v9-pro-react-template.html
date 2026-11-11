@@ -367,34 +367,36 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     basis:{look:basisLook,compass:basisCompass,target:basisTarget},
     oi:{look:oiLook,compass:oiCompass,target:oiTarget},
     flow:{look:flowLook,compass:flowCompass,target:flowTarget},
-    scenario:{look:scenarioLook,compass:scenarioCompass,target:scenarioTarget,title:scenarioTitle}
+    scenario:{look:scenarioLook,compass:scenarioCompass,target:scenarioTarget,title:scenarioTitle},
+    nightDelta,nightDeltaPct
   };
 }
 
 function v2({data:e}){
   const {tx:n,futures:r}=e;
+  const num=value=>{if(value==null||value==="")return null;const parsed=typeof value==="number"?value:Number(String(value).replace(/,/g,"").trim());return Number.isFinite(parsed)?parsed:null;};
   const futuresNarrative=v9ProFuturesAnalysis({day:n.day,night:n.night,futures:r});
-  const oiValues=[r.foreign_oi,r.trust_oi,r.dealer_oi].map(v=>v==null||v===""?null:Number(String(v).replace(/,/g,"")));
+  const oiValues=[r.foreign_oi,r.trust_oi,r.dealer_oi].map(num);
   const oiSum=oiValues.every(v=>v!=null&&Number.isFinite(v))?oiValues.reduce((sum,v)=>sum+v,0):null;
   const flowItems=[
-    {l:"外資日盤淨",v:r.foreign_day,extra:"口",color:r.foreign_day==null?"#8ea7c3":Number(r.foreign_day)>=0?"#ff6b6b":"#3dd68c"},
-    {l:"外資夜盤淨",v:r.foreign_night,extra:"口",color:r.foreign_night==null?"#8ea7c3":Number(r.foreign_night)>=0?"#ff6b6b":"#3dd68c"}
-  ].filter(item=>item.v!=null&&Number.isFinite(Number(String(item.v).replace(/,/g,""))));
+    {l:"外資日盤淨",v:num(r.foreign_day),extra:"口",color:num(r.foreign_day)==null?"#8ea7c3":num(r.foreign_day)>=0?"#ff6b6b":"#3dd68c"},
+    {l:"外資夜盤淨",v:num(r.foreign_night),extra:"口",color:num(r.foreign_night)==null?"#8ea7c3":num(r.foreign_night)>=0?"#ff6b6b":"#3dd68c"}
+  ].filter(item=>item.v!=null);
   return O("div",{className:"grid md:grid-cols-2 gap-4",children:[
     p(V,{title:"台指期日盤",subtitle:`收 ${g(n.day.c)} ${he(n.day.pct)}`,chart:p(Pt,{o:n.day.o,h:n.day.h,l:n.day.l,c:n.day.c,vol:n.day.vol,basis:n.day.basis,height:220}),chartNote:"價格／漲跌／基差：點；成交量：口；漲跌幅：%",table:p(ee,{rows:[["開",`${g(n.day.o)}點`],["高",`${g(n.day.h)}點`],["低",`${g(n.day.l)}點`],["收",`${g(n.day.c)}點`],["漲跌",`${g(n.day.diff)}點（${he(n.day.pct)}）`],["成交量",`${g(n.day.vol)}口`],["基差",`${B(n.day.basis,2)}點`]]}),analysis:futuresNarrative.day}),
-    p(V,{title:"台指期夜盤",subtitle:`收 ${g(n.night.c)}點 · 漲跌 ${g(n.night.diff)}點`,chart:p(Pt,{o:n.night.o,h:n.night.h,l:n.night.l,c:n.night.c,vol:n.night.vol,basis:n.night.change,height:220}),chartNote:"價格／漲跌／夜盤變化：點；成交量：口；漲跌幅：%",table:p(ee,{rows:[["開",`${g(n.night.o)}點`],["高",`${g(n.night.h)}點`],["低",`${g(n.night.l)}點`],["收",`${g(n.night.c)}點`],["漲跌",`${g(n.night.diff)}點（${he(n.night.pct)}）`],["成交量",`${g(n.night.vol)}口`],["夜盤相對日盤收盤",`${g(futuresNarrative.night.look.includes("缺值")?null:Number(n.night.c)-Number(n.day.c))}點`]]}),analysis:futuresNarrative.night}),
+    p(V,{title:"台指期夜盤",subtitle:`收 ${g(n.night.c)}點 · 漲跌 ${g(n.night.diff)}點`,chart:p(Pt,{o:n.night.o,h:n.night.h,l:n.night.l,c:n.night.c,vol:n.night.vol,basis:n.night.change,height:220}),chartNote:"價格／漲跌／夜盤變化：點；成交量：口；漲跌幅：%",table:p(ee,{rows:[["開",`${g(n.night.o)}點`],["高",`${g(n.night.h)}點`],["低",`${g(n.night.l)}點`],["收",`${g(n.night.c)}點`],["漲跌",`${g(n.night.diff)}點（${he(n.night.pct)}）`],["成交量",`${g(n.night.vol)}口`],["夜盤相對日盤收盤",`${g(futuresNarrative.nightDelta)}點`]]}),analysis:futuresNarrative.night}),
     p(V,{title:"期現貨價差",subtitle:`基差 ${B(n.day.basis,2)}`,chart:p("div",{className:"grid grid-cols-2 gap-3",children:[
       p("div",{children:[p("div",{className:"text-[10px] text-[var(--muted)] text-center pb-1",children:"日盤基差"}),p(Ol,{items:[{l:"基差",v:n.day.basis}],height:140})]}),
-      p("div",{children:[p("div",{className:"text-[10px] text-[var(--muted)] text-center pb-1",children:"夜盤相對日盤"}),p(Ol,{items:[{l:"變化",v:Number.isFinite(Number(n.night.c))&&Number.isFinite(Number(n.day.c))?Number(n.night.c)-Number(n.day.c):null}],height:140})]})
-    ]}),chartNote:"兩項指標分開縮放，各自以原始點數呈現；避免不同量級共用比例尺。",table:p(ee,{rows:[["日盤基差",`${B(n.day.basis,2)}點`],["正逆價差",`${n.day.prem==null?"缺值":n.day.prem}%`],["夜盤相對日盤收盤",`${futuresNarrative.night.look.includes("缺值")?"缺值":g(Number(n.night.c)-Number(n.day.c))+"點"}`]]}),analysis:futuresNarrative.basis}),
+      p("div",{children:[p("div",{className:"text-[10px] text-[var(--muted)] text-center pb-1",children:"夜盤相對日盤"}),p(Ol,{items:[{l:"變化",v:num(n.night.c)!=null&&num(n.day.c)!=null?num(n.night.c)-num(n.day.c):null}],height:140})]})
+    ]}),chartNote:"兩項指標分開縮放，各自以原始點數呈現；避免不同量級共用比例尺。",table:p(ee,{rows:[["日盤基差",`${B(n.day.basis,2)}點`],["正逆價差",`${n.day.prem==null?"缺值":n.day.prem}%`],["夜盤相對日盤收盤",`${futuresNarrative.nightDelta==null?"缺值":g(futuresNarrative.nightDelta)+"點"}`]]}),analysis:futuresNarrative.basis}),
     p(V,{title:"法人OI",subtitle:`外資 ${g(r.foreign_oi)}口`,chart:p(Hn,{items:[{l:"外資",v:r.foreign_oi,extra:"口",color:r.foreign_oi==null?"#8ea7c3":Number(r.foreign_oi)>=0?"#ff6b6b":"#3dd68c"},{l:"投信",v:r.trust_oi,extra:"口",color:r.trust_oi==null?"#8ea7c3":Number(r.trust_oi)>=0?"#ff6b6b":"#3dd68c"},{l:"自營",v:r.dealer_oi,extra:"口",color:r.dealer_oi==null?"#8ea7c3":Number(r.dealer_oi)>=0?"#ff6b6b":"#3dd68c"},{l:"前十大",v:r.top10,extra:"口",color:r.top10==null?"#8ea7c3":Number(r.top10)>=0?"#ff6b6b":"#3dd68c"}],height:220}),chartNote:"未平倉淨口數（存量）；紅色代表淨多，綠色代表淨空。日夜盤淨交易流量另行呈現。",table:p(ee,{rows:[["外資",`${g(r.foreign_oi)}口`],["投信",`${g(r.trust_oi)}口`],["自營",`${g(r.dealer_oi)}口`],["前十大",`${g(r.top10)}口`],["三大法人合計",oiSum==null?"缺值":`${g(oiSum)}口`]]}),analysis:futuresNarrative.oi}),
     p(V,{title:"日夜法人交易",subtitle:"外資日盤／夜盤淨交易流量；OI 存量獨立列示",chart:p("div",{className:"space-y-2",children:[
       p("div",{className:"text-[10px] text-[var(--muted)] px-1",children:"外資日夜盤淨交易流量（紅＝淨多；綠＝淨空）"}),
       p(Hn,{items:flowItems,height:150}),
       p("div",{className:"text-[10px] text-[var(--muted)] px-1 pt-2 border-t border-[#1e2e47]/60",children:"法人 OI 存量（不與交易流量共用圖表）"}),
       p(ee,{rows:[["外資 OI",`${g(r.foreign_oi)}口`],["投信 OI",`${g(r.trust_oi)}口`],["自營 OI",`${g(r.dealer_oi)}口`],["前十大 OI",`${g(r.top10)}口`]]})
-    ]}),chartNote:"上方為外資日／夜盤淨交易流量；下方為法人 OI 存量。兩者均以口數表示，但統計意義不同，不加總、不相減。",table:p(ee,{rows:[["外資日盤淨",`${g(r.foreign_day)}口`],["外資夜盤淨",`${g(r.foreign_night)}口`],["外資 OI",`${g(r.foreign_oi)}口`],["日夜流量方向",r.foreign_day==null||r.foreign_night==null?"資料不足":Number(r.foreign_day)*Number(r.foreign_night)<0?"方向反轉":Number(r.foreign_day)===0||Number(r.foreign_night)===0?"至少一時段中性":"方向一致"]]}),analysis:futuresNarrative.flow}),
-    p(V,{title:"夜盤劇本",subtitle:"條件式情境；不代表回測機率或直接進場訊號",chart:p(Sf,{day:n.day.c,night:n.night.c,foreignNight:r.foreign_night}),chartNote:"以夜盤相對日盤收盤的價格方向，交叉外資夜盤淨交易方向；價格與籌碼背離時不追價。",table:p(ee,{rows:[["目前情境",futuresNarrative.scenario.title],["日盤收盤",`${g(n.day.c)}點`],["夜盤高／低",`${g(n.night.h)}／${g(n.night.l)}點`],["外資夜盤淨",`${g(r.foreign_night)}口`],["夜盤量占比",n.day.vol!=null&&n.night.vol!=null&&Number(n.day.vol)+Number(n.night.vol)>0?((Number(n.night.vol)/(Number(n.day.vol)+Number(n.night.vol)))*100).toFixed(2)+"%":"缺值"]]}),analysis:futuresNarrative.scenario})
+    ]}),chartNote:"上方為外資日／夜盤淨交易流量；下方為法人 OI 存量。兩者均以口數表示，但統計意義不同，不加總、不相減。",table:p(ee,{rows:[["外資日盤淨",`${g(r.foreign_day)}口`],["外資夜盤淨",`${g(r.foreign_night)}口`],["外資 OI",`${g(r.foreign_oi)}口`],["日夜流量方向",r.foreign_day==null||r.foreign_night==null?"資料不足":num(r.foreign_day)*num(r.foreign_night)<0?"方向反轉":num(r.foreign_day)===0||num(r.foreign_night)===0?"至少一時段中性":"方向一致"]]}),analysis:futuresNarrative.flow}),
+    p(V,{title:"夜盤劇本",subtitle:"條件式情境；不代表回測機率或直接進場訊號",chart:p(Sf,{day:n.day.c,night:n.night.c,foreignNight:r.foreign_night}),chartNote:"以夜盤相對日盤收盤的價格方向，交叉外資夜盤淨交易方向；價格與籌碼背離時不追價。",table:p(ee,{rows:[["目前情境",futuresNarrative.scenario.title],["日盤收盤",`${g(n.day.c)}點`],["夜盤高／低",`${g(n.night.h)}／${g(n.night.l)}點`],["外資夜盤淨",`${g(r.foreign_night)}口`],["夜盤量占比",num(n.day.vol)!=null&&num(n.night.vol)!=null&&num(n.day.vol)+num(n.night.vol)>0?((num(n.night.vol)/(num(n.day.vol)+num(n.night.vol)))*100).toFixed(2)+"%":"缺值"]]}),analysis:futuresNarrative.scenario})
   ]});
 }function v9ProOptionsAnalysis({options,spot}){
   const n=v=>{if(v==null||v==="")return null;const x=typeof v==="number"?v:Number(String(v).replace(/,/g,"").replace(/%$/,"").trim());return Number.isFinite(x)?x:null;};
