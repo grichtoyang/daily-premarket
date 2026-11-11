@@ -308,14 +308,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     else flowCompass="外資日盤與夜盤至少一個時段為零，方向訊號不完整；仍須與價格反應及 OI 變化確認。";
     if(foreign!=null)flowCompass+=foreign<0?" 外資淨 OI 存量偏空，與單一時段流量需分開解讀。":foreign>0?" 外資淨 OI 存量偏多，與單一時段流量需分開解讀。":" 外資淨 OI 為零，不提供存量方向。";
   }
-  const flowDivergenceGuide=nightFlow<0
-    ? "若外資仍淨賣超、價格卻不跌反升，代表賣壓未獲價格確認，先不追空。"
-    : nightFlow>0
-      ? "若外資仍淨買超、價格卻不漲反跌，代表買盤未獲價格確認，先不追多。"
-      : "若價格與流量沒有同方向反應，先等待下一個有效訊號。";
-  const flowTarget=flowComplete
-    ? `下一交易日先看外資日盤淨交易是否延續夜盤方向，再看期貨價格有沒有同步反應。${flowDivergenceGuide} OI 是持倉存量，日／夜盤淨交易是時段流量，兩者不可相加或相減。`
-    : "待取得完整日盤及夜盤淨交易資料後，再判斷流量方向；缺值不補零。";
+
 
   const basisLook=basis==null
     ? "日盤基差缺值，無法判定正逆價差。"
@@ -338,6 +331,15 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const priceReady=dayReady&&nightReady&&validPrice(c)&&validPrice(nc);
   const priceDir=priceReady?(nc>c?1:nc<c?-1:0):0;
   const flowDir=nightFlow==null?0:(nightFlow>0?1:nightFlow<0?-1:0);
+  const flowTargetFinal=!flowComplete
+    ? "外資日盤或夜盤淨交易資料缺值；先補齊同一交易日的兩個時段，再判斷方向，缺值不補零。"
+    : !priceReady
+      ? "外資日夜盤交易流量雖完整，但期貨日盤／夜盤收盤價不足，無法確認價格是否配合；先補齊價格，再判斷是否追隨流量。"
+      : flowDir===0
+        ? "外資夜盤淨交易為零，沒有明確流量方向；下一交易日先觀察日盤流量與價格是否形成同方向訊號，不預設多空。"
+        : priceDir===flowDir
+          ? `目前夜盤價格與外資流量方向一致（${priceDir>0?"價格上升、外資淨買超":"價格下降、外資淨賣超"}），但仍只是初步呼應。下一交易日先看外資日盤淨交易是否延續，再確認期貨價格能否守住同方向；若流量轉向或價格失守，不追價。OI 是持倉存量，日／夜盤淨交易是時段流量，不可相加或相減。`
+          : `目前夜盤價格與外資流量方向背離（${priceDir>0?"價格上升、外資卻淨賣超":"價格下降、外資卻淨買超"}），代表價格尚未獲外資流量確認。下一交易日先等待流量轉向並由價格確認，或價格回到流量支持的方向；確認前不追多也不追空。OI 是持倉存量，日／夜盤淨交易是時段流量，不可相加或相減。`;
   const dayVolume=valueOf(day?.vol),nightVolume=valueOf(night?.vol);
   const volumeReady=dayVolume!=null&&nightVolume!=null&&dayVolume>=0&&nightVolume>=0&&dayVolume+nightVolume>0;
   const nightShare=volumeReady?nightVolume/(dayVolume+nightVolume)*100:null;
@@ -381,7 +383,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     night:{look:nightLook,compass:nightCompass,target:nightTarget},
     basis:{look:basisLook,compass:basisCompass,target:basisTarget},
     oi:{look:oiLook,compass:oiCompass,target:oiTarget},
-    flow:{look:flowLook,compass:flowCompass,target:flowTarget},
+    flow:{look:flowLook,compass:flowCompass,target:flowTargetFinal},
     scenario:{look:scenarioLook,compass:scenarioCompass,target:scenarioTarget,title:scenarioTitle},
     nightDelta,nightDeltaPct
   };
