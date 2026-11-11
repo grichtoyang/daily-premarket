@@ -322,7 +322,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
         : `日盤為${basis>0?"正價差":basis<0?"逆價差":"平價"}；單一時點的基差只描述期現價格差，不足以判定趨勢。`;
   const basisTarget="連續比較期現基差與期貨價格變化，確認價差收斂或擴大；單一時點不推定套利壓力或交易方向。";
 
-  const priceReady=validPrice(c)&&validPrice(nc)&&validPrice(nh)&&validPrice(nl);
+  const priceReady=dayReady&&nightReady&&validPrice(c)&&validPrice(nc);
   const priceDir=priceReady?(nc>c?1:nc<c?-1:0):0;
   const flowDir=nightFlow==null?0:(nightFlow>0?1:nightFlow<0?-1:0);
   const dayVolume=valueOf(day?.vol),nightVolume=valueOf(night?.vol);
