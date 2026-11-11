@@ -81,6 +81,23 @@ try {
         const optionSections = page.locator("#main-content .v9-option-section");
         const sectionCount = await optionSections.count();
         if (sectionCount !== 4) throw new Error(`${viewport.name} / 選擇權: expected 4 analysis sections, got ${sectionCount}`);
+        const oiCompareChart = page.locator('#main-content canvas[data-chart="oi-call-put-comparison"]');
+        if (await oiCompareChart.count() !== 1) throw new Error(`${viewport.name} / 選擇權: missing dedicated Call／Put OI comparison chart`);
+        const oiChartColors = await oiCompareChart.evaluate(canvas => {
+          const ctx = canvas.getContext("2d");
+          if (!ctx || !canvas.width || !canvas.height) return { red: 0, green: 0 };
+          const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          let red = 0, green = 0;
+          for (let i = 0; i < pixels.length; i += 4) {
+            const [r, g, b, a] = pixels.slice(i, i + 4);
+            if (a > 0 && r > 150 && g < 150 && b < 170) red++;
+            if (a > 0 && g > 120 && r < 150 && b < 190) green++;
+          }
+          return { red, green };
+        });
+        if (oiChartColors.red < 3 || oiChartColors.green < 3) {
+          throw new Error(`${viewport.name} / 選擇權: OI comparison chart must visibly render both Call(red) and Put(green) series; pixels=${JSON.stringify(oiChartColors)}`);
+        }
         const optionCards = page.locator("#main-content .v9-option-section .group.relative");
         const optionCardCount = await optionCards.count();
         if (optionCardCount !== 8) throw new Error(`${viewport.name} / 選擇權: expected 8 existing analysis cards, got ${optionCardCount}`);
