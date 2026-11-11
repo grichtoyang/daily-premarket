@@ -132,7 +132,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const tag=active?"目前分類": "條件未成立";
       o.font="600 10px JetBrains Mono";const width=o.measureText(tag).width;
       const tx=k.x+d/2-width/2-8,ty=k.y+h-24;
-      Rr(o,tx,ty,width+16,16,16,active?k.color+"22":"#1a2a42");
+      Rr(o,tx,ty,width+16,16,active?k.color+"22":"#1a2a42");
       o.fillStyle=active?k.color:"#8ea7c3";o.fillText(tag,k.x+d/2,ty+8);
     });
   },[selectedIndex]);
