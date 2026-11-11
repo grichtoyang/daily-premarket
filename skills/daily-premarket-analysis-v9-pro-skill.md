@@ -371,3 +371,4 @@ Phase 2 應採增量開發。先確認現況與驗收標準，再修改程式；
 - 合成案例測試應至少覆蓋：價格上漲／外資淨賣超、價格下跌／外資淨買超、價格與流量同向、夜盤流量為零、流量缺值及 OI 缺值。
 - 合成案例通過不代表真實市場分析已驗證；Browser Audit 通過不代表手機畫面人工驗收完成。
 - 資料層凍結期間，只能使用 Dashboard 已有資料欄位改善分析文字與呈現，不得為了補強敘事而新增資料擷取、計算欄位或修改資料層流程。
+- 若完整 Dashboard Build workflow 會執行資料層測試或 Builder，且本輪只授權 UI 工作，應使用 `.github/workflows/v9-pro-ui-only-audit.yml`：只讀取既有 Dashboard JSON、注入 Template 並執行 HTML／Browser Audit；不可把它描述成資料層驗證或正式 Pages Deploy。
