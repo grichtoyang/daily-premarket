@@ -74,6 +74,16 @@ try {
         if (missingExplanations.length) {
           throw new Error(`${viewport.name} / 期貨: missing plain-language explanations or decision steps: ${missingExplanations.join(", ")}`);
         }
+        const flowDecisionStates = [
+          "目前夜盤價格與外資流量方向一致",
+          "目前夜盤價格與外資流量方向背離",
+          "外資夜盤淨交易為零",
+          "外資日盤或夜盤淨交易資料缺值",
+          "外資日夜盤交易流量雖完整，但期貨日盤／夜盤收盤價不足"
+        ];
+        if (!flowDecisionStates.some(item => futuresText.includes(item))) {
+          throw new Error(`${viewport.name} / 期貨: flow guidance is not linked to the actual price-flow state`);
+        }
       }
       if (tab.key === "options") {
         const optionsText = await page.locator("#main-content").innerText();
