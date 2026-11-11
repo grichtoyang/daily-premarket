@@ -291,7 +291,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     : "法人 OI 欄位不完整，無法判斷法人間的部位分歧；資料不足時不推定方向。";
   const oiTarget=oiComplete
     ? "把今天與前一個有效交易日的 OI 放在相同契約月份、相同統計口徑下比較：淨部位數值往正方向移動，代表部位往多方移動（可能是淨多擴大，也可能是淨空縮小）；往負方向移動，代表部位往空方移動（可能是淨空擴大，也可能是淨多縮小）。不能只看數字變大或變小，必須同時看正負號與變化量。再對照日／夜盤交易流量與期貨價格，確認部位變化是否伴隨價格走勢。前十大與三大法人分開比較，不混合加總。"
-    : "待補齊外資、投信及自營 OI 後再判斷法人部位結構。"
+    : "待補齊外資、投信及自營 OI 後再判斷法人部位結構；資料補齊後，淨部位數值往正方向移動代表部位往多方移動，往負方向移動代表部位往空方移動，須同時看正負號與變化量。"
 
   const dayFlow=valueOf(futures?.foreign_day),nightFlow=valueOf(futures?.foreign_night);
   const flowComplete=dayFlow!=null&&nightFlow!=null;
