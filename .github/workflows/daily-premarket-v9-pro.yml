@@ -257,7 +257,7 @@ jobs:
         run: |
           npm init -y
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
 
       - name: Run six-tab Desktop and Mobile browser audit on freshly built HTML
         if: steps.browser_gate.outputs.run == 'true'
