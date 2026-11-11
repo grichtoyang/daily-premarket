@@ -61,8 +61,9 @@ try {
         const futuresText = await page.locator("#main-content").innerText();
         const requiredExplanations = [
           "開＝開盤、H＝最高、L＝最低、C＝收盤",
-          "OI＝未平倉量",
-          "不是當日買賣口數",
+          "淨未平倉部位（淨 OI）",
+          "屬於持倉存量",
+          "日夜盤淨交易流量另行呈現",
           "往正方向移動",
           "往負方向移動",
           "交易流量",
