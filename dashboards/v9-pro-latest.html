@@ -579,7 +579,7 @@ function v9ProOptionsSynthesis({options,spot}){
     targetParts.push(callWall==null?"Call Wall 缺值，該側不設定價位觸發。":`接近 Call Wall ${f(callWall)} 點時，觀察受壓或有效突破後回測守穩。`);
   }
   if(gexReady)targetParts.push("接近最大正／負 GEX 履約價時，核對與 OI 集中位置是否重合，再觀察價格反應；GEX 不單獨作進場觸發。");
-  const target=targetParts.join(" ")+" 確認條件：價格出現止跌、受壓、有效突破／跌破或回測守穩，且法人日夜盤流量沒有持續擴大背離；至少有價格與另一項獨立訊號相互支持，才提高方向判斷權重。失效條件：突破後重新跌回原區間，或法人流量與價格持續反向，取消原方向劇本。若關鍵資料缺值或訊號互相矛盾，結論維持觀察，不勉強給出多空方向。";
+  const target=targetParts.join(" ")+" 確認條件：價格出現止跌、受壓、有效突破／跌破或回測守穩，只有價格確認、法人日夜盤流量未持續背離，且至少有另一項獨立訊號相互支持，才提高方向判斷權重。失效條件：突破後重新跌回原區間，或法人流量與價格持續反向，取消原方向劇本。若關鍵資料缺值或訊號互相矛盾，結論維持觀察，不勉強給出多空方向。";
   const follow=`後續確認：成交量占比與 OI PCR 是否同步變化；法人日／夜盤流量是否延續；前十大 OI 僅在相同契約月份與到期週下比較；GEX 先確認資料日期及模型狀態。Max Pain 僅作磁吸參考，不作支撐、壓力或交易目標。`;
   return {look,compass,target:target+" "+follow};
 }

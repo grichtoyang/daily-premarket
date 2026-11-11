@@ -459,7 +459,7 @@ function v2({data:e}){
   const volState=cs==null||ps==null?"成交量合計為零或資料不足，無法計算占比":Math.abs(cs-ps)<=5?"Call／Put 成交量占比接近均衡":cs>ps?"Call 成交量占比高於 Put":"Put 成交量占比高於 Call";
   const pcrState=pcr==null?"OI PCR 缺值":pcr<1?"OI PCR 低於 1，Put OI 少於 Call OI":pcr>1?"OI PCR 高於 1，Put OI 多於 Call OI":"OI PCR 等於 1，兩側 OI 相等";
   const pcrCompass=`PCR 是 Put／Call 比值；成交量反映當日交易活躍度，OI 反映未平倉部位。${volState}；${pcrState}。成交量是當日交易流量，OI 是未平倉存量；兩者統計意義不同，不能單憑 PCR 或成交量占比推定方向。${pcrMismatch?" PCR 欄位與 Put OI／Call OI 重算值不一致，應先核對來源。":""}`;
-  const pcrTarget="追蹤後續成交量占比與 OI PCR 是否同步變化；未經樣本驗證不設定固定 PCR 門檻或反向交易規則。";
+  const pcrTarget="觀察條件：後續成交量占比與 OI PCR 是否同步變化，並比對價格及法人流量。確認條件：至少有價格反應與另一項獨立訊號支持，才提高方向判斷權重。失效／等待：成交量與 OI 持續分歧、PCR 來源口徑不一致或資料缺值時，不以 PCR 單獨進場；未經歷史樣本驗證，不設定固定 PCR 門檻或反向交易規則。";
 
   const close=n(spot?.close),cw=n(options?.callWall),pw=n(options?.putWall),cd=arr(options?.callOiDist),pd=arr(options?.putOiDist);
   const dtext=row=>row?String(row[1])+" 點 "+String(row[2])+" 口（"+String(row[3]??"占比缺值")+"）":"缺值";
@@ -467,22 +467,23 @@ function v2({data:e}){
   const concCompass=close!=null&&pw!=null&&cw!=null&&close>pw&&close<cw
     ?`現價 ${f(close)} 點位於 Put Wall 與 Call Wall 之間；集中 OI 只代表當日部位分布，不保證形成支撐或壓力。`
     :close!=null&&pw!=null&&cw!=null?`現價 ${f(close)} 點不在 Put Wall／Call Wall 區間內；須以價格反應確認，不把集中 OI 直接視為支撐或壓力。`:"現價或 Put／Call Wall 缺值，無法判斷相對位置；不推定支撐或壓力。";
-  const concTarget="觀察價格接近主要 OI 履約價及 Wall 時的實際反應；只有取得同到期月份前值後，才比較 OI 增減。";
+  const concTarget="觀察條件：價格接近主要 OI 集中履約價或 Wall。確認條件：接近後出現止跌／受壓，並由後續站回、跌破或回測行為確認；若要判斷部位增加或減少，必須比較相同到期月份的前後 OI。失效／等待：價格未出現反應、履約價資料不完整或到期月份不可比時，只列為觀察位置，不當成支撐／壓力或進場訊號。";
   const topText=dist=>dist.slice(0,3).map(dtext).join("；");
   const posText=dist=>{if(close==null)return"現價缺值，無法比較履約價位置。";const ks=dist.slice(0,3).map(x=>n(x?.[1])).filter(x=>x!=null);if(!ks.length)return"分布資料不足，無法比較履約價位置。";return`前三大集中履約價中，${ks.filter(x=>x>close).length} 個高於現價、${ks.filter(x=>x<close).length} 個低於現價。`;};
   const callLook=cd.length?`Call OI 前三大集中：${topText(cd)}。`:"Call OI Top10 分布資料 unavailable。";
   const putLook=pd.length?`Put OI 前三大集中：${topText(pd)}。`:"Put OI Top10 分布資料 unavailable。";
   const callCompass=cd.length?`${posText(cd)}集中 OI 不等同必然壓力；沒有同到期月份前值時，不推論增倉或減倉。`:"Call OI 分布缺值，無法判讀集中位置。";
   const putCompass=pd.length?`${posText(pd)}集中 OI 不等同必然支撐；沒有同到期月份前值時，不推論增倉或減倉。`:"Put OI 分布缺值，無法判讀集中位置。";
-  const distTarget="觀察價格接近圖表列出的履約價時是否出現實際反應；只有確認同到期月份前值後，才比較 OI 增減。";
+  const distTarget="觀察條件：價格接近前三大 OI 集中履約價。確認條件：價格在該區出現止跌、受壓、有效突破或跌破，並觀察回測是否守住。失效／等待：沒有價格反應，或缺少相同到期月份的前值時，不推論 OI 增減，也不把單一集中履約價當成交易觸發。";
 
   const gw=n(options?.gammaWall),flip=n(options?.flip),mp=n(options?.maxPain);
   const wallVals=[pw,flip,mp,gw,cw];
-  const wallLook=wallVals.every(x=>x!=null)?`現價 ${f(close)} 點；Put Wall ${f(pw)} 點；Gamma Flip ${f(flip,2)} 點；Max Pain ${f(mp)} 點；Gamma Wall ${f(gw)} 點；Call Wall ${f(cw)} 點。`:`關鍵價位資料不完整：Put Wall ${f(pw)}；Flip ${f(flip)}；Max Pain ${f(mp)}；Gamma Wall ${f(gw)}；Call Wall ${f(cw)}。`;
-  const wallCompass=close!=null&&wallVals.every(x=>x!=null)
-    ?`現價${close>flip?"高於":close<flip?"低於":"位於"} Gamma Flip、${close>gw?"高於":close<gw?"低於":"位於"} Gamma Wall；相對 Put／Call Wall 位置依圖表價位判讀。Max Pain 僅是到期損益分布的磁吸參考，不作為支撐、壓力或價格目標。`
-    :"現價或關鍵價位缺值，無法判斷相對位置；Max Pain 不作為支撐、壓力或價格目標。";
-  const wallTarget=close!=null&&wallVals.every(x=>x!=null)?`觀察現價對 Gamma Flip ${f(flip,2)} 點及 Gamma Wall ${f(gw)} 點的站回／跌破確認，並留意 Put Wall ${f(pw)} 點與 Call Wall ${f(cw)} 點；Max Pain 不作交易觸發價。`:"待取得有效現價與關鍵價位後，再設定條件；缺值時不建立固定交易觸發價。";
+  const wallValue=(label,value,d=0)=>value==null?label+"缺值":label+" "+f(value,d)+" 點";
+  const wallLook=`現價 ${f(close)} 點；${wallValue("Put Wall",pw)}；${wallValue("Gamma Flip",flip,2)}；${wallValue("Max Pain",mp)}；${wallValue("Gamma Wall",gw)}；${wallValue("Call Wall",cw)}。`;
+  const relative=(label,value)=>value==null?"":`${label}${close>value?"高於":close<value?"低於":"位於"}${f(value)} 點；`;
+  const wallCompass=close==null?"現價缺值，無法比較關鍵價位相對位置。"
+    :`${relative("現價相對 Put Wall：",pw)}${relative("現價相對 Gamma Wall：",gw)}${relative("現價相對 Call Wall：",cw)}${flip==null?"正式 Gamma Flip 缺值，Gamma 正負區域無法確認；延伸 Flip 僅作估算參考，不替代正式 Flip。":relative("現價相對正式 Gamma Flip：",flip)}${mp==null?"Max Pain 缺值。":"Max Pain "+f(mp)+" 點，僅為到期損益分布參考，不是支撐、壓力或價格目標。"} OI Wall 是部位集中位置，Gamma Wall 是模型曝險集中位置，兩者均不保證價格必然反轉。`;
+  const wallTarget=`觀察條件：${pw==null?"Put Wall 缺值，無法設定該側價位。":"接近 Put Wall "+f(pw)+" 點時，觀察是否止跌並重新站回。"} ${cw==null?"Call Wall 缺值，無法設定該側價位。":"接近 Call Wall "+f(cw)+" 點時，觀察是否受壓或有效突破後回測守穩。"} ${gw==null?"Gamma Wall 缺值，不建立該價位條件。":"接近 Gamma Wall "+f(gw)+" 點時，觀察價格反應，不直接視為支撐或壓力。"} ${flip==null?"正式 Gamma Flip 缺值，不判定 Gamma 區域；延伸估算不代替正式值。":"正式 Gamma Flip "+f(flip,2)+" 點，觀察價格站回／跌破後是否持續，並以後續價格行為確認。"} 失效條件：若突破後重新跌回原區間，取消突破延續劇本；若沒有價格確認，只維持觀察。Max Pain 不作交易觸發價。`;
 
   const inst=arr(options?.instOpt),names=["外資","投信","自營商"],parts=inst.filter(x=>names.includes(String(x?.[0]))),total=inst.find(x=>String(x?.[0])==="三大法人合計");
   const dayTotal=n(total?.[3]),nightTotal=n(total?.[6]);
@@ -493,14 +494,14 @@ function v2({data:e}){
   const instReady=dayTotal!=null&&nightTotal!=null&&parts.length===3;
   const instLook=instReady?`日盤三大法人合計 ${s(dayTotal)} 口；夜盤合計 ${s(nightTotal)} 口；${lead("日盤主要多方：",dp)}；${lead("日盤主要空方：",dn)}；${lead("夜盤主要多方：",np)}；${lead("夜盤主要空方：",nn)}。`:"選擇權法人日／夜盤淨交易資料不完整，無法比較法人主導者。";
   const instCompass=instReady?(dayTotal*nightTotal<0?`日盤三大法人合計${dayTotal>0?"偏多":"偏空"}、夜盤合計${nightTotal>0?"偏多":"偏空"}，日夜方向反轉；須再看各法人分項，不能把合計當成單一法人意圖。這是選擇權交易口數，不等於契約金額或 OI 存量。`:"日盤與夜盤三大法人合計方向相同或其中一時段為零；仍須檢查各法人分項及價格反應。"):"法人日／夜盤淨交易資料不足，無法判斷時段方向；不補零、不推定法人意圖。";
-  const instTarget="追蹤下一交易日法人日／夜盤淨交易是否延續，並與價格反應交叉確認；口數與契約金額（億元）分開解讀。";
+  const instTarget="觀察條件：比較日盤、夜盤合計及外資／投信／自營商分項是否延續。確認條件：價格走勢與至少一個時段的法人流量相互支持，才提高該訊號權重。失效／等待：日夜盤反向、分項與合計背離擴大，或價格未配合時，降低方向判斷權重並等待下一時段；口數與契約金額（億元）分開解讀。";
 
   const tc=arr(options?.top10Call),tp=arr(options?.top10Put),rv=(a,label)=>n(a.find(x=>String(x?.[0]).trim()===label)?.[1]);
   const cl=rv(tc,"買權多方 OI"),cs0=rv(tc,"買權空方 OI"),cn=rv(tc,"買權多空淨 OI"),pl=rv(tp,"賣權多方 OI"),ps0=rv(tp,"賣權空方 OI"),pn=rv(tp,"賣權多空淨 OI");
   const topReady=[cl,cs0,cn,pl,ps0,pn].every(x=>x!=null);
   const topLook=topReady?`買權多方 OI ${f(cl)} 口、買權空方 OI ${f(cs0)} 口、買權多空淨 OI ${s(cn)} 口；賣權多方 OI ${f(pl)} 口、賣權空方 OI ${f(ps0)} 口、賣權多空淨 OI ${s(pn)} 口。`:"前十大買權／賣權 OI 摘要欄位不完整，無法比較多空淨部位。";
   const topCompass=topReady?(cn<0&&pn<0?"買權與賣權兩側淨 OI 均為負值；這是前十大交易人未平倉部位差，不是當日交易流量，也不能單獨推定指數方向。":"買權與賣權淨 OI 方向不同或未同時偏負；須結合履約價分布與價格反應，不以單一淨 OI 判定多空。"):"前十大 OI 資料不足，無法推定方向。";
-  const topTarget="比較前後快照前先確認契約月份與到期週一致；跨到期月份不直接解讀為 OI 增減，也不把淨 OI 當作日內交易流量。";
+  const topTarget="觀察條件：買權、賣權兩側淨 OI 是否同向，並與主要履約價集中及法人流量比對。確認條件：只有契約月份、到期週及統計口徑一致，才能比較前後快照的 OI 變化。失效／等待：兩側訊號矛盾、缺少可比快照或價格未確認時，不推定當日多空交易方向；淨 OI 是部位差，不是日內交易流量。";
 
   const levels=arr(options?.gexLevels).map(x=>({strike:n(x?.strike),net:n(x?.net_gex_1pct)})).filter(x=>x.strike!=null&&x.net!=null);
   const visible=levels.slice().sort((a,b)=>Math.abs(b.net)-Math.abs(a.net)).slice(0,16);
@@ -508,7 +509,7 @@ function v2({data:e}){
   const net=n(options?.netGex1pct),gross=n(options?.grossGex1pct),gexReady=options?.gexStatus==="available"&&levels.length>0&&net!=null&&gross!=null;
   const gexLook=gexReady?`資料日期 ${options.gexDate||"缺值"}；Net GEX ${s(net)} NT$／標的變動 1%；Gross GEX ${s(gross)} NT$／標的變動 1%；圖表顯示前 ${visible.length} 大絕對值履約價。${pos?" 最大正曝險 "+f(pos.strike)+" 點 "+s(pos.net)+" NT$。":""}${neg?" 最大負曝險 "+f(neg.strike)+" 點 "+s(neg.net)+" NT$。":""}`:"GEX 狀態不可用、日期缺值或逐履約價資料不足；不以缺值補零，也不解讀曝險方向。";
   const gexCompass=gexReady?"Net GEX 是正負曝險抵銷後的淨值，Gross GEX 是絕對曝險總量；正負履約價曝險可同時存在。GEX 為 TAIFEX 資料推導的模型估值，不等於造市商真實持倉，也不直接預測價格方向。":"GEX 模型資料不完整，無法判斷逐履約價曝險分布；不推定市場方向或造市商意圖。";
-  const gexTarget=gexReady?"先確認 GEX 資料日期與模型狀態，再觀察現價接近圖表顯示的正／負曝險集中履約價時的實際反應；不把 GEX 履約價直接當支撐或壓力。":"待 GEX 狀態恢復且資料日期有效後，再進行逐履約價分析。";
+  const gexTarget=gexReady?"觀察條件：現價接近最大正／負 GEX 履約價，並先核對是否與 Call／Put OI 集中價位重合。確認條件：觀察價格在該區的實際反應，並由 OI 或法人流量提供額外佐證。失效／等待：GEX 與 OI 集中位置不一致、模型狀態或日期無效、價格沒有反應時，分開解讀、不強行歸納方向；GEX 履約價不直接當支撐或壓力。":"GEX 狀態或日期無效時，無法判斷曝險方向；待資料恢復後再進行逐履約價分析。";
   return {
     pcr:{look:pcrLook,compass:pcrCompass,target:pcrTarget},
     concentration:{look:concLook,compass:concCompass,target:concTarget},
@@ -571,9 +572,14 @@ function v9ProOptionsSynthesis({options,spot}){
     ?`GEX 資料日期 ${options.gexDate||"缺值"}；${gexLocation(largestPositive,"最大正曝險")} ${gexLocation(largestNegative,"最大負曝險")} ${overlapText}`
     :"GEX 狀態、日期或逐履約價資料不完整，不判定曝險方向。";
   const compass=`成交量反映當日交易活躍度，OI PCR 與履約價分布反映未平倉存量；兩者不可混為同一方向訊號。${volumeState}${inventoryState}${volumeOiConflict?" 成交量主導側與 OI 存量比例呈現不同傾向，屬結構分歧，不能以其中一項覆蓋另一項。":""}${pcrMismatch?" PCR 欄位與 Put OI／Call OI 重算值差異超過 0.02，應先核對來源口徑。":""} ${position} ${flowState} 法人日夜盤口數是交易流量，不是 OI 存量或契約金額；前十大交易人淨 OI 是特定群體部位差。${gexText} GEX 是模型曝險估值，不是真實造市商持倉，也不直接預測指數方向。因此目前只描述各訊號是否一致，不以單一 PCR、法人合計或 GEX 直接產生多空結論。`;
-  const target=close!=null&&putWall!=null&&callWall!=null
-    ?`以現價 ${f(close)} 點為基準：靠近 Put Wall ${f(putWall)} 點時，觀察是否止跌並重新站回；靠近 Call Wall ${f(callWall)} 點時，觀察是否受壓或有效突破後回測守穩。${gexReady?" 價格接近最大正／負 GEX 履約價時，先核對其與 OI 集中履約價是否重合，再觀察實際價格反應；GEX 僅作曝險背景，不單獨作進場觸發。":""}只有價格確認、法人日夜盤流量未持續背離，且履約價／GEX 訊號沒有明顯反向時，才提高順勢判讀權重；若價格重新跌回突破位內或流量背離擴大，取消該方向劇本。`
-    :"現價或 Put／Call Wall 缺值，暫不設定固定價位觸發條件；待有效價位齊備後，再建立可驗證的觀察區間。";
+  const targetParts=[];
+  if(close==null)targetParts.push("現價缺值，整體價位觸發暫停設定。");
+  else{
+    targetParts.push(putWall==null?"Put Wall 缺值，該側不設定價位觸發。":`接近 Put Wall ${f(putWall)} 點時，先觀察止跌及重新站回。`);
+    targetParts.push(callWall==null?"Call Wall 缺值，該側不設定價位觸發。":`接近 Call Wall ${f(callWall)} 點時，觀察受壓或有效突破後回測守穩。`);
+  }
+  if(gexReady)targetParts.push("接近最大正／負 GEX 履約價時，核對與 OI 集中位置是否重合，再觀察價格反應；GEX 不單獨作進場觸發。");
+  const target=targetParts.join(" ")+" 確認條件：價格出現止跌、受壓、有效突破／跌破或回測守穩，只有價格確認、法人日夜盤流量未持續背離，且至少有另一項獨立訊號相互支持，才提高方向判斷權重。失效條件：突破後重新跌回原區間，或法人流量與價格持續反向，取消原方向劇本。若關鍵資料缺值或訊號互相矛盾，結論維持觀察，不勉強給出多空方向。";
   const follow=`後續確認：成交量占比與 OI PCR 是否同步變化；法人日／夜盤流量是否延續；前十大 OI 僅在相同契約月份與到期週下比較；GEX 先確認資料日期及模型狀態。Max Pain 僅作磁吸參考，不作支撐、壓力或交易目標。`;
   return {look,compass,target:target+" "+follow};
 }
