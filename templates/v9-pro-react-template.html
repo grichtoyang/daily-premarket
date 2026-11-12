@@ -279,9 +279,9 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     return {total:valid.length,up,down,flat,text:valid.length?valid.length+"項有效：上漲"+up+"、下跌"+down+"、持平"+flat:"T0可用漲跌資料不足"};
   };
   const marketInsight=o=>{
-    const rows=eligible(o.data);
+    const rows=eligible(o.data).filter(row=>num(row)!==null&&num(row,"close")!==null);
     const all=o.data||[];
-    const valid=rows.filter(row=>num(row)!==null&&num(row,"close")!==null);
+    const valid=rows;
     const later=all.filter(row=>{const d=dateOf(row);return d&&t0&&d>t0;});
     const unverified=all.filter(row=>!dateOf(row));
     const values=valid.map(row=>row.l+" "+signed(num(row))+(o.key==="yields"?" pp":"%")).join("；");
@@ -310,7 +310,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const s2_10=spread(y2,y10),s10_20=spread(y10,y20),s20_30=spread(y20,y30);
       const curveState=s2_10==null?"2Y–10Y曲線斜率缺值":s2_10>0?"2Y–10Y為正斜率、未倒掛":s2_10<0?"2Y–10Y倒掛":"2Y–10Y近乎平坦";
       const d2=num(y2),d10=num(y10),dSpread=d2!=null&&d10!=null?d10-d2:null;
-      const maturityRows=[y2,y10,y20,y30],maturityChanges=maturityRows.map(row=>row?num(row):null),completeMaturities=maturityChanges.every(value=>value!==null),allUp=completeMaturities&&maturityChanges.every(value=>value>0),allDown=completeMaturities&&maturityChanges.every(value=>value<0);
+      const maturityRows=[y2,y10,y20,y30],maturityChanges=maturityRows.map(row=>row&&num(row)!==null&&num(row,"close")!==null?num(row):null),completeMaturities=maturityChanges.every(value=>value!==null),allUp=completeMaturities&&maturityChanges.every(value=>value>0),allDown=completeMaturities&&maturityChanges.every(value=>value<0);
       const maturityTrend=allUp?"四個期限殖利率全數上升。":allDown?"四個期限殖利率全數下降。":completeMaturities?"各期限殖利率變化不完全一致。":"期限變化資料不足（"+maturityChanges.filter(value=>value!==null).length+"/4 個期限有效），不判定整體升降。";
       compass=maturityTrend+(y2?"2年期 "+fmt(num(y2,"close"),2)+"%（"+signed(d2)+" pp）":"2年期缺值")+"；"+(y10?"10年期 "+fmt(num(y10,"close"),2)+"%（"+signed(d10)+" pp）":"10年期缺值")+"；"+curveState+(s2_10==null?"":"（利差 "+signed(s2_10,2)+" pp）")+(s10_20==null?"":"；10Y–20Y "+signed(s10_20,2)+" pp")+(s20_30==null?"":"；20Y–30Y "+signed(s20_30,2)+" pp")+(dSpread==null?"":"；當日10Y相對2Y變化 "+signed(dSpread,2)+" pp，"+(dSpread<0?"短端升幅較大、2Y–10Y當日趨平。":dSpread>0?"長端升幅較大、2Y–10Y當日趨陡。":"2Y–10Y當日斜率變化不大。"));
       target="以2Y–10Y利差判讀曲線斜率，再觀察10Y–20Y及20Y–30Y長端形狀；殖利率水準與日變化必須分開。單日變化不足以單獨推定聯準會政策、通膨或景氣轉折。";
@@ -359,7 +359,9 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const t0Rows=eligible(allRows);
       const usableRows=t0Rows.filter(row=>num(row)!==null&&num(row,"close")!==null);
       const chartRows=usableRows.filter(row=>o.key!=="us"||!String(row.l||"").toUpperCase().includes("VIX"));
-      const countLabel=o.key==="us"?(chartRows.length+"檔股指 + VIX獨立指標"):(usableRows.length+"/"+allRows.length+"項T0有效");
+      const vixRow=o.key==="us"?allRows.find(row=>String(row.l||"").toUpperCase().includes("VIX")):null;
+      const vixAvailable=!!(vixRow&&isEligible(vixRow)&&num(vixRow)!==null&&num(vixRow,"close")!==null);
+      const countLabel=o.key==="us"?(chartRows.length+"檔股指 + VIX"+(vixAvailable?"可用":"缺值／未納入")):(usableRows.length+"/"+allRows.length+"項T0有效");
       const table=allRows.map((t,s)=>{
         const d=dateOf(t),post=!!(d&&t0&&d>t0),validDate=!!d,valueAvailable=num(t)!==null&&num(t,"close")!==null;
         const status=post?"T0後":!validDate?"日期未核實":valueAvailable?"T0可用":"T0資料缺值";
