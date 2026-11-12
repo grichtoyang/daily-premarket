@@ -281,7 +281,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const marketInsight=o=>{
     const rows=eligible(o.data);
     const all=o.data||[];
-    const valid=rows.filter(row=>num(row)!==null);
+    const valid=rows.filter(row=>num(row)!==null&&num(row,"close")!==null);
     const later=all.filter(row=>{const d=dateOf(row);return d&&t0&&d>t0;});
     const unverified=all.filter(row=>!dateOf(row));
     const values=valid.map(row=>row.l+" "+signed(num(row))+(o.key==="yields"?" pp":"%")).join("；");
@@ -317,7 +317,6 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     }else if(o.key==="fx"){
       const twd=find(rows,["USD/TWD"]),dxy=find(rows,["DXY"]),jpy=find(rows,["USD/JPY"]),krw=find(rows,["USD/KRW"]);
       const dxyValue=dxy?num(dxy):null,dollarUp=dxyValue!==null&&dxyValue>0,localWeak=[twd,jpy,krw].filter(row=>row&&num(row)!=null&&num(row)>0).length;
-      const dollarState=dxyValue===null?"美元指數缺值，無法判定美元整體強弱。":dollarUp?"美元指數上升。":"美元指數未上升。";
       compass="美元指數 "+(dxyValue===null?"缺值":signed(dxyValue)+"%")+"；美元兌台幣 "+(twd?signed(num(twd))+"%":"缺值")+"、美元兌日圓 "+(jpy?signed(num(jpy))+"%":"缺值")+"、美元兌韓元 "+(krw?signed(num(krw))+"%":"缺值")+"。"+(dxyValue!==null&&dollarUp&&localWeak===3?"美元指數及三組美元兌亞洲貨幣報價同步上升，美元偏強、台幣／日圓／韓元承壓。":dxyValue!==null&&dollarUp?"美元指數走強，但亞洲貨幣報價並非全數同步，需分別觀察。":dxyValue===null?"亞洲貨幣報價仍可個別觀察，但不能據此推定美元整體強弱。":"美元指數未呈現上升，亞洲貨幣仍須依各自報價判讀。");
       target="下一交易時段核對USD/TWD是否延續走升，並與外資現貨買賣超及台股成交反應交叉觀察；匯率變動不等於外資已匯出，也不單獨構成台股方向訊號。";
     }else if(o.key==="adr"){
