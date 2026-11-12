@@ -59,12 +59,12 @@ try {
       }
       if (tab.key === "markets") {
         const marketText = await page.locator("#main-content").innerText();
-        const requiredMarketChecks = ["VIX水準", "2Y–10Y", "未倒掛", "重大新聞", "DATA_REPORT 第8節"];
+        const requiredMarketChecks = ["VIX水準", "2Y–10Y", "重大新聞", "DATA_REPORT 第8節"];
         const missingMarketChecks = requiredMarketChecks.filter(item => !marketText.includes(item));
         if (missingMarketChecks.length) {
           throw new Error(`${viewport.name} / 重要市場: missing market-risk interpretation or DATA_REPORT linkage: ${missingMarketChecks.join(", ")}`);
         }
-        for (const selector of [".v9-market-commodity-card", ".v9-market-news-card"]) {
+        if (!["正斜率", "倒掛", "近乎平坦", "斜率缺值"].some(state => marketText.includes(state))) {\n          throw new Error(`${viewport.name} / 重要市場: missing dynamic 2Y–10Y curve classification`);\n        }\n        for (const selector of [".v9-market-commodity-card", ".v9-market-news-card"]) {
           const node = page.locator("#main-content " + selector);
           if (await node.count() !== 1) throw new Error(`${viewport.name} / 重要市場: expected exactly one full-width card ${selector}`);
           const dimensions = await node.evaluate(el => ({
