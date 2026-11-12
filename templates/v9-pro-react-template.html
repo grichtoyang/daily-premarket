@@ -315,35 +315,44 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     return {look:o.title+"："+(values||"有效數值不足")+"。",compass,target};
   };
   const cutoff=Date.parse(String(e.meta?.date||"")+"T23:59:59+08:00");
-  const allNews=e.news||[];
+  const allNews=Array.isArray(e.news)?e.news:[];
   const newsTimestamp=item=>{
-    const raw=String(item.time||"");
-    const match=raw.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?/);
-    return match?Date.parse(match[0]):NaN;
+    const raw=String(item.time||item.s||"");
+    const iso=raw.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?/);
+    if(iso){const parsed=Date.parse(iso[0]);if(Number.isFinite(parsed))return parsed;}
+    const published=raw.match(/發布時間：([^；|]+)/);
+    if(published){const parsed=Date.parse(published[1].trim());if(Number.isFinite(parsed))return parsed;}
+    return NaN;
   };
   const newsBeforeT0=allNews.filter(item=>{
     const timestamp=newsTimestamp(item);
     return Number.isFinite(cutoff)&&Number.isFinite(timestamp)&&timestamp<=cutoff;
   });
+  const newsAfterT0=allNews.filter(item=>{
+    const timestamp=newsTimestamp(item);
+    return Number.isFinite(cutoff)&&Number.isFinite(timestamp)&&timestamp>cutoff;
+  });
   const newsUndated=allNews.filter(item=>!Number.isFinite(newsTimestamp(item)));
-  const marketNews=newsBeforeT0.concat(newsUndated);
   const newsThemes=[
     ["央行／利率",/(Fed|聯準會|央行|利率|通膨|CPI|PCE|非農|就業|GDP|殖利率|債券)/i],
     ["科技／半導體",/(半導體|晶片|AI|台積電|TSMC|NVIDIA|輝達|AMD|記憶體|電子)/i],
-    ["貿易／政策",/(關稅|貿易|制裁|出口管制|政策|監管)/i],
-    ["能源／原物料",/(原油|石油|黃金|銅|天然氣|OPEC|能源)/i]
+    ["貿易／政策",/(關稅|貿易|制裁|出口管制|政策|監管|Congress|congressional)/i],
+    ["能源／原物料",/(原油|石油|黃金|銅|天然氣|OPEC|能源)/i],
+    ["台股／投資人行為",/(台股|台灣股市|ETF|股票|股市|投資人)/i]
   ];
   const themeSummary=newsThemes.map(([label,pattern])=>{
     const count=newsBeforeT0.filter(item=>pattern.test(String(item.t||"")+" "+String(item.d||""))).length;
     return count?label+" "+count+"則":null;
   }).filter(Boolean).join("；");
-  const latestNews=newsBeforeT0.reduce((latest,item)=>{
+  const latestNews=allNews.reduce((latest,item)=>{
     const timestamp=newsTimestamp(item);
     return Number.isFinite(timestamp)&&(!latest||timestamp>latest.timestamp)?{timestamp,title:item.t}:latest;
   },null);
-  const newsLook="T0前已確認新聞 "+newsBeforeT0.length+" 則；時間未核實 "+newsUndated.length+" 則；"+(latestNews?"最新發布事件："+latestNews.title:newsBeforeT0.length?"無法確認最新事件":"沒有可核實的 T0 前新聞")+"。";
-  const newsCompass=(themeSummary||"尚無足夠標題關鍵字可分類")+"。主題分類僅依新聞標題與摘要關鍵字粗分，不代表事件實際影響方向；來源及時間仍須逐則核對。";
-  const newsTarget="只把有時間戳且不晚於報告 T0 的事件納入分析；時間未核實者不參與主題統計，晚於 T0 者排除。再核實原始來源及受影響市場／產業，觀察相關標的價格與成交反應，不以標題單獨建立多空結論。";
+  const newsLook="DATA_REPORT 第8節共 "+allNews.length+" 則新聞；T0前 "+newsBeforeT0.length+" 則、T0後 "+newsAfterT0.length+" 則、時間未核實 "+newsUndated.length+" 則。"+(latestNews?"報告所列最新發布事件："+latestNews.title:"未能確認最新發布事件")+"。";
+  const preT0Titles=newsBeforeT0.map(item=>item.t).filter(Boolean);
+  const postT0Topics=newsAfterT0.map(item=>item.t).filter(Boolean);
+  const newsCompass="分析依據為 DATA_REPORT 第8節原列新聞，不另取其他新聞清單。T0前主題："+(themeSummary||"未辨識出明確市場主題")+"。"+(preT0Titles.length?"T0前事件："+preT0Titles.join("；")+"。":"T0前沒有可核實時間的新聞。")+(postT0Topics.length?"報告另列的 T0後事件包括："+postT0Topics.slice(0,4).join("；")+(postT0Topics.length>4?"等，共 "+postT0Topics.length+" 則。":"。"):"")+(newsUndated.length?"另有 "+newsUndated.length+" 則發布時間未核實。":"");
+  const newsTarget="新聞卡完整呈現 DATA_REPORT 第8節全部 "+allNews.length+" 則，逐則保留報告來源、發布時間與摘要。盤前方向判斷只採 T0 前可確認的事件；T0 後新聞僅作報告編製時的後續資訊，不倒灌成 T0 已知訊號。對配息、個股／投資人故事及政治事件，須先確認與利率、政策、產業或市場價格的直接關聯，不以標題直接推定多空。";
   return O("div",{className:"grid md:grid-cols-2 gap-4",children:[
     l.map((o,u)=>{
       const insight=marketInsight(o);
@@ -363,17 +372,26 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
         analysis:insight
       },u);
     }),
-    p(V,{
+    O("div",{className:"md:col-span-2",children:p(V,{
       title:"重大新聞",
-      subtitle:newsBeforeT0.length+"則T0前＋"+newsUndated.length+"則待核實",
-      chart:p("div",{className:"space-y-2 max-h-[260px] overflow-y-auto",children:marketNews.length?marketNews.map((item,index)=>O("div",{className:"p-2.5 rounded-[8px] bg-[#0c1524] border border-[#1e2e47]/60",children:[
-        p("div",{className:"text-[12px] font-bold leading-[1.4]",children:item.t}),
-        p("div",{className:"text-[11px] text-[var(--muted)] mt-1 line-clamp-2",children:item.d||"摘要未提供"}),
-        p("div",{className:"mono text-[9px] text-[var(--dim)] mt-1.5",children:item.time||"發布時間未核實"})
-      ]},index)):p("div",{className:"text-[11px] text-[var(--muted)] p-3",children:"沒有可核實的 T0 前新聞。"})}),
-      table:p("div",{className:"text-[11px] text-[var(--muted)]",children:"僅將有時間戳且不晚於報告 T0 的新聞納入分析；時間未核實者保留顯示但不納入主題統計，晚於 T0 者排除。"}),
+      subtitle:"DATA_REPORT 第8節｜"+allNews.length+"則（T0前 "+newsBeforeT0.length+"／T0後 "+newsAfterT0.length+"／時間未核實 "+newsUndated.length+"）",
+      chart:p("div",{className:"space-y-2 max-h-[520px] overflow-y-auto pr-1",children:allNews.length?allNews.map((item,index)=>{
+        const timestamp=newsTimestamp(item);
+        const status=Number.isFinite(timestamp)?(timestamp<=cutoff?"T0前":"T0後"):"時間未核實";
+        const statusColor=status==="T0前"?"#3dd68c":status==="T0後"?"#ffd93d":"#8ea7c3";
+        return O("div",{className:"p-3 rounded-[8px] bg-[#0c1524] border border-[#1e2e47]/60",children:[
+          O("div",{className:"flex flex-wrap items-start justify-between gap-2",children:[
+            p("div",{className:"text-[12px] font-bold leading-[1.5] flex-1 min-w-0",children:item.t||"新聞標題未提供"}),
+            O("span",{className:"text-[9px] px-2 py-0.5 rounded-full shrink-0",style:{color:statusColor,background:"rgba(107,182,255,.08)",border:"1px solid "+statusColor+"55"},children:status})
+          ]}),
+          p("div",{className:"text-[11px] text-[var(--muted)] mt-1.5 leading-[1.5]",children:item.d||"摘要未提供"}),
+          p("div",{className:"text-[10px] text-[var(--dim)] mt-2",children:item.s||item.time||"來源／發布時間未核實"}),
+          item.link?O("a",{href:item.link,target:"_blank",rel:"noopener noreferrer",className:"inline-block text-[10px] text-[#6bb6ff] mt-1.5 hover:text-[var(--text)]",children:"查看原文"}):null
+        ]},index);
+      }):p("div",{className:"text-[11px] text-[var(--muted)] p-3",children:"DATA_REPORT 第8節沒有新聞資料。"})}),
+      table:p("div",{className:"text-[11px] text-[var(--muted)] leading-[1.6]",children:"新聞清單直接使用本次 DATA_REPORT 第8節對應資料，完整顯示全部項目；T0前／T0後依報告日期及發布時間標示，時間未核實者不推定。T0後事件不納入 T0 當時的盤前方向判斷。"}),
       analysis:{look:newsLook,compass:newsCompass,target:newsTarget}
-    })
+    })})
   ]});
 }function v9ProFuturesAnalysis({day,night,futures,spot,institutional,options}){
   const valueOf=v=>{
