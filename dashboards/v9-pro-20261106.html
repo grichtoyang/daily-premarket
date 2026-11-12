@@ -305,7 +305,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       compass=b.text+"。"+(nq?"Nasdaq 100期貨 "+signed(num(nq))+"%":"Nasdaq 100期貨缺值")+(es?"；S&P 500期貨 "+signed(num(es))+"%":"")+(ym?"；道瓊期貨 "+signed(num(ym))+"%":"")+"。"+(pairs.length?pairs.join("；")+"（期貨漲跌幅減現貨漲跌幅，非期現基差）。":"同日現貨配對資料不足。")+"期貨方向"+(b.up>b.down?"偏多":b.down>b.up?"偏空":"分歧或中性")+"。";
       target="比較同一指數現貨與期貨的同日漲跌幅及交易時段；此處差值只是漲跌幅差，不是期現基差。若期貨與現貨背離，降低單一合約訊號權重。";
     }else if(o.key==="yields"){
-      const y2=find(rows,["2Y","2年"]),y10=find(rows,["10Y","10年"]),y20=find(rows,["20Y","20年"]),y30=find(rows,["30Y","30年"]);
+      const y2=find(rows,["2Y","2 年"]),y10=find(rows,["10Y","10 年"]),y20=find(rows,["20Y","20 年"]),y30=find(rows,["30Y","30 年"]);
       const spread=(a,b)=>a&&b&&num(a,"close")!=null&&num(b,"close")!=null?num(b,"close")-num(a,"close"):null;
       const s2_10=spread(y2,y10),s10_20=spread(y10,y20),s20_30=spread(y20,y30);
       const d2=num(y2),d10=num(y10),dSpread=d2!=null&&d10!=null?d10-d2:null;
@@ -324,7 +324,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       target="ADR只作權值及產業情緒參考；須再核對台指期、匯率與台股開盤後實際反應。缺少台股現股收盤及匯率換算基礎時，不計算ADR溢價、不直接換算指數點數。";
     }else{
       const wti=find(rows,["WTI"]),gold=find(rows,["黃金","GOLD"]),btc=find(rows,["BITCOIN","BTC"]);
-      const dxy=find(eligible(n.fx||[]),["DXY"]),y10=find(eligible(n.yields||[]),["10年","10Y"]);
+      const dxy=find(eligible(n.fx||[]),["DXY"]),y10=find(eligible(n.yields||[]),["10 年","10Y"]);
       compass="原油 "+(wti?signed(num(wti))+"%":"缺值")+"；黃金 "+(gold?signed(num(gold))+"%":"缺值")+"；Bitcoin "+(btc?signed(num(btc))+"%":"缺值")+"。"+(wti&&gold&&btc&&num(wti)>0&&num(gold)<0&&num(btc)<0?"能源微幅上漲、黃金與Bitcoin下跌，三類資產沒有同步方向。":"三類資產表現需分開解讀。")+(dxy&&y10?"同日美元指數 "+signed(num(dxy))+"%、美國10年期殖利率變化 "+signed(num(y10))+" pp；美元與利率背景可作黃金交叉觀察，但單日共變不代表因果。":"美元或10年期殖利率資料不足，無法交叉確認。");
       target="原油反映能源供需及通膨風險，黃金受美元與實質利率等因素影響，Bitcoin屬高波動風險資產；三者不能合併成單一風險偏好指標，須搭配美元、殖利率及價格趨勢確認。";
     }
