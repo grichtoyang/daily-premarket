@@ -290,7 +290,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const cash=rows.filter(row=>!String(row.l||"").toUpperCase().includes("VIX"));
       const b=breadth(cash),sox=find(cash,["SOX","費城半導體"]),vix=find(rows,["VIX"]);
       const vc=num(vix),vl=num(vix,"close");
-      const vixLevel=vl==null?"水準缺值":vl>=30?"高波動區（30點以上）":vl>=20?"波動偏高（20點以上）":"相對低波動（20點以下）";
+      const vixLevel=vl==null?"水準缺值":vl>=30?"高波動區（常用參考30點以上）":vl>=20?"波動偏高（常用參考20點以上）":"相對低波動（常用參考20點以下）";
       compass=b.text+"（VIX不列入股票指數漲跌家數）；費半"+(sox?dir(num(sox))+" "+signed(num(sox))+"%":"資料缺值")+"；VIX "+(vl==null?"缺值":fmt(vl,2)+"點")+"（"+signed(vc)+"%）；VIX水準"+vixLevel+"。"+(vc==null?"波動率變化資料不足。":vc<0?"VIX較前日回落，但仍須同時看絕對水準，不能只因單日下降就視為風險解除。":vc>0?"VIX上升，波動壓力增加。":"VIX持平。");
       target="下一交易時段確認美股期貨是否延續現貨方向，再核對台積電 ADR 與台指期反應；SOX、VIX均是輔助訊號，不直接換算台股漲跌幅。";
     }else if(o.key==="asia"){
