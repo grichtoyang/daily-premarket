@@ -318,7 +318,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const allNews=Array.isArray(e.news)?e.news:[];
   const newsTimestamp=item=>{
     const raw=String(item.time||item.s||"");
-    const iso=raw.match(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})?/);
+    const iso=raw.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?/);
     if(iso){const parsed=Date.parse(iso[0]);if(Number.isFinite(parsed))return parsed;}
     const published=raw.match(/發布時間：([^；|]+)/);
     if(published){const parsed=Date.parse(published[1].trim());if(Number.isFinite(parsed))return parsed;}
