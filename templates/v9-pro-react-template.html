@@ -272,7 +272,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   const isEligible=row=>{const d=dateOf(row);return !!d&&!!t0&&d<=t0;};
   const eligible=rows=>(rows||[]).filter(isEligible);
   const breadth=rows=>{
-    const valid=(rows||[]).filter(row=>num(row)!==null);
+    const valid=(rows||[]).filter(row=>num(row)!==null&&num(row,"close")!==null);
     const up=valid.filter(row=>num(row)>0).length;
     const down=valid.filter(row=>num(row)<0).length;
     const flat=valid.length-up-down;
@@ -310,13 +310,15 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const s2_10=spread(y2,y10),s10_20=spread(y10,y20),s20_30=spread(y20,y30);
       const curveState=s2_10==null?"2Y–10Y曲線斜率缺值":s2_10>0?"2Y–10Y為正斜率、未倒掛":s2_10<0?"2Y–10Y倒掛":"2Y–10Y近乎平坦";
       const d2=num(y2),d10=num(y10),dSpread=d2!=null&&d10!=null?d10-d2:null;
-      const changes=valid.map(row=>num(row)),allUp=changes.length>0&&changes.every(value=>value>0),allDown=changes.length>0&&changes.every(value=>value<0);
-      compass=(allUp?"各期限殖利率全數上升。":allDown?"各期限殖利率全數下降。":"各期限殖利率變化不完全一致。")+(y2?"2年期 "+fmt(num(y2,"close"),2)+"%（"+signed(d2)+" pp）":"2年期缺值")+"；"+(y10?"10年期 "+fmt(num(y10,"close"),2)+"%（"+signed(d10)+" pp）":"10年期缺值")+"；"+"；"+curveState+(s2_10==null?"":"（利差 "+signed(s2_10,2)+" pp）")+(s10_20==null?"":"；10Y–20Y "+signed(s10_20,2)+" pp")+(s20_30==null?"":"；20Y–30Y "+signed(s20_30,2)+" pp")+(dSpread==null?"":"；當日10Y相對2Y變化 "+signed(dSpread,2)+" pp，"+(dSpread<0?"短端升幅較大、2Y–10Y當日趨平。":dSpread>0?"長端升幅較大、2Y–10Y當日趨陡。":"2Y–10Y當日斜率變化不大。"));
+      const maturityRows=[y2,y10,y20,y30],maturityChanges=maturityRows.map(row=>row?num(row):null),completeMaturities=maturityChanges.every(value=>value!==null),allUp=completeMaturities&&maturityChanges.every(value=>value>0),allDown=completeMaturities&&maturityChanges.every(value=>value<0);
+      const maturityTrend=allUp?"四個期限殖利率全數上升。":allDown?"四個期限殖利率全數下降。":completeMaturities?"各期限殖利率變化不完全一致。":"期限變化資料不足（"+maturityChanges.filter(value=>value!==null).length+"/4 個期限有效），不判定整體升降。";
+      compass=maturityTrend+(y2?"2年期 "+fmt(num(y2,"close"),2)+"%（"+signed(d2)+" pp）":"2年期缺值")+"；"+(y10?"10年期 "+fmt(num(y10,"close"),2)+"%（"+signed(d10)+" pp）":"10年期缺值")+"；"+curveState+(s2_10==null?"":"（利差 "+signed(s2_10,2)+" pp）")+(s10_20==null?"":"；10Y–20Y "+signed(s10_20,2)+" pp")+(s20_30==null?"":"；20Y–30Y "+signed(s20_30,2)+" pp")+(dSpread==null?"":"；當日10Y相對2Y變化 "+signed(dSpread,2)+" pp，"+(dSpread<0?"短端升幅較大、2Y–10Y當日趨平。":dSpread>0?"長端升幅較大、2Y–10Y當日趨陡。":"2Y–10Y當日斜率變化不大。"));
       target="以2Y–10Y利差判讀曲線斜率，再觀察10Y–20Y及20Y–30Y長端形狀；殖利率水準與日變化必須分開。單日變化不足以單獨推定聯準會政策、通膨或景氣轉折。";
     }else if(o.key==="fx"){
       const twd=find(rows,["USD/TWD"]),dxy=find(rows,["DXY"]),jpy=find(rows,["USD/JPY"]),krw=find(rows,["USD/KRW"]);
-      const dollarUp=dxy&&num(dxy)>0,localWeak=[twd,jpy,krw].filter(row=>row&&num(row)!=null&&num(row)>0).length;
-      compass="美元指數 "+(dxy?signed(num(dxy))+"%":"缺值")+"；美元兌台幣 "+(twd?signed(num(twd))+"%":"缺值")+"、美元兌日圓 "+(jpy?signed(num(jpy))+"%":"缺值")+"、美元兌韓元 "+(krw?signed(num(krw))+"%":"缺值")+"。"+(dollarUp&&localWeak===3?"美元指數及三組美元兌亞洲貨幣報價同步上升，美元偏強、台幣／日圓／韓元承壓。":dollarUp?"美元指數走強，但亞洲貨幣報價並非全數同步，需分別觀察。":"美元指數未呈現上升，亞洲貨幣仍須依各自報價判讀。");
+      const dxyValue=dxy?num(dxy):null,dollarUp=dxyValue!==null&&dxyValue>0,localWeak=[twd,jpy,krw].filter(row=>row&&num(row)!=null&&num(row)>0).length;
+      const dollarState=dxyValue===null?"美元指數缺值，無法判定美元整體強弱。":dollarUp?"美元指數上升。":"美元指數未上升。";
+      compass="美元指數 "+(dxyValue===null?"缺值":signed(dxyValue)+"%")+"；美元兌台幣 "+(twd?signed(num(twd))+"%":"缺值")+"、美元兌日圓 "+(jpy?signed(num(jpy))+"%":"缺值")+"、美元兌韓元 "+(krw?signed(num(krw))+"%":"缺值")+"。"+(dxyValue!==null&&dollarUp&&localWeak===3?"美元指數及三組美元兌亞洲貨幣報價同步上升，美元偏強、台幣／日圓／韓元承壓。":dxyValue!==null&&dollarUp?"美元指數走強，但亞洲貨幣報價並非全數同步，需分別觀察。":dxyValue===null?"亞洲貨幣報價仍可個別觀察，但不能據此推定美元整體強弱。":"美元指數未呈現上升，亞洲貨幣仍須依各自報價判讀。");
       target="下一交易時段核對USD/TWD是否延續走升，並與外資現貨買賣超及台股成交反應交叉觀察；匯率變動不等於外資已匯出，也不單獨構成台股方向訊號。";
     }else if(o.key==="adr"){
       const b=breadth(rows),tsm=find(rows,["TSM","台積電"]),umc=find(rows,["UMC","聯電"]),ase=find(rows,["ASX","日月光"]);
@@ -354,12 +356,15 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   return O("div",{className:"grid md:grid-cols-2 gap-4",children:[
     l.map((o,u)=>{
       const insight=marketInsight(o);
-      const chartRows=eligible(o.data).filter(row=>o.key!=="us"||!String(row.l||"").toUpperCase().includes("VIX"));
-      const countLabel=o.key==="us"?(chartRows.length+"檔股指 + VIX獨立指標"):(chartRows.length+"/"+(o.data||[]).length+"項T0可用");
-      const table=(o.data||[]).map((t,s)=>{
-        const d=dateOf(t),post=!!(d&&t0&&d>t0),validDate=!!d;
-        const status=post?"T0後":validDate?"T0可用":"日期未核實";
-        const color=post?"#ffd93d":validDate?"#3dd68c":"#8ea7c3";
+      const allRows=o.data||[];
+      const t0Rows=eligible(allRows);
+      const usableRows=t0Rows.filter(row=>num(row)!==null&&num(row,"close")!==null);
+      const chartRows=usableRows.filter(row=>o.key!=="us"||!String(row.l||"").toUpperCase().includes("VIX"));
+      const countLabel=o.key==="us"?(chartRows.length+"檔股指 + VIX獨立指標"):(usableRows.length+"/"+allRows.length+"項T0有效");
+      const table=allRows.map((t,s)=>{
+        const d=dateOf(t),post=!!(d&&t0&&d>t0),validDate=!!d,valueAvailable=num(t)!==null&&num(t,"close")!==null;
+        const status=post?"T0後":!validDate?"日期未核實":valueAvailable?"T0可用":"T0資料缺值";
+        const color=post?"#ffd93d":!validDate||!valueAvailable?"#8ea7c3":"#3dd68c";
         return O("div",{className:"flex justify-between items-center gap-2 text-[11px]",children:[
           O("div",{className:"min-w-0 flex-1 flex flex-wrap items-center gap-1.5",children:[
             p("span",{className:"text-[var(--muted)]",children:t.l}),
