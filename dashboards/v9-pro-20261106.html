@@ -286,6 +286,15 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     const later=all.filter(row=>{const d=dateOf(row);return d&&t0&&d>t0;});
     const unverified=all.filter(row=>!dateOf(row));
     const values=valid.map(row=>row.l+" "+signed(num(row))+(o.key==="yields"?" pp":"%")).join("；");
+    const statusText=(names,row)=>{
+      if(row)return signed(num(row))+"%";
+      const candidate=find(all,names);
+      if(!candidate)return "缺值";
+      const d=dateOf(candidate);
+      if(d&&t0&&d>t0)return "T0後資料（"+d+"），不納入判斷";
+      if(!d)return "日期未核實，不納入判斷";
+      return "T0資料缺值";
+    };
     let compass="",target="";
     if(o.key==="us"){
       const cash=rows.filter(row=>!String(row.l||"").toUpperCase().includes("VIX"));
@@ -318,7 +327,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     }else if(o.key==="fx"){
       const twd=find(rows,["USD/TWD"]),dxy=find(rows,["DXY"]),jpy=find(rows,["USD/JPY"]),krw=find(rows,["USD/KRW"]);
       const dxyValue=dxy?num(dxy):null,dollarUp=dxyValue!==null&&dxyValue>0,localWeak=[twd,jpy,krw].filter(row=>row&&num(row)!=null&&num(row)>0).length;
-      compass="美元指數 "+(dxyValue===null?"缺值":signed(dxyValue)+"%")+"；美元兌台幣 "+(twd?signed(num(twd))+"%":"缺值")+"、美元兌日圓 "+(jpy?signed(num(jpy))+"%":"缺值")+"、美元兌韓元 "+(krw?signed(num(krw))+"%":"缺值")+"。"+(dxyValue!==null&&dollarUp&&localWeak===3?"美元指數及三組美元兌亞洲貨幣報價同步上升，美元偏強、台幣／日圓／韓元承壓。":dxyValue!==null&&dollarUp?"美元指數走強，但亞洲貨幣報價並非全數同步，需分別觀察。":dxyValue===null?"亞洲貨幣報價仍可個別觀察，但不能據此推定美元整體強弱。":"美元指數未呈現上升，亞洲貨幣仍須依各自報價判讀。");
+      compass="美元指數 "+(dxyValue===null?"缺值":signed(dxyValue)+"%")+"；美元兌台幣 "+statusText(["USD/TWD"],twd)+"、美元兌日圓 "+statusText(["USD/JPY"],jpy)+"、美元兌韓元 "+statusText(["USD/KRW"],krw)+"。"+(dxyValue!==null&&dollarUp&&localWeak===3?"美元指數及三組美元兌亞洲貨幣報價同步上升，美元偏強、台幣／日圓／韓元承壓。":dxyValue!==null&&dollarUp?"美元指數走強，但亞洲貨幣報價並非全數同步，需分別觀察。":dxyValue===null?"亞洲貨幣報價仍可個別觀察，但不能據此推定美元整體強弱。":"美元指數未呈現上升，亞洲貨幣仍須依各自報價判讀。");
       target="下一交易時段核對USD/TWD是否延續走升，並與外資現貨買賣超及台股成交反應交叉觀察；匯率變動不等於外資已匯出，也不單獨構成台股方向訊號。";
     }else if(o.key==="adr"){
       const b=breadth(rows),tsm=find(rows,["TSM","台積電"]),umc=find(rows,["UMC","聯電"]),ase=find(rows,["ASX","日月光"]);
@@ -328,7 +337,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     }else{
       const wti=find(rows,["WTI"]),gold=find(rows,["黃金","GOLD"]),btc=find(rows,["BITCOIN","BTC"]);
       const dxy=find(eligible(n.fx||[]),["DXY"]),y10=find(eligible(n.yields||[]),["10 年","10Y"]);
-      compass="原油 "+(wti?signed(num(wti))+"%":"缺值")+"；黃金 "+(gold?signed(num(gold))+"%":"缺值")+"；Bitcoin "+(btc?signed(num(btc))+"%":"缺值")+"。"+(wti&&gold&&btc&&num(wti)>0&&num(gold)<0&&num(btc)<0?"能源微幅上漲、黃金與Bitcoin下跌，三類資產沒有同步方向。":"三類資產表現需分開解讀。")+(dxy&&y10?"同日美元指數 "+signed(num(dxy))+"%、美國10年期殖利率變化 "+signed(num(y10))+" pp；美元與利率背景可作黃金交叉觀察，但單日共變不代表因果。":"美元或10年期殖利率資料不足，無法交叉確認。");
+      compass="原油 "+statusText(["WTI"],wti)+"；黃金 "+statusText(["黃金","GOLD"],gold)+"；Bitcoin "+statusText(["BITCOIN","BTC"],btc)+"。"+(wti&&gold&&btc&&num(wti)>0&&num(gold)<0&&num(btc)<0?"能源微幅上漲、黃金與Bitcoin下跌，三類資產沒有同步方向。":"三類資產表現需分開解讀。")+(dxy&&y10?"同日美元指數 "+signed(num(dxy))+"%、美國10年期殖利率變化 "+signed(num(y10))+" pp；美元與利率背景可作黃金交叉觀察，但單日共變不代表因果。":"美元或10年期殖利率資料不足，無法交叉確認。");
       target="原油反映能源供需及通膨風險，黃金受美元與實質利率等因素影響，Bitcoin屬高波動風險資產；三者不能合併成單一風險偏好指標，須搭配美元、殖利率及價格趨勢確認。";
     }
     return {look:o.title+"："+(values||"T0可用數值不足")+"。"+(later.length?"另有"+later.length+"筆T0後資料，僅展示、不納入判斷。":"")+(unverified.length?"另有"+unverified.length+"筆日期未核實資料，不納入判斷。":""),compass,target};
