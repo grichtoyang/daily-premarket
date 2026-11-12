@@ -64,7 +64,9 @@ try {
         if (missingMarketChecks.length) {
           throw new Error(`${viewport.name} / 重要市場: missing market-risk interpretation or DATA_REPORT linkage: ${missingMarketChecks.join(", ")}`);
         }
-        if (!["正斜率", "倒掛", "近乎平坦", "斜率缺值"].some(state => marketText.includes(state))) {\n          throw new Error(`${viewport.name} / 重要市場: missing dynamic 2Y–10Y curve classification`);\n        }\n        for (const selector of [".v9-market-commodity-card", ".v9-market-news-card"]) {
+        if (!["正斜率", "倒掛", "近乎平坦", "斜率缺值"].some(state => marketText.includes(state))) {
+          throw new Error(`${viewport.name} / 重要市場: missing dynamic 2Y–10Y curve classification`);
+        }\n        for (const selector of [".v9-market-commodity-card", ".v9-market-news-card"]) {
           const node = page.locator("#main-content " + selector);
           if (await node.count() !== 1) throw new Error(`${viewport.name} / 重要市場: expected exactly one full-width card ${selector}`);
           const dimensions = await node.evaluate(el => ({
