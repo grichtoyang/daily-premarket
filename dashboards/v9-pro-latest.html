@@ -778,6 +778,7 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const crossCompass="日盤同時段比較："+foreignAlignment+"（可用 "+foreignAvailable.length+"/2；偏多 "+foreignBull+"、偏空 "+foreignBear+"）。此處只比較現貨買賣超與期貨淨交易的正負方向，不比較金額大小；兩種市場曝險不同，不能視為完全等價。夜盤另行檢查："+nightAlignment+"；若與日盤現貨／期貨共識反向，降低方向信心。"+optionActivityText+"期貨外資 OI "+(foreignOi==null?"缺值":fmt(foreignOi,0)+" 口")+"是未平倉存量，不納入交易流量投票。"+aggregateContext;
   const crossTarget=nightFlowConflict?"日盤現貨與期貨外資淨流量雖同向，但夜盤期貨淨交易反向；降低方向信心，先等現貨開盤重新確認，不以日夜合計掩蓋背離。":!nightFlowReady?"期貨外資夜盤淨交易缺值或為零，尚未完成夜盤方向確認；日盤訊號僅作背景，不升級為完整跨時段共識。":foreignBullConfirm?"現貨與期貨日盤外資淨流量同向偏多，且夜盤期貨淨交易同向；這仍只是籌碼共識，不是進場訊號，須等價格有效突破壓力並回測守穩。":foreignBearConfirm?"現貨與期貨日盤外資淨流量同向偏空，且夜盤期貨淨交易同向；這仍只是籌碼共識，不是進場訊號，須等價格有效跌破支撐並反抽失敗。":foreignAvailable.length<2?"現貨或期貨日盤外資資料不足，無法建立同時段交叉判讀；不以單一市場推定方向。":foreignBull>0&&foreignBear>0?"現貨與期貨日盤外資方向背離；降低方向信心，等待價格與籌碼重新確認。":"現貨與期貨日盤外資尚未形成明確同向訊號；暫以觀望為主。";
   const crossStepSummary=crossMarketStatus+"；日盤現貨／期貨外資同時段只比較方向符號、不比較金額大小，夜盤期貨獨立檢查；選擇權 Call／Put 合併淨口數與契約金額代理值只作交易活動背景，不作多空投票。";
+  // In synthesis display, net contract counts are activity data only; never use their sign as a directional vote or compare it with the amount proxy as a directional divergence.
   // Keep option contract-amount proxy and aggregate net contracts as separate measures.
   const optMoneyDayNet=optMoneyRows.length>0&&optMoneyDay.length===optMoneyRows.length?optMoneyDay.reduce((a,b)=>a+b,0):null;
   const optMoneyNightNet=optMoneyRows.length>0&&optMoneyNight.length===optMoneyRows.length?optMoneyNight.reduce((a,b)=>a+b,0):null;
