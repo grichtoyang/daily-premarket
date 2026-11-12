@@ -745,14 +745,21 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const optMoneyNet=optMoneyDay.length===optMoneyRows.length&&optMoneyNight.length===optMoneyRows.length&&optMoneyRows.length>0
     ?optMoneyDay.reduce((a,b)=>a+b,0)+optMoneyNight.reduce((a,b)=>a+b,0):null;
   const direction=value=>value==null?"缺值":value>0?"偏多":value<0?"偏空":"中性";
-  // Compare like-for-like foreign-investor signals across the three markets.
+  // Compare the same investor group by session. Spot/futures cash flows form the primary day-session check;
+  // options contract-amount proxy is a secondary directional cue, not an equivalent third vote.
   const foreignSpot=num(institutional?.foreign);
   const foreignOptionRow=optRows.find(row=>String(row[0]).includes("外資"));
   const foreignOptDay=foreignOptionRow?num(String(foreignOptionRow[3]??"").replace(/,/g,"")):null;
   const foreignOptNight=foreignOptionRow?num(String(foreignOptionRow[6]??"").replace(/,/g,"")):null;
   const foreignOptNet=foreignOptDay!=null&&foreignOptNight!=null?foreignOptDay+foreignOptNight:null;
-  // Compare spot, futures and options on the day session first; never mix night flow into the day vote.
-  // Compare only directional cash/futures flows. Options aggregate net contracts combine calls and puts, so their sign is not a directional vote.
+  const foreignMoneyRow=(options?.instOptForce||[]).find(row=>row&&String(row[0]).includes("外資"));
+  const foreignMoneyDay=foreignMoneyRow?num(String(foreignMoneyRow[3]??"").replace(/,/g,"")):null;
+  const foreignMoneyNight=foreignMoneyRow?num(String(foreignMoneyRow[6]??"").replace(/,/g,"")):null;
+  const foreignMoneyNet=foreignMoneyDay!=null&&foreignMoneyNight!=null?foreignMoneyDay+foreignMoneyNight:null;
+  // Options amount proxy is classified as buy Call + sell Put versus sell Call + buy Put.
+  // It is a directional clue only; it is not net premium cash flow or actual Delta/Gamma exposure.
+  const optionProxyDayStatus=direction(foreignMoneyDay);
+  const optionProxyNightStatus=direction(foreignMoneyNight);
   const foreignSignals=[{name:"現貨外資（日盤買賣超）",value:foreignSpot,unit:"億元"},{name:"期貨外資（日盤淨交易）",value:futDay,unit:"口"}];
   const foreignAvailable=foreignSignals.filter(x=>x.value!=null);
   const foreignBull=foreignAvailable.filter(x=>x.value>0).length;
@@ -760,23 +767,22 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const foreignBullConfirm=foreignAvailable.length===2&&foreignBull===2;
   const foreignBearConfirm=foreignAvailable.length===2&&foreignBear===2;
   const foreignAlignment=foreignAvailable.length<2?"現貨／期貨日盤外資方向資料不足":foreignBullConfirm?"現貨與期貨日盤外資淨流量同向偏多":foreignBearConfirm?"現貨與期貨日盤外資淨流量同向偏空":foreignBull>0&&foreignBear>0?"現貨與期貨日盤外資訊號背離":"現貨與期貨日盤外資尚未形成明確方向";
-  // Night futures flow is checked separately; options aggregate net contracts are not a directional signal.
-  const nightFlowReady=futNight!=null&&futNight!==0;
+  const optionProxyDayAlignment=foreignMoneyDay==null?"選擇權外資日盤契約金額代理值缺值":foreignMoneyDay>0?"選擇權外資日盤契約金額代理值偏多":foreignMoneyDay<0?"選擇權外資日盤契約金額代理值偏空":"選擇權外資日盤契約金額代理值中性";
+  const optionProxyNightAlignment=foreignMoneyNight==null?"選擇權外資夜盤契約金額代理值缺值":foreignMoneyNight>0?"選擇權外資夜盤契約金額代理值偏多":foreignMoneyNight<0?"選擇權外資夜盤契約金額代理值偏空":"選擇權外資夜盤契約金額代理值中性";
+  // A zero night flow is valid neutral data, not missing data and not directional confirmation.
+  const nightFlowAvailable=futNight!=null;
+  const nightFlowReady=nightFlowAvailable&&futNight!==0;
   const nightFlowConflict=nightFlowReady&&((foreignBullConfirm&&futNight<0)||(foreignBearConfirm&&futNight>0));
-  const nightAlignment=!nightFlowReady?"期貨外資夜盤淨交易缺值或為零，暫不作方向確認":futNight>0?"期貨外資夜盤淨交易偏多": "期貨外資夜盤淨交易偏空";
+  const nightAlignment=!nightFlowAvailable?"期貨外資夜盤淨交易缺值，無法判讀":futNight===0?"期貨外資夜盤淨交易為 0，屬中性，不能確認日盤方向":futNight>0?"期貨外資夜盤淨交易偏多":"期貨外資夜盤淨交易偏空";
   const aggregateContext="全體法人背景：現貨三法人 "+direction(spotNet)+"（"+(spotNet==null?"缺值":(spotNet>0?"+":"")+fmt(spotNet,2)+" 億元")+"）；選擇權三法人日夜淨口數合計 "+(optNet==null?"缺值":(optNet>0?"+":"")+fmt(optNet,0)+" 口")+"（買賣淨額，未拆 Call／Put，不代表多空方向）。此為各市場法人背景，不取代外資同時段比較。";
-  const foreignMoneyRow=(options?.instOptForce||[]).find(row=>row&&String(row[0]).includes("外資"));
-  const foreignMoneyDay=foreignMoneyRow?num(String(foreignMoneyRow[3]??"").replace(/,/g,"")):null;
-  const foreignMoneyNight=foreignMoneyRow?num(String(foreignMoneyRow[6]??"").replace(/,/g,"")):null;
-  const foreignMoneyNet=foreignMoneyDay!=null&&foreignMoneyNight!=null?foreignMoneyDay+foreignMoneyNight:null;
-  const optionActivityText="選擇權外資淨口數（日盤 "+(foreignOptDay==null?"缺值":(foreignOptDay>0?"+":"")+fmt(foreignOptDay,0)+" 口")+"／夜盤 "+(foreignOptNight==null?"缺值":(foreignOptNight>0?"+":"")+fmt(foreignOptNight,0)+" 口")+")；契約金額代理值（日盤 "+(foreignMoneyDay==null?"缺值":(foreignMoneyDay>0?"+":"")+fmt(foreignMoneyDay,2)+" 億元")+"／夜盤 "+(foreignMoneyNight==null?"缺值":(foreignMoneyNight>0?"+":"")+fmt(foreignMoneyNight,2)+" 億元")+")。兩者均未拆 Call／Put 的方向曝險與開平倉，不以正負號判定多空，也不列入跨市場方向投票。";
-  const crossMarketStatus=nightFlowConflict?"日盤現貨與期貨外資同向，但期貨夜盤淨交易反向，方向確認降級":!nightFlowReady?"期貨外資夜盤淨交易缺值或為零，夜盤方向確認不足":foreignAlignment;
+  const optionActivityText="選擇權外資淨口數（日盤 "+(foreignOptDay==null?"缺值":(foreignOptDay>0?"+":"")+fmt(foreignOptDay,0)+" 口")+"／夜盤 "+(foreignOptNight==null?"缺值":(foreignOptNight>0?"+":"")+fmt(foreignOptNight,0)+" 口")+")；契約金額代理值（日盤 "+(foreignMoneyDay==null?"缺值":(foreignMoneyDay>0?"+":"")+fmt(foreignMoneyDay,2)+" 億元")+"／夜盤 "+(foreignMoneyNight==null?"缺值":(foreignMoneyNight>0?"+":"")+fmt(foreignMoneyNight,2)+" 億元")+")。契約金額代理值依買賣方向及 Call／Put 分類，可作輔助方向線索；淨口數未拆 Call／Put，不作多空判定。";
+  const crossMarketStatus=nightFlowConflict?"日盤現貨與期貨外資同向，但期貨夜盤淨交易反向，方向確認降級":!nightFlowAvailable?"期貨外資夜盤淨交易缺值，夜盤方向無法確認":futNight===0?"期貨外資夜盤淨交易為零，夜盤未提供方向確認":foreignAlignment;
   const tradeBullConfirm=foreignBullConfirm&&nightFlowReady&&futNight>0;
   const tradeBearConfirm=foreignBearConfirm&&nightFlowReady&&futNight<0;
   const crossLook="外資同一法人群分時段比較：現貨日盤 "+(foreignSpot==null?"缺值":(foreignSpot>0?"+":"")+fmt(foreignSpot,2)+" 億元")+"；期貨日盤 "+(futDay==null?"缺值":(futDay>0?"+":"")+fmt(futDay,0)+" 口")+"／夜盤 "+(futNight==null?"缺值":(futNight>0?"+":"")+fmt(futNight,0)+" 口")+"。"+optionActivityText+aggregateContext;
-  const crossCompass="日盤同時段比較："+foreignAlignment+"（可用 "+foreignAvailable.length+"/2；偏多 "+foreignBull+"、偏空 "+foreignBear+"）。此處只比較現貨外資買賣超與期貨外資日盤淨交易的正負方向，不比較金額大小；兩種市場曝險不同，不能視為完全等價。這個分母只包含上述兩項可比較訊號；2/2只表示兩項方向符號一致，不代表全市場法人共識、訊號權重相同、勝率或發生機率；若可用資料少於 2 項，也不能視為完整交叉確認。夜盤另行檢查："+nightAlignment+"；若與日盤現貨／期貨共識反向，降低方向信心。"+optionActivityText+"期貨外資 OI "+(foreignOi==null?"缺值":fmt(foreignOi,0)+" 口")+"是未平倉存量，不納入交易流量投票。"+aggregateContext;
-  const crossTarget=nightFlowConflict?"日盤現貨與期貨外資淨流量雖同向，但夜盤期貨淨交易反向；降低方向信心，先等現貨開盤重新確認，不以日夜合計掩蓋背離。":!nightFlowReady?"期貨外資夜盤淨交易缺值或為零，尚未完成夜盤方向確認；日盤訊號僅作背景，不升級為完整跨時段共識。":foreignBullConfirm?"現貨與期貨日盤外資淨流量同向偏多，且夜盤期貨淨交易同向；這仍只是籌碼共識，不是進場訊號，須等價格有效突破壓力並回測守穩。":foreignBearConfirm?"現貨與期貨日盤外資淨流量同向偏空，且夜盤期貨淨交易同向；這仍只是籌碼共識，不是進場訊號，須等價格有效跌破支撐並反抽失敗。":foreignAvailable.length<2?"現貨或期貨日盤外資資料不足，無法建立同時段交叉判讀；不以單一市場推定方向。":foreignBull>0&&foreignBear>0?"現貨與期貨日盤外資方向背離；降低方向信心，等待價格與籌碼重新確認。":"現貨與期貨日盤外資尚未形成明確同向訊號；暫以觀望為主。";
-  const crossStepSummary=crossMarketStatus+"；日盤現貨／期貨外資同時段只比較方向符號、不比較金額大小，夜盤期貨獨立檢查；選擇權 Call／Put 合併淨口數與契約金額代理值只作交易活動背景，不作多空投票。";
+  const crossCompass="日盤核心比較："+foreignAlignment+"（可用 "+foreignAvailable.length+"/2；偏多 "+foreignBull+"、偏空 "+foreignBear+"）。此處只比較現貨外資買賣超與期貨外資日盤淨交易的正負方向，不比較金額大小；兩種市場曝險不同，不能視為完全等價。選擇權外資日盤契約金額代理值另作第三市場輔助線索："+optionProxyDayAlignment+"；若與核心訊號不同向，應標示分歧、降低信心，不將三項簡化成等權投票。該代理值不等同淨權利金現金流或實際 Delta／Gamma 淨曝險；選擇權淨口數未拆 Call／Put，不作方向投票。夜盤另行檢查："+nightAlignment+"；"+optionProxyNightAlignment+"。若期貨夜盤與日盤核心方向反向，降低方向信心；若為零則視為中性而非缺值。期貨外資 OI "+(foreignOi==null?"缺值":fmt(foreignOi,0)+" 口")+"是未平倉存量，不納入交易流量投票。"+aggregateContext;
+  const crossTarget=nightFlowConflict?"日盤現貨與期貨外資淨流量雖同向，但夜盤期貨淨交易反向；降低方向信心，先等現貨開盤重新確認，不以日夜合計掩蓋背離。":!nightFlowAvailable?"期貨外資夜盤淨交易缺值，尚未完成夜盤方向確認；日盤訊號僅作背景，不升級為完整跨時段共識。":futNight===0?"期貨外資夜盤淨交易為零，屬中性而非缺值；夜盤未確認日盤方向，暫不升級為完整跨時段共識。":foreignBullConfirm?"現貨與期貨日盤外資淨流量同向偏多，且期貨夜盤淨交易同向；選擇權契約金額代理值另作輔助觀察，若不同向則降低信心。這仍只是籌碼共識，不是進場訊號，須等價格有效突破壓力並回測守穩。":foreignBearConfirm?"現貨與期貨日盤外資淨流量同向偏空，且期貨夜盤淨交易同向；選擇權契約金額代理值另作輔助觀察，若不同向則降低信心。這仍只是籌碼共識，不是進場訊號，須等價格有效跌破支撐並反抽失敗。":foreignAvailable.length<2?"現貨或期貨日盤外資資料不足，無法建立同時段核心交叉判讀；不以單一市場推定方向。":foreignBull>0&&foreignBear>0?"現貨與期貨日盤外資方向背離；降低方向信心，等待價格與籌碼重新確認。":"現貨與期貨日盤外資尚未形成明確同向訊號；暫以觀望為主。";
+  const crossStepSummary=crossMarketStatus+"；日盤以現貨／期貨外資方向作核心比較，選擇權契約金額代理值作第三市場輔助線索而非等權投票；夜盤期貨獨立檢查，選擇權日夜代理值分開觀察；Call／Put 合併淨口數不作多空判定。";
   // In synthesis display, net contract counts are activity data only; never use their sign as a directional vote or compare it with the amount proxy as a directional divergence.
   // Keep option contract-amount proxy and aggregate net contracts as separate measures.
   const optMoneyDayNet=optMoneyRows.length>0&&optMoneyDay.length===optMoneyRows.length?optMoneyDay.reduce((a,b)=>a+b,0):null;
@@ -795,7 +801,7 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const sessionContext=nightDelta==null||!valid(closeDay)||!valid(closeNight)?"日夜盤確認：日盤或夜盤收盤缺值，暫不提供日夜方向確認。":nightDelta>0?"日夜盤確認：夜盤收高於日盤收盤 "+priceFmt(closeDay,0)+"；開盤偏多仍須守住該價位，若跌回其下則夜盤偏強尚未獲確認。":nightDelta<0?"日夜盤確認：夜盤收低於日盤收盤 "+priceFmt(closeDay,0)+"；開盤偏空仍須觀察反彈是否受阻"+(nightLowReady?"並再跌破夜盤低點 "+priceFmt(nightLow,0):"；夜盤低點缺值時僅以日夜收盤價作初步參考")+"，不可單憑夜盤下跌追空。":"日夜盤確認：日夜收盤差距不明顯，不提供單邊方向加權，等待開盤價格反應。";
   const bullTrigger=bull?"多方：以日線收盤有效站上 Call Wall "+priceFmt(call,0)+"，且現價位於正式 Gamma Flip "+priceFmt(flip,0)+" 之上；其後回測 Call Wall 守穩，現貨與期貨日盤外資淨流量同向偏多，期貨夜盤淨交易亦偏多，才列為可執行候選。選擇權淨口數不拆 Call／Put，不作方向觸發；盤中觸價不等於日線確認。":"多方：正式 Gamma Flip／Call Wall 缺值、僅有延伸估算或價位條件未成立，暫不建立完整多方觸發。";
   const bearTrigger=bear?"空方：以日線收盤有效跌破 Put Wall "+priceFmt(put,0)+"，且下方有有效 Gamma／Flip 參考位；其後反抽 Put Wall 無法收復，現貨與期貨日盤外資淨流量同向偏空，期貨夜盤淨交易亦偏空，才列為可執行候選。選擇權淨口數不拆 Call／Put，不作方向觸發；盤中觸價不等於日線確認。":"空方：Put Wall 或下方有效參考位缺值／價位條件未成立，暫不建立完整空方觸發。";
-  const flowGate=nightFlowConflict?"方向確認降級：日盤現貨／期貨外資同向，但期貨夜盤淨交易反向。":!nightFlowReady?"方向確認不足：期貨外資夜盤淨交易缺值或為零。":foreignBullConfirm?"現貨與期貨日盤外資淨流量同向偏多，期貨夜盤亦偏多；仍須日線價格觸發確認。":foreignBearConfirm?"現貨與期貨日盤外資淨流量同向偏空，期貨夜盤亦偏空；仍須日線價格觸發確認。":foreignAvailable.length<2?"現貨／期貨日盤外資可比較資料不足，不作方向確認。":foreignBull>0&&foreignBear>0?"現貨與期貨日盤外資方向背離，不作方向確認。":"現貨與期貨日盤外資未形成同向訊號，不作方向確認。";
+  const flowGate=nightFlowConflict?"方向確認降級：日盤現貨／期貨外資同向，但期貨夜盤淨交易反向。":!nightFlowAvailable?"方向確認不足：期貨外資夜盤淨交易缺值。":futNight===0?"方向確認不足：期貨外資夜盤淨交易為零，屬中性，不能確認方向。":foreignBullConfirm?"現貨與期貨日盤外資淨流量同向偏多，期貨夜盤亦偏多；仍須日線價格觸發確認。":foreignBearConfirm?"現貨與期貨日盤外資淨流量同向偏空，期貨夜盤亦偏空；仍須日線價格觸發確認。":foreignAvailable.length<2?"現貨／期貨日盤外資可比較資料不足，不作方向確認。":foreignBull>0&&foreignBear>0?"現貨與期貨日盤外資方向背離，不作方向確認。":"現貨與期貨日盤外資未形成同向訊號，不作方向確認。";
   const tradeStatus=inRange?"區間觀察／不追價":bear?(tradeBearConfirm?"偏空候選／待反抽確認":"偏空價位條件成立但籌碼未確認／觀望"):bull?(tradeBullConfirm?"偏多候選／待回測確認":"偏多價位條件成立但籌碼未確認／觀望"):"必要價位條件未齊／觀望";
   const tradeCompass="目前狀態："+tradeStatus+"。現價 "+priceFmt(current,0)+"；Bias "+fmt(bias,0)+" 分只作背景評分，不是勝率或進場訊號。"+(flip==null?"Gamma Flip 缺值，不納入方向確認。":flipInfo.estimated?"擴大範圍估算 Gamma Flip "+priceFmt(flip,0)+" 僅作次級參考，不單獨構成交易觸發。":"標準 Gamma Flip "+priceFmt(flip,0)+" 作為價位背景，仍須價格與籌碼共同確認。")+" "+flowGate+" "+factorContext+" "+sessionContext+" "+(inRange?"現價仍在 Put Wall 與 Call Wall 之間，尚未觸發區間突破。":currentReady&&valid(put)&&current<put?"現價低於 Put Wall，需觀察反抽能否收復。":currentReady&&valid(call)&&current>call?"現價高於 Call Wall，需觀察回測能否守穩。":"現價或必要關鍵價位缺值，暫不建立方向交易。");
   const tradeTarget=inRange?"目前不追價，先按區間處理：Put Wall "+priceFmt(put,0)+" 附近觀察止跌，Call Wall "+priceFmt(call,0)+" 附近觀察受壓。只有日線突破／跌破後完成回測確認，且現貨、期貨日盤與期貨夜盤方向配合，才轉為順勢候選；選擇權淨口數不拆 Call／Put，不作方向確認，訊號背離時維持觀望。":bear?(tradeBearConfirm?"偏空候選但尚未進場：等待日線有效跌破後反抽 Put Wall "+priceFmt(put,0)+" 失敗；若重新站回 Put Wall，或現貨／期貨外資方向轉為背離，取消偏空候選。":"偏空價位條件已具備，但現貨／期貨日夜盤流量確認未通過；等待確認並觀察反抽失敗，否則觀望。"):bull?(tradeBullConfirm?"偏多候選但尚未進場：等待日線有效站上並回測 Call Wall "+priceFmt(call,0)+" 守穩；若重新跌回 Call Wall 下方，或跌回正式 Gamma Flip "+priceFmt(flip,0)+" 下方並確認，取消偏多候選。":"偏多價位條件已具備，但現貨／期貨日夜盤流量確認未通過；等待確認並觀察回測守穩，否則觀望。"):"必要價位或現價條件不足，無法定義可執行觸發；補足有效價位前維持觀望，不以 Bias 單獨進場。";
