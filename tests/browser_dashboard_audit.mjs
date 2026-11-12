@@ -57,6 +57,30 @@ try {
         }));
         throw new Error(`${viewport.name} / ${tab.label}: tab content did not become ready; state=${JSON.stringify(state)}; pageErrors=${errors.join(" | ")}; cause=${error.message}`);
       }
+      if (tab.key === "markets") {
+        const marketText = await page.locator("#main-content").innerText();
+        const requiredMarketChecks = ["VIX水準", "2Y–10Y", "未倒掛", "重大新聞", "DATA_REPORT 第8節"];
+        const missingMarketChecks = requiredMarketChecks.filter(item => !marketText.includes(item));
+        if (missingMarketChecks.length) {
+          throw new Error(`${viewport.name} / 重要市場: missing market-risk interpretation or DATA_REPORT linkage: ${missingMarketChecks.join(", ")}`);
+        }
+        for (const selector of [".v9-market-commodity-card", ".v9-market-news-card"]) {
+          const node = page.locator("#main-content " + selector);
+          if (await node.count() !== 1) throw new Error(`${viewport.name} / 重要市場: expected exactly one full-width card ${selector}`);
+          const dimensions = await node.evaluate(el => ({
+            width: el.getBoundingClientRect().width,
+            parentWidth: el.parentElement.getBoundingClientRect().width,
+            gridColumn: getComputedStyle(el).gridColumn
+          }));
+          if (dimensions.width < dimensions.parentWidth * 0.9) {
+            throw new Error(`${viewport.name} / 重要市場: card is not full width: ${selector} ${JSON.stringify(dimensions)}`);
+          }
+        }
+        const reportNews = await page.evaluate(() => window.DASHBOARD_DATA?.news || []);
+        if (!reportNews.length) throw new Error(`${viewport.name} / 重要市場: DATA_REPORT news payload is empty`);
+        const missingTitles = reportNews.filter(item => item.t && !marketText.includes(item.t)).map(item => item.t);
+        if (missingTitles.length) throw new Error(`${viewport.name} / 重要市場: news cards do not display every DATA_REPORT title: ${missingTitles.join(" | ")}`);
+      }
       if (tab.key === "futures") {
         const futuresText = await page.locator("#main-content").innerText();
         const requiredExplanations = [
