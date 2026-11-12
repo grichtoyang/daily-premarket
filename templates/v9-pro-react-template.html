@@ -316,11 +316,16 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
   };
   const cutoff=Date.parse(String(e.meta?.date||"")+"T23:59:59+08:00");
   const allNews=e.news||[];
+  const newsTimestamp=item=>{
+    const raw=String(item.time||"");
+    const match=raw.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?/);
+    return match?Date.parse(match[0]):NaN;
+  };
   const newsBeforeT0=allNews.filter(item=>{
-    const timestamp=Date.parse(item.time||"");
+    const timestamp=newsTimestamp(item);
     return Number.isFinite(cutoff)&&Number.isFinite(timestamp)&&timestamp<=cutoff;
   });
-  const newsUndated=allNews.filter(item=>!Number.isFinite(Date.parse(item.time||"")));
+  const newsUndated=allNews.filter(item=>!Number.isFinite(newsTimestamp(item)));
   const marketNews=newsBeforeT0.concat(newsUndated);
   const newsThemes=[
     ["央行／利率",/(Fed|聯準會|央行|利率|通膨|CPI|PCE|非農|就業|GDP|殖利率|債券)/i],
@@ -333,7 +338,7 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     return count?label+" "+count+"則":null;
   }).filter(Boolean).join("；");
   const latestNews=newsBeforeT0.reduce((latest,item)=>{
-    const timestamp=Date.parse(item.time||"");
+    const timestamp=newsTimestamp(item);
     return Number.isFinite(timestamp)&&(!latest||timestamp>latest.timestamp)?{timestamp,title:item.t}:latest;
   },null);
   const newsLook="T0前已確認新聞 "+newsBeforeT0.length+" 則；時間未核實 "+newsUndated.length+" 則；"+(latestNews?"最新發布事件："+latestNews.title:newsBeforeT0.length?"無法確認最新事件":"沒有可核實的 T0 前新聞")+"。";
