@@ -708,7 +708,7 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const visibleNet = positiveTotal+negativeTotal;
   const signed = value => (value>0?"+":"")+fmt(value,1);
   const visibleDirection = visibleNet>0.05 ? "偏多" : visibleNet< -0.05 ? "偏空" : "接近平衡";
-  const factorLook="圖表顯示 "+visibleFactors.length+" 項有效因子：正向貢獻合計 "+signed(positiveTotal)+" 分；負向貢獻合計 "+signed(negativeTotal)+" 分；可見項目淨貢獻 "+signed(visibleNet)+" 分。主要正向因素："+(positive.slice(0,2).map(x=>x.name+" "+signed(chartValue(x))).join("、")||"無")+"；主要負向因素："+(negative.slice(0,2).map(x=>x.name+" "+signed(chartValue(x))).join("、")||"無")+"。合計只涵蓋本圖實際顯示的因子。";
+  const factorLook="模型設定 17 項因子，目前 "+details.filter(x=>x?.status==="active"&&num(x.contribution)!=null).length+" 項有效；圖表只顯示其中貢獻絕對值最大的 "+visibleFactors.length+" 項。可見因子正向貢獻合計 "+signed(positiveTotal)+" 分、負向貢獻合計 "+signed(negativeTotal)+" 分，可見子集合淨貢獻 "+signed(visibleNet)+" 分。主要正向因素："+(positive.slice(0,2).map(x=>x.name+" "+signed(chartValue(x))).join("、")||"無")+"；主要負向因素："+(negative.slice(0,2).map(x=>x.name+" "+signed(chartValue(x))).join("、")||"無")+"。這不是完整 17 項模型總貢獻，不能只憑前幾項判斷模型整體方向。";
   const activeFactorCount=details.filter(x=>x?.status==="active"&&num(x.contribution)!=null).length;
   const factorCompass="Bias "+fmt(analysis?.bias,0)+" 分以 50 分為中性基準；模型依有效因子及其當日正規化權重計算，缺值因子不計分。17 項因子中目前 "+activeFactorCount+" 項有效；圖表僅顯示貢獻絕對值最大的 8 項。這 8 項淨貢獻"+visibleDirection+"（"+signed(visibleNet)+" 分），不可將可見子集合計當成全部因子的總貢獻，也不可把 Bias 分數當作勝率或機率。";
   const leadFactor=visibleFactors[0]||null;
