@@ -688,7 +688,8 @@ function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,an
   const currentReady=valid(current);
   const upper=[gamma,call].filter(x=>valid(x)&&currentReady&&x>current).sort((a,b)=>a-b)[0]??null;
   const lower=[gamma,flip].filter(x=>valid(x)&&currentReady&&x<current).sort((a,b)=>b-a)[0]??null;
-  const bull=!flipInfo.estimated&&valid(flip)&&currentReady&&current>flip&&upper!=null&&!(valid(put)&&current<put);
+  // A bullish candidate must have the same required Call Wall used by the executable trigger text.
+  const bull=!flipInfo.estimated&&valid(flip)&&valid(call)&&currentReady&&current>flip&&upper!=null&&!(valid(put)&&current<put);
   const range=valid(put)&&valid(call)&&currentReady&&put<current&&current<call;
   const bear=valid(put)&&currentReady&&current<put&&lower!=null;
   const position=!currentReady?"現價缺值":valid(put)&&valid(call)&&current>put&&current<call?"現價位於 Put Wall 與 Call Wall 之間":valid(put)&&current<put?"現價低於 Put Wall":valid(call)&&current>call?"現價高於 Call Wall":"現價與有效關鍵位的相對位置未能完整判定";
