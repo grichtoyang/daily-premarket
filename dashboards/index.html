@@ -291,7 +291,8 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const cash=rows.filter(row=>!String(row.l||"").toUpperCase().includes("VIX"));
       const b=breadth(cash),sox=find(cash,["SOX","費城半導體"]),vix=find(rows,["VIX"]);
       const vc=num(vix),vl=num(vix,"close");
-      compass=b.text+"（VIX不列入股票指數漲跌家數）；費半"+(sox?dir(num(sox))+" "+signed(num(sox))+"%":"資料缺值")+"；VIX "+(vl==null?"缺值":fmt(vl,2)+"點")+"（"+signed(vc)+"%）。"+(vc==null?"波動率變化資料不足。":vc<0?"VIX回落，波動壓力較前一交易日下降。":vc>0?"VIX上升，波動壓力增加。":"VIX持平。");
+      const vixLevel=vl==null?"水準缺值":vl>=30?"高波動區（常用參考30點以上）":vl>=20?"波動偏高（常用參考20點以上）":"相對低波動（常用參考20點以下）";
+      compass=b.text+"（VIX不列入股票指數漲跌家數）；費半"+(sox?dir(num(sox))+" "+signed(num(sox))+"%":"資料缺值")+"；VIX "+(vl==null?"缺值":fmt(vl,2)+"點")+"（"+signed(vc)+"%）；VIX水準"+vixLevel+"。"+(vc==null?"波動率變化資料不足。":vc<0?"VIX較前日回落，但仍須同時看絕對水準，不能只因單日下降就視為風險解除。":vc>0?"VIX上升，波動壓力增加。":"VIX持平。");
       target="下一交易時段確認美股期貨是否延續現貨方向，再核對台積電 ADR 與台指期反應；SOX、VIX均是輔助訊號，不直接換算台股漲跌幅。";
     }else if(o.key==="asia"){
       const b=breadth(rows),worst=valid.slice().sort((a,b)=>num(a)-num(b))[0],best=valid.slice().sort((a,b)=>num(b)-num(a))[0];
@@ -308,9 +309,10 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
       const y2=find(rows,["2Y","2 年"]),y10=find(rows,["10Y","10 年"]),y20=find(rows,["20Y","20 年"]),y30=find(rows,["30Y","30 年"]);
       const spread=(a,b)=>a&&b&&num(a,"close")!=null&&num(b,"close")!=null?num(b,"close")-num(a,"close"):null;
       const s2_10=spread(y2,y10),s10_20=spread(y10,y20),s20_30=spread(y20,y30);
+      const curveState=s2_10==null?"2Y–10Y曲線斜率缺值":s2_10>0?"2Y–10Y為正斜率、未倒掛":s2_10<0?"2Y–10Y倒掛":"2Y–10Y近乎平坦";
       const d2=num(y2),d10=num(y10),dSpread=d2!=null&&d10!=null?d10-d2:null;
       const changes=valid.map(row=>num(row)),allUp=changes.length>0&&changes.every(value=>value>0),allDown=changes.length>0&&changes.every(value=>value<0);
-      compass=(allUp?"各期限殖利率全數上升。":allDown?"各期限殖利率全數下降。":"各期限殖利率變化不完全一致。")+(y2?"2年期 "+fmt(num(y2,"close"),2)+"%（"+signed(d2)+" pp）":"2年期缺值")+"；"+(y10?"10年期 "+fmt(num(y10,"close"),2)+"%（"+signed(d10)+" pp）":"10年期缺值")+"；"+(s2_10==null?"2Y–10Y利差缺值":"2Y–10Y "+signed(s2_10,2)+" pp")+(s10_20==null?"":"；10Y–20Y "+signed(s10_20,2)+" pp")+(s20_30==null?"":"；20Y–30Y "+signed(s20_30,2)+" pp")+(dSpread==null?"":"；當日10Y相對2Y變化 "+signed(dSpread,2)+" pp，"+(dSpread<0?"短端升幅較大、2Y–10Y當日趨平。":dSpread>0?"長端升幅較大、2Y–10Y當日趨陡。":"2Y–10Y當日斜率變化不大。"));
+      compass=(allUp?"各期限殖利率全數上升。":allDown?"各期限殖利率全數下降。":"各期限殖利率變化不完全一致。")+(y2?"2年期 "+fmt(num(y2,"close"),2)+"%（"+signed(d2)+" pp）":"2年期缺值")+"；"+(y10?"10年期 "+fmt(num(y10,"close"),2)+"%（"+signed(d10)+" pp）":"10年期缺值")+"；"+"；"+curveState+(s2_10==null?"":"（利差 "+signed(s2_10,2)+" pp）")+(s10_20==null?"":"；10Y–20Y "+signed(s10_20,2)+" pp")+(s20_30==null?"":"；20Y–30Y "+signed(s20_30,2)+" pp")+(dSpread==null?"":"；當日10Y相對2Y變化 "+signed(dSpread,2)+" pp，"+(dSpread<0?"短端升幅較大、2Y–10Y當日趨平。":dSpread>0?"長端升幅較大、2Y–10Y當日趨陡。":"2Y–10Y當日斜率變化不大。"));
       target="以2Y–10Y利差判讀曲線斜率，再觀察10Y–20Y及20Y–30Y長端形狀；殖利率水準與日變化必須分開。單日變化不足以單獨推定聯準會政策、通膨或景氣轉折。";
     }else if(o.key==="fx"){
       const twd=find(rows,["USD/TWD"]),dxy=find(rows,["DXY"]),jpy=find(rows,["USD/JPY"]),krw=find(rows,["USD/KRW"]);
@@ -379,9 +381,9 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
         table:p("div",{className:"space-y-1",children:table}),
         analysis:insight
       });
-      return O("div",{className:o.key==="commodities"?"md:col-span-2":"",children:card},o.key);
+      return O("div",{className:o.key==="commodities"?"md:col-span-2 v9-market-commodity-card":"",style:o.key==="commodities"?{gridColumn:"1 / -1"}:undefined,children:card},o.key);
     }),
-    O("div",{className:"md:col-span-2",children:p(V,{
+    O("div",{className:"md:col-span-2 v9-market-news-card",style:{gridColumn:"1 / -1"},children:p(V,{
       title:"重大新聞",
       subtitle:"DATA_REPORT 第8節｜"+allNews.length+"則（T0前 "+newsBeforeT0.length+"／T0後 "+newsAfterT0.length+"／時間未核實 "+newsUndated.length+"）",
       chart:p("div",{className:"space-y-2 max-h-[620px] overflow-y-auto pr-1",children:allNews.length?allNews.map((item,index)=>{
