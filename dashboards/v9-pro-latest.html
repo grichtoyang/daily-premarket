@@ -316,11 +316,13 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     return {look:o.title+"："+(values||"有效數值不足")+"。",compass,target};
   };
   const cutoff=Date.parse(String(e.meta?.date||"")+"T23:59:59+08:00");
-  const marketNews=(e.news||[]).filter(item=>{
-    if(!item.time)return true;
-    const timestamp=Date.parse(item.time);
-    return !Number.isFinite(cutoff)||!Number.isFinite(timestamp)||timestamp<=cutoff;
+  const allNews=e.news||[];
+  const newsBeforeT0=allNews.filter(item=>{
+    const timestamp=Date.parse(item.time||"");
+    return Number.isFinite(cutoff)&&Number.isFinite(timestamp)&&timestamp<=cutoff;
   });
+  const newsUndated=allNews.filter(item=>!Number.isFinite(Date.parse(item.time||"")));
+  const marketNews=newsBeforeT0.concat(newsUndated);
   const newsThemes=[
     ["央行／利率",/(Fed|聯準會|央行|利率|通膨|CPI|PCE|非農|就業|GDP|殖利率|債券)/i],
     ["科技／半導體",/(半導體|晶片|AI|台積電|TSMC|NVIDIA|輝達|AMD|記憶體|電子)/i],
@@ -328,16 +330,16 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     ["能源／原物料",/(原油|石油|黃金|銅|天然氣|OPEC|能源)/i]
   ];
   const themeSummary=newsThemes.map(([label,pattern])=>{
-    const count=marketNews.filter(item=>pattern.test(String(item.t||"")+" "+String(item.d||""))).length;
+    const count=newsBeforeT0.filter(item=>pattern.test(String(item.t||"")+" "+String(item.d||""))).length;
     return count?label+" "+count+"則":null;
   }).filter(Boolean).join("；");
-  const latestNews=marketNews.reduce((latest,item)=>{
+  const latestNews=newsBeforeT0.reduce((latest,item)=>{
     const timestamp=Date.parse(item.time||"");
     return Number.isFinite(timestamp)&&(!latest||timestamp>latest.timestamp)?{timestamp,title:item.t}:latest;
   },null);
-  const newsLook="T0以前可用新聞 "+marketNews.length+" 則；"+(latestNews?"最新發布事件："+latestNews.title:marketNews.length?"部分新聞缺少可核實發布時間":"沒有可用新聞")+"。";
+  const newsLook="T0前已確認新聞 "+newsBeforeT0.length+" 則；時間未核實 "+newsUndated.length+" 則；"+(latestNews?"最新發布事件："+latestNews.title:newsBeforeT0.length?"無法確認最新事件":"沒有可核實的 T0 前新聞")+"。";
   const newsCompass=(themeSummary||"尚無足夠標題關鍵字可分類")+"。主題分類僅依新聞標題與摘要關鍵字粗分，不代表事件實際影響方向；來源及時間仍須逐則核對。";
-  const newsTarget="只採用報告 T0 當日結束前已發布的新聞；先核實原始來源、發布時間及受影響市場／產業，再觀察相關標的價格與成交反應，不以標題單獨建立多空結論。";
+  const newsTarget="只把有時間戳且不晚於報告 T0 的事件納入分析；時間未核實者不參與主題統計，晚於 T0 者排除。再核實原始來源及受影響市場／產業，觀察相關標的價格與成交反應，不以標題單獨建立多空結論。";
   return O("div",{className:"grid md:grid-cols-2 gap-4",children:[
     l.map((o,u)=>{
       const insight=marketInsight(o);
@@ -359,13 +361,13 @@ function Nt({current:e,walls:n}){let r=te((l,o,u)=>{l.clearRect(0,0,o,u),Be(l,o,
     }),
     p(V,{
       title:"重大新聞",
-      subtitle:marketNews.length+"則（T0以前）",
+      subtitle:newsBeforeT0.length+"則T0前＋"+newsUndated.length+"則待核實",
       chart:p("div",{className:"space-y-2 max-h-[260px] overflow-y-auto",children:marketNews.length?marketNews.map((item,index)=>O("div",{className:"p-2.5 rounded-[8px] bg-[#0c1524] border border-[#1e2e47]/60",children:[
         p("div",{className:"text-[12px] font-bold leading-[1.4]",children:item.t}),
         p("div",{className:"text-[11px] text-[var(--muted)] mt-1 line-clamp-2",children:item.d||"摘要未提供"}),
         p("div",{className:"mono text-[9px] text-[var(--dim)] mt-1.5",children:item.time||"發布時間未核實"})
       ]},index)):p("div",{className:"text-[11px] text-[var(--muted)] p-3",children:"沒有可核實的 T0 前新聞。"})}),
-      table:p("div",{className:"text-[11px] text-[var(--muted)]",children:"新聞依報告 T0 截止；無法解析發布時間的項目會保留標示，不納入最新事件排序。"}),
+      table:p("div",{className:"text-[11px] text-[var(--muted)]",children:"僅將有時間戳且不晚於報告 T0 的新聞納入分析；時間未核實者保留顯示但不納入主題統計，晚於 T0 者排除。"}),
       analysis:{look:newsLook,compass:newsCompass,target:newsTarget}
     })
   ]});
