@@ -306,8 +306,8 @@ function p2({data:e}){
   if(shortShares!==null)borrowChartItems.push({l:"融券",v:shortShares/1e4,extra:"萬張"});
   const listedTurnover=num(o.listed),otcTurnover=num(o.otc),totalTurnover=num(o.total);
   const listedShare=listedTurnover!==null&&otcTurnover!==null&&listedTurnover+otcTurnover>0?listedTurnover/(listedTurnover+otcTurnover)*100:null;
-  const turnoverChartItems=[{l:"上市占比",v:listedShare,extra:"%"},{l:"上櫃占比",v:otcShare,extra:"%"}].filter(x=>x.v!==null);
   const otcShare=listedShare===null?null:100-listedShare;
+  const turnoverChartItems=[{l:"上市占比",v:listedShare,extra:"%"},{l:"上櫃占比",v:otcShare,extra:"%"}].filter(x=>x.v!==null);
   const pct=num(n.pct);
   const priceState=pct===null?"指數漲跌幅缺值":pct>0?"指數收漲":pct<0?"指數收跌":"指數平盤";
   const breadthState=breadthNet===null?"市場廣度資料不完整":breadthNet>0?"上市加上櫃上漲家數多於下跌家數":breadthNet<0?"上市加上櫃下跌家數多於上漲家數":"上市加上櫃漲跌家數相同";
