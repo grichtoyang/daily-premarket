@@ -1367,3 +1367,96 @@ Commits：
 - Workflow 以 `git diff --exit-code` 檢查 `data_reports/`、`src/`、`scripts/`、`workers/`、`dashboards/` 及 `daily_data.yml` 未被修改；瀏覽器報告與截圖只輸出至暫存 artifacts 並上傳。
 - Workflow commit：`2c387f35faf2d4c7dabfde7d3b4bc29e5dd1b4fc`；修正注入換行字元 commit：`9048dd56dcc22e5546ae527c8af2fda4292ac21f`。
 - 新 workflow 的 GitHub Actions 實際執行結果尚未取得，狀態 NOT TESTED；不可宣稱 Browser Audit 已通過。若自動 push 觸發成功，需檢查該次 run 的每個 step 與上傳 artifact。
+
+
+---
+
+# 2026-11-14 正式定版補記：V9 Pro 六分頁分析／UI 改進結案
+
+> 本節為目前最新狀態，優先於本 Recovery 前段較早的「待使用者驗收」「NOT TESTED」記錄。舊段落保留作歷史證據，不回寫抹除。
+
+## 1. 正式規範文件
+
+本次建立四層專項 Skill，並更新 Master Skill：
+
+- \`skills/daily-premarket-analysis-v9-pro-skill.md\`：Master Skill／專案入口。
+- \`skills/v9-pro-data-layer.md\`：資料層規範與凍結政策。
+- \`skills/v9-pro-analysis-layer.md\`：六分頁分析方法及交易判讀。
+- \`skills/v9-pro-visual-layer.md\`：視覺層、單位、圖表與響應式規範。
+- \`skills/v9-pro-build-release.md\`：Build、UI-only Audit、Pages 部署及證據鏈。
+- \`docs/PROJECT_WORKING_RULES.md\`：精簡工作規則。
+
+以上文件為 2026-11-14 正式版；V7／V8 Skill 保留歷史，不以本次文件取代。
+
+## 2. 六分頁最終狀態
+
+| 分頁 | 正式改進重點 | 使用者驗收狀態 |
+|---|---|---|
+| 總覽 | Bias 計算透明化、有效因子與權重覆蓋揭露、法人單日快照限制、期選結構交叉判讀、操作條件連結；移除重複重大新聞 | PASS |
+| 現貨 | A–F 分析敘事、K 棒與前收基準區分、廣度／法人交叉判讀、融資與借券限制、成交結構、分階段收復與失效條件 | PASS |
+| 重要市場 | DATA_REPORT 第 8 節重大新聞、來源時間戳與 T0 截止、殖利率曲線／VIX／跨資產風險判讀、重大新聞與商品區塊全寬呈現 | PASS |
+| 期貨 | 日夜盤基準、基差、OI 存量與交易流量區分、帶正負號 OI 變化、價格／流量一致與背離、跨盤確認條件 | PASS |
+| 選擇權 | PCR／成交量／OI、法人淨口數／契約金額代理值、GEX 與各 Wall／Flip／Max Pain 的口徑及限制 | PASS |
+| 綜合分析 | 外資同法人群跨市場比較、日夜盤時段一致性、選擇權代理值與淨口數區分、Bias／因子交叉檢查、三劇本與交易計畫連動 | PASS |
+
+已驗收分頁正式凍結；後續只有使用者明確授權，或出現可重現數據錯誤、邏輯矛盾、顯示回歸時才重開。
+
+## 3. 總覽 Bias 最終驗收補充
+
+2026-11-06 樣本畫面明確呈現：
+- 中性基準 50。
+- 有效因子加權貢獻合計 -11.22。
+- 計算結果 38.78，四捨五入為 Bias 39。
+- 有效因子 14/17；原始基礎權重覆蓋 85.6%；有效因子權重重新正規化至 100%。
+
+上述數值只屬 2026-11-06 當日樣本，不是固定常數。正式規範要求未來依當日實際有效因子動態計算，不得硬編碼。Bias 為背景評分，不是勝率、預測機率或單獨進場訊號。
+
+## 4. 重要市場新聞與總覽去重
+
+- 重要市場重大新聞以 DATA_REPORT 第 8 節「重大經濟數據、央行事件與重大市場新聞」為來源。
+- 必須先解析來源時間戳，再依 T0 分類；時間未核實不得自行補造。
+- 重大新聞卡片全寬呈現。
+- 總覽重大新聞區塊已移除，避免與重要市場重複。
+
+## 5. 綜合分析方向共識的正式口徑
+
+- 日盤主要比較同一法人群的現貨外資買賣超與期貨外資日盤淨交易；只比較方向符號，不比較金額大小。
+- 兩項均可用且同向，只表示這兩個可比較訊號一致，不代表全市場法人共識、勝率或發生機率。
+- 期貨外資夜盤淨交易另行檢查；零值是中性，缺值是無法判讀。
+- 選擇權買賣淨口數未拆 Call／Put，只作交易活動背景，不作多空投票。
+- 選擇權契約金額代理值為分類金額差額，不等同淨權利金現金流或實際 Delta／Gamma 曝險；只作次級線索，不視為等價第三票。
+- OI 是存量，不納入日夜交易流量投票。
+- 交易方向仍須價格有效突破／跌破、回測／反抽確認及失效條件。
+
+## 6. 期貨與現貨重要語義
+
+- OI 淨部位帶正負號時，變化解讀須同時看數值方向與變化量；不可只看絕對值。
+- 價格升＋外資淨買、價格跌＋外資淨賣屬初步同向；價格升＋淨賣、價格跌＋淨買屬背離；同向不等於趨勢確認。
+- 夜盤流量為零與缺值分開處理。
+- 夜盤收盤高於日盤收盤，次日觀察能否守在日盤收盤之上；低於則觀察能否重新站回；相等時等待有效站上或跌破。
+- 現貨收紅 K 不等於相對前收上漲；下跌日中的盤中反彈不等於趨勢反轉。
+- 借券餘額、借券賣出餘額、借券賣出增減與融券不可混為一談。
+
+## 7. 最新程式與 Actions 證據
+
+- Template 改進提交：\`368405cfc22bd6837550619a3277d4c933af644d\`。
+- 產生 Dashboard HTML 的 commit：\`c1010f624d6c436bc818897f4deb3fc8d6267fb8\`。
+- Build + Deploy Run：\`43575256858\`，Build job PASS、Deploy job PASS。
+- UI-only Browser Audit Run：\`43575256860\`，ui-audit job PASS。
+- 上述兩個 Run 均已由 GitHub Actions API 確認 completed／success。
+- 使用者已提供最新總覽手機畫面並完成人工驗收；六分頁依本專案近期對話完成驗收。
+
+連結：
+- Dashboard：https://grichtoyang.github.io/daily-premarket/p0/v9-pro-latest.html
+- Build + Deploy：https://github.com/grichtoyang/daily-premarket/actions/runs/43575256858
+- UI-only Audit：https://github.com/grichtoyang/daily-premarket/actions/runs/43575256860
+
+## 8. 凍結與限制
+
+- 資料層維持 FROZEN；本次 Skill 正式化只修改文件，不修改資料來源、Builder、DATA_REPORT、Worker／Proxy／API 或 daily-data Workflow。
+- DL-07 維持 CLOSED。
+- 六分頁 UI／分析維持完成狀態，不主動再改。
+- 完整 Build + Deploy Workflow 會執行 Builder 與資料層相關測試；資料層凍結期間，任何再次觸發前須依使用者授權規則處理。
+- UI-only Audit 只驗證既有 JSON 注入 Template 後的 UI／瀏覽器行為，不等同資料層驗證或 Pages 部署。
+- 本次文件定版的驗收範圍是文件內容、路徑、Git commit 與分支狀態；沒有執行資料層測試或重新部署。
+
