@@ -495,7 +495,7 @@ function p2({data:e}){
             p("span",{className:"text-[var(--muted)]",children:t.l}),
             p("span",{className:"text-[9px]",style:{color:color},children:status+(d?" "+d.slice(5):"")})
           ]}),
-          O("span",{className:"mono shrink-0 text-right",style:{color:Rl(t.v,o.key==="fx")},children:[
+          O("span",{className:"mono shrink-0 text-right",style:{color:Rl(t.v,true)},children:[
             o.key==="yields"?(t.v==null?"缺值":B(t.v,2)+" pp"):he(t.v),
             " ",
             t.close!=null?B(t.close,2)+(o.key==="yields"?"%":o.key==="adr"?" USD/股":o.key==="fx"?(t.l==="USD/TWD"?" TWD／每 USD":t.l==="USD/JPY"?" JPY／每 USD":t.l==="USD/KRW"?" KRW／每 USD":" 指數點"):o.key==="commodities"?(t.l.includes("WTI")?" USD/桶":t.l.includes("黃金")?" USD/金衡盎司":" USD/BTC"):"點"):""
@@ -505,7 +505,7 @@ function p2({data:e}){
       const card=p(V,{
         title:o.title,
         subtitle:countLabel,
-        chart:p(gf,{data:chartRows.map(t=>({l:t.l,v:t.v,close:t.close})),changeUnit:o.key==="yields"?"pp":"%",height:220}),
+        chart:p(gf,{data:chartRows.map(t=>({l:t.l,v:t.v,close:t.close})),changeUnit:o.key==="yields"?"pp":"%",tw:true,height:220}),
         chartNote:"資料日期逐筆標示；只有資料日期不晚於T0者納入圖表與解析，T0後／日期未核實資料只列示、不作盤前依據。"+(o.key==="us"?"VIX為波動率指標，獨立判讀、不納入股票指數漲跌家數。":""),
         table:p("div",{className:"space-y-1",children:table}),
         analysis:insight
