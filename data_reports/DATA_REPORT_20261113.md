@@ -1,12 +1,12 @@
 # DATA_REPORT_20261113
 
-- 報告日期：`2026-11-14`
+- 報告日期：`2026-11-16`
 - T0 交易日期：`2026-11-13`
-- 資料產出時間：`2026-11-14 13:01:49`
+- 資料產出時間：`2026-11-16 11:46:07`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
-- 排定班別：`weekend`
+- 排定班別：`morning`
 
 ---
 
@@ -117,11 +117,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| 日經225 | ^N225 | 61,142.35 | 322.99 | +0.53 | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 5,290.53 | -52.20 | -0.98 | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 23,637.60 | -370.95 | -1.55 | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,634.35 | -21.48 | -0.59 | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 10,968.79 | -229.19 | -2.05 | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 60,089.59 | -1,052.76 | -1.72 | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 5,159.93 | -130.60 | -2.47 | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 23,855.67 | 218.07 | +0.92 | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,620.00 | -14.35 | -0.39 | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 10,825.37 | -143.42 | -1.31 | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -129,10 +129,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,583.00 | -32.25 | -0.42 | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 28,034.75 | -349.75 | -1.23 | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 52,418.00 | 28.00 | +0.05 | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,797.50 | -9.80 | -0.35 | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,568.25 | -14.75 | -0.19 | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 27,896.75 | -138.00 | -0.49 | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 52,432.00 | 14.00 | +0.03 | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,790.50 | -7.00 | -0.25 | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -150,10 +150,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.94 | 0.08 | +0.23 | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 103.41 | 0.24 | +0.23 | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 159.88 | 0.14 | +0.09 | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,336.20 | 2.42 | +0.18 | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.96 | 0.03 | +0.08 | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 103.45 | 0.04 | +0.04 | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 159.64 | -0.24 | -0.15 | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,335.48 | 1.70 | +0.13 | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -171,38 +171,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌點 | 漲跌幅 | 資料來源 |
 |---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 88.56 | -0.18 | -0.20 | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 3,886.30 | 1.00 | +0.03 | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 66,890.70 | -4,452.27 | -6.24 | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 87.92 | -0.64 | -0.72 | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 3,867.20 | -19.10 | -0.49 | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 64,899.62 | 771.57 | +1.20 | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：股災後想搭反彈列車？蔡明翰提醒1操作禁忌：槓桿別再疊槓桿
-  - 來源：Yahoo 台股；發布時間：2026-11-14T00:30:00Z；台北時間：2026-11-14 08:30
-  - 摘要：[FTNN新聞網]記者陳宣穎／綜合報導台股11月上旬走勢震盪，相關ETF也隨行情劇烈起伏，隨著市場逐步回穩，元大台灣50（0050）13日來到102.5元，較6日低點92.5元...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%82%A1%E7%81%BD%E5%BE%8C%E6%83%B3%E6%90%AD%E5%8F%8D%E5%BD%88%E5%88%97%E8%BB%8A-%E8%94%A1%E6%98%8E%E7%BF%B0%E6%8F%90%E9%86%921%E6%93%8D%E4%BD%9C%E7%A6%81%E5%BF%8C-%E6%A7%93%E6%A1%BF%E5%88%A5%E5%86%8D%E7%96%8A%E6%A7%93%E6%A1%BF-003000751.html
-- 事件2：本周爆款短影音｜「溫暖牽手」石舫亘代蔣萬安掃街催票／男師輕生！家屬淚訴遭學生羞辱
-  - 來源：Yahoo 台股；發布時間：2026-11-13T23:30:00Z；台北時間：2026-11-14 07:30
-  - 摘要：【知新聞編輯部／台北報導】因為生活節奏太過匆忙，常感到與新聞時事脫節？《知新聞》體貼您的忙碌，特別推出「本周爆款短影音」精選推薦！我們將這個禮拜最重要的政經社會要事、最有趣的生活趣聞，以及最震撼的國際焦點，濃縮成數則高效率的短影音。讓您無需
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%9C%AC%E5%91%A8%E7%88%86%E6%AC%BE%E7%9F%AD%E5%BD%B1%E9%9F%B3-%E6%BA%AB%E6%9A%96%E7%89%BD%E6%89%8B-%E7%9F%B3%E8%88%AB%E4%BA%98%E4%BB%A3%E8%94%A3%E8%90%AC%E5%AE%89%E6%8E%83%E8%A1%97%E5%82%AC%E7%A5%A8-%E7%94%B7%E5%B8%AB%E8%BC%95%E7%94%9F-%E5%AE%B6%E5%B1%AC%E6%B7%9A%E8%A8%B4%E9%81%AD%E5%AD%B8%E7%94%9F%E7%BE%9E%E8%BE%B1-233000351.html
-- 事件3：輝達邁入後黃仁勳時代　專家指繼任者將面臨兩大挑戰
-  - 來源：Yahoo 台股；發布時間：2026-11-13T23:00:00Z；台北時間：2026-11-14 07:00
-  - 摘要：【財經中心／台北報導】輝達創辦人黃仁勳因為婚外情事件請辭執行長職務，由財務長克雷斯暫時代理CEO，董事會正在尋找正式繼任者。多位分析人士認為，黃仁勳的離職有特殊性，在AI產業蓬勃發展、輝達處於產業核心地位之際，黃仁勳突然辭去CEO職務，其繼
-  - 原文連結：https://tw.stock.yahoo.com/news/%E8%BC%9D%E9%81%94%E9%82%81%E5%85%A5%E5%BE%8C%E9%BB%83%E4%BB%81%E5%8B%B3%E6%99%82%E4%BB%A3-%E5%B0%88%E5%AE%B6%E6%8C%87%E7%B9%BC%E4%BB%BB%E8%80%85%E5%B0%87%E9%9D%A2%E8%87%A8%E5%85%A9%E5%A4%A7%E6%8C%91%E6%88%B0-230000345.html
-- 事件4：李濠仲專欄：黃仁勳犯了和員工談戀愛大忌
-  - 來源：Yahoo 台股；發布時間：2026-11-13T22:02:00Z；台北時間：2026-11-14 06:02
-  - 摘要：起初，黃仁勳被揭露和中國籍商場女子黃樂有婚外情，儘管輿論沸沸揚揚，甚至懷疑黃樂是帶有特殊任務的間諜，但當時輝達內部，多數仍支持黃仁勳繼續帶領公司，新聞延燒的同一時間，
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%9D%8E%E6%BF%A0%E4%BB%B2%E5%B0%88%E6%AC%84-%E9%BB%83%E4%BB%81%E5%8B%B3%E7%8A%AF%E4%BA%86%E5%92%8C%E5%93%A1%E5%B7%A5%E8%AB%87%E6%88%80%E6%84%9B%E5%A4%A7%E5%BF%8C-220200061.html
-- 事件5：台股受黃仁勳事件干擾、一周內仍急拉3973點　外資連續11周買超這幾檔股票
-  - 來源：Yahoo 台股；發布時間：2026-11-13T19:40:00Z；台北時間：2026-11-14 03:40
-  - 摘要：台股本周一在國安基金宣示進場之下，一周內大漲3973點，收在43675.12點...
-  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E5%8F%97%E9%BB%83%E4%BB%81%E5%8B%B3%E4%BA%8B%E4%BB%B6%E5%B9%B2%E6%93%BE-%E5%91%A8%E5%85%A7%E4%BB%8D%E6%80%A5%E6%8B%893973%E9%BB%9E-%E5%A4%96%E8%B3%87%E9%80%A3%E7%BA%8C11%E5%91%A8%E8%B2%B7%E8%B6%85%E9%80%99%E5%B9%BE%E6%AA%94%E8%82%A1%E7%A5%A8-194000943.html
-- 事件6：想抱股10年！「0050 vs. 0052」怎選 網推這檔：永遠火車頭
-  - 來源：Yahoo 台股；發布時間：2026-11-13T11:15:00Z；台北時間：2026-11-13 19:15
-  - 摘要：元大台灣50（0050）與富邦科技（0052）都是投資新手青睞的熱門標的。一名剛開證券戶的網友表示，打算定期定額長期投資10年，不知二者該如何選擇，引發討論。
-  - 原文連結：https://tw.stock.yahoo.com/news/%E6%83%B3%E6%8A%B1%E8%82%A110%E5%B9%B4-0050-vs-0052-%E6%80%8E%E9%81%B8-111500414.html
+- 事件1：廣達跌到今年最低價 分析師：進場再等等
+  - 來源：Yahoo 台股；發布時間：2026-11-16T03:31:01Z；台北時間：2026-11-16 11:31
+  - 摘要：台股今（16）日早盤賣壓沉重，加權指數盤中一度重挫逾1,800點，最低來到41,801.13點，接連摜破5日線與43,000點、42,000點整數關卡。電子股殺聲隆隆，代工大廠廣達（2382）盤中挫逾3%至267元，正式跌破270元整數關卡
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%94%9C%E7%94%9C%E5%83%B9%E4%BE%86%E4%BA%86%EF%BC%9F%E5%BB%A3%E9%81%94%E8%B7%8C%E7%A0%B4270%E5%85%83%E5%AF%AB%E4%BB%8A%E5%B9%B4%E6%96%B0%E4%BD%8E-%E5%88%86%E6%9E%90%E5%B8%AB%EF%BC%9A%E5%86%8D%E7%AD%89%E7%AD%89-031131245.html
+- 事件2：10日線沒了！台股盤中摔破42K 台達電跌停
+  - 來源：Yahoo 台股；發布時間：2026-11-16T03:15:10Z；台北時間：2026-11-16 11:15
+  - 摘要：（中央社記者潘智義台北2026年11月16日電）黃仁勳辭輝達（NVIDIA）執行長事件延燒，美國科技股下跌。台股今天盤中最低至41802點，下跌逾1800點，跌破42000點關卡，也失守10日線約42482點。權值股台積電(2330)盤中一
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E7%9B%A4%E4%B8%AD-%E9%87%8D%E6%8C%AB%E9%80%BE1800%E9%BB%9E-%E8%B7%8C%E7%A0%B442000%E9%BB%9E-031510467.html
+- 事件3：法說釋樂觀展望 買盤挺技嘉抗殺盤
+  - 來源：Yahoo 台股；發布時間：2026-11-16T03:05:48Z；台北時間：2026-11-16 11:05
+  - 摘要：技嘉（2376）上週五在法說會釋出樂觀展望，管理層預期AI伺服器業務動能可延續至2027年底，看好整體營運規模持續成長。儘管今日大盤暴跌逾千點，技嘉股價在買盤加持之下震盪抗跌，截至上午10時43分暫報286元，漲幅0.7%，成交量8072張
+  - 原文連結：https://tw.stock.yahoo.com/news/%E7%84%A6%E9%BB%9E%E8%82%A1-%E6%8A%80%E5%98%89-%E6%B3%95%E8%AA%AA%E6%9C%83%E5%B1%95%E6%9C%9B%E6%A8%82%E8%A7%80-%E5%8A%9B%E6%8A%97%E7%A7%91%E6%8A%80%E8%82%A1%E6%AE%BA%E7%9B%A4-030548624.html
+- 事件4：Vera Rubin傳延遲放量「鬼故事」CCL、載板股多檔綠燈
+  - 來源：Yahoo 台股；發布時間：2026-11-16T02:32:58Z；台北時間：2026-11-16 10:32
+  - 摘要：[Newtalk新聞] 台股今（16）日再度上演千點殺盤，加權指數早盤以 43,512.42 點開出，隨後賣壓湧現，最低下探 42,224.88 點，重挫 1,450.24 點或逾 3%，盤中高低震盪近 1,288 點。電子權值股普遍承壓，
+  - 原文連結：https://tw.stock.yahoo.com/news/vera-rubin-%E5%BB%B6%E9%81%B2%E6%94%BE%E9%87%8F-%E9%AC%BC%E6%95%85%E4%BA%8B%E5%86%8D%E8%B5%B7-ccl-023258399.html
+- 事件5：台揚連3跌停今續趴地、萬張排隊賣 股東數竟不減反增
+  - 來源：Yahoo 台股；發布時間：2026-11-16T02:10:00Z；台北時間：2026-11-16 10:10
+  - 摘要：[FTNN新聞網]實習記者王保伶／綜合報導鴻海集團旗下通訊設備廠台揚科技（2314）將於12月21日終止上市，股價卻在恢復交易後接連重挫。自11月11日起，台揚連續3...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E6%8F%9A%E4%B8%8B%E5%B8%82%E5%80%92%E6%95%B8-%E8%82%A1%E5%83%B9%E9%80%A33%E6%97%A5%E8%B7%8C%E5%81%9C%E8%82%A1%E6%9D%B1%E6%95%B8%E9%80%86%E5%8B%A2%E5%A2%9E%E5%8A%A0-%E8%B2%A1%E7%B6%93%E9%81%94%E4%BA%BA%E7%96%91%E6%83%91-%E6%83%B3%E6%90%B6%E5%8F%8D%E5%BD%88-021000540.html
+- 事件6：新台幣快貶破33元 楊金龍證實10月起啟動干預
+  - 來源：Yahoo 台股；發布時間：2026-11-16T02:40:56Z；台北時間：2026-11-16 10:40
+  - 摘要：中央銀行總裁楊金龍今（16）日赴立法院財政委員會備詢，立委賴士葆關心，新台幣兌美元又要貶破33元大關，楊金龍鬆口透露近期10月起確實「每周至少進場干預匯市一次」，且將於12月理監事會討論房市管制調整。
+  - 原文連結：https://tw.stock.yahoo.com/news/%E6%96%B0%E5%8F%B0%E5%B9%A3%E5%BF%AB%E8%B2%B6%E7%A0%B433%E5%85%83%EF%BC%81%E5%A4%AE%E8%A1%8C%E6%A5%8A%E9%87%91%E9%BE%8D%E9%AC%86%E5%8F%A3%EF%BC%9A10%E6%9C%88%E6%AF%8F%E5%91%A8%E8%87%B3%E5%B0%91%E5%87%BA%E6%89%8B%E7%A9%A9%E5%8C%AF%E4%B8%80%E6%AC%A1-024525418.html
 - 事件7：Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions, and changes to streamline and adjust their check services
   - 來源：Federal Reserve；發布時間：Thu, 12 Nov 2026 18:30:00 GMT；台北時間：2026-11-13 02:30
   - 摘要：Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions,
@@ -219,14 +219,14 @@
   - 來源：Federal Reserve；發布時間：Mon, 9 Nov 2026 21:00:00 GMT；台北時間：2026-11-10 05:00
   - 摘要：Federal Reserve Board announces approval of two applications by Mutual Federal Bancorp, MHC, and MFB Bancorp, Inc.
   - 原文連結：https://www.federalreserve.gov/newsevents/pressreleases/orders20261109a.htm
-- 事件11：AI risks are the biggest threat to the financial system, Fed survey finds
-  - 來源：CNBC；發布時間：Fri, 13 Nov 2026 21:18:30 GMT；台北時間：2026-11-14 05:18
-  - 摘要：The report comes with Wall Street on edge over high-flying AI hyperscalers, while communities are on alert for the rapid spread of data centers.
-  - 原文連結：https://www.cnbc.com/2026/11/13/ai-risks-financial-system-federal-reserve.html
-- 事件12：Chicago Fed's Goolsbee says central bank 'has definitely got work to do' on inflation
-  - 來源：CNBC；發布時間：Fri, 13 Nov 2026 14:22:07 GMT；台北時間：2026-11-13 22:22
-  - 摘要：The policymaker expressed concern about the latest inflation data, telling CNBC that the central bank likely will need to take action.
-  - 原文連結：https://www.cnbc.com/2026/11/13/chicago-feds-goolsbee-says-central-bank-has-definitely-got-work-to-do-on-inflation.html
+- 事件11：Rivian, Lucid, Scout CEOs aren’t counting on Democrats to restore EV federal support after midterm wins
+  - 來源：CNBC；發布時間：Sun, 15 Nov 2026 13:00:02 GMT；台北時間：2026-11-15 21:00
+  - 摘要：EV makers have had to contend with flip-flopping regulatory support from Washington over the years.
+  - 原文連結：https://www.cnbc.com/2026/11/15/rivian-lucid-scout-arent-counting-on-dems-to-restore-ev-incentives.html
+- 事件12：Top Wall Street analysts are bullish on these 3 stocks for the long term
+  - 來源：CNBC；發布時間：Sun, 15 Nov 2026 12:49:07 GMT；台北時間：2026-11-15 20:49
+  - 摘要：Here are three stocks favored by some of Wall Street's top pros, according to TipRanks.
+  - 原文連結：https://www.cnbc.com/2026/11/15/top-wall-street-analysts-are-bullish-on-these-3-stocks-for-the-long-term.html
 
 
 ## 三、期貨
@@ -381,7 +381,7 @@
 |---|---|---|
 | 交易日期 | 2026-11-13 | TAIFEX Proxy |
 | 到期月份／到期日 | 202611F2 | TAIFEX Proxy |
-| 資料更新時間 | 2026-11-14 13:01:49 | 本機 |
+| 資料更新時間 | 2026-11-16 11:46:07 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -604,9 +604,9 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-11-13；資料時間：2026-11-14 13:01:49；時區：`Asia/Taipei`
+- 資料日期：2026-11-13；資料時間：2026-11-16 11:46:07；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 註記：同 T0 覆蓋：150 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 註記：同 T0 覆蓋：49 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
 - 未取得欄位 (2)：futures.gamma_wall, futures.gamma_flip
 - 註記：futures-price-after-hours 日期 2026-11-13 非今日 2026-11-16，視為無新節次，不採用
 - 註記：Gamma Wall/Flip 端點不可用（上游 502），標 unavailable
