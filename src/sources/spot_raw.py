@@ -401,6 +401,35 @@ def tpex_highlight(roc: str) -> dict:
         out = {"row": row, "date_ok": str(row.get("Date", "")) == roc}
     return out
 
+
+def tpex_turnover_st41(roc: str) -> dict:
+    """從 TPEx 日成交量值（月資料）獨立取得指定交易日成交金額，單位百萬元。"""
+    out = {"value": None, "date_ok": False}
+    if len(roc) != 7 or not roc.isdigit():
+        return out
+
+    month = f"{roc[:3]}/{roc[3:5]}"
+    target = f"{roc[:3]}/{roc[3:5]}/{roc[5:7]}"
+    url = (
+        "https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/"
+        f"st41_result.php?l=zh-tw&d={month}&s=0,asc,0&o=json"
+    )
+    payload = _get_json(url)
+    rows = payload.get("aaData") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        return out
+
+    for row in rows:
+        if not isinstance(row, (list, tuple)) or len(row) < 3:
+            continue
+        row_date = str(row[0]).strip().replace("/", "")
+        if row_date == roc:
+            value = _num(row[2])
+            if value is not None:
+                return {"value": value, "date_ok": True}
+    print(f"[WARN] TPEx st41 turnover date missing: requested={target}")
+    return out
+
 def tpex_margin(roc: str) -> dict:
     out = {"bal": None, "chg": None, "sbal": None, "schg": None, "date_ok": False}
     j = _get_json(f"{TPEX_API}/tpex_mainboard_margin_balance")
