@@ -1131,37 +1131,46 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             "不以跨日資料冒充日對日".format(_sdate, _expected_snapshot_date))
     else:
         _previous_chain = _sd.get("chain", [])
-        snapchg["chain_diagnostic"] = _options_chain_oi_change_diagnostic(
-            chain, _previous_chain, prim_month)
-        snapchg["chain"] = _options_chain_oi_change(chain, _previous_chain, prim_month)
-        if snapchg["chain"] is not None:
-            snapchg["chain"].update({
-                "snapshot_date": _sdate, "current_date": t0,
-                "source": "Cloudflare Worker KV snapshot bundle"})
-        if snapchg["chain"] is None:
-            _diag = snapchg["chain_diagnostic"]
+        if chain_date != t0:
+            snapchg["chain"] = None
+            snapchg["chain_diagnostic"] = {
+                "reason": "current_chain_date_mismatch", "expected_date": t0,
+                "actual_date": chain_date}
             notes.append(
-                "選擇權 OI 前日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; "
-                "本日/前日合約識別數={}/{}; 僅本日/僅前日={}/{}; "
-                "本日/前日 OI 缺值或無效={}/{}; 無效/重複識別={}/{}".format(
-                    _diag["reason"], prim_month or "missing",
-                    _diag["current_count"], _diag["previous_count"],
-                    _diag["current_identity_count"], _diag["previous_identity_count"],
-                    _diag["current_only"], _diag["previous_only"],
-                    _diag["current_missing_oi"], _diag["previous_missing_oi"],
-                    _diag["invalid_identity"], _diag["duplicate_identity"]))
-        elif snapchg["chain"].get("partial"):
-            _diag, _chg = snapchg["chain_diagnostic"], snapchg["chain"]
-            notes.append(
-                "選擇權 OI 前日變化採共同有效合約計算：主力={}; 共同合約={}; "
-                "本日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值/無效 {}）；"
-                "前日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值 {}）；"
-                "僅本日/僅前日有效合約={} / {}，未補零".format(
-                    prim_month or "missing", _chg["matched_count"],
-                    _chg["current_count"], _chg["current_identity_count"], _chg["current_coverage"],
-                    _chg["current_missing_oi"], _chg["previous_count"],
-                    _chg["previous_identity_count"], _chg["previous_coverage"],
-                    _chg["previous_missing_oi"], _diag["current_only"], _diag["previous_only"]))
+                "選擇權 OI 前日變化 unavailable：本日 Chain 實際日期 {}，T0 應為 {}；"
+                "不以遞補舊資料冒充當日資料".format(chain_date or "missing", t0))
+        else:
+            snapchg["chain_diagnostic"] = _options_chain_oi_change_diagnostic(
+                chain, _previous_chain, prim_month)
+            snapchg["chain"] = _options_chain_oi_change(chain, _previous_chain, prim_month)
+            if snapchg["chain"] is not None:
+                snapchg["chain"].update({
+                    "snapshot_date": _sdate, "current_date": t0,
+                    "source": "Cloudflare Worker KV snapshot bundle"})
+            if snapchg["chain"] is None:
+                _diag = snapchg["chain_diagnostic"]
+                notes.append(
+                    "選擇權 OI 前日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; "
+                    "本日/前日合約識別數={}/{}; 僅本日/僅前日有效合約={}/{}; "
+                    "本日/前日 OI 缺值或無效={}/{}; 無效/重複識別={}/{}".format(
+                        _diag["reason"], prim_month or "missing",
+                        _diag["current_count"], _diag["previous_count"],
+                        _diag["current_identity_count"], _diag["previous_identity_count"],
+                        _diag["current_only"], _diag["previous_only"],
+                        _diag["current_missing_oi"], _diag["previous_missing_oi"],
+                        _diag["invalid_identity"], _diag["duplicate_identity"]))
+            elif snapchg["chain"].get("partial"):
+                _diag, _chg = snapchg["chain_diagnostic"], snapchg["chain"]
+                notes.append(
+                    "選擇權 OI 前日變化採共同有效合約計算：主力={}; 共同合約={}; "
+                    "本日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值/無效 {}）；"
+                    "前日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值/無效 {}）；"
+                    "僅本日/僅前日有效合約={} / {}，未補零".format(
+                        prim_month or "missing", _chg["matched_count"],
+                        _chg["current_count"], _chg["current_identity_count"], _chg["current_coverage"],
+                        _chg["current_missing_oi"], _chg["previous_count"],
+                        _chg["previous_identity_count"], _chg["previous_coverage"],
+                        _chg["previous_missing_oi"], _diag["current_only"], _diag["previous_only"]))
 
         if _roll is True:
             notes.append(
@@ -1172,37 +1181,48 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 "前日快照主力月份無法確認（快照值：{}）；選擇權比較仍僅按當日主力月份及共同合約判定".format(
                     _roll_old or "缺失"))
 
-        _cur_levels = _options_chain_key_levels_for_month(chain, prim_month)
-        if not _cur_levels.get("found"):
+        if chain_date != t0:
             snapchg["walls"] = None
             snapchg["walls_diagnostic"] = {
-                "reason": "current_chain_incomplete", "detail": _cur_levels.get("reason")}
+                "reason": "current_chain_date_mismatch", "expected_date": t0,
+                "actual_date": chain_date}
+        elif walls_date != t0:
+            snapchg["walls"] = None
+            snapchg["walls_diagnostic"] = {
+                "reason": "current_key_levels_date_mismatch", "expected_date": t0,
+                "actual_date": walls_date}
         else:
-            _prev_levels = _options_chain_key_levels_for_month(
-                _previous_chain, prim_month, _cur_levels["expiry_date"])
-            _current_levels_match = (
-                walls.get("expiry") == prim_month
-                and (walls.get("call") or {}).get("strike") == _cur_levels["call_wall"]["strike"]
-                and (walls.get("put") or {}).get("strike") == _cur_levels["put_wall"]["strike"]
-                and (walls.get("maxpain") or {}).get("strike") == _cur_levels["max_pain"]["strike"])
-            if not _current_levels_match:
-                snapchg["walls"] = None
-                snapchg["walls_diagnostic"] = {"reason": "current_key_levels_mismatch"}
-            elif not _prev_levels.get("found"):
+            _cur_levels = _options_chain_key_levels_for_month(chain, prim_month)
+            if not _cur_levels.get("found"):
                 snapchg["walls"] = None
                 snapchg["walls_diagnostic"] = {
-                    "reason": "previous_chain_incomplete", "detail": _prev_levels.get("reason")}
+                    "reason": "current_chain_incomplete", "detail": _cur_levels.get("reason")}
             else:
-                snapchg["walls"] = {
-                    "call": _diff(_cur_levels["call_wall"]["strike"], _prev_levels["call_wall"]["strike"]),
-                    "put": _diff(_cur_levels["put_wall"]["strike"], _prev_levels["put_wall"]["strike"]),
-                    "maxpain": _diff(_cur_levels["max_pain"]["strike"], _prev_levels["max_pain"]["strike"]),
-                    "expiry_date": _cur_levels["expiry_date"]}
-                snapchg["walls_diagnostic"] = {
-                    "reason": "aligned", "contract_month": prim_month,
-                    "expiry_date": _cur_levels["expiry_date"],
-                    "current_rows": _cur_levels["chain_stats"]["rows"],
-                    "previous_rows": _prev_levels["chain_stats"]["rows"]}
+                _prev_levels = _options_chain_key_levels_for_month(
+                    _previous_chain, prim_month, _cur_levels["expiry_date"])
+                _current_levels_match = (
+                    walls.get("expiry") == prim_month
+                    and (walls.get("call") or {}).get("strike") == _cur_levels["call_wall"]["strike"]
+                    and (walls.get("put") or {}).get("strike") == _cur_levels["put_wall"]["strike"]
+                    and (walls.get("maxpain") or {}).get("strike") == _cur_levels["max_pain"]["strike"])
+                if not _current_levels_match:
+                    snapchg["walls"] = None
+                    snapchg["walls_diagnostic"] = {"reason": "current_key_levels_mismatch"}
+                elif not _prev_levels.get("found"):
+                    snapchg["walls"] = None
+                    snapchg["walls_diagnostic"] = {
+                        "reason": "previous_chain_incomplete", "detail": _prev_levels.get("reason")}
+                else:
+                    snapchg["walls"] = {
+                        "call": _diff(_cur_levels["call_wall"]["strike"], _prev_levels["call_wall"]["strike"]),
+                        "put": _diff(_cur_levels["put_wall"]["strike"], _prev_levels["put_wall"]["strike"]),
+                        "maxpain": _diff(_cur_levels["max_pain"]["strike"], _prev_levels["max_pain"]["strike"]),
+                        "expiry_date": _cur_levels["expiry_date"]}
+                    snapchg["walls_diagnostic"] = {
+                        "reason": "aligned", "contract_month": prim_month,
+                        "expiry_date": _cur_levels["expiry_date"],
+                        "current_rows": _cur_levels["chain_stats"]["rows"],
+                        "previous_rows": _prev_levels["chain_stats"]["rows"]}
         if not snapchg["walls"]:
             _wd = snapchg["walls_diagnostic"]
             notes.append("選擇權 Call Wall／Put Wall／Max Pain 前日變化 unavailable：reason={}; detail={}".format(
