@@ -1027,24 +1027,18 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             notes.append("選擇權 OI 日對日變化採共同合約計算：主力={}; 共同合約={}; 本日有效合約={}（覆蓋率 {:.1%}）；前日有效合約={}（覆蓋率 {:.1%}）；僅本日/僅前日={} / {}，未補零、未納入新增合約".format(
                 prim_month or "missing", _chg["matched_count"], _chg["current_count"], _chg["current_coverage"],
                 _chg["previous_count"], _chg["previous_coverage"], _diag["current_only"], _diag["previous_only"]))
-        # 部位：日盤淨差值 (僅快照當日收集才可信)
-        _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} \
-            if (_sb or {}).get("trust_pos") else {}
-        _sod = {x.get("institution"): x for x in _sd.get("opt_pos_day", [])} \
-            if (_sb or {}).get("trust_pos") else {}
-        _pos = {}
-        for _k in ("foreign", "dealer"):
-            _cf = (fut_trade.get(("day", _k)) or {}).get("net")
-            _sf = (_sfd.get(_k) or {}).get("net_volume")
-            _co = (opt_pos.get(_k) or {}).get("net")
-            _so = (_sod.get(_k) or {}).get("net_volume")
-            _pos[_k] = {"fut_chg": _diff(_cf, _sf), "opt_chg": _diff(_co, _so)}
-        snapchg["pos"] = _pos
         _sw = _sd.get("walls") or {}
         snapchg["walls"] = {
             "call": _diff((walls["call"] or {}).get("strike"), (_sw.get("call_wall") or {}).get("strike")),
             "put": _diff((walls["put"] or {}).get("strike"), (_sw.get("put_wall") or {}).get("strike")),
             "maxpain": _diff((walls["maxpain"] or {}).get("strike"), (_sw.get("max_pain") or {}).get("strike"))}
+
+    # Position deltas are independent of option-expiry rollover.
+    # OI/Wall comparisons remain gated above; institutional positions do not.
+    if _sdate:
+        snapchg["pos"] = _snapshot_position_change(
+            _sd, bool((_sb or {}).get("trust_pos")), fut_trade, opt_pos
+        )
 
     return {"day": day, "night": night, "fut_oi": fut_oi, "fut_trade": fut_trade,
             "basis": basis, "basis_pct": basis_pct, "oi_chg": oi_chg,
@@ -1052,6 +1046,28 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             "opt_trade": opt_trade, "opt_split": opt_split, "walls": walls,
             "gamma": gamma, "trade_date": t0, "opt_expiry": prim_month, "snapchg": snapchg,
             "unavailable": unav, "notes": notes}
+
+
+
+def _snapshot_position_change(snapshot_data: dict, trust_pos: bool,
+                              fut_trade: dict, opt_pos: dict) -> dict:
+    """Calculate day-session institutional position deltas independently of option rollover."""
+    data = snapshot_data if isinstance(snapshot_data, dict) else {}
+    fut_rows = data.get("fut_trade_day", []) if trust_pos else []
+    opt_rows = data.get("opt_pos_day", []) if trust_pos else []
+    previous_fut = {row.get("institution"): row for row in fut_rows if isinstance(row, dict)}
+    previous_opt = {row.get("institution"): row for row in opt_rows if isinstance(row, dict)}
+    result = {}
+    for institution in ("foreign", "dealer"):
+        current_fut = (fut_trade.get(("day", institution)) or {}).get("net")
+        previous_fut_net = (previous_fut.get(institution) or {}).get("net_volume")
+        current_opt = (opt_pos.get(institution) or {}).get("net")
+        previous_opt_net = (previous_opt.get(institution) or {}).get("net_volume")
+        result[institution] = {
+            "fut_chg": _diff(current_fut, previous_fut_net),
+            "opt_chg": _diff(current_opt, previous_opt_net),
+        }
+    return result
 
 
 def _chain_rollover(snap_rows, snap_walls_primary, cur_primary):
