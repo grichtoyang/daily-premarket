@@ -628,7 +628,7 @@ def _asia_stale_note(mk: dict, t0: str) -> str | None:
             return None
         import re as _re4
         txt = prev[-1].read_text(encoding="utf-8")
-        m = _re4.search(r"### 2\\. 亞洲主要指數([\\s\\S]*?)(?=^### |\\Z)", txt, _re4.M)
+        m = _re4.search(r"### 2\. 亞洲主要指數([\s\S]*?)(?=^### |\Z)", txt, _re4.M)
         if not m:
             return None
         seg = m.group(1)
