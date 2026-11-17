@@ -85,8 +85,9 @@ def get_institutional(query_date: str = "") -> dict:
             return proxy
     params = {}
     if query_date:
-        # RWD API 要 yyyyMMdd (西元)，傳入 yyyymmdd (如 20260915) 直接可用
-        params = {"date": query_date, "response": "json"}
+        # BFI82U 日報表使用 dayDate + type=day；date 參數會被忽略，
+        # 導致 API 回傳最新日期而非要求的歷史交易日。
+        params = {"dayDate": query_date, "type": "day", "response": "json"}
     r = _fetch(BFI82U_URL, params=params or None)
     if r is None:
         return {}
