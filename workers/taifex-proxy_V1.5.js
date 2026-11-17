@@ -4884,7 +4884,7 @@ export default {
             gexRequestOptions
           );
         const chainFetchMs = Date.now() - stageStartedAt;
-        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "chain_fetch", duration_ms: chainFetchMs }));
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "chain_fetch", duration_ms: chainFetchMs, source: chainResult.source || null, fallback: Boolean(chainResult.fallback), http_status: chainResult.response.status }));
 
         if (!chainResult.response.ok) {
 
@@ -4933,7 +4933,7 @@ export default {
             gexRequestOptions
           );
         const deltaFetchMs = Date.now() - stageStartedAt;
-        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "delta_fetch", duration_ms: deltaFetchMs, index_duration_ms: deltaResult.diagnostics?.index_duration_ms ?? null, openapi_fetch_duration_ms: deltaResult.diagnostics?.openapi_fetch_duration_ms ?? null, attempts: deltaResult.diagnostics?.attempts?.map(x => ({ attempt: x.attempt, duration_ms: x.duration_ms ?? null, source: x.source, fallback: x.fallback, http_status: x.http_status })) ?? [] }));
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "delta_fetch", duration_ms: deltaFetchMs, index_duration_ms: deltaResult.diagnostics?.index_duration_ms ?? null, index_error: deltaResult.diagnostics?.index_error ?? null, openapi_fallback_duration_ms: deltaResult.diagnostics?.openapi_fallback_duration_ms ?? null, openapi_fetch_duration_ms: deltaResult.diagnostics?.openapi_fetch_duration_ms ?? null, attempts: deltaResult.diagnostics?.attempts?.map(x => ({ attempt: x.attempt, duration_ms: x.duration_ms ?? null, source: x.source, fallback: x.fallback, http_status: x.http_status })) ?? [] }));
 
         if (!deltaResult.found) {
 
