@@ -142,7 +142,16 @@ function apiValue(row, keys) {
   return null;
 }
 
-async function fetchTAIFEXOpenAPI(path) {
+const GEX_UPSTREAM_TIMEOUT_MS = 12000;
+
+function gexFetchOptions(options = {}) {
+  if (!Number.isFinite(options.deadlineAt)) return {};
+  const remaining = options.deadlineAt - Date.now();
+  if (remaining <= 0) throw new Error("GEX upstream deadline exceeded");
+  return { signal: AbortSignal.timeout(Math.min(GEX_UPSTREAM_TIMEOUT_MS, remaining)) };
+}
+
+async function fetchTAIFEXOpenAPI(path, options = {}) {
   const source_url = `${TAIFEX_OPENAPI}${path}`;
 
   try {
@@ -151,7 +160,8 @@ async function fetchTAIFEXOpenAPI(path) {
         "User-Agent":
           "Mozilla/5.0 (compatible; TAIFEX-Proxy/V1.1-OpenAPI-Fallback)",
         "Accept": "application/json,text/plain,*/*"
-      }
+      },
+      ...gexFetchOptions(options)
     });
 
     const text = await response.text();
@@ -373,8 +383,8 @@ function openApiOptionRows(apiRows, requestedISO = null) {
   return { found: rows.length > 0, date, rows };
 }
 
-async function fetchOpenAPIChainForDate(requestedISO) {
-  const result = await fetchTAIFEXOpenAPI("/DailyMarketReportOpt");
+async function fetchOpenAPIChainForDate(requestedISO, options = {}) {
+  const result = await fetchTAIFEXOpenAPI("/DailyMarketReportOpt", options);
   if (!result.found) return result;
   return openApiOptionRows(result.rows, requestedISO);
 }
@@ -497,8 +507,7 @@ function parseRows(html) {
 
   while ((match = trRegex.exec(html)) !== null) {
     const cells = [];
-    const cellRegex =
-      /<(td|th)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+    const cellRegex =      /<(td|th)\b[^>]*>([\s\S]*?)<\/\1>/gi;
 
     let cell;
 
@@ -515,8 +524,9 @@ function parseRows(html) {
 }
 
 
-async function fetchOpenAPIDeltaForDate(requestedISO) {
-  const result = await fetchTAIFEXOpenAPI("/DailyOptionsDelta");
+async function fetchOpenAPIDeltaForDate(requestedISO, requestContext = null) {
+  const load = async () => {
+    const result = await fetchTAIFEXOpenAPI("/DailyOptionsDelta", requestContext || {});
   if (!result.found) return result;
 
   const dates = [...new Set(result.rows.map(r =>
@@ -565,6 +575,16 @@ async function fetchOpenAPIDeltaForDate(requestedISO) {
     source_url: result.source_url,
     reason: rows.length ? null : "OpenAPI Delta returned no usable TXO rows"
   };
+  };
+
+  if (!requestContext) return load();
+  if (!requestContext.deltaOpenApiPromise) {
+    const startedAt = Date.now();
+    requestContext.deltaOpenApiPromise = load().finally(() => {
+      requestContext.deltaOpenApiDurationMs = Date.now() - startedAt;
+    });
+  }
+  return requestContext.deltaOpenApiPromise;
 }
 
 function fallbackResponseFromRows(rows, status = 200) {
@@ -574,7 +594,7 @@ function fallbackResponseFromRows(rows, status = 200) {
   return new Response(html, { status });
 }
 
-async function fetchTAIFEXPost(path, body) {
+async function fetchTAIFEXPost(path, body, options = {}) {
 
   let primaryError = null;
 
@@ -591,7 +611,8 @@ async function fetchTAIFEXPost(path, body) {
         "Content-Type":
           "application/x-www-form-urlencoded"
       },
-      body
+      body,
+      ...gexFetchOptions(options)
     });
 
     const html = await response.text();
@@ -620,7 +641,7 @@ async function fetchTAIFEXPost(path, body) {
     const requested = params.get("queryDate");
     if (commodity === "TXO" && requested) {
       const requestedISO = queryDateToISO(requested);
-      const fb = await fetchOpenAPIChainForDate(requestedISO);
+      const fb = await fetchOpenAPIChainForDate(requestedISO, options);
       if (fb.found) {
         return {
           response: fallbackResponseFromRows(fb.rows),
@@ -643,7 +664,8 @@ async function fetchTAIFEXPost(path, body) {
     const requestedISO = raw && raw.length === 8
       ? `${raw.slice(0,4)}-${raw.slice(4,6)}-${raw.slice(6,8)}`
       : raw;
-    const fb = await fetchOpenAPIDeltaForDate(requestedISO);
+    const fallbackContext = options.deltaFallbackContext || options;
+    const fb = await fetchOpenAPIDeltaForDate(requestedISO, fallbackContext);
     if (fb.found) {
       return {
         response: fallbackResponseFromRows(fb.rows),
@@ -997,8 +1019,7 @@ function parseOptionsInstitutional(rows) {
         "自營商",
         "投信",
         "外資",
-        "陸資"
-      ].includes(product)
+        "陸資"      ].includes(product)
     ) {
       break;
     }
@@ -1253,7 +1274,7 @@ function parseAnchors(html) {
   return links;
 }
 
-async function fetchTAIFEXText(url) {
+async function fetchTAIFEXText(url, options = {}) {
 
   const response = await fetch(url, {
     headers: {
@@ -1263,7 +1284,8 @@ async function fetchTAIFEXText(url) {
         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language":
         "zh-TW,zh;q=0.9,en;q=0.8"
-    }
+    },
+    ...gexFetchOptions(options)
   });
 
   return {
@@ -1273,7 +1295,7 @@ async function fetchTAIFEXText(url) {
 }
 
 
-async function fetchTAIEXCloseForDate(requestedISO) {
+async function fetchTAIEXCloseForDate(requestedISO, options = {}) {
   const requestedDigits =
     String(requestedISO ?? "").replace(/\D/g, "");
 
@@ -1296,7 +1318,8 @@ async function fetchTAIEXCloseForDate(requestedISO) {
           "Mozilla/5.0 (compatible; TAIFEX-Proxy/V1.0 — Production)",
         "Accept":
           "application/json,text/plain,*/*"
-      }
+      },
+      ...gexFetchOptions(options)
     });
   } catch (error) {
     return {
@@ -1497,8 +1520,7 @@ function normalCdf(x) {
     Math.exp(-0.5 * z * z) /
     Math.sqrt(2 * Math.PI);
   const cdf = 1 - pdf * poly;
-  return sign > 0 ? cdf : 1 - cdf;
-}
+  return sign > 0 ? cdf : 1 - cdf;}
 
 function normalPdf(x) {
   return (
@@ -1699,14 +1721,30 @@ function parseTXODeltaRows(rows) {
   return parseTXODeltaRowsWithDiagnostics(rows).data;
 }
 
-async function fetchTXODeltaForDate(requestedISO) {
-  const index = await fetchTAIFEXText(`${TAIFEX}/cht/3/dlOptDailyDelta`);
+async function fetchTXODeltaForDate(requestedISO, options = {}) {
+  const requestContext = {
+    deadlineAt: options.deadlineAt,
+    deltaOpenApiPromise: null,
+    deltaOpenApiDurationMs: null
+  };
+  const indexStartedAt = Date.now();
+  let index;
+  let indexError = null;
+  try {
+    index = await fetchTAIFEXText(`${TAIFEX}/cht/3/dlOptDailyDelta`, requestContext);
+  } catch (error) {
+    indexError = error?.message || String(error);
+    index = { response: { ok: false, status: 599 }, text: "" };
+  }
+  const indexDurationMs = Date.now() - indexStartedAt;
   const compact = requestedISO.replace(/-/g, "");
   const endpoint = `${TAIFEX}/cht/3/optDailyDeltaExcel`;
   const attempts = [];
 
   const openApiFallback = async reason => {
-    const fallback = await fetchOpenAPIDeltaForDate(requestedISO);
+    const fallbackStartedAt = Date.now();
+    const fallback = await fetchOpenAPIDeltaForDate(requestedISO, requestContext);
+    const fallbackDurationMs = Date.now() - fallbackStartedAt;
     const parsed = parseTXODeltaRowsWithDiagnostics(fallback.rows || []);
     const rows = parsed.data.filter(row =>
       row.contract_month && String(row.contract_month).startsWith("202")
@@ -1717,14 +1755,17 @@ async function fetchTXODeltaForDate(requestedISO) {
       diagnostics: {
         requested_date: requestedISO, source: "taifex_openapi",
         fallback_used: true, fallback_reason: reason,
-        index_http_status: index.response?.status ?? null, attempts,
+        index_http_status: index.response?.status ?? null,
+        index_duration_ms: indexDurationMs, index_error: indexError,
+        openapi_fallback_duration_ms: fallbackDurationMs,
+        openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs, attempts,
         parser: parsed.diagnostics, final_rows: rows.length,
         per_expiry_rows: parsed.diagnostics.per_expiry
       }
     };
   };
 
-  if (!index.response.ok) return openApiFallback(`TAIFEX Delta index HTTP ${index.response.status}`);
+  if (!index.response.ok) return openApiFallback(`TAIFEX Delta index HTTP ${index.response.status}${indexError ? `: ${indexError}` : ""}`);
   if (!index.text.includes(compact)) return openApiFallback(`TAIFEX Delta date ${compact} is not listed`);
 
   const bodies = [
@@ -1736,14 +1777,18 @@ async function fetchTXODeltaForDate(requestedISO) {
 
   for (let i = 0; i < bodies.length; i++) {
     try {
-      const result = await fetchTAIFEXPost("/cht/3/optDailyDeltaExcel", bodies[i]);
+      const attemptStartedAt = Date.now();
+      const result = await fetchTAIFEXPost("/cht/3/optDailyDeltaExcel", bodies[i], {
+        ...requestContext, deltaFallbackContext: requestContext
+      });
       lastStatus = result.response.status;
       const parsed = parseTXODeltaRowsWithDiagnostics(result.rows || []);
       const txo = parsed.data.filter(row =>
         row.contract_month && String(row.contract_month).startsWith("202")
       );
       attempts.push({
-        attempt: i + 1, source: result.source || "unknown",
+        attempt: i + 1, duration_ms: Date.now() - attemptStartedAt,
+        source: result.source || "unknown",
         fallback: Boolean(result.fallback), http_status: result.response.status,
         raw_rows: (result.rows || []).length, primary_error: result.primary_error || null,
         parser: parsed.diagnostics, accepted_txo_rows: txo.length
@@ -1754,7 +1799,9 @@ async function fetchTXODeltaForDate(requestedISO) {
           raw_rows: (result.rows || []).length, rows: txo,
           diagnostics: {
             requested_date: requestedISO, source: result.source || "taifex_web",
-            fallback_used: Boolean(result.fallback), attempts,
+            fallback_used: Boolean(result.fallback), index_duration_ms: indexDurationMs,
+            index_error: indexError, openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
+            attempts,
             parser: parsed.diagnostics, final_rows: txo.length,
             per_expiry_rows: parsed.diagnostics.per_expiry
           }
@@ -1773,7 +1820,8 @@ async function fetchTXODeltaForDate(requestedISO) {
     raw_rows: attempts.length ? attempts[attempts.length - 1].raw_rows || 0 : 0,
     rows: [],
     diagnostics: { requested_date: requestedISO, source: "taifex_web",
-      fallback_used: false, attempts, final_rows: 0 }
+      fallback_used: false, index_duration_ms: indexDurationMs, index_error: indexError,
+      openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs, attempts, final_rows: 0 }
   };
 }
 
@@ -1997,8 +2045,7 @@ function buildGammaProxy(
       const y2 =
         cumulative;
 
-      const ratio =
-        y2 === y1
+      const ratio =        y2 === y1
           ? 0
           : -y1 / (y2 - y1);
 
@@ -2497,8 +2544,7 @@ function calculateKeyLevelsForExpiry(chain, expiry) {
     found: true,
     call_wall: {
       strike: callWall.strike,
-      open_interest: callWall.open_interest
-    },
+      open_interest: callWall.open_interest    },
     put_wall: {
       strike: putWall.strike,
       open_interest: putWall.open_interest
@@ -2997,8 +3043,7 @@ function buildGammaForCommonExpiry(
 
       total +=
         gamma *
-        r.open_interest *
-        50 *
+        r.open_interest *        50 *
         S *
         S *
         0.01 *
@@ -3497,8 +3542,7 @@ export default {
           date_source: _pgd ? "page" : "fetch-day",
           data,
           parser: {
-            version: "4.1",
-            row_count: result.rows.length,
+            version: "4.1",            row_count: result.rows.length,
             contracts: data.length
           }
         });
@@ -3997,8 +4041,7 @@ export default {
           ok: false,
           source: "TAIFEX",
           error: String(error)
-        }, 500);
-      }
+        }, 500);      }
     }
 
     /* V1.0 — Production Compact TXO Market Structure
@@ -4497,8 +4540,7 @@ export default {
         if (!taifexDate) {
           return json({
             ok: false,
-            error: "Invalid date. Use YYYY-MM-DD."
-          }, 400);
+            error: "Invalid date. Use YYYY-MM-DD."          }, 400);
         }
 
         const queryDate =
@@ -4789,6 +4831,8 @@ export default {
 
         const queryDate =
           queryDateToISO(taifexDate);
+        const gexStartedAt = Date.now();
+        const gexRequestOptions = { deadlineAt: gexStartedAt + 32000 };
 
         const chainBody =
           new URLSearchParams({
@@ -4804,11 +4848,15 @@ export default {
             commodity_id2t2: ""
           }).toString();
 
+        let stageStartedAt = Date.now();
         const chainResult =
           await fetchTAIFEXPost(
             "/cht/3/optDailyMarketReport",
-            chainBody
+            chainBody,
+            gexRequestOptions
           );
+        const chainFetchMs = Date.now() - stageStartedAt;
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "chain_fetch", duration_ms: chainFetchMs }));
 
         if (!chainResult.response.ok) {
 
@@ -4825,10 +4873,13 @@ export default {
           }, 502);
         }
 
+        stageStartedAt = Date.now();
         const parsedChain =
           parseTXOOptionChain(
             chainResult.rows
           );
+        const chainParseMs = Date.now() - stageStartedAt;
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "chain_parse", duration_ms: chainParseMs, rows: parsedChain.data.length }));
 
         if (!parsedChain.found) {
 
@@ -4847,10 +4898,14 @@ export default {
           }, 502);
         }
 
+        stageStartedAt = Date.now();
         const deltaResult =
           await fetchTXODeltaForDate(
-            queryDate
+            queryDate,
+            gexRequestOptions
           );
+        const deltaFetchMs = Date.now() - stageStartedAt;
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "delta_fetch", duration_ms: deltaFetchMs, index_duration_ms: deltaResult.diagnostics?.index_duration_ms ?? null, openapi_fetch_duration_ms: deltaResult.diagnostics?.openapi_fetch_duration_ms ?? null, attempts: deltaResult.diagnostics?.attempts?.map(x => ({ attempt: x.attempt, duration_ms: x.duration_ms ?? null, source: x.source, fallback: x.fallback, http_status: x.http_status })) ?? [] }));
 
         if (!deltaResult.found) {
 
@@ -4871,11 +4926,16 @@ export default {
           }, 502);
         }
 
+        stageStartedAt = Date.now();
         const taiexResult =
           await fetchTAIEXCloseForDate(
-            queryDate
+            queryDate,
+            gexRequestOptions
           );
+        const taiexFetchMs = Date.now() - stageStartedAt;
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "taiex_fetch", duration_ms: taiexFetchMs, found: taiexResult.found }));
 
+        stageStartedAt = Date.now();
         const expirySelection =
           findCommonExpiryWithDiagnostics(
             parsedChain.data,
@@ -4915,6 +4975,8 @@ export default {
                   : (taiexResult.reason || "TAIEX underlying price unavailable")
               };
         gamma.expiry_selection_diagnostics = expirySelection.diagnostics;
+        const gexCalculationMs = Date.now() - stageStartedAt;
+        console.log(JSON.stringify({ event: "gex_stage_timing", date: queryDate, stage: "gex_calculation", duration_ms: gexCalculationMs, total_duration_ms: Date.now() - gexStartedAt, found: gamma.found, modeled_contracts: gamma.option_contracts_modeled ?? 0 }));
 
         return json({
 
@@ -4997,7 +5059,6 @@ export default {
 
         const queryDate =
           queryDateToISO(taifexDate);
-
         const body =
           new URLSearchParams({
             queryType: "2",
@@ -5498,7 +5559,6 @@ export default {
                 cells: row
               })
             )
-
         });
 
       } catch (error) {
