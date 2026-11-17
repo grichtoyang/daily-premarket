@@ -61,7 +61,7 @@ class OptionsChainOICoverageTests(unittest.TestCase):
         diagnostic = _options_chain_oi_change_diagnostic(current, previous, "202611")
         self.assertIsNotNone(result)
         self.assertEqual(result["c_chg"], 10)
-        self.assertEqual(result["p_chg"], 0)
+        self.assertIsNone(result["p_chg"])
         self.assertEqual(result["matched_count"], 1)
         self.assertEqual(result["current_count"], 2)
         self.assertEqual(result["current_identity_count"], 3)
