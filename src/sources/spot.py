@@ -304,7 +304,7 @@ def build(t0: str) -> dict:
     if otc_turnover_yi is None:
         st41 = spot_raw.tpex_turnover_st41(roc)
         if st41.get("date_ok") and st41.get("value") is not None:
-            otc_turnover_yi = st41["value"] / 100  # 百萬元→億元
+            otc_turnover_yi = st41["value"] / 100000  # 仟元→億元
             otc_turnover_source = "TPEx 日成交量值 st41_result.php"
         else:
             notes.append(f"上櫃成交金額歷史備援缺值或日期不符 (T0={roc})")
