@@ -358,9 +358,44 @@ def turnover_tw(roc: str) -> float | None:
 # ---------- 上櫃 ----------
 
 def tpex_highlight(roc: str) -> dict:
-    """單列 + Date 驗證。DailyTradingValue 單位：百萬元。"""
-    j = _get_json(f"{TPEX_API}/tpex_mainborad_highlight")
+    """優先使用 TPEx 指定日期歷史資料；OpenAPI 最新快照僅作嚴格日期備援。"""
     out = {"row": None, "date_ok": False}
+
+    # TPEx 官網歷史「上櫃股票市場現況」接受民國年/月/日，
+    # 回傳 reportDate、upNum... 及 tradeAmount；OpenAPI highlight 不支援歷史日期。
+    if len(roc) == 7 and roc.isdigit():
+        roc_date = f"{roc[:3]}/{roc[3:5]}/{roc[5:7]}"
+        url = (
+            "https://www.tpex.org.tw/web/stock/aftertrading/market_highlight/"
+            f"highlight_result.php?l=zh-tw&o=json&d={roc_date}"
+        )
+        history = _get_json(url)
+        if isinstance(history, dict) and _num(history.get("iTotalRecords")):
+            report_date = str(history.get("reportDate", "")).replace("/", "")
+            row = {
+                "Date": report_date,
+                "PriceRiseCompanyNumbers": history.get("upNum"),
+                "PriceDeclineCompanyNumbers": history.get("downNum"),
+                "PriceFlatCompanyNumbers": history.get("noChangeNum"),
+                "LimitUpCompanyNumbers": history.get("upStopNum"),
+                "LimitDownCompanyNumbers": history.get("downStopNum"),
+                # tradeAmount 與官方日成交量值資料的金額口徑相符，單位為百萬元。
+                "DailyTradingValue": history.get("tradeAmount"),
+            }
+            required = (
+                "PriceRiseCompanyNumbers", "PriceDeclineCompanyNumbers",
+                "PriceFlatCompanyNumbers", "LimitUpCompanyNumbers",
+                "LimitDownCompanyNumbers", "DailyTradingValue",
+            )
+            if report_date == roc and all(_num(row.get(key)) is not None for key in required):
+                return {"row": row, "date_ok": True}
+            print(
+                f"[WARN] TPEx historical highlight date/fields mismatch: "
+                f"requested={roc}, actual={report_date}, keys={list(history)[:12]}"
+            )
+
+    # 歷史端點不可用時，保留原 OpenAPI 最新快照作備援，但絕不放寬日期驗證。
+    j = _get_json(f"{TPEX_API}/tpex_mainborad_highlight")
     if isinstance(j, list) and j:
         row = j[0]
         out = {"row": row, "date_ok": str(row.get("Date", "")) == roc}
