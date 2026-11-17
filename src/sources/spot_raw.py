@@ -58,6 +58,36 @@ def _get_json(url: str, timeout: int = 40):
         print(f"[WARN] raw fetch failed {url}: {e}")
         return None
 
+def _tpex_payload_shape(payload):
+    """Return bounded structural diagnostics without dumping a full market payload."""
+    if not isinstance(payload, dict):
+        return {"type": type(payload).__name__}
+    tables = payload.get("tables")
+    result = {
+        "type": "dict",
+        "top_keys": list(payload)[:16],
+        "date": payload.get("date"),
+        "stat": payload.get("stat"),
+        "tables_type": type(tables).__name__,
+    }
+    if isinstance(tables, list):
+        result["tables_count"] = len(tables)
+        if tables and isinstance(tables[0], dict):
+            table = tables[0]
+            result["table0_keys"] = list(table)[:16]
+            fields = table.get("fields") or table.get("field") or table.get("columns")
+            rows = table.get("data") or table.get("rows") or table.get("aaData")
+            result["table0_fields"] = fields[:40] if isinstance(fields, list) else type(fields).__name__
+            result["table0_rows_type"] = type(rows).__name__
+            result["table0_rows_count"] = len(rows) if isinstance(rows, list) else None
+            result["table0_first_row"] = rows[0] if isinstance(rows, list) and rows else None
+        elif tables:
+            result["table0_type"] = type(tables[0]).__name__
+            result["table0_preview"] = str(tables[0])[:500]
+    elif isinstance(tables, dict):
+        result["tables_keys"] = list(tables)[:20]
+    return result
+
 def roc8(iso_date: str) -> str:
     """2026-09-15 -> 1150915。"""
     y, m, d = iso_date.split("-")
@@ -374,7 +404,7 @@ def tpex_highlight(roc: str) -> dict:
             print(
                 f"[INFO] TPEx historical highlight response: requested={roc}, "
                 f"records={total}, reportDate={report_date or 'missing'}, "
-                f"keys={list(history)[:16]}"
+                f"shape={_tpex_payload_shape(history)}"
             )
             if total:
                 row = {
@@ -435,7 +465,7 @@ def tpex_turnover_st41(roc: str) -> dict:
     rows = payload.get("aaData") if isinstance(payload, dict) else None
     print(
         f"[INFO] TPEx st41 response: requested={target}, "
-        f"type={type(payload).__name__}, keys={list(payload)[:16] if isinstance(payload, dict) else []}, "
+        f"type={type(payload).__name__}, shape={_tpex_payload_shape(payload)}, "
         f"rows={len(rows) if isinstance(rows, list) else 'missing'}"
     )
     if not isinstance(rows, list):
