@@ -1175,7 +1175,11 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _wl = (_sg.get("walls") or {})
     _wdiag = _sg.get("walls_diagnostic") or {}
     _wall_unavailable = {
-        "snapshot_date_mismatch": "快照日期不符（實際 {}／應為 {}）".format(
+        "snapshot_date_mismatch": "前日快照日期不符（實際 {}／應為 {}）".format(
+            _wdiag.get("actual_date"), _wdiag.get("expected_date")),
+        "current_chain_date_mismatch": "本日 Chain 日期不符（實際 {}／應為 {}）".format(
+            _wdiag.get("actual_date"), _wdiag.get("expected_date")),
+        "current_key_levels_date_mismatch": "本日 Key Levels 日期不符（實際 {}／應為 {}）".format(
             _wdiag.get("actual_date"), _wdiag.get("expected_date")),
         "previous_trading_day_calendar_unavailable": "交易日曆不可用",
         "previous_snapshot_unavailable": "前日快照不存在",
