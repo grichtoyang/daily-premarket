@@ -387,69 +387,72 @@ def turnover_tw(roc: str) -> float | None:
 
 # ---------- 上櫃 ----------
 
+def _tpex_first_table(payload: dict):
+    tables = payload.get("tables") if isinstance(payload, dict) else None
+    if not isinstance(tables, list) or not tables or not isinstance(tables[0], dict):
+        return None
+    return tables[0]
+
+
+def _tpex_row_value(fields: list, row: list, field_name: str):
+    """Read a TPEx table cell by its published field name, never by assumed position."""
+    try:
+        index = fields.index(field_name)
+    except (ValueError, AttributeError):
+        return None
+    if not isinstance(row, (list, tuple)) or index >= len(row):
+        return None
+    return row[index]
+
+
 def tpex_highlight(roc: str) -> dict:
-    """優先使用 TPEx 指定日期歷史資料；OpenAPI 最新快照僅作嚴格日期備援。"""
+    """Parse TPEx historical highlight_result.php tables schema for an exact ROC date."""
     out = {"row": None, "date_ok": False}
+    if len(roc) != 7 or not roc.isdigit():
+        print(f"[WARN] TPEx historical highlight invalid ROC date: {roc}")
+        return out
 
-    if len(roc) == 7 and roc.isdigit():
-        roc_date = f"{roc[:3]}/{roc[3:5]}/{roc[5:7]}"
-        url = (
-            "https://www.tpex.org.tw/web/stock/aftertrading/market_highlight/"
-            f"highlight_result.php?l=zh-tw&o=json&d={roc_date}"
-        )
-        history = _get_json(url)
-        if isinstance(history, dict):
-            total = _num(history.get("iTotalRecords"))
-            report_date = str(history.get("reportDate", "")).replace("/", "")
-            print(
-                f"[INFO] TPEx historical highlight response: requested={roc}, "
-                f"records={total}, reportDate={report_date or 'missing'}, "
-                f"shape={_tpex_payload_shape(history)}"
-            )
-            if total:
-                row = {
-                    "Date": report_date,
-                    "PriceRiseCompanyNumbers": history.get("upNum"),
-                    "PriceDeclineCompanyNumbers": history.get("downNum"),
-                    "PriceFlatCompanyNumbers": history.get("noChangeNum"),
-                    "LimitUpCompanyNumbers": history.get("upStopNum"),
-                    "LimitDownCompanyNumbers": history.get("downStopNum"),
-                    "DailyTradingValue": history.get("tradeAmount"),
-                }
-                required = (
-                    "PriceRiseCompanyNumbers", "PriceDeclineCompanyNumbers",
-                    "PriceFlatCompanyNumbers", "LimitUpCompanyNumbers",
-                    "LimitDownCompanyNumbers", "DailyTradingValue",
-                )
-                missing = [key for key in required if _num(row.get(key)) is None]
-                if report_date == roc and not missing:
-                    print(f"[INFO] TPEx historical highlight accepted date={roc}")
-                    return {"row": row, "date_ok": True}
-                print(
-                    f"[WARN] TPEx historical highlight rejected: requested={roc}, "
-                    f"actual={report_date or 'missing'}, missing_fields={missing}"
-                )
-        else:
-            print(
-                f"[WARN] TPEx historical highlight unexpected response: "
-                f"requested={roc}, type={type(history).__name__}"
-            )
+    roc_date = f"{roc[:3]}/{roc[3:5]}/{roc[5:7]}"
+    url = (
+        "https://www.tpex.org.tw/web/stock/aftertrading/market_highlight/"
+        f"highlight_result.php?l=zh-tw&o=json&d={roc_date}"
+    )
+    payload = _get_json(url)
+    table = _tpex_first_table(payload)
+    actual_date = str(payload.get("date", "")).replace("/", "") if isinstance(payload, dict) else ""
+    fields = table.get("fields") if table else None
+    rows = table.get("data") if table else None
+    print(
+        f"[INFO] TPEx historical highlight: requested={roc}, actual={actual_date or 'missing'}, "
+        f"fields={len(fields) if isinstance(fields, list) else 'missing'}, "
+        f"rows={len(rows) if isinstance(rows, list) else 'missing'}"
+    )
+    if actual_date != roc or not isinstance(fields, list) or not isinstance(rows, list) or not rows:
+        print(f"[WARN] TPEx historical highlight date/schema rejected: requested={roc}, actual={actual_date}")
+        return out
 
-    j = _get_json(f"{TPEX_API}/tpex_mainborad_highlight")
-    if isinstance(j, list) and j:
-        row = j[0]
-        out = {"row": row, "date_ok": str(row.get("Date", "")) == roc}
-        print(
-            f"[INFO] TPEx OpenAPI highlight fallback: requested={roc}, "
-            f"actual={row.get('Date', 'missing')}, accepted={out['date_ok']}"
-        )
-    else:
-        print(f"[WARN] TPEx OpenAPI highlight fallback empty: requested={roc}, type={type(j).__name__}")
-    return out
+    source_row = rows[0]
+    mapping = {
+        "PriceRiseCompanyNumbers": "上漲家數",
+        "PriceDeclineCompanyNumbers": "下跌家數",
+        "PriceFlatCompanyNumbers": "平盤家數",
+        "LimitUpCompanyNumbers": "漲停家數",
+        "LimitDownCompanyNumbers": "跌停家數",
+        "DailyTradingValue": "本日總成交值(佰萬元)",
+    }
+    row = {"Date": actual_date}
+    for target, source in mapping.items():
+        row[target] = _tpex_row_value(fields, source_row, source)
+    missing = [key for key in mapping if _num(row.get(key)) is None]
+    if missing:
+        print(f"[WARN] TPEx historical highlight fields missing/invalid: {missing}")
+        return out
+    print(f"[INFO] TPEx historical highlight accepted date={roc}")
+    return {"row": row, "date_ok": True}
 
 
 def tpex_turnover_st41(roc: str) -> dict:
-    """從 TPEx 日成交量值（月資料）取得指定日期成交金額；來源欄位為仟元。"""
+    """Parse TPEx monthly st41 tables and find the exact date; source amount is thousand NTD."""
     out = {"value": None, "date_ok": False}
     if len(roc) != 7 or not roc.isdigit():
         print(f"[WARN] TPEx st41 invalid ROC date: {roc}")
@@ -462,28 +465,31 @@ def tpex_turnover_st41(roc: str) -> dict:
         f"st41_result.php?l=zh-tw&d={month}&s=0,asc,0&o=json"
     )
     payload = _get_json(url)
-    rows = payload.get("aaData") if isinstance(payload, dict) else None
+    table = _tpex_first_table(payload)
+    fields = table.get("fields") if table else None
+    rows = table.get("data") if table else None
     print(
-        f"[INFO] TPEx st41 response: requested={target}, "
-        f"type={type(payload).__name__}, shape={_tpex_payload_shape(payload)}, "
+        f"[INFO] TPEx st41: requested={target}, "
+        f"table_date={payload.get('date', 'missing') if isinstance(payload, dict) else 'missing'}, "
+        f"fields={len(fields) if isinstance(fields, list) else 'missing'}, "
         f"rows={len(rows) if isinstance(rows, list) else 'missing'}"
     )
-    if not isinstance(rows, list):
-        print(f"[WARN] TPEx st41 aaData missing: requested={target}")
+    if not isinstance(fields, list) or not isinstance(rows, list):
+        print(f"[WARN] TPEx st41 tables schema missing: requested={target}")
         return out
 
-    for row in rows:
-        if not isinstance(row, (list, tuple)) or len(row) < 3:
+    for source_row in rows:
+        row_date = str(_tpex_row_value(fields, source_row, "日期") or "").strip().replace("/", "")
+        if row_date != roc:
             continue
-        row_date = str(row[0]).strip().replace("/", "")
-        if row_date == roc:
-            value = _num(row[2])
-            if value is not None:
-                print(f"[INFO] TPEx st41 turnover accepted date={roc}; raw_value_thousand_ntd={value}")
-                return {"value": value, "date_ok": True}
-            print(f"[WARN] TPEx st41 turnover value invalid: date={roc}, raw={row[2]!r}")
+        value = _num(_tpex_row_value(fields, source_row, "金額（仟元）"))
+        if value is None:
+            print(f"[WARN] TPEx st41 amount invalid for exact date={target}")
             return out
-    print(f"[WARN] TPEx st41 requested date not found: requested={target}")
+        print(f"[INFO] TPEx st41 turnover accepted date={roc}; raw_value_thousand_ntd={value}")
+        return {"value": value, "date_ok": True}
+
+    print(f"[WARN] TPEx st41 exact date not found: requested={target}")
     return out
 
 def tpex_margin(roc: str) -> dict:
