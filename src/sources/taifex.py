@@ -359,8 +359,8 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
     matched = len(common)
     current_total, previous_total = current["identity_count"], previous["identity_count"]
     return {
-        "c_chg": sum(move["d_oi"] for move in calls),
-        "p_chg": sum(move["d_oi"] for move in puts),
+        "c_chg": sum(move["d_oi"] for move in calls) if calls else None,
+        "p_chg": sum(move["d_oi"] for move in puts) if puts else None,
         "c_up": calls[0] if calls and calls[0]["d_oi"] > 0 else None,
         "c_dn": calls[-1] if calls and calls[-1]["d_oi"] < 0 else None,
         "p_up": puts[0] if puts and puts[0]["d_oi"] > 0 else None,
