@@ -420,15 +420,20 @@ def tpex_highlight(roc: str) -> dict:
     payload = _get_json(url)
     table = _tpex_first_table(payload)
     actual_date = str(payload.get("date", "")).replace("/", "") if isinstance(payload, dict) else ""
+    expected_gregorian = f"{int(roc[:3]) + 1911}{roc[3:]}"
     fields = table.get("fields") if table else None
     rows = table.get("data") if table else None
     print(
-        f"[INFO] TPEx historical highlight: requested={roc}, actual={actual_date or 'missing'}, "
+        f"[INFO] TPEx historical highlight: requested_roc={roc}, "
+        f"expected_gregorian={expected_gregorian}, actual={actual_date or 'missing'}, "
         f"fields={len(fields) if isinstance(fields, list) else 'missing'}, "
         f"rows={len(rows) if isinstance(rows, list) else 'missing'}"
     )
-    if actual_date != roc or not isinstance(fields, list) or not isinstance(rows, list) or not rows:
-        print(f"[WARN] TPEx historical highlight date/schema rejected: requested={roc}, actual={actual_date}")
+    if actual_date != expected_gregorian or not isinstance(fields, list) or not isinstance(rows, list) or not rows:
+        print(
+            f"[WARN] TPEx historical highlight date/schema rejected: "
+            f"requested_roc={roc}, expected_gregorian={expected_gregorian}, actual={actual_date}"
+        )
         return out
 
     source_row = rows[0]
