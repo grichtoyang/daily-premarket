@@ -507,7 +507,8 @@ function parseRows(html) {
 
   while ((match = trRegex.exec(html)) !== null) {
     const cells = [];
-    const cellRegex =      /<(td|th)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+    const cellRegex =
+      /<(td|th)\b[^>]*>([\s\S]*?)<\/\1>/gi;
 
     let cell;
 
@@ -527,54 +528,54 @@ function parseRows(html) {
 async function fetchOpenAPIDeltaForDate(requestedISO, requestContext = null) {
   const load = async () => {
     const result = await fetchTAIFEXOpenAPI("/DailyOptionsDelta", requestContext || {});
-  if (!result.found) return result;
+    if (!result.found) return result;
 
-  const dates = [...new Set(result.rows.map(r =>
-    apiDateISO(apiValue(r, ["Date", "date"]))
-  ).filter(Boolean))];
-  const date = dates.includes(requestedISO) ? requestedISO : (dates[0] || null);
+    const dates = [...new Set(result.rows.map(r =>
+      apiDateISO(apiValue(r, ["Date", "date"]))
+    ).filter(Boolean))];
+    const date = dates.includes(requestedISO) ? requestedISO : (dates[0] || null);
 
-  if (requestedISO && !dates.includes(requestedISO)) {
+    if (requestedISO && !dates.includes(requestedISO)) {
+      return {
+        found: false,
+        date,
+        available_dates: dates,
+        rows: [],
+        reason: `OpenAPI Delta date ${date || "unknown"} does not contain requested ${requestedISO}`
+      };
+    }
+
+    const rows = [];
+    for (const r of result.rows) {
+      const contract = apiValue(r, ["Contract", "ContractCode", "contract"]);
+      if (contract && contract !== "TXO") continue;
+
+      const month = apiValue(r, ["ContractMonth(Week)", "ContractMonth", "contractMonth"]);
+      const expiryRaw = apiValue(r, ["ContractExpiryDate", "ExpiryDate", "contract_expiry_date"]);
+      const expiry = expiryRaw ? apiDateISO(expiryRaw) : inferTXOExpiry(month, requestedISO || date);
+      const strike = nullableNumber(apiValue(r, ["StrikePrice", "Strike", "strike"]));
+      const cpRaw = String(apiValue(r, ["CallPut", "Call_Put", "callPut", "call_put"]) ?? "");
+      const type = /Call|買權/i.test(cpRaw) ? "call" : /Put|賣權/i.test(cpRaw) ? "put" : null;
+      const delta = nullableNumber(apiValue(r, ["Delta", "delta"]));
+      if (!month || !expiry || strike === null || !type || delta === null) continue;
+
+      rows.push({
+        contract: "TXO",
+        contract_month: month,
+        contract_expiry_date: expiry,
+        strike,
+        type,
+        delta
+      });
+    }
+
     return {
-      found: false,
+      found: rows.length > 0,
       date,
-      available_dates: dates,
-      rows: [],
-      reason: `OpenAPI Delta date ${date || "unknown"} does not contain requested ${requestedISO}`
+      rows,
+      source_url: result.source_url,
+      reason: rows.length ? null : "OpenAPI Delta returned no usable TXO rows"
     };
-  }
-
-  const rows = [];
-  for (const r of result.rows) {
-    const contract = apiValue(r, ["Contract", "ContractCode", "contract"]);
-    if (contract && contract !== "TXO") continue;
-
-    const month = apiValue(r, ["ContractMonth(Week)", "ContractMonth", "contractMonth"]);
-    const expiryRaw = apiValue(r, ["ContractExpiryDate", "ExpiryDate", "contract_expiry_date"]);
-    const expiry = expiryRaw ? apiDateISO(expiryRaw) : inferTXOExpiry(month, requestedISO || date);
-    const strike = nullableNumber(apiValue(r, ["StrikePrice", "Strike", "strike"]));
-    const cpRaw = String(apiValue(r, ["CallPut", "Call_Put", "callPut", "call_put"]) ?? "");
-    const type = /Call|買權/i.test(cpRaw) ? "call" : /Put|賣權/i.test(cpRaw) ? "put" : null;
-    const delta = nullableNumber(apiValue(r, ["Delta", "delta"]));
-    if (!month || !expiry || strike === null || !type || delta === null) continue;
-
-    rows.push({
-      contract: "TXO",
-      contract_month: month,
-      contract_expiry_date: expiry,
-      strike,
-      type,
-      delta
-    });
-  }
-
-  return {
-    found: rows.length > 0,
-    date,
-    rows,
-    source_url: result.source_url,
-    reason: rows.length ? null : "OpenAPI Delta returned no usable TXO rows"
-  };
   };
 
   if (!requestContext) return load();
@@ -1019,7 +1020,8 @@ function parseOptionsInstitutional(rows) {
         "自營商",
         "投信",
         "外資",
-        "陸資"      ].includes(product)
+        "陸資"
+      ].includes(product)
     ) {
       break;
     }
@@ -1520,7 +1522,8 @@ function normalCdf(x) {
     Math.exp(-0.5 * z * z) /
     Math.sqrt(2 * Math.PI);
   const cdf = 1 - pdf * poly;
-  return sign > 0 ? cdf : 1 - cdf;}
+  return sign > 0 ? cdf : 1 - cdf;
+}
 
 function normalPdf(x) {
   return (
@@ -1756,17 +1759,23 @@ async function fetchTXODeltaForDate(requestedISO, options = {}) {
         requested_date: requestedISO, source: "taifex_openapi",
         fallback_used: true, fallback_reason: reason,
         index_http_status: index.response?.status ?? null,
-        index_duration_ms: indexDurationMs, index_error: indexError,
+        index_duration_ms: indexDurationMs,
+        index_error: indexError,
         openapi_fallback_duration_ms: fallbackDurationMs,
-        openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs, attempts,
+        openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
+        attempts,
         parser: parsed.diagnostics, final_rows: rows.length,
         per_expiry_rows: parsed.diagnostics.per_expiry
       }
     };
   };
 
-  if (!index.response.ok) return openApiFallback(`TAIFEX Delta index HTTP ${index.response.status}${indexError ? `: ${indexError}` : ""}`);
-  if (!index.text.includes(compact)) return openApiFallback(`TAIFEX Delta date ${compact} is not listed`);
+  if (!index.response.ok) {
+    return openApiFallback(`TAIFEX Delta index HTTP ${index.response.status}${indexError ? `: ${indexError}` : ""}`);
+  }
+  if (!index.text.includes(compact)) {
+    return openApiFallback(`TAIFEX Delta date ${compact} is not listed`);
+  }
 
   const bodies = [
     new URLSearchParams({ queryDate: compact, queryDate2: compact, date: compact, scd_kind_id: "TXO" }).toString(),
@@ -1776,10 +1785,11 @@ async function fetchTXODeltaForDate(requestedISO, options = {}) {
   let lastStatus = null;
 
   for (let i = 0; i < bodies.length; i++) {
+    const attemptStartedAt = Date.now();
     try {
-      const attemptStartedAt = Date.now();
       const result = await fetchTAIFEXPost("/cht/3/optDailyDeltaExcel", bodies[i], {
-        ...requestContext, deltaFallbackContext: requestContext
+        ...requestContext,
+        deltaFallbackContext: requestContext
       });
       lastStatus = result.response.status;
       const parsed = parseTXODeltaRowsWithDiagnostics(result.rows || []);
@@ -1799,8 +1809,10 @@ async function fetchTXODeltaForDate(requestedISO, options = {}) {
           raw_rows: (result.rows || []).length, rows: txo,
           diagnostics: {
             requested_date: requestedISO, source: result.source || "taifex_web",
-            fallback_used: Boolean(result.fallback), index_duration_ms: indexDurationMs,
-            index_error: indexError, openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
+            fallback_used: Boolean(result.fallback),
+            index_duration_ms: indexDurationMs,
+            index_error: indexError,
+            openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
             attempts,
             parser: parsed.diagnostics, final_rows: txo.length,
             per_expiry_rows: parsed.diagnostics.per_expiry
@@ -1808,8 +1820,14 @@ async function fetchTXODeltaForDate(requestedISO, options = {}) {
         };
       }
     } catch (error) {
-      attempts.push({ attempt: i + 1, source: "taifex_web",
-        fallback: false, http_status: lastStatus, error: error?.message || String(error) });
+      attempts.push({
+        attempt: i + 1,
+        duration_ms: Date.now() - attemptStartedAt,
+        source: "taifex_web",
+        fallback: false,
+        http_status: lastStatus,
+        error: error?.message || String(error)
+      });
     }
   }
 
@@ -1819,9 +1837,13 @@ async function fetchTXODeltaForDate(requestedISO, options = {}) {
     source_url: endpoint,
     raw_rows: attempts.length ? attempts[attempts.length - 1].raw_rows || 0 : 0,
     rows: [],
-    diagnostics: { requested_date: requestedISO, source: "taifex_web",
-      fallback_used: false, index_duration_ms: indexDurationMs, index_error: indexError,
-      openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs, attempts, final_rows: 0 }
+    diagnostics: {
+      requested_date: requestedISO, source: "taifex_web",
+      fallback_used: false, index_duration_ms: indexDurationMs,
+      index_error: indexError,
+      openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
+      attempts, final_rows: 0
+    }
   };
 }
 
@@ -2045,7 +2067,8 @@ function buildGammaProxy(
       const y2 =
         cumulative;
 
-      const ratio =        y2 === y1
+      const ratio =
+        y2 === y1
           ? 0
           : -y1 / (y2 - y1);
 
@@ -2544,7 +2567,8 @@ function calculateKeyLevelsForExpiry(chain, expiry) {
     found: true,
     call_wall: {
       strike: callWall.strike,
-      open_interest: callWall.open_interest    },
+      open_interest: callWall.open_interest
+    },
     put_wall: {
       strike: putWall.strike,
       open_interest: putWall.open_interest
@@ -3043,7 +3067,8 @@ function buildGammaForCommonExpiry(
 
       total +=
         gamma *
-        r.open_interest *        50 *
+        r.open_interest *
+        50 *
         S *
         S *
         0.01 *
@@ -3542,7 +3567,8 @@ export default {
           date_source: _pgd ? "page" : "fetch-day",
           data,
           parser: {
-            version: "4.1",            row_count: result.rows.length,
+            version: "4.1",
+            row_count: result.rows.length,
             contracts: data.length
           }
         });
@@ -4041,7 +4067,8 @@ export default {
           ok: false,
           source: "TAIFEX",
           error: String(error)
-        }, 500);      }
+        }, 500);
+      }
     }
 
     /* V1.0 — Production Compact TXO Market Structure
@@ -4540,7 +4567,8 @@ export default {
         if (!taifexDate) {
           return json({
             ok: false,
-            error: "Invalid date. Use YYYY-MM-DD."          }, 400);
+            error: "Invalid date. Use YYYY-MM-DD."
+          }, 400);
         }
 
         const queryDate =
@@ -5059,6 +5087,7 @@ export default {
 
         const queryDate =
           queryDateToISO(taifexDate);
+
         const body =
           new URLSearchParams({
             queryType: "2",
@@ -5559,6 +5588,7 @@ export default {
                 cells: row
               })
             )
+
         });
 
       } catch (error) {
