@@ -352,19 +352,21 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
         return None
     moves = [{"strike": key[2], "type": key[3],
               "d_oi": current["values"][key] - previous["values"][key]} for key in common]
-    calls = sorted((move for move in moves if move["type"] == "call"),
-                   key=lambda move: move["d_oi"], reverse=True)
-    puts = sorted((move for move in moves if move["type"] == "put"),
-                  key=lambda move: move["d_oi"], reverse=True)
+    calls = [move for move in moves if move["type"] == "call"]
+    puts = [move for move in moves if move["type"] == "put"]
+    calls_up = sorted(calls, key=lambda move: (-move["d_oi"], move["strike"]))
+    calls_down = sorted(calls, key=lambda move: (move["d_oi"], move["strike"]))
+    puts_up = sorted(puts, key=lambda move: (-move["d_oi"], move["strike"]))
+    puts_down = sorted(puts, key=lambda move: (move["d_oi"], move["strike"]))
     matched = len(common)
     current_total, previous_total = current["identity_count"], previous["identity_count"]
     return {
         "c_chg": sum(move["d_oi"] for move in calls) if calls else None,
         "p_chg": sum(move["d_oi"] for move in puts) if puts else None,
-        "c_up": calls[0] if calls and calls[0]["d_oi"] > 0 else None,
-        "c_dn": calls[-1] if calls and calls[-1]["d_oi"] < 0 else None,
-        "p_up": puts[0] if puts and puts[0]["d_oi"] > 0 else None,
-        "p_dn": puts[-1] if puts and puts[-1]["d_oi"] < 0 else None,
+        "c_up": calls_up[0] if calls_up and calls_up[0]["d_oi"] > 0 else None,
+        "c_dn": calls_down[0] if calls_down and calls_down[0]["d_oi"] < 0 else None,
+        "p_up": puts_up[0] if puts_up and puts_up[0]["d_oi"] > 0 else None,
+        "p_dn": puts_down[0] if puts_down and puts_down[0]["d_oi"] < 0 else None,
         "matched_count": matched,
         "current_count": len(current["values"]),
         "previous_count": len(previous["values"]),
