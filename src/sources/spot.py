@@ -282,6 +282,8 @@ def build(t0: str) -> dict:
     # ---- 上櫃漲跌/成交 ----
     ob = {"up": None, "down": None, "flat": None, "limit_up": None, "limit_down": None}
     otc_turnover_yi = None
+    otc_breadth_source = None
+    otc_turnover_source = None
     hl = spot_raw.tpex_highlight(roc)
     if hl["row"] is not None and hl["date_ok"]:
         row = hl["row"]
@@ -290,12 +292,34 @@ def build(t0: str) -> dict:
               "flat": _optional_float(row.get("PriceFlatCompanyNumbers")),
               "limit_up": _optional_float(row.get("LimitUpCompanyNumbers")),
               "limit_down": _optional_float(row.get("LimitDownCompanyNumbers"))}
+        otc_breadth_source = "TPEx 歷史市場現況 highlight_result.php"
         otc_turnover_value = _optional_float(row.get("DailyTradingValue"))
         if otc_turnover_value is not None:
             otc_turnover_yi = otc_turnover_value / 100  # 百萬元→億元
-        sources["otc"] = "TPEX OpenAPI tpex_mainborad_highlight"
+            otc_turnover_source = "TPEx 歷史市場現況 highlight_result.php"
     else:
         notes.append(f"上櫃 highlight 日期不符或缺值 (回傳 {(hl['row'] or {}).get('Date')}, T0={roc})")
+
+    # 成交金額獨立備援：即使市場現況端點失敗，也從 TPEx 日成交量值月資料取指定日期。
+    if otc_turnover_yi is None:
+        st41 = spot_raw.tpex_turnover_st41(roc)
+        if st41.get("date_ok") and st41.get("value") is not None:
+            otc_turnover_yi = st41["value"] / 100  # 百萬元→億元
+            otc_turnover_source = "TPEx 日成交量值 st41_result.php"
+        else:
+            notes.append(f"上櫃成交金額歷史備援缺值或日期不符 (T0={roc})")
+
+    if otc_breadth_source:
+        sources["otc_breadth"] = otc_breadth_source
+    if otc_turnover_source:
+        sources["otc_turnover"] = otc_turnover_source
+    if otc_breadth_source or otc_turnover_source:
+        sources["otc"] = "；".join(
+            part for part in (
+                f"漲跌家數：{otc_breadth_source}" if otc_breadth_source else None,
+                f"成交金額：{otc_turnover_source}" if otc_turnover_source else None,
+            ) if part
+        )
     for k in ("up", "down", "flat", "limit_up", "limit_down"):
         if ob[k] is None:
             unavailable.append(f"otc_breadth.{k}")
