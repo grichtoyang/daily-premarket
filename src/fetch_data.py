@@ -1173,10 +1173,20 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 11．Call Wall")
     A("")
     _wl = (_sg.get("walls") or {})
+    _wdiag = _sg.get("walls_diagnostic") or {}
+    _wall_unavailable = {
+        "snapshot_date_mismatch": "快照日期不符（實際 {}／應為 {}）".format(
+            _wdiag.get("actual_date"), _wdiag.get("expected_date")),
+        "previous_trading_day_calendar_unavailable": "交易日曆不可用",
+        "previous_snapshot_unavailable": "前日快照不存在",
+        "current_chain_incomplete": "本日 Chain 不完整（{}）".format(_wdiag.get("detail") or "資料不足"),
+        "previous_chain_incomplete": "前日同月份 Chain 不完整（{}）".format(_wdiag.get("detail") or "資料不足"),
+        "current_key_levels_mismatch": "本日 Chain 重算結果與當前 Key Levels 不一致",
+    }.get(_wdiag.get("reason"), "無法可靠重算（{}）".format(_wdiag.get("reason") or "原因未提供"))
     A(_tbl([("Call Wall 價位", _fi(_w['call'].get('strike')), SRC_FX if _w['call'].get('strike') is not None else MISSING),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("與前一交易日的變化" + (f" ({_sdate}→{t0})" if _wl.get("call") is not None else ""),
-             _f2s(_wl.get("call")), SRC_SNAP if _wl.get("call") is not None else "端點未提供")],
+             _f2s(_wl.get("call")), SRC_SNAP if _wl.get("call") is not None else _wall_unavailable)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 12．Put Wall")
@@ -1184,7 +1194,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(_tbl([("Put Wall 價位", _fi(_w['put'].get('strike')), SRC_FX if _w['put'].get('strike') is not None else MISSING),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("與前一交易日的變化" + (f" ({_sdate}→{t0})" if _wl.get("put") is not None else ""),
-             _f2s(_wl.get("put")), SRC_SNAP if _wl.get("put") is not None else "端點未提供")],
+             _f2s(_wl.get("put")), SRC_SNAP if _wl.get("put") is not None else _wall_unavailable)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 13．Gamma Wall")
@@ -1306,7 +1316,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(_tbl([("Max Pain 價位", _fi(_w['maxpain'].get('strike')), SRC_FX if _w['maxpain'].get('strike') is not None else MISSING),
             ("對應到期月份", _w['expiry'] or MISSING, SRC_FX if _w['expiry'] is not None else MISSING),
             ("與前一交易日的變化" + (f" ({_sdate}→{t0})" if _wl.get("maxpain") is not None else ""),
-             _f2s(_wl.get("maxpain")), SRC_SNAP if _wl.get("maxpain") is not None else "端點未提供")],
+             _f2s(_wl.get("maxpain")), SRC_SNAP if _wl.get("maxpain") is not None else _wall_unavailable)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 17．選擇權法人日盤、夜盤交易")
