@@ -1194,7 +1194,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 "reason": "current_key_levels_date_mismatch", "expected_date": t0,
                 "actual_date": walls_date}
         else:
-            _cur_levels = _options_chain_key_levels_for_month(chain, prim_month)
+            _cur_levels = _options_chain_key_levels_for_month(chain, prim_month, prim.get("expiry"))
             if not _cur_levels.get("found"):
                 snapchg["walls"] = None
                 snapchg["walls_diagnostic"] = {
