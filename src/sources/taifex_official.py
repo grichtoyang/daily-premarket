@@ -41,22 +41,24 @@ def _proxy_top10(kind: str, t0: str, month: str) -> dict | None:
         return None
 
 def _get(path: str, timeout: int = 60):
-    if path not in _cache:
-        _cache[path] = []
-        import time
-        for attempt in range(2):
-            try:
-                r = requests.get(BASE + path, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
-                r.raise_for_status()
-                j = r.json()
-                if isinstance(j, list) and j:
-                    _cache[path] = j
-                    break
-                time.sleep(3)
-            except Exception as e:  # noqa: BLE001
-                print(f"[WARN] taifex official {path} failed (try {attempt + 1}): {e}")
-                time.sleep(2 ** (attempt + 1))
-    return _cache[path]
+    if path in _cache:
+        return _cache[path]
+    import time
+    for attempt in range(2):
+        try:
+            r = requests.get(BASE + path, headers={**HEADERS, "accept": "application/json"}, timeout=timeout)
+            r.raise_for_status()
+            j = r.json()
+            if isinstance(j, list) and j:
+                _cache[path] = j
+                return j
+            print(f"[WARN] taifex official {path} returned empty/non-list data (try {attempt + 1})")
+            time.sleep(3)
+        except Exception as e:  # noqa: BLE001
+            print(f"[WARN] taifex official {path} failed (try {attempt + 1}): {e}")
+            time.sleep(2 ** (attempt + 1))
+    # Empty results are deliberately not cached: a later caller may retry the source.
+    return []
 
 def _num(v):
     try:
