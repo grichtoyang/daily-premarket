@@ -1143,7 +1143,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             notes.append(
                 "選擇權 OI 前日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; "
                 "本日/前日合約識別數={}/{}; 僅本日/僅前日={}/{}; "
-                "本日/前日 OI 缺值={}/{}; 無效/重複識別={}/{}".format(
+                "本日/前日 OI 缺值或無效={}/{}; 無效/重複識別={}/{}".format(
                     _diag["reason"], prim_month or "missing",
                     _diag["current_count"], _diag["previous_count"],
                     _diag["current_identity_count"], _diag["previous_identity_count"],
@@ -1154,9 +1154,9 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             _diag, _chg = snapchg["chain_diagnostic"], snapchg["chain"]
             notes.append(
                 "選擇權 OI 前日變化採共同有效合約計算：主力={}; 共同合約={}; "
-                "本日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值 {}）；"
+                "本日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值/無效 {}）；"
                 "前日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值 {}）；"
-                "僅本日/僅前日={} / {}，未補零".format(
+                "僅本日/僅前日有效合約={} / {}，未補零".format(
                     prim_month or "missing", _chg["matched_count"],
                     _chg["current_count"], _chg["current_identity_count"], _chg["current_coverage"],
                     _chg["current_missing_oi"], _chg["previous_count"],
