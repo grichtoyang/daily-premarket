@@ -315,50 +315,49 @@ def _oi_distribution(rows: list, limit: int = 10) -> list[dict]:
 
 
 def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) -> dict | None:
-    """Calculate OI deltas over valid common contracts; never zero-fill new or missing contracts."""
-    import math
+    """Calculate OI deltas on valid common contracts; skip missing OI without zero-filling.
 
+    Coverage denominator includes every unique identity in the selected month,
+    including identities with missing/invalid OI. Invalid or duplicate identities
+    invalidate the comparison because their contract-level values are ambiguous.
+    """
+    import math
     if not primary_month or not isinstance(current_chain, list) or not isinstance(previous_chain, list):
         return None
 
-    def _index(rows):
-        indexed = {}
+    def index(rows):
+        values, seen = {}, set()
+        identity_count = missing_oi = 0
         for row in rows:
             if not isinstance(row, dict) or row.get("contract_month") != primary_month:
                 continue
-            identity = (row.get("contract_month"), row.get("contract_expiry_date"),
-                        row.get("strike"), row.get("type"))
-            if any(value is None for value in identity):
+            key = (row.get("contract_month"), row.get("contract_expiry_date"),
+                   row.get("strike"), row.get("type"))
+            if any(value is None for value in key) or key[3] not in ("call", "put") or key in seen:
                 return None
-            if identity in indexed:
-                return None
+            seen.add(key)
+            identity_count += 1
             oi = row.get("open_interest")
-            if isinstance(oi, bool) or not isinstance(oi, (int, float)):
-                return None
-            if not math.isfinite(float(oi)) or oi < 0:
-                return None
-            indexed[identity] = oi
-        return indexed
+            if isinstance(oi, bool) or not isinstance(oi, (int, float)) or not math.isfinite(float(oi)) or oi < 0:
+                missing_oi += 1
+                continue
+            values[key] = oi
+        return {"values": values, "identity_count": identity_count, "missing_oi": missing_oi}
 
-    current = _index(current_chain)
-    previous = _index(previous_chain)
+    current, previous = index(current_chain), index(previous_chain)
     if current is None or previous is None:
         return None
-    common = current.keys() & previous.keys()
+    common = current["values"].keys() & previous["values"].keys()
     if not common:
         return None
-
-    moves = []
-    for key in common:
-        kind = key[3]
-        if kind not in ("call", "put"):
-            return None
-        moves.append({"strike": key[2], "type": kind, "d_oi": current[key] - previous[key]})
-
+    moves = [{"strike": key[2], "type": key[3],
+              "d_oi": current["values"][key] - previous["values"][key]} for key in common]
     calls = sorted((move for move in moves if move["type"] == "call"),
                    key=lambda move: move["d_oi"], reverse=True)
     puts = sorted((move for move in moves if move["type"] == "put"),
                   key=lambda move: move["d_oi"], reverse=True)
+    matched = len(common)
+    current_total, previous_total = current["identity_count"], previous["identity_count"]
     return {
         "c_chg": sum(move["d_oi"] for move in calls),
         "p_chg": sum(move["d_oi"] for move in puts),
@@ -366,58 +365,173 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
         "c_dn": calls[-1] if calls and calls[-1]["d_oi"] < 0 else None,
         "p_up": puts[0] if puts and puts[0]["d_oi"] > 0 else None,
         "p_dn": puts[-1] if puts and puts[-1]["d_oi"] < 0 else None,
-        "matched_count": len(common),
-        "current_count": len(current),
-        "previous_count": len(previous),
-        "current_coverage": len(common) / len(current) if current else 0.0,
-        "previous_coverage": len(common) / len(previous) if previous else 0.0,
-        "partial": len(common) != len(current) or len(common) != len(previous),
+        "matched_count": matched,
+        "current_count": len(current["values"]),
+        "previous_count": len(previous["values"]),
+        "current_identity_count": current_total,
+        "previous_identity_count": previous_total,
+        "current_missing_oi": current["missing_oi"],
+        "previous_missing_oi": previous["missing_oi"],
+        "current_coverage": matched / current_total if current_total else 0.0,
+        "previous_coverage": matched / previous_total if previous_total else 0.0,
+        "partial": (matched != current_total or matched != previous_total
+                    or current["missing_oi"] > 0 or previous["missing_oi"] > 0),
     }
 
 
 def _options_chain_oi_change_diagnostic(current_chain, previous_chain, primary_month: str) -> dict:
-    """Explain why primary-expiry OI deltas cannot be calculated; never infer zero OI."""
+    """Report the same valid/invalid identity sets used by _options_chain_oi_change."""
     import math
     result = {"primary_month": primary_month, "current_count": 0, "previous_count": 0,
+              "current_identity_count": 0, "previous_identity_count": 0,
               "current_only": 0, "previous_only": 0, "current_missing_oi": 0,
-              "previous_missing_oi": 0, "invalid_identity": 0, "duplicate_identity": 0, "reason": None}
+              "previous_missing_oi": 0, "invalid_identity": 0, "duplicate_identity": 0,
+              "reason": None}
     if not primary_month:
         result["reason"] = "primary_expiry_missing"
         return result
     if not isinstance(current_chain, list) or not isinstance(previous_chain, list):
         result["reason"] = "chain_payload_missing"
         return result
+
     def index(rows, side):
-        out = {}
+        values, seen = {}, set()
         for row in rows:
             if not isinstance(row, dict) or row.get("contract_month") != primary_month:
                 continue
-            key = (row.get("contract_month"), row.get("contract_expiry_date"), row.get("strike"), row.get("type"))
-            if any(value is None for value in key):
+            key = (row.get("contract_month"), row.get("contract_expiry_date"),
+                   row.get("strike"), row.get("type"))
+            if any(value is None for value in key) or key[3] not in ("call", "put"):
                 result["invalid_identity"] += 1
                 continue
-            if key in out:
+            if key in seen:
                 result["duplicate_identity"] += 1
                 continue
+            seen.add(key)
+            result[side + "_identity_count"] += 1
             oi = row.get("open_interest")
             if isinstance(oi, bool) or not isinstance(oi, (int, float)) or not math.isfinite(float(oi)) or oi < 0:
                 result[side + "_missing_oi"] += 1
                 continue
-            out[key] = oi
-        result[side + "_count"] = len(out)
-        return out
-    current = index(current_chain, "current")
-    previous = index(previous_chain, "previous")
+            values[key] = oi
+        result[side + "_count"] = len(values)
+        return values
+
+    current, previous = index(current_chain, "current"), index(previous_chain, "previous")
     result["current_only"] = len(current.keys() - previous.keys())
     result["previous_only"] = len(previous.keys() - current.keys())
-    if result["invalid_identity"]: reason = "invalid_contract_identity"
-    elif result["duplicate_identity"]: reason = "duplicate_contract_identity"
-    elif result["current_missing_oi"] or result["previous_missing_oi"]: reason = "open_interest_missing_or_invalid"
-    elif not current or not previous: reason = "primary_expiry_chain_empty"
-    elif result["current_only"] or result["previous_only"]: reason = "contract_set_mismatch"
-    else: reason = "aligned"
+    if result["invalid_identity"]:
+        reason = "invalid_contract_identity"
+    elif result["duplicate_identity"]:
+        reason = "duplicate_contract_identity"
+    elif not current or not previous:
+        reason = "primary_expiry_chain_empty"
+    elif not (current.keys() & previous.keys()):
+        reason = "no_common_valid_contracts"
+    elif result["current_missing_oi"] or result["previous_missing_oi"]:
+        reason = "open_interest_missing_or_invalid"
+    elif result["current_only"] or result["previous_only"]:
+        reason = "contract_set_mismatch"
+    else:
+        reason = "aligned"
     result["reason"] = reason
     return result
+
+
+def _options_chain_key_levels_for_month(chain, primary_month: str, expiry_date: str | None = None) -> dict:
+    """Recalculate TAIFEX Walls/Max Pain for one expiry; require complete unique OI."""
+    import math
+
+    def unavailable(reason, **extra):
+        return {"found": False, "reason": reason, **extra}
+
+    if not primary_month or not isinstance(chain, list):
+        return unavailable("primary_expiry_or_chain_missing")
+    rows = [row for row in chain if isinstance(row, dict)
+            and row.get("contract_month") == primary_month]
+    if not rows:
+        return unavailable("primary_expiry_chain_empty")
+
+    def norm_date(value):
+        value = str(value or "").strip().replace("-", "")
+        return value if len(value) == 8 and value.isdigit() else None
+
+    wanted = norm_date(expiry_date) if expiry_date else None
+    expiry_values = {norm_date(row.get("contract_expiry_date")) for row in rows}
+    if None in expiry_values:
+        return unavailable("invalid_contract_expiry")
+    if wanted:
+        rows = [row for row in rows if norm_date(row.get("contract_expiry_date")) == wanted]
+        if not rows:
+            return unavailable("requested_expiry_not_found", expiry_date=expiry_date)
+        actual_expiry = wanted
+    elif len(expiry_values) == 1:
+        actual_expiry = next(iter(expiry_values))
+    else:
+        return unavailable("multiple_expiry_dates")
+
+    seen, calls, puts, strikes = set(), [], [], set()
+    for row in rows:
+        kind, strike, oi = row.get("type"), row.get("strike"), row.get("open_interest")
+        identity = (row.get("contract_month"), norm_date(row.get("contract_expiry_date")), strike, kind)
+        if kind not in ("call", "put") or strike is None or isinstance(strike, bool):
+            return unavailable("invalid_contract_identity", expiry_date=actual_expiry)
+        if not isinstance(strike, (int, float)) or not math.isfinite(float(strike)):
+            return unavailable("invalid_strike", expiry_date=actual_expiry)
+        if identity in seen:
+            return unavailable("duplicate_contract_identity", expiry_date=actual_expiry)
+        seen.add(identity)
+        if isinstance(oi, bool) or not isinstance(oi, (int, float)) or not math.isfinite(float(oi)) or oi < 0:
+            return unavailable("open_interest_missing_or_invalid", expiry_date=actual_expiry)
+        strikes.add(strike)
+        if oi > 0:
+            (calls if kind == "call" else puts).append((strike, oi))
+    if not calls or not puts:
+        return unavailable("call_or_put_side_empty", expiry_date=actual_expiry)
+
+    call_wall = sorted(calls, key=lambda item: (-item[1], item[0]))[0]
+    put_wall = sorted(puts, key=lambda item: (-item[1], item[0]))[0]
+    pains = []
+    for settlement in sorted(strikes):
+        call_pain = sum(oi * max(0, settlement - strike) for strike, oi in calls)
+        put_pain = sum(oi * max(0, strike - settlement) for strike, oi in puts)
+        pains.append((settlement, call_pain + put_pain, call_pain, put_pain))
+    max_pain = sorted(pains, key=lambda item: (item[1], item[0]))[0]
+    return {"found": True, "expiry_date": actual_expiry[:4] + "-" + actual_expiry[4:6] + "-" + actual_expiry[6:],
+            "call_wall": {"strike": call_wall[0], "open_interest": call_wall[1]},
+            "put_wall": {"strike": put_wall[0], "open_interest": put_wall[1]},
+            "max_pain": {"strike": max_pain[0], "total_pain": max_pain[1],
+                         "call_pain": max_pain[2], "put_pain": max_pain[3]},
+            "chain_stats": {"rows": len(rows), "call_rows": len(calls),
+                            "put_rows": len(puts), "strike_count": len(strikes)}}
+
+
+def _previous_trading_day_iso(t0: str) -> str | None:
+    """Resolve prior trading day with shared TWSE calendar, including year rollover."""
+    from datetime import date as _date, timedelta as _td
+    import src.t0 as _cal
+
+    try:
+        cursor = _date.fromisoformat(t0)
+    except (TypeError, ValueError):
+        return None
+    loaded = {}
+    for _ in range(370):
+        cursor -= _td(days=1)
+        year = cursor.year
+        if year not in loaded:
+            try:
+                closed = _cal.load_closed(year)
+            except Exception as exc:  # noqa: BLE001
+                print("[WARN] 前一交易日曆載入失敗（{}）：{}".format(year, exc))
+                return None
+            if _cal._LAST_CAL_ERROR:
+                print("[WARN] 前一交易日曆不可用（{}）：{}".format(year, _cal._LAST_CAL_ERROR))
+                return None
+            loaded[year] = closed
+        if _cal.is_trading_day(cursor, loaded[year]):
+            return cursor.isoformat()
+    return None
 
 def _rows(payload: dict | None) -> list:
     d = (payload or {}).get("data")
