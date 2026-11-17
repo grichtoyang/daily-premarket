@@ -21,7 +21,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: daily-data
+  group: branch-write-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -30,6 +30,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -103,5 +105,8 @@ jobs:
             # 訊息用 T0（檔名基準）而非 DATE，避免休市日訊息與檔案不符
             T0=$(basename "$T0FILE" .md | sed 's/DATA_REPORT_//')
             git commit -m "chore(data): DATA_REPORT_${T0}"
-            git push
+            # 共用分支寫入鎖之外，再同步遠端；若同檔衝突，rebase 會安全失敗並停止。
+            git fetch origin "+refs/heads/${GITHUB_REF_NAME}:refs/remotes/origin/${GITHUB_REF_NAME}"
+            git rebase "origin/${GITHUB_REF_NAME}"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
