@@ -600,12 +600,26 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
     return merged, filled
 
 def _asia_stale_note(mk: dict, t0: str) -> str | None:
-    """亞股與前份 DATA 完全相同即疑似 Yahoo 未更新，回傳註記或 None（永不拋錯）。
-    全缺值時無法判斷，回 None（缺值本就會標 unavailable）。"""
+    """Disclose Asian index quotes whose exchange date differs from report T0."""
     try:
         rows = mk.get("亞洲主要指數") or []
-        cur = [(q.get("symbol"), _f2(q.get("price")), _f2(q.get("change")))
-               for _, q in rows if q.get("price") is not None]
+        mismatched = [
+            (name, str(q.get("date")))
+            for name, q in rows
+            if isinstance(q, dict) and q.get("date") and str(q.get("date")) != t0
+        ]
+        if mismatched:
+            detail = "、".join(f"{name}={day}" for name, day in mismatched)
+            return (
+                f"亞洲指數行情日期與 T0（{t0}）不同：{detail}。"
+                "可能是當地休市或 Yahoo 更新延遲；這些數值不是 T0 當日行情，"
+                "不可當成當日同步訊號。"
+            )
+
+        cur = [
+            (q.get("symbol"), _f2(q.get("price")), _f2(q.get("change")))
+            for _, q in rows if isinstance(q, dict) and q.get("price") is not None
+        ]
         if not cur:
             return None
         files = sorted(OUT_DIR.glob("DATA_REPORT_*.md"))
@@ -614,7 +628,7 @@ def _asia_stale_note(mk: dict, t0: str) -> str | None:
             return None
         import re as _re4
         txt = prev[-1].read_text(encoding="utf-8")
-        m = _re4.search(r"### 2\. 亞洲主要指數([\s\S]*?)(?=^### |\Z)", txt, _re4.M)
+        m = _re4.search(r"### 2\\. 亞洲主要指數([\\s\\S]*?)(?=^### |\\Z)", txt, _re4.M)
         if not m:
             return None
         seg = m.group(1)
@@ -624,6 +638,49 @@ def _asia_stale_note(mk: dict, t0: str) -> str | None:
         return None
     except Exception:
         return None
+
+
+def _previous_taiwan_trading_date(t0: str) -> str | None:
+    """Resolve the exact prior Taiwan trading day; fail closed if the calendar is unavailable."""
+    try:
+        from datetime import date as _date
+        from src import t0 as _calendar
+        day = _date.fromisoformat(t0)
+        closed = _calendar.load_closed(day.year)
+        if _calendar._LAST_CAL_ERROR:
+            return None
+        previous = _calendar.prev_trading_day(day, closed)
+        if previous.year != day.year:
+            prior_year_closed = _calendar.load_closed(previous.year)
+            if _calendar._LAST_CAL_ERROR:
+                return None
+            closed.update(prior_year_closed)
+            previous = _calendar.prev_trading_day(day, closed)
+        return previous.isoformat()
+    except Exception:
+        return None
+
+
+def _history_pair_for_t0(rows: list, t0: str, previous_date: str | None):
+    """Return (previous trading day, T0) rows only when both exact dates exist once."""
+    if not t0 or not previous_date:
+        return None
+    by_date = {}
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        raw_date = str(row.get("date") or "").strip()
+        if len(raw_date) == 8 and raw_date.isdigit():
+            row_date = f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:8]}"
+        elif (len(raw_date) == 10 and raw_date[4] == "-" and raw_date[7] == "-"):
+            row_date = raw_date
+        else:
+            continue
+        by_date.setdefault(row_date, []).append(row)
+    if len(by_date.get(previous_date, [])) != 1 or len(by_date.get(t0, [])) != 1:
+        return None
+    return by_date[previous_date][0], by_date[t0][0]
+
 
 def last_weekday(d: date) -> date:
     """相容舊介面：T0 取今天之前的最近平日。新邏輯請用 src.t0.resolve。"""
@@ -1057,20 +1114,31 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     ]
     _pch_rows = _pch.get("rows") or []
     _pch_src = "TAIFEX Proxy" if _pch.get("via") == "proxy" else SRC_FX_OFF
-    if len(_pch_rows) >= 2:
-        _a, _b = _pch_rows[-2], _pch_rows[-1]
+    _pch_prev_date = _previous_taiwan_trading_date(t0)
+    _pch_pair = _history_pair_for_t0(_pch_rows, t0, _pch_prev_date)
+    _pch_missing_reason = None
+    if _pch_pair is not None:
+        _a, _b = _pch_pair
         _vol_ratio_change = _diff2(_b["vol_ratio"], _a["vol_ratio"])
         _oi_ratio_change = _diff2(_b["oi_ratio"], _a["oi_ratio"])
-        _pc_rows += [(f"Call／Put 成交量比例變化 ({_a['date']}→{_b['date']})",
+        _pc_rows += [(f"Put／Call 成交量比例變化 ({_a['date']}→{_b['date']})",
                       _f2(_vol_ratio_change), "百分點（pp）",
                       _source_if_available(_vol_ratio_change, _pch_src)),
-                     (f"Call／Put OI 比例變化 ({_a['date']}→{_b['date']})",
+                     (f"Put／Call OI 比例變化 ({_a['date']}→{_b['date']})",
                       _f2(_oi_ratio_change), "百分點（pp）",
                       _source_if_available(_oi_ratio_change, _pch_src))]
     else:
-        _pc_rows += [("Call／Put 成交量比例變化", MISSING, "百分點（pp）", "端點未提供"),
-                     ("Call／Put OI 比例變化", MISSING, "百分點（pp）", "端點未提供")]
+        _pch_missing_reason = (
+            "台灣交易日曆不可用，無法確認前一交易日"
+            if not _pch_prev_date
+            else f"TAIFEX PutCallRatio 缺少 {_pch_prev_date} 或 {t0} 的唯一有效資料列"
+        )
+        _period = f"{_pch_prev_date}→{t0}" if _pch_prev_date else f"前一交易日→{t0}"
+        _pc_rows += [(f"Put／Call 成交量比例變化 ({_period})", MISSING, "百分點（pp）", MISSING),
+                     (f"Put／Call OI 比例變化 ({_period})", MISSING, "百分點（pp）", MISSING)]
     A(_tbl(_pc_rows, ("項目", "數值", "單位", "資料來源")))
+    if _pch_missing_reason:
+        A(f"**比例變化未計算原因：** {_pch_missing_reason}")
     _ratio_summary_src = "TAIFEX Proxy chain" if any(_ot[k] is not None for k in ("vol_ratio", "oi_ratio", "pc_ratio")) else MISSING
     _pch_summary_src = (_pch_src + " PutCallRatio"
                         if any(row[3] != MISSING for row in _pc_rows[3:]) else MISSING)
