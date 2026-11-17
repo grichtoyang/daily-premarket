@@ -1092,60 +1092,126 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if gamma_date and gamma_date != t0:
         notes.append(f"Gamma Wall/Flip 資料日期 {gamma_date} (來源 {gsrc})")
 
-    # ---------- 快照差值 (V1.4+；無快照則維持 unavailable) ----------
+    # ---------- 快照差值：嚴格核對前一交易日，選擇權按當日主力月份獨立比較 ----------
     from datetime import date as _dd, timedelta as _td
+    _expected_snapshot_date = _previous_trading_day_iso(t0)
     _t1 = (_dd.fromisoformat(t0) - _td(days=1)).isoformat()
     _sb = snapshot_bundle(_t1)
     _sdate = (_sb or {}).get("date")
     _sd = (_sb or {}).get("data") or {}
-    snapchg = {"date": _sdate}
-    if not _sdate:
-        snapchg["chain_diagnostic"] = {"reason": "previous_snapshot_unavailable"}
-        notes.append("選擇權 OI 日對日變化 unavailable：前一日快照不存在或無法讀取（previous_snapshot_unavailable）")
-    # C2 跨到期換月檢查：快照主力到期 vs 當前主力到期不同 → 日對日差值無意義
-    # （實證：10-14 快照主力 202610W2，當前 202610F3；舊寫法會拿 F3 今值減 W2 舊值）。
-    # 注意：不能只比到期集合是否相交（兩邊常同時含新舊合約），必須比主力。
+    snapchg = {"date": _sdate, "expected_date": _expected_snapshot_date}
     _roll, _roll_old = _chain_rollover(
         _sd.get("chain", []),
         ((_sd.get("walls") or {}).get("primary_expiry") or {}).get("contract_month"),
         prim_month)
-    if _sdate and _roll is True:
+
+    if not _sdate:
         snapchg["chain"] = None
         snapchg["walls"] = None
-        notes.append(f"跨到期換月（舊{_roll_old}→新{prim_month}），日對日 OI/Walls 變化不適用")
-    elif _sdate and _roll is None:
+        snapchg["chain_diagnostic"] = {"reason": "previous_snapshot_unavailable"}
+        snapchg["walls_diagnostic"] = {"reason": "previous_snapshot_unavailable"}
+        notes.append("選擇權 OI／Walls 前日比較 unavailable：前一日快照不存在或無法讀取")
+    elif not _expected_snapshot_date:
         snapchg["chain"] = None
         snapchg["walls"] = None
-        notes.append(f"前一日主力到期月份無法確認（快照值：{_roll_old or '缺失'}），日對日 OI/Walls 變化 unavailable")
-    elif _sdate and _roll is False:
-        # 只有前後日主力到期合約集合完整一致，且每筆 OI 都有效，才計算日對日差值。
+        snapchg["chain_diagnostic"] = {"reason": "previous_trading_day_calendar_unavailable"}
+        snapchg["walls_diagnostic"] = {"reason": "previous_trading_day_calendar_unavailable"}
+        notes.append("選擇權 OI／Walls 前日比較 unavailable：無法可靠取得前一交易日（交易日曆不可用）")
+    elif _sdate != _expected_snapshot_date:
+        snapchg["chain"] = None
+        snapchg["walls"] = None
+        snapchg["chain_diagnostic"] = {
+            "reason": "snapshot_date_mismatch", "expected_date": _expected_snapshot_date,
+            "actual_date": _sdate}
+        snapchg["walls_diagnostic"] = {
+            "reason": "snapshot_date_mismatch", "expected_date": _expected_snapshot_date,
+            "actual_date": _sdate}
+        notes.append(
+            "選擇權 OI／Walls 前日比較 unavailable：快照實際日期 {}，正確前一交易日應為 {}；"
+            "不以跨日資料冒充日對日".format(_sdate, _expected_snapshot_date))
+    else:
         _previous_chain = _sd.get("chain", [])
-        snapchg["chain_diagnostic"] = _options_chain_oi_change_diagnostic(chain, _previous_chain, prim_month)
+        snapchg["chain_diagnostic"] = _options_chain_oi_change_diagnostic(
+            chain, _previous_chain, prim_month)
         snapchg["chain"] = _options_chain_oi_change(chain, _previous_chain, prim_month)
         if snapchg["chain"] is not None:
-            # These deltas are locally calculated from the current TAIFEX chain and
-            # the prior chain stored in the Worker snapshot bundle; they are not
-            # supplied by a dedicated OI-change endpoint.
-            snapchg["chain"]["snapshot_date"] = _sdate
-            snapchg["chain"]["current_date"] = t0
-            snapchg["chain"]["source"] = "Cloudflare Worker KV snapshot bundle"
+            snapchg["chain"].update({
+                "snapshot_date": _sdate, "current_date": t0,
+                "source": "Cloudflare Worker KV snapshot bundle"})
         if snapchg["chain"] is None:
             _diag = snapchg["chain_diagnostic"]
-            notes.append("選擇權 OI 日對日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; 僅本日/僅前日={}/{}; 本日/前日 OI 缺值={}/{}; 無效/重複識別={}/{}".format(
-                _diag["reason"], prim_month or "missing", _diag["current_count"], _diag["previous_count"],
-                _diag["current_only"], _diag["previous_only"], _diag["current_missing_oi"],
-                _diag["previous_missing_oi"], _diag["invalid_identity"], _diag["duplicate_identity"]))
+            notes.append(
+                "選擇權 OI 前日變化 unavailable：reason={}; 主力={}; 本日/前日有效合約={}/{}; "
+                "本日/前日合約識別數={}/{}; 僅本日/僅前日={}/{}; "
+                "本日/前日 OI 缺值={}/{}; 無效/重複識別={}/{}".format(
+                    _diag["reason"], prim_month or "missing",
+                    _diag["current_count"], _diag["previous_count"],
+                    _diag["current_identity_count"], _diag["previous_identity_count"],
+                    _diag["current_only"], _diag["previous_only"],
+                    _diag["current_missing_oi"], _diag["previous_missing_oi"],
+                    _diag["invalid_identity"], _diag["duplicate_identity"]))
         elif snapchg["chain"].get("partial"):
-            _diag = snapchg["chain_diagnostic"]
-            _chg = snapchg["chain"]
-            notes.append("選擇權 OI 日對日變化採共同合約計算：主力={}; 共同合約={}; 本日有效合約={}（覆蓋率 {:.1%}）；前日有效合約={}（覆蓋率 {:.1%}）；僅本日/僅前日={} / {}，未補零、未納入新增合約".format(
-                prim_month or "missing", _chg["matched_count"], _chg["current_count"], _chg["current_coverage"],
-                _chg["previous_count"], _chg["previous_coverage"], _diag["current_only"], _diag["previous_only"]))
-        # 部位：日盤淨差值 (僅快照當日收集才可信)
-        _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} \
-            if (_sb or {}).get("trust_pos") else {}
-        _sod = {x.get("institution"): x for x in _sd.get("opt_pos_day", [])} \
-            if (_sb or {}).get("trust_pos") else {}
+            _diag, _chg = snapchg["chain_diagnostic"], snapchg["chain"]
+            notes.append(
+                "選擇權 OI 前日變化採共同有效合約計算：主力={}; 共同合約={}; "
+                "本日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值 {}）；"
+                "前日有效/識別合約={}/{}（覆蓋率 {:.1%}，OI 缺值 {}）；"
+                "僅本日/僅前日={} / {}，未補零".format(
+                    prim_month or "missing", _chg["matched_count"],
+                    _chg["current_count"], _chg["current_identity_count"], _chg["current_coverage"],
+                    _chg["current_missing_oi"], _chg["previous_count"],
+                    _chg["previous_identity_count"], _chg["previous_coverage"],
+                    _chg["previous_missing_oi"], _diag["current_only"], _diag["previous_only"]))
+
+        if _roll is True:
+            notes.append(
+                "主力到期月份已由 {} 換至 {}；僅比較前後快照中相同主力月份的共同合約，不跨月份相減".format(
+                    _roll_old, prim_month))
+        elif _roll is None:
+            notes.append(
+                "前日快照主力月份無法確認（快照值：{}）；選擇權比較仍僅按當日主力月份及共同合約判定".format(
+                    _roll_old or "缺失"))
+
+        _cur_levels = _options_chain_key_levels_for_month(chain, prim_month)
+        if not _cur_levels.get("found"):
+            snapchg["walls"] = None
+            snapchg["walls_diagnostic"] = {
+                "reason": "current_chain_incomplete", "detail": _cur_levels.get("reason")}
+        else:
+            _prev_levels = _options_chain_key_levels_for_month(
+                _previous_chain, prim_month, _cur_levels["expiry_date"])
+            _current_levels_match = (
+                walls.get("expiry") == prim_month
+                and (walls.get("call") or {}).get("strike") == _cur_levels["call_wall"]["strike"]
+                and (walls.get("put") or {}).get("strike") == _cur_levels["put_wall"]["strike"]
+                and (walls.get("maxpain") or {}).get("strike") == _cur_levels["max_pain"]["strike"])
+            if not _current_levels_match:
+                snapchg["walls"] = None
+                snapchg["walls_diagnostic"] = {"reason": "current_key_levels_mismatch"}
+            elif not _prev_levels.get("found"):
+                snapchg["walls"] = None
+                snapchg["walls_diagnostic"] = {
+                    "reason": "previous_chain_incomplete", "detail": _prev_levels.get("reason")}
+            else:
+                snapchg["walls"] = {
+                    "call": _diff(_cur_levels["call_wall"]["strike"], _prev_levels["call_wall"]["strike"]),
+                    "put": _diff(_cur_levels["put_wall"]["strike"], _prev_levels["put_wall"]["strike"]),
+                    "maxpain": _diff(_cur_levels["max_pain"]["strike"], _prev_levels["max_pain"]["strike"]),
+                    "expiry_date": _cur_levels["expiry_date"]}
+                snapchg["walls_diagnostic"] = {
+                    "reason": "aligned", "contract_month": prim_month,
+                    "expiry_date": _cur_levels["expiry_date"],
+                    "current_rows": _cur_levels["chain_stats"]["rows"],
+                    "previous_rows": _prev_levels["chain_stats"]["rows"]}
+        if not snapchg["walls"]:
+            _wd = snapchg["walls_diagnostic"]
+            notes.append("選擇權 Call Wall／Put Wall／Max Pain 前日變化 unavailable：reason={}; detail={}".format(
+                _wd.get("reason"), _wd.get("detail") or "n/a"))
+
+    # 法人部位差值維持既有換月條件與 trust_pos 規則，不受選擇權 Chain/Walls 比較改動影響。
+    if _sdate and _roll is False:
+        _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} if (_sb or {}).get("trust_pos") else {}
+        _sod = {x.get("institution"): x for x in _sd.get("opt_pos_day", [])} if (_sb or {}).get("trust_pos") else {}
         _pos = {}
         for _k in ("foreign", "dealer"):
             _cf = (fut_trade.get(("day", _k)) or {}).get("net")
@@ -1154,11 +1220,6 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             _so = (_sod.get(_k) or {}).get("net_volume")
             _pos[_k] = {"fut_chg": _diff(_cf, _sf), "opt_chg": _diff(_co, _so)}
         snapchg["pos"] = _pos
-        _sw = _sd.get("walls") or {}
-        snapchg["walls"] = {
-            "call": _diff((walls["call"] or {}).get("strike"), (_sw.get("call_wall") or {}).get("strike")),
-            "put": _diff((walls["put"] or {}).get("strike"), (_sw.get("put_wall") or {}).get("strike")),
-            "maxpain": _diff((walls["maxpain"] or {}).get("strike"), (_sw.get("max_pain") or {}).get("strike"))}
 
     return {"day": day, "night": night, "fut_oi": fut_oi, "fut_trade": fut_trade,
             "basis": basis, "basis_pct": basis_pct, "oi_chg": oi_chg,
