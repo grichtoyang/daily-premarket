@@ -361,8 +361,6 @@ def tpex_highlight(roc: str) -> dict:
     """優先使用 TPEx 指定日期歷史資料；OpenAPI 最新快照僅作嚴格日期備援。"""
     out = {"row": None, "date_ok": False}
 
-    # TPEx 官網歷史「上櫃股票市場現況」接受民國年/月/日，
-    # 回傳 reportDate、upNum... 及 tradeAmount；OpenAPI highlight 不支援歷史日期。
     if len(roc) == 7 and roc.isdigit():
         roc_date = f"{roc[:3]}/{roc[3:5]}/{roc[5:7]}"
         url = (
@@ -370,42 +368,61 @@ def tpex_highlight(roc: str) -> dict:
             f"highlight_result.php?l=zh-tw&o=json&d={roc_date}"
         )
         history = _get_json(url)
-        if isinstance(history, dict) and _num(history.get("iTotalRecords")):
+        if isinstance(history, dict):
+            total = _num(history.get("iTotalRecords"))
             report_date = str(history.get("reportDate", "")).replace("/", "")
-            row = {
-                "Date": report_date,
-                "PriceRiseCompanyNumbers": history.get("upNum"),
-                "PriceDeclineCompanyNumbers": history.get("downNum"),
-                "PriceFlatCompanyNumbers": history.get("noChangeNum"),
-                "LimitUpCompanyNumbers": history.get("upStopNum"),
-                "LimitDownCompanyNumbers": history.get("downStopNum"),
-                # tradeAmount 與官方日成交量值資料的金額口徑相符，單位為百萬元。
-                "DailyTradingValue": history.get("tradeAmount"),
-            }
-            required = (
-                "PriceRiseCompanyNumbers", "PriceDeclineCompanyNumbers",
-                "PriceFlatCompanyNumbers", "LimitUpCompanyNumbers",
-                "LimitDownCompanyNumbers", "DailyTradingValue",
-            )
-            if report_date == roc and all(_num(row.get(key)) is not None for key in required):
-                return {"row": row, "date_ok": True}
             print(
-                f"[WARN] TPEx historical highlight date/fields mismatch: "
-                f"requested={roc}, actual={report_date}, keys={list(history)[:12]}"
+                f"[INFO] TPEx historical highlight response: requested={roc}, "
+                f"records={total}, reportDate={report_date or 'missing'}, "
+                f"keys={list(history)[:16]}"
+            )
+            if total:
+                row = {
+                    "Date": report_date,
+                    "PriceRiseCompanyNumbers": history.get("upNum"),
+                    "PriceDeclineCompanyNumbers": history.get("downNum"),
+                    "PriceFlatCompanyNumbers": history.get("noChangeNum"),
+                    "LimitUpCompanyNumbers": history.get("upStopNum"),
+                    "LimitDownCompanyNumbers": history.get("downStopNum"),
+                    "DailyTradingValue": history.get("tradeAmount"),
+                }
+                required = (
+                    "PriceRiseCompanyNumbers", "PriceDeclineCompanyNumbers",
+                    "PriceFlatCompanyNumbers", "LimitUpCompanyNumbers",
+                    "LimitDownCompanyNumbers", "DailyTradingValue",
+                )
+                missing = [key for key in required if _num(row.get(key)) is None]
+                if report_date == roc and not missing:
+                    print(f"[INFO] TPEx historical highlight accepted date={roc}")
+                    return {"row": row, "date_ok": True}
+                print(
+                    f"[WARN] TPEx historical highlight rejected: requested={roc}, "
+                    f"actual={report_date or 'missing'}, missing_fields={missing}"
+                )
+        else:
+            print(
+                f"[WARN] TPEx historical highlight unexpected response: "
+                f"requested={roc}, type={type(history).__name__}"
             )
 
-    # 歷史端點不可用時，保留原 OpenAPI 最新快照作備援，但絕不放寬日期驗證。
     j = _get_json(f"{TPEX_API}/tpex_mainborad_highlight")
     if isinstance(j, list) and j:
         row = j[0]
         out = {"row": row, "date_ok": str(row.get("Date", "")) == roc}
+        print(
+            f"[INFO] TPEx OpenAPI highlight fallback: requested={roc}, "
+            f"actual={row.get('Date', 'missing')}, accepted={out['date_ok']}"
+        )
+    else:
+        print(f"[WARN] TPEx OpenAPI highlight fallback empty: requested={roc}, type={type(j).__name__}")
     return out
 
 
 def tpex_turnover_st41(roc: str) -> dict:
-    """從 TPEx 日成交量值（月資料）獨立取得指定交易日成交金額，單位百萬元。"""
+    """從 TPEx 日成交量值（月資料）取得指定日期成交金額；來源欄位為仟元。"""
     out = {"value": None, "date_ok": False}
     if len(roc) != 7 or not roc.isdigit():
+        print(f"[WARN] TPEx st41 invalid ROC date: {roc}")
         return out
 
     month = f"{roc[:3]}/{roc[3:5]}"
@@ -416,7 +433,13 @@ def tpex_turnover_st41(roc: str) -> dict:
     )
     payload = _get_json(url)
     rows = payload.get("aaData") if isinstance(payload, dict) else None
+    print(
+        f"[INFO] TPEx st41 response: requested={target}, "
+        f"type={type(payload).__name__}, keys={list(payload)[:16] if isinstance(payload, dict) else []}, "
+        f"rows={len(rows) if isinstance(rows, list) else 'missing'}"
+    )
     if not isinstance(rows, list):
+        print(f"[WARN] TPEx st41 aaData missing: requested={target}")
         return out
 
     for row in rows:
@@ -426,8 +449,11 @@ def tpex_turnover_st41(roc: str) -> dict:
         if row_date == roc:
             value = _num(row[2])
             if value is not None:
+                print(f"[INFO] TPEx st41 turnover accepted date={roc}; raw_value_thousand_ntd={value}")
                 return {"value": value, "date_ok": True}
-    print(f"[WARN] TPEx st41 turnover date missing: requested={target}")
+            print(f"[WARN] TPEx st41 turnover value invalid: date={roc}, raw={row[2]!r}")
+            return out
+    print(f"[WARN] TPEx st41 requested date not found: requested={target}")
     return out
 
 def tpex_margin(roc: str) -> dict:
