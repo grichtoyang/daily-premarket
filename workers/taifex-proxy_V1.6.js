@@ -3273,30 +3273,20 @@ function buildDataQuality(chain, deltaRows, requestedISO, commonExpiry) {
 }
 
 async function fetchTXOChainForDate(taifexDate) {
-  const body = new URLSearchParams({
-    queryType: "2",
-    marketCode: "0",
-    dateaddcnt: "",
-    commodity_id: "TXO",
-    commodity_id2: "",
-    queryDate: taifexDate,
-    MarketCode: "0",
-    commodity_idt: "TXO",
-    commodity_id2t: "",
-    commodity_id2t2: ""
-  }).toString();
-
-  const result = await fetchTAIFEXPost(
-    "/cht/3/optDailyMarketReport",
-    body
-  );
+  // All Worker TXO Chain consumers share one bounded primary + OpenAPI path.
+  const result = await fetchTXOChainForDateWithDeadline(taifexDate);
 
   if (!result.response.ok) {
     return {
       found: false,
       reason: `TAIFEX option chain HTTP ${result.response.status}`,
       raw_rows: 0,
-      rows: []
+      rows: [],
+      error_code: result.error_code || "TXO_CHAIN_SOURCES_UNAVAILABLE",
+      diagnostics: {
+        primary_error: result.primary_error || null,
+        fallback_error: result.fallback_error || null
+      }
     };
   }
 
@@ -3305,7 +3295,12 @@ async function fetchTXOChainForDate(taifexDate) {
   return {
     found: parsed.found,
     raw_rows: result.rows.length,
-    rows: parsed.data
+    rows: parsed.data,
+    error_code: parsed.found ? null : "TXO_CHAIN_PARSE_EMPTY",
+    diagnostics: {
+      primary_error: result.primary_error || null,
+      fallback_error: result.fallback_error || null
+    }
   };
 }
 
@@ -3443,16 +3438,18 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     }
   } catch (_) { /* keep partial bundle */ }
 
-  /* chain 常因上游瞬斷失敗：最多 3 次、間隔 8 秒重試 (cron 無使用者等待，延遲可接受) */
+  /* Chain 每次請求已有 25 秒整體 deadline；最多 2 次，間隔 3 秒，避免長時間重試放大上游負載。 */
   try {
     let c = { found: false };
-    for (let attempt = 1; attempt <= 3 && !c.found; attempt++) {
+    for (let attempt = 1; attempt <= 2 && !c.found; attempt++) {
       try {
         c = await fetchTXOChainForDate(taifexSlash);
-      } catch (_) { c = { found: false }; }
+      } catch (error) {
+        c = { found: false, reason: error?.message || String(error) };
+      }
       if (!c.found) {
-        console.log(`snapshot chain attempt ${attempt} failed`);
-        if (attempt < 3) await new Promise(r => setTimeout(r, 8000));
+        console.log(`snapshot chain attempt ${attempt} failed: ${c.error_code || c.reason || "unavailable"}`);
+        if (attempt < 2) await new Promise(r => setTimeout(r, 3000));
       }
     }
     if (c.found) bundle.data.chain = c.rows;
@@ -4150,7 +4147,9 @@ export default {
             date: queryDate,
             error:
               chainResult.reason ||
-              "TXO chain not found"
+              "TXO chain not found",
+            error_code: chainResult.error_code || "TXO_CHAIN_UNAVAILABLE",
+            diagnostics: chainResult.diagnostics || null
           }, 502);
         }
 
@@ -4622,7 +4621,9 @@ export default {
             dataset: "options_market_structure",
             market: "TXO",
             date: queryDate,
-            error: chainResult.reason || "TXO chain not found"
+            error: chainResult.reason || "TXO chain not found",
+            error_code: chainResult.error_code || "TXO_CHAIN_UNAVAILABLE",
+            diagnostics: chainResult.diagnostics || null
           }, 502);
         }
 
@@ -5135,7 +5136,12 @@ export default {
             status:
               result.response.status,
             error:
-              "TAIFEX request failed"
+              "TXO Chain sources unavailable",
+            error_code: result.error_code || "TXO_CHAIN_SOURCES_UNAVAILABLE",
+            diagnostics: {
+              primary_error: result.primary_error || null,
+              fallback_error: result.fallback_error || null
+            }
           }, 502);
         }
 
@@ -5154,7 +5160,12 @@ export default {
             market: "TXO",
             date: queryDate,
             error:
-              "TXO option chain not found"
+              "TXO option chain not found",
+            error_code: "TXO_CHAIN_PARSE_EMPTY",
+            diagnostics: {
+              primary_error: result.primary_error || null,
+              fallback_error: result.fallback_error || null
+            }
           }, 502);
         }
 
@@ -5205,7 +5216,9 @@ export default {
         return json({
           ok: false,
           source: "TAIFEX",
-          error: String(error)
+          error: String(error),
+          error_code: "TXO_KEY_LEVELS_INTERNAL_ERROR",
+          diagnostics: { detail: String(error).slice(0, 400) }
         }, 500);
       }
     }
