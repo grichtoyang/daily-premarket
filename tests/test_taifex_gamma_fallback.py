@@ -113,6 +113,24 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
             f"{BASE}/options-gamma-levels?date=2026-10-30",
         )
 
+    def test_gamma_502_retries_once_after_two_second_backoff_only(self):
+        response = Mock(status_code=502)
+        response.json.return_value = {
+            "ok": False,
+            "error_code": "TXO_CHAIN_UPSTREAM_UNAVAILABLE",
+            "stage": "txo_chain_primary",
+            "error": "TAIFEX HTTP 502",
+        }
+        with patch("src.sources.taifex.requests.get", return_value=response) as get:
+            with patch("time.sleep", return_value=None) as sleep:
+                payload = _get("options-gamma-levels", "2026-10-30")
+
+        self.assertIn("options-gamma-levels", TXO_CHAIN_EPS)
+        self.assertIsNone(payload)
+        self.assertEqual(get.call_count, 2)
+        sleep.assert_called_once_with(2)
+        self.assertEqual(_LAST_FETCH_ERRORS["options-gamma-levels"]["http_status"], 502)
+
     def test_worker_http_502_preserves_stage_and_detail(self):
         response = Mock(status_code=502)
         response.json.return_value = {
