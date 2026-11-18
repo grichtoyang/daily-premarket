@@ -112,10 +112,13 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
                 time.sleep(3)
                 continue
             if r.status_code == 502:
-                if ep in TXO_CHAIN_EPS:
+                if ep in TXO_CHAIN_EPS and attempt == 0:
                     print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，退避 2 秒後重試",
                           file=sys.stderr, flush=True)
                     time.sleep(2)
+                elif ep in TXO_CHAIN_EPS:
+                    print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，重試次數已用盡",
+                          file=sys.stderr, flush=True)
                 else:
                     print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，直接重試",
                           file=sys.stderr, flush=True)
