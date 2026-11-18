@@ -27,7 +27,7 @@ permissions:
 
 # Serialize dashboard builds per branch to prevent concurrent generated-history pushes.
 concurrency:
-  group: branch-write-${{ github.ref }}
+  group: daily-premarket-v9-pro-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Checkout master dashboard source for Pages root only
         uses: actions/checkout@v4
@@ -291,9 +291,6 @@ jobs:
           else
             BIAS="$(python -c "import json; print(json.load(open('dashboards/data-${DATE}.json'))['analysis']['bias'])")"
             git commit -m "V9 Pro ${DATE} Bias ${BIAS}分"
-            # 共用分支寫入鎖之外，再同步遠端；若同檔衝突，rebase 會安全失敗並停止。
-            git fetch origin "+refs/heads/${GITHUB_REF_NAME}:refs/remotes/origin/${GITHUB_REF_NAME}"
-            git rebase "origin/${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 
