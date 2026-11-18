@@ -5207,6 +5207,12 @@ export default {
 
             calculation:
               "OI-based Call Wall / Put Wall / intrinsic-value Max Pain"
+          },
+
+          error_code: levels.found ? null : "TXO_KEY_LEVELS_NOT_FOUND",
+          diagnostics: {
+            primary_error: result.primary_error || null,
+            fallback_error: result.fallback_error || null
           }
 
         }, levels.found ? 200 : 502);
