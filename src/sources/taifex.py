@@ -20,7 +20,8 @@ from src.utils import HEADERS
 
 BASE = "https://taifex.grichtoyang.workers.dev"
 DATE_EPS = {"futures-institutional-oi", "futures-institutional-oi-history", "futures-options-chain",
-            "options-gamma-levels", "options-key-levels", "options-market-structure-compact"}
+            "options-gamma-levels", "options-key-levels", "options-market-structure-compact",
+            "options-market-structure"}
 TXO_CHAIN_EPS = {"options-key-levels", "futures-options-chain", "options-market-structure-compact", "options-market-structure"}
 FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional",
             "futures-institutional-after-hours", "options-institutional",
