@@ -426,12 +426,14 @@ def _options_chain_oi_change_diagnostic(current_chain, previous_chain, primary_m
         reason = "invalid_contract_identity"
     elif result["duplicate_identity"]:
         reason = "duplicate_contract_identity"
+    elif not result["current_identity_count"] or not result["previous_identity_count"]:
+        reason = "primary_expiry_chain_empty"
+    elif result["current_missing_oi"] or result["previous_missing_oi"]:
+        reason = "open_interest_missing_or_invalid"
     elif not current or not previous:
         reason = "primary_expiry_chain_empty"
     elif not (current.keys() & previous.keys()):
         reason = "no_common_valid_contracts"
-    elif result["current_missing_oi"] or result["previous_missing_oi"]:
-        reason = "open_interest_missing_or_invalid"
     elif result["current_only"] or result["previous_only"]:
         reason = "contract_set_mismatch"
     else:
