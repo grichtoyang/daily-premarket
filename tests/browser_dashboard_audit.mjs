@@ -208,13 +208,22 @@ try {
         const requiredCrossChecks = [
           "成交量反映當日交易活躍度",
           "OI PCR 與履約價分布反映未平倉存量",
-          "日夜盤法人合計方向相反",
           "最大正曝險",
           "最大負曝險",
           "OI／GEX 履約價",
           "只有價格確認、法人日夜盤流量未持續背離"
         ];
         const missingCrossChecks = requiredCrossChecks.filter(item => !summaryText.includes(item));
+        const dealerFlowOutcomes = [
+          "日夜盤法人合計方向相反",
+          "日夜盤法人合計同為淨買方",
+          "日夜盤法人合計同為淨賣方",
+          "日夜盤合計雖有數值，但法人分項不完整",
+          "日夜盤至少一個時段合計為零"
+        ];
+        if (!dealerFlowOutcomes.some(item => summaryText.includes(item))) {
+          missingCrossChecks.push("日夜盤法人流量判讀（相反／同向／資料不足）");
+        }
         if (missingCrossChecks.length) throw new Error(`${viewport.name} / 選擇權: missing integrated synthesis checks: ${missingCrossChecks.join(", ")}`);
         for (const sectionIndex of [0, 3]) {
           const sectionGrid = optionSections.nth(sectionIndex).locator(":scope > div").nth(1);
