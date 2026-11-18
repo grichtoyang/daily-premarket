@@ -716,13 +716,32 @@ class OptionsChainOiChangeContractTests(unittest.TestCase):
         self.assertEqual(result["c_dn"], {"strike": 27100, "type": "call", "d_oi": -5})
         self.assertEqual(result["p_dn"], {"strike": 27000, "type": "put", "d_oi": -20})
 
-    def test_missing_current_or_previous_oi_is_unavailable_not_zero(self):
+    def test_missing_current_or_previous_oi_is_skipped_and_coverage_disclosed(self):
         current_missing = [dict(row) for row in self.current]
         current_missing[0]["open_interest"] = None
+        current_result = self.calculate(current_missing, self.previous, "202611W2")
+        self.assertIsNotNone(current_result)
+        self.assertEqual(current_result["c_chg"], -5)
+        self.assertEqual(current_result["p_chg"], -20)
+        self.assertEqual(current_result["matched_count"], 2)
+        self.assertEqual(current_result["current_count"], 2)
+        self.assertEqual(current_result["current_identity_count"], 3)
+        self.assertEqual(current_result["current_missing_oi"], 1)
+        self.assertAlmostEqual(current_result["current_coverage"], 2 / 3)
+        self.assertTrue(current_result["partial"])
+
         previous_missing = [dict(row) for row in self.previous]
         previous_missing[1]["open_interest"] = None
-        self.assertIsNone(self.calculate(current_missing, self.previous, "202611W2"))
-        self.assertIsNone(self.calculate(self.current, previous_missing, "202611W2"))
+        previous_result = self.calculate(self.current, previous_missing, "202611W2")
+        self.assertIsNotNone(previous_result)
+        self.assertEqual(previous_result["c_chg"], 5)
+        self.assertIsNone(previous_result["p_chg"])
+        self.assertEqual(previous_result["matched_count"], 2)
+        self.assertEqual(previous_result["previous_count"], 2)
+        self.assertEqual(previous_result["previous_identity_count"], 3)
+        self.assertEqual(previous_result["previous_missing_oi"], 1)
+        self.assertAlmostEqual(previous_result["previous_coverage"], 2 / 3)
+        self.assertTrue(previous_result["partial"])
 
     def test_missing_or_extra_contract_uses_common_set_and_discloses_coverage(self):
         missing = self.calculate(self.current[:-1], self.previous, "202611W2")
