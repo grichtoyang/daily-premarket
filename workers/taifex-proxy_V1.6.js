@@ -607,7 +607,7 @@ function fallbackResponseFromRows(rows, status = 200) {
   return new Response(html, { status });
 }
 
-async function fetchTXOChainForDateWithDeadline(taifexDate) {
+async function fetchTXOChainForDateWithDeadline(taifexDate, options = {}) {
   const body = new URLSearchParams({
     queryType: "2",
     marketCode: "0",
@@ -621,7 +621,10 @@ async function fetchTXOChainForDateWithDeadline(taifexDate) {
     commodity_id2t2: ""
   }).toString();
 
-  const deadlineAt = Date.now() + TXO_CHAIN_TOTAL_DEADLINE_MS;
+  const localDeadlineAt = Date.now() + TXO_CHAIN_TOTAL_DEADLINE_MS;
+  const deadlineAt = Number.isFinite(options.deadlineAt)
+    ? Math.min(localDeadlineAt, options.deadlineAt)
+    : localDeadlineAt;
   return fetchTAIFEXPost("/cht/3/optDailyMarketReport", body, {
     deadlineAt,
     timeoutMs: TXO_CHAIN_PRIMARY_TIMEOUT_MS,
@@ -4905,25 +4908,10 @@ export default {
         const gexStartedAt = Date.now();
         const gexRequestOptions = { deadlineAt: gexStartedAt + 32000 };
 
-        const chainBody =
-          new URLSearchParams({
-            queryType: "2",
-            marketCode: "0",
-            dateaddcnt: "",
-            commodity_id: "TXO",
-            commodity_id2: "",
-            queryDate: taifexDate,
-            MarketCode: "0",
-            commodity_idt: "TXO",
-            commodity_id2t: "",
-            commodity_id2t2: ""
-          }).toString();
-
         let stageStartedAt = Date.now();
         const chainResult =
-          await fetchTAIFEXPost(
-            "/cht/3/optDailyMarketReport",
-            chainBody,
+          await fetchTXOChainForDateWithDeadline(
+            taifexDate,
             gexRequestOptions
           );
         const chainFetchMs = Date.now() - stageStartedAt;
