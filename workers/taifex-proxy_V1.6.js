@@ -4924,11 +4924,15 @@ export default {
             source: "TAIFEX",
             status:
               chainResult.response.status,
-            error_code: "TXO_CHAIN_FETCH_FAILED",
+            error_code: chainResult.error_code || "TXO_CHAIN_SOURCES_UNAVAILABLE",
             stage: "chain_fetch",
             error:
               "TAIFEX option chain request failed",
-            detail: chainResult.primary_error || `HTTP ${chainResult.response.status}`
+            detail: chainResult.primary_error || `HTTP ${chainResult.response.status}`,
+            diagnostics: {
+              primary_error: chainResult.primary_error || null,
+              fallback_error: chainResult.fallback_error || null
+            }
           }, 502);
         }
 
