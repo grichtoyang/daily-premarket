@@ -21,6 +21,7 @@ from src.utils import HEADERS
 BASE = "https://taifex.grichtoyang.workers.dev"
 DATE_EPS = {"futures-institutional-oi", "futures-institutional-oi-history", "futures-options-chain",
             "options-gamma-levels", "options-key-levels", "options-market-structure-compact"}
+TXO_CHAIN_EPS = {"options-key-levels", "futures-options-chain"}
 FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional",
             "futures-institutional-after-hours", "options-institutional",
             "options-institutional-after-hours", "options-after-hours",
@@ -52,10 +53,12 @@ def _worker_error_payload(response) -> dict:
     if not isinstance(payload, dict):
         return {}
     data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
-    detail = payload.get("detail") or data.get("detail") or data.get("reason")
+    diagnostics = payload.get("diagnostics") if isinstance(payload.get("diagnostics"), dict) else {}
+    detail = (payload.get("detail") or data.get("detail") or data.get("reason")
+              or diagnostics.get("primary_error") or diagnostics.get("fallback_error"))
     return {
-        "error_code": payload.get("error_code"),
-        "stage": payload.get("stage"),
+        "error_code": payload.get("error_code") or diagnostics.get("error_code"),
+        "stage": payload.get("stage") or diagnostics.get("stage"),
         "error": payload.get("error"),
         "detail": str(detail)[:400] if detail is not None else None,
         "data_reason": str(data.get("reason"))[:400] if data.get("reason") is not None else None,
@@ -100,16 +103,21 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
                 "error": diagnostic.get("error") or f"Worker HTTP {r.status_code}",
             })
             _LAST_FETCH_ERRORS[ep] = diagnostic
-            # F3-a（2026-10-19）：退避只留給真的會自己好的狀況（限流 429／上游忙碌 503／
-            # read timeout）；502 上游閘道錯誤直接重試，不再每次固定睡 3 秒。
-            # 重試次數（2 次）與「失敗即 None」的語意完全不變。
+            # F3-a：保留原有全域重試次數；僅 TXO Chain 兩端點對 502 加短暫退避，
+            # 避免連續立即重打同一條 TAIFEX 共用上游路徑。其他端點行為不變。
             if r.status_code in (429, 503):
                 print(f"[INFO] taifex {ep} HTTP {r.status_code} (try {attempt + 1})，退避 3 秒後重試",
                       file=sys.stderr, flush=True)
                 time.sleep(3)
                 continue
             if r.status_code == 502:
-                print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，直接重試", file=sys.stderr, flush=True)
+                if ep in TXO_CHAIN_EPS:
+                    print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，退避 2 秒後重試",
+                          file=sys.stderr, flush=True)
+                    time.sleep(2)
+                else:
+                    print(f"[INFO] taifex {ep} HTTP 502 (try {attempt + 1})，直接重試",
+                          file=sys.stderr, flush=True)
                 continue
             print(f"[INFO] taifex {ep} HTTP {r.status_code}，放棄：{diagnostic}", file=sys.stderr, flush=True)
             return None
