@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 from src.sources.taifex import (
-    BASE, DATE_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status, _chain_rollover,
+    BASE, DATE_EPS, TXO_CHAIN_EPS, _LAST_FETCH_ERRORS, _get, _gamma_status, _chain_rollover,
     _sync_gamma_unavailable, _valid_gex_levels, _complete_sum, _complete_ratio, _oi_distribution,
     _gamma_proxy_fallback,
     _gamma_expiry_metadata,
