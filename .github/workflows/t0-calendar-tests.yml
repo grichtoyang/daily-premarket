@@ -1,12 +1,6 @@
 name: T0 Calendar Regression Tests
 
 on:
-  push:
-    branches:
-      - phase2-p0-ui-fixes
-    paths:
-      - 'src/t0.py'
-      - 'tests/test_t0_calendar_fail_closed.py'
   workflow_dispatch:
 
 permissions:

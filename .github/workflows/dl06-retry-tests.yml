@@ -1,13 +1,6 @@
 name: DL-06 Isolated Retry Tests
 
 on:
-  push:
-    branches:
-      - phase2-p0-ui-fixes
-    paths:
-      - '.github/workflows/dl06-retry-tests.yml'
-
-permissions:
   contents: read
 
 jobs:

@@ -5,7 +5,6 @@ on:
     branches:
       - master
       - phase2-p0-data-quality
-      - phase2-p0-ui-fixes
     paths:
       - '.github/workflows/daily-premarket-v9-pro.yml'
       - 'scripts/v9_pro_builder.py'

@@ -1,14 +1,6 @@
 name: V9 Pro UI-only Browser Audit
 
 on:
-  push:
-    branches:
-      - phase2-p0-ui-fixes
-    paths:
-      - '.github/workflows/v9-pro-ui-only-audit.yml'
-      - 'templates/v9-pro-react-template.html'
-      - 'tests/browser_dashboard_audit.mjs'
-      - 'tests/validate_react_html_js.py'
   workflow_dispatch:
 
 permissions:
