@@ -601,7 +601,7 @@ function fallbackResponseFromRows(rows, status = 200) {
   return new Response(html, { status });
 }
 
-async function fetchTXOChainForDate(taifexDate) {
+async function fetchTXOChainForDateWithDeadline(taifexDate) {
   const body = new URLSearchParams({
     queryType: "2",
     marketCode: "0",
@@ -3935,7 +3935,7 @@ export default {
           taifexDate;
 
         const result =
-          await fetchTXOChainForDate(taifexDate);
+          await fetchTXOChainForDateWithDeadline(taifexDate);
 
         if (!result.response.ok) {
 
@@ -5125,7 +5125,7 @@ export default {
           queryDateToISO(taifexDate);
 
         const result =
-          await fetchTXOChainForDate(taifexDate);
+          await fetchTXOChainForDateWithDeadline(taifexDate);
 
         if (!result.response.ok) {
 
