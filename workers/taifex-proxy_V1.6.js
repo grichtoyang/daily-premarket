@@ -1,7 +1,7 @@
 
 /*
  * ============================================================
- * TAIFEX Proxy V1.5 — Production + RWD Historical TAIEX + GEX Failure Diagnostics
+ * TAIFEX Proxy V1.6 — Bounded TXO Chain Fetch + Unified Failure Diagnostics
  * ============================================================
  *
  * STATUS:
@@ -59,6 +59,12 @@
  *   + /options-gamma-levels failure diagnostics: error_code, stage, detail
  *   + Distinguish TXO Chain, Delta, TAIEX spot and GEX calculation failures.
  *   + Preserve successful response fields and existing calculation semantics.
+ *
+ * V1.6 ADDITIVE (2026-11-18):
+ *   + Bound all TXO Chain fetch paths with a shared 25-second deadline.
+ *   + Primary TAIFEX POST timeout 12 seconds; OpenAPI fallback timeout 8 seconds.
+ *   + Bound snapshot retries to two attempts with a 3-second backoff.
+ *   + Standardize TXO Chain upstream and parse failure diagnostics.
  * ============================================================
  */
 
