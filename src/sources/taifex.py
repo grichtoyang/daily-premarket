@@ -1346,8 +1346,9 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     if prev_buy is None or prev_sell is None or current_net is None:
         return None
     prev = prev_buy - prev_sell
-    return {"chg": current_net - prev, "prev_date": prev_date,
-            "cur_date": _iso8(cur_date) or t0, "snap_date": _sb["date"]}
+    return {"chg": current_net - prev, "status": "available", "prev_date": prev_date,
+            "cur_date": _iso8(cur_date) or t0, "snap_date": _sb["date"],
+            "prev_month": str(month) if month else None, "current_month": str(month) if month else None}
 
 
 def _pct(v):
