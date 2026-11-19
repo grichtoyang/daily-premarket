@@ -81,3 +81,31 @@ Builder 將 DATA_REPORT 解析與標準化後輸出 Dashboard JSON。React Templ
 - 沒有使用者授權時，資料層修改／測試狀態應標示 BLOCKED 或 NOT TESTED。
 - DL-07 已結案，不得重開。
 - 如獲得明確授權，仍須限定授權範圍，逐項提供來源證據、程式差異、測試結果及回歸影響；授權不自動延伸到其他資料層項目。
+
+## 8. 前十大交易人 OI：契約換月比較規則（2026-11-19 補充）
+
+- 前十大 OI 是特定契約月份的持倉快照；不得將舊月份與新主力月份的 OI 直接相減。
+- 當前一交易日快照只有舊契約月份，而當日新主力月份 OI 有效時，狀態為 `rollover_baseline_reset`：新月份重新建立比較基準，當日只呈現 OI 存量，不產生跨月份變化值、不補零。
+- 同一契約月份且前後快照完整時，才計算日變化。
+- 快照真正缺失、指定 Call／Put 無資料或當日淨值不完整，仍是 unavailable／missing；不得誤標為換月。
+- 期貨、買權、賣權各自判斷；DATA_REPORT 與 Dashboard 都要清楚顯示換月原因。
+- Section 7.3 即使變化值 unavailable，仍應列出可用的當日多方 OI、空方 OI、淨 OI 與來源。OI 是存量，不可與日／夜盤交易流量混用。
+- 測試：`tests/test_taifex_top10_rollover.py`（4 個案例：月份不一致、Call／Put 分流、同月份計算、真正缺少快照）。
+
+## 9. TAIFEX TXO Chain 請求快取與重試邊界（2026-11-19 補充）
+
+- `src/sources/taifex.py` 的 `_memoized_build_fetch(fetch)` 在單次 build 內快取，key 為 `(endpoint, date)`；不跨 build 或 workflow run 共用。
+- 成功的非 Key Levels 端點回應會快取。
+- `options-market-structure-compact` 的結果（包括失敗）會快取，因 Gamma 與 Wall fallback 可能對同一日期重複掃描；其原始 `_get()` 重試先行執行。
+- `options-key-levels` 不快取，保留原本較長 timeout（90 秒）備援重新查詢的機會。
+- 其他非 compact 端點的失敗不一律快取，允許後續以較長 timeout 再試。
+- 不可為了速度移除既有 retry、timeout fallback 或資料品質判斷；快取的目的在避免同一 build 內重複等待，不是降低資料完整性標準。
+- 相關測試位於 `tests/test_taifex_gamma_fallback.py`，涵蓋 compact failure reuse、Key Levels long-timeout retry 與其他端點較長 timeout retry。
+
+## 10. 2026-11-19 效能驗收與觀察狀態
+
+- 本機：`src/sources/taifex.py` py_compile PASS；Gamma fallback 41/41 PASS；前十大 OI rollover 4/4 PASS，合計 45/45。
+- GitHub Actions：`daily-data #185`（run ID `44471987470`）completed／success；Fetch Job 約 2m36s，Fetch daily data step 約 2m13s。
+- 內部 Fetch 計時：改善前 #184 為 399.3 秒，#185 為 132.8 秒，單次實測約改善 66.7%。
+- 單次低於 180 秒已 PASS；長期穩定性尚未驗證。後續觀察 3–5 次使用者手動執行，逐次檢查耗時、502／timeout、Gamma fallback 與 DATA_REPORT 缺值。
+- 2026-11-19 這次有限授權修正不解除 DATA LAYER FROZEN 政策；未來任何資料層程式、來源、Worker、Workflow、測試或產出格式變更，仍須先取得使用者明確授權。
