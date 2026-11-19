@@ -1305,8 +1305,24 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     rows = [r for r in (_sb["data"].get(dataset) or []) if isinstance(r, dict)]
     if callput:
         rows = [r for r in rows if str(r.get("CallPut", "")) == str(callput)]
+    month_rows = rows
     if month:
-        rows = [r for r in rows if str(r.get("SettlementMonth", "")) == str(month)]
+        rows = [r for r in month_rows if str(r.get("SettlementMonth", "")) == str(month)]
+    if not rows and month and month_rows and cur_net is not None:
+        # A prior snapshot exists, but only for a different contract month.
+        # Treat this as a new-month baseline reset; never subtract across months.
+        month_rows.sort(key=lambda r: str(r.get("Date", "")))
+        prior = month_rows[-1]
+        return {
+            "chg": None,
+            "status": "rollover_baseline_reset",
+            "reason": "前一交易日快照只有舊契約月份，無新主力月份可比基準；換月建立新基準，不跨月相減",
+            "prev_month": str(prior.get("SettlementMonth", "")) or None,
+            "current_month": str(month),
+            "prev_date": _iso8(prior.get("Date")),
+            "cur_date": _iso8(cur_date) or t0,
+            "snap_date": _sb.get("date"),
+        }
     if not rows or cur_net is None:
         return None
     rows.sort(key=lambda r: str(r.get("Date", "")))
