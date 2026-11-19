@@ -882,17 +882,20 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** `TAIFEX OpenAPI OpenInterestOfLargeTradersFutures`（備援 TAIFEX Proxy；欄位依實際取得來源標示）")
     A("")
+    _top10_rollover_notes = []
     _t10 = taifex_official.top10_fut(d["month"] or "", t0)
     _t10_src = "TAIFEX Proxy" if _t10.get("via") == "proxy" else SRC_FX_OFF
     _t10chg = taifex.snap_top10_change(d["month"] or "", t0, _t10.get("net"),
                                            cur_date=_t10.get("date"))
-    _t10chg_lbl = (f" ({_t10chg['prev_date']}→{_t10chg['cur_date']})" if _t10chg else "")
+    _t10chg_lbl = (f" ({_t10chg['prev_date']}→{_t10chg['cur_date']})" if _t10chg and _t10chg.get("chg") is not None else "")
+    if _t10chg and _t10chg.get("status") == "rollover_baseline_reset":
+        _top10_rollover_notes.append("期貨前十大：" + _t10chg["reason"])
     A(_tbl([("前十大交易人多方 OI", _fi(_t10["buy"]), _t10_src if _t10["buy"] is not None else MISSING),
             ("前十大交易人空方 OI", _fi(_t10["sell"]), _t10_src if _t10["sell"] is not None else MISSING),
             ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src if _t10["net"] is not None else MISSING),
             ("多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
-             SRC_SNAP if _t10chg and _t10chg.get("chg") is not None else MISSING)],
+             SRC_SNAP if _t10chg and _t10chg.get("chg") is not None else ("換月基準重建" if _t10chg and _t10chg.get("status") == "rollover_baseline_reset" else MISSING))],
            ("項目", "口數", "資料來源")))
     A(f"- 資料日期：{_t10['date'] or MISSING} (TypeOfTraders=0 全部交易人；契約月份 {_t10['month'] or MISSING})")
     A("")
@@ -1407,14 +1410,17 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _t10p_chg = taifex.snap_top10_change(d["month"] or "", t0, _t10p.get("net"),
                                          cur_date=_t10p.get("date"),
                                          dataset="top10opt", callput="賣權")
-    _t10c_lbl = (f" ({_t10c_chg['prev_date']}→{_t10c_chg['cur_date']})" if _t10c_chg else "")
-    _t10p_lbl = (f" ({_t10p_chg['prev_date']}→{_t10p_chg['cur_date']})" if _t10p_chg else "")
+    _t10c_lbl = (f" ({_t10c_chg['prev_date']}→{_t10c_chg['cur_date']})" if _t10c_chg and _t10c_chg.get("chg") is not None else "")
+    _t10p_lbl = (f" ({_t10p_chg['prev_date']}→{_t10p_chg['cur_date']})" if _t10p_chg and _t10p_chg.get("chg") is not None else "")
+    for _label, _chg in (("買權前十大", _t10c_chg), ("賣權前十大", _t10p_chg)):
+        if _chg and _chg.get("status") == "rollover_baseline_reset":
+            _top10_rollover_notes.append(_label + "：" + _chg["reason"])
     A(_tbl([("買權多方 OI", _fi(_t10c["buy"]), _t10c_src if _t10c["buy"] is not None else MISSING),
             ("買權空方 OI", _fi(_t10c["sell"]), _t10c_src if _t10c["sell"] is not None else MISSING),
             ("買權多空淨 OI", _f2s(_t10c["net"]), _t10c_src if _t10c["net"] is not None else MISSING),
             ("買權多空淨 OI 變化" + _t10c_lbl,
              _f2s(_t10c_chg["chg"]) if _t10c_chg else MISSING,
-             SRC_SNAP if _t10c_chg and _t10c_chg.get("chg") is not None else MISSING)],
+             SRC_SNAP if _t10c_chg and _t10c_chg.get("chg") is not None else ("換月基準重建" if _t10c_chg and _t10c_chg.get("status") == "rollover_baseline_reset" else MISSING))],
            ("項目", "口數", "資料來源")))
     A("")
     A(_tbl([("賣權多方 OI", _fi(_t10p["buy"]), _t10p_src if _t10p["buy"] is not None else MISSING),
@@ -1422,10 +1428,12 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("賣權多空淨 OI", _f2s(_t10p["net"]), _t10p_src if _t10p["net"] is not None else MISSING),
             ("賣權多空淨 OI 變化" + _t10p_lbl,
              _f2s(_t10p_chg["chg"]) if _t10p_chg else MISSING,
-             SRC_SNAP if _t10p_chg and _t10p_chg.get("chg") is not None else MISSING)],
+             SRC_SNAP if _t10p_chg and _t10p_chg.get("chg") is not None else ("換月基準重建" if _t10p_chg and _t10p_chg.get("status") == "rollover_baseline_reset" else MISSING))],
            ("項目", "口數", "資料來源")))
     A(f"- 資料日期：買權 {_t10c['date'] or MISSING}／賣權 {_t10p['date'] or MISSING} "
       f"(TypeOfTraders=0 全部交易人；契約月份 {_t10c['month'] or MISSING})")
+    if _top10_rollover_notes:
+        A("- 換月註記：" + "；".join(_top10_rollover_notes))
     _opt_t10chg_missing = (not _t10c_chg or not _t10p_chg)
     A("")
     A("#### 大戶流向（全日；前十大無日夜拆分）")
@@ -1434,7 +1442,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         if chg and chg.get("chg") is not None:
             return (zh, _f2s(chg["chg"]),
                     f"{chg['prev_date']}→{chg['cur_date']}", SRC_SNAP)
-        return (zh, MISSING, "—", "端點未提供")
+        if chg and chg.get("status") == "rollover_baseline_reset":
+            return (zh, MISSING, "—", "換月基準重建")
+        return (zh, MISSING, "—", "歷史快照／比較資料不可用")
     A(_tbl([_t10r(_t10chg, "期貨前十大"),
             _t10r(_t10c_chg, "買權前十大"),
             _t10r(_t10p_chg, "賣權前十大")],
@@ -1457,6 +1467,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _snap_unav.append("futures.top10_change")
     if _opt_t10chg_missing:
         _snap_unav.append("options.top10_change")
+    if _top10_rollover_notes:
+        A("- 前十大換月註記：" + "；".join(_top10_rollover_notes))
     _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
     for _coverage_line in _coverage_status_lines(s.get("partial", []), _all_unav):
         A(_coverage_line)
