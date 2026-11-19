@@ -4015,6 +4015,17 @@ export default {
 
             put_count:
               putCount
+          },
+
+          error_code:
+            parsed.found ? null : "TXO_CHAIN_PARSE_FAILED",
+
+          diagnostics: parsed.found ? null : {
+            primary_error: result.primary_error || null,
+            fallback_error: result.fallback_error || null,
+            parse_reason: "No valid TXO option-chain contracts parsed",
+            input_rows: result.rows.length,
+            parsed_contracts: data.length
           }
 
         }, parsed.found ? 200 : 502);
@@ -4957,7 +4968,13 @@ export default {
             stage: "chain_parse",
             error:
               "TXO option chain not found",
-            detail: parsedChain.reason || "No usable TXO option-chain rows"
+            detail: "No usable TXO option-chain rows",
+            diagnostics: {
+              primary_error: chainResult.primary_error || null,
+              fallback_error: chainResult.fallback_error || null,
+              input_rows: chainResult.rows.length,
+              parsed_contracts: parsedChain.data.length
+            }
           }, 502);
         }
 
