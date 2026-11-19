@@ -397,8 +397,7 @@ tests/test_dashboard_unit_contract.py 新增：
   - GEX available、139 levels；Net GEX 1,294,327,419.009 NT$／1%；Gross GEX 6,320,130,202.133 NT$／1%。
   - factor_quality active=12/17；missing_factors 為 yield、volume、ma_bias、macd；disabled_factors 僅 gex。GEX 有數值但不納入方向性 Bias，狀態不再誤標為缺值。
   - 前十大 OI 與外資日盤淨交易不再直接相減；選擇權外資日盤 +6,624 口、夜盤 -94 口，卡片正確顯示日夜分歧。
-  - analysis_card_count=48 是內部分析敘述卡數；visible_block_count=42 是使用者定義的可見 Dashboard 區塊數；cards_41_count 僅為相容舊版的 alias。
-- 最新 artifact 的本輪實際瀏覽器截圖驗收：NOT TESTED（目前執行環境阻擋 localhost／file 頁面導航）；最新 CI 的靜態、Builder、資料解析與 HTML 預覽測試均 PASS。此前版本的六頁 Desktop／Mobile 技術渲染紀錄仍保留於 9.7。
+  - analysis_card_count=48 是內部分析敘述卡數；visible_block_count=42 是使用者定義的可見 Dashboard 區塊數；cards_41_count 僅為相容舊版的 alias。- 最新 artifact 的本輪實際瀏覽器截圖驗收：NOT TESTED（目前執行環境阻擋 localhost／file 頁面導航）；最新 CI 的靜態、Builder、資料解析與 HTML 預覽測試均 PASS。此前版本的六頁 Desktop／Mobile 技術渲染紀錄仍保留於 9.7。
 - 最新 Recovery 文件更新後，分支 head 會再前進一個文件提交；上述程式驗證均對應 8d08df0504d378c2d3f2592802062e83bd37c8fa。
 ## 9.9 最終欄位語義抽樣複核與交付（2026-11-02）
 
@@ -797,8 +796,7 @@ tests/test_dashboard_unit_contract.py 新增：
   - FiscalData 主解析新增 `bc_20year`／`20 Yr`。
   - API 失敗時 Treasury XML 新增 `BC_20YEAR` 備援。
   - 20Y 缺值維持 None/unavailable，不以 10Y 或 30Y 推估。
-- `src/fetch_data.py`：美債表新增「美國 20 年期殖利率」列。
-- `docs/DATA_REPORT_TEMPLATE.md`：需求欄位更新為 2／10／20／30 年。
+- `src/fetch_data.py`：美債表新增「美國 20 年期殖利率」列。- `docs/DATA_REPORT_TEMPLATE.md`：需求欄位更新為 2／10／20／30 年。
 - `tests/test_dashboard_unit_contract.py`：新增 20Y source/parser/report row contract test。
 
 ### Commits
@@ -1197,8 +1195,7 @@ Browser Audit 改善：
 | 項目 | 狀態 | 說明 |
 |---|---|---|
 | 01～04 動態摘要 | PASS（自動化） | 四張卡內容依當日分析結果產生 |
-| 01～04 頁內導覽目標 | PASS（自動化） | Browser Audit 確認四個 href 對應目標存在 |
-| 外資同法人群跨市場口徑 | PASS（程式／自動化） | 現貨、期貨、選擇權均取外資欄位 |
+| 01～04 頁內導覽目標 | PASS（自動化） | Browser Audit 確認四個 href 對應目標存在 || 外資同法人群跨市場口徑 | PASS（程式／自動化） | 現貨、期貨、選擇權均取外資欄位 |
 | 全體法人背景與外資方向區分 | PASS（程式／自動化） | 不再混成同一方向投票 |
 | 選擇權口數／契約金額代理值核對 | PASS（程式檢查） | 同一法人列比較；缺值明確提示 |
 | Build／Browser Audit／Deploy | PASS | Run #552 |
@@ -1459,4 +1456,105 @@ Commits：
 - 完整 Build + Deploy Workflow 會執行 Builder 與資料層相關測試；資料層凍結期間，任何再次觸發前須依使用者授權規則處理。
 - UI-only Audit 只驗證既有 JSON 注入 Template 後的 UI／瀏覽器行為，不等同資料層驗證或 Pages 部署。
 - 本次文件定版的驗收範圍是文件內容、路徑、Git commit 與分支狀態；沒有執行資料層測試或重新部署。
+
+---
+
+# 2026-11-19 補記：前十大 OI 換月基準與 TAIFEX Fetch 效能改善
+
+> 本節記錄本輪已提交程式及實際驗收證據。資料層原有凍結政策仍有效；本輪是使用者針對明確問題授權的有限修正，不構成後續一般性修改授權。
+
+## 1. 前十大 OI 跨月比較處理
+
+### 修正規則
+- 前十大交易人 OI 是特定契約月份的持倉快照；主力契約換月後，不得把舊月份與新月份直接相減。
+- 若前一交易日快照只有舊契約月份、當日新主力月份 OI 有效，回傳 `rollover_baseline_reset`，將新月份建立為比較基準。
+- 換月當日只呈現當日 OI 存量，不產生跨月份變化值，也不補零。
+- 若同月份且前後快照完整，照常計算日變化。
+- 若快照真正不存在、指定 Call／Put 無資料或當日淨值不完整，維持一般 unavailable／missing，不得誤判為換月。
+- 期貨、買權、賣權分別判斷與註記。
+
+### 報告與 Dashboard
+- DATA_REPORT 前十大 OI 變化欄位在換月時標示來源「換月基準重建」，數值為 unavailable。
+- DATA_REPORT 資料完整性區段列出換月原因。
+- Builder 將換月註記傳遞到 Dashboard JSON；Dashboard 顯示「只呈現當日 OI 存量，不進行月份相減」的語義。
+- Section 7.3 前十大交易人日夜盤對照仍列出多方 OI、空方 OI、淨 OI 存量及來源；不可因變化值 unavailable 而省略可用的當日 OI 欄位。
+
+### 測試
+- 新增 `tests/test_taifex_top10_rollover.py`，涵蓋契約月份不一致、Call／Put 分流、同月份正常計算、真正缺少快照。
+- 本機執行結果：4 tests，OK。
+- 本輪整體本機驗證另包含 TAIFEX Gamma fallback 41 tests，兩檔合計 45 tests，全部通過。
+
+## 2. TAIFEX TXO Chain 請求快取與效能改善
+
+### 實作規則
+- 在單次 `build()` 執行範圍內建立請求快取，快取 key 為 endpoint 與日期。
+- 成功的非 Key Levels 端點回應可在同一 build 內重用。
+- `options-market-structure-compact` 的結果（包含失敗結果）會在同一 build 內快取，避免 Gamma 與 Wall fallback 路徑對相同日期重複發出相同查詢；其自身既有 `_get()` 重試已先執行。
+- `options-key-levels` 刻意不快取，確保較長 timeout 的既有備援路徑仍可重新查詢，不會被較短 timeout 的不完整／失敗結果阻斷。
+- 非 compact 端點失敗不會一律快取；允許後續較長 timeout 再試。
+- 保留既有 HTTP 502 重試策略；本輪沒有移除重試，也沒有改 Worker、資料來源或 Workflow。
+- 快取僅限單次 build 的記憶體生命週期，不跨執行、日期或 workflow run 共用。
+
+### 相關測試
+- `tests/test_taifex_gamma_fallback.py` 新增／涵蓋快取行為：
+  - compact 失敗即使後續 timeout 較長仍重用結果，避免重複呼叫。
+  - Key Levels 不因短 timeout 結果而隱藏較長 timeout 重試。
+  - 其他非 compact 端點失敗後仍允許較長 timeout 再試。
+- Gamma fallback 測試檔本機結果：41 tests，OK。
+- `src/sources/taifex.py` Python compile：PASS。
+
+## 3. 效能驗收證據
+
+| 指標 | 改善前（daily-data #184） | 改善後（daily-data #185） |
+|---|---:|---:|
+| Fetch 內部總耗時 | 399.3 秒 | 132.8 秒 |
+| Fetch 步驟 | 約 6 分 39 秒 | 約 2 分 13 秒 |
+| Fetch Job | — | 約 2 分 36 秒 |
+| Workflow 結果 | success | success |
+
+- #185 GitHub Actions run ID：`44471987470`；執行分支：`phase2-p0-ui-fixes`；結果 completed／success。
+- #184 GitHub Actions run ID：`44468727812`；執行分支相同；結果 completed／success。
+- #185 Fetch job 的畫面顯示 2m 36s；其中 Fetch daily data step 為 2m 13s。
+- 本機驗證：`python -m py_compile src/sources/taifex.py` PASS；`test_taifex_gamma_fallback.py` 41/41 PASS；`test_taifex_top10_rollover.py` 4/4 PASS。
+- 相較 #184，Fetch 內部耗時由 399.3 秒降至 132.8 秒，約減少 66.7%。這是兩次實際執行的比較，不代表未來每次執行保證低於 180 秒。
+
+## 4. 本輪程式提交與分支狀態
+
+- 本輪 TAIFEX build 快取實作：`3caf1287085e41dd0808c49bba955550c10bd5c5`。
+- 快取測試：`ea6d911925f41ef47b7dc26ce52d72712bfdb77c`。
+- 保留 Key Levels 長 timeout fallback：`5abec51ad92b6f5a425ff1936a1ba10215856c41`。
+- 保留 Key Levels 重試語義測試：`97a3037d422326d0df3653a0229397e0aa2dd4cd`。
+- 前十大 OI 換月修正及測試已在此前提交；本節描述的是目前分支實際行為。
+- 本次文件更新前，分支 HEAD 為 `4e1d439f1d64b75f8f5a3de85731caeb8234759b`。此 SHA 包含 #185 產生的 DATA_REPORT commit。
+- 只修改本 Recovery 與 Data Layer Skill 文件；不修改 Worker、Workflow、Dashboard UI、資料來源或其他分支。
+
+## 5. 目前驗收狀態與觀察期
+
+| 項目 | 狀態 | 證據／限制 |
+|---|---|---|
+| 前十大 OI 換月比較規則 | PASS | 4 項本機測試通過；DATA_REPORT 有換月基準註記 |
+| Section 7.3 當日 OI 存量列示 | PASS（報告檢查） | 11/18 報告列出多方、空方、淨 OI；變化值 unavailable 並標示換月基準重建 |
+| TAIFEX build 內快取 | PASS（程式／單元測試） | 3 種快取／重試語義測試通過 |
+| Key Levels 長 timeout fallback | PASS（單元測試） | 確認不會被快取的短 timeout 結果阻斷 |
+| Python 編譯 | PASS | 本機 py_compile 成功 |
+| 本機相關測試 | PASS | Gamma fallback 41/41；rollover 4/4，合計 45/45 |
+| daily-data #185 | PASS | GitHub Actions completed／success |
+| 單次 Fetch 低於 180 秒 | PASS | #185 實測 132.8 秒 |
+| 後續長期效能穩定性 | OBSERVATION | 尚需觀察接下來 3–5 次由使用者手動觸發的 daily-data |
+| 所有資料來源逐項正確性 | NOT TESTED | 本輪不是全資料源重新驗證 |
+| Worker Runtime／部署 | NOT TESTED／NOT DONE | 本輪沒有部署 Worker |
+| Dashboard Build／Pages 部署 | NOT TESTED／NOT DONE | 本輪沒有執行 Build／Deploy |
+
+## 6. 後續觀察規則
+
+接下來 3–5 次手動執行，逐次記錄：
+1. Fetch Job 總時間與 Fetch daily data step 時間；目標為低於 180 秒，但不得為達標而犧牲資料完整性。
+2. TAIFEX HTTP 502、Read Timeout、重試次數及端點分布。
+3. Gamma Wall／Flip／Key Levels 的可用性及 fallback 是否正常。
+4. DATA_REPORT 的 unavailable／missing 是否為預期，是否出現非預期欄位缺失。
+5. 前十大 OI 在同月份、換月日、換月後第一個可比較交易日的狀態與註記。
+
+若後續執行時間偶發超過 180 秒，先檢查該次 Actions log 的實際端點耗時與錯誤，不立即再修改快取或重試策略。只有出現可重現錯誤或資料品質回歸，才提出最小修正方案並先取得使用者授權。
+
+---
 
