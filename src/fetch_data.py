@@ -1432,8 +1432,6 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
            ("項目", "口數", "資料來源")))
     A(f"- 資料日期：買權 {_t10c['date'] or MISSING}／賣權 {_t10p['date'] or MISSING} "
       f"(TypeOfTraders=0 全部交易人；契約月份 {_t10c['month'] or MISSING})")
-    if _top10_rollover_notes:
-        A("- 換月註記：" + "；".join(_top10_rollover_notes))
     _opt_t10chg_missing = (not _t10c_chg or _t10c_chg.get("chg") is None or not _t10p_chg or _t10p_chg.get("chg") is None)
     A("")
     A("#### 大戶流向（全日；前十大無日夜拆分）")
@@ -1468,7 +1466,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     if _opt_t10chg_missing:
         _snap_unav.append("options.top10_change")
     if _top10_rollover_notes:
-        A("- 前十大換月註記：" + "；".join(_top10_rollover_notes))
+        A("- 換月註記：" + "；".join(_top10_rollover_notes))
     _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
     for _coverage_line in _coverage_status_lines(s.get("partial", []), _all_unav):
         A(_coverage_line)
