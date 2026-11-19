@@ -5176,10 +5176,13 @@ export default {
             date: queryDate,
             error:
               "TXO option chain not found",
-            error_code: "TXO_CHAIN_PARSE_EMPTY",
+            error_code: "TXO_CHAIN_PARSE_FAILED",
             diagnostics: {
               primary_error: result.primary_error || null,
-              fallback_error: result.fallback_error || null
+              fallback_error: result.fallback_error || null,
+              parse_reason: "No valid TXO option-chain contracts parsed",
+              input_rows: result.rows.length,
+              parsed_contracts: parsed.data.length
             }
           }, 502);
         }
