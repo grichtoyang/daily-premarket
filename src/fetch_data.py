@@ -1434,7 +1434,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
       f"(TypeOfTraders=0 全部交易人；契約月份 {_t10c['month'] or MISSING})")
     if _top10_rollover_notes:
         A("- 換月註記：" + "；".join(_top10_rollover_notes))
-    _opt_t10chg_missing = (not _t10c_chg or not _t10p_chg)
+    _opt_t10chg_missing = (not _t10c_chg or _t10c_chg.get("chg") is None or not _t10p_chg or _t10p_chg.get("chg") is None)
     A("")
     A("#### 大戶流向（全日；前十大無日夜拆分）")
     A("")
@@ -1463,7 +1463,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _snap_unav.append("options.pos_change")
     if not _snap.get("walls"):
         _snap_unav.append("options.wall_change")
-    if not _t10chg:
+    if not _t10chg or _t10chg.get("chg") is None:
         _snap_unav.append("futures.top10_change")
     if _opt_t10chg_missing:
         _snap_unav.append("options.top10_change")
