@@ -145,6 +145,27 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
                 time.sleep(2)
     return None
 
+def _memoized_build_fetch(fetch):
+    """Memoize successful endpoint/date responses and compact failures per build.
+
+    Non-compact failures remain retryable with a different timeout (e.g. the
+    existing longer key-level fallback); compact failures are not repeated by
+    the second Wall fallback path after the Gamma scan has exhausted retries.
+    """
+    cache = {}
+
+    def _cached(ep: str, day: str, timeout: int = 40):
+        key = (ep, day)
+        if key in cache:
+            return cache[key]
+        result = fetch(ep, day, timeout=timeout)
+        if result is not None or ep == "options-market-structure-compact":
+            cache[key] = result
+        return result
+
+    return _cached
+
+
 def _sync_gamma_unavailable(unavailable: list[str], wall, flip) -> list[str]:
     """Keep unavailable flags aligned with the final resolved Gamma fields."""
     result = list(unavailable)
@@ -770,13 +791,14 @@ def dateless_content_date(now=None) -> str:
 
 def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _LAST_FETCH_ERRORS.clear()
+    _fetch = _memoized_build_fetch(_get)
     unav: list[str] = []
     notes: list[str] = []
     _content = dateless_content_date()
     if _content != t0:
         notes.append(f"無日期端點為最新盤勢快照 (判定資料日期 {_content}，非 T0 {t0})，"
                      "適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註")
-    P = {ep: _get(ep, t0) for ep in list(FREE_EPS) + sorted(DATE_EPS - {"options-gamma-levels", "options-market-structure-compact", "futures-options-chain"})}
+    P = {ep: _fetch(ep, t0) for ep in list(FREE_EPS) + sorted(DATE_EPS - {"options-gamma-levels", "options-market-structure-compact", "futures-options-chain"})}
     # 夜盤附屬端點（量/結算/法人夜交易）同口徑把關：payload 日期必須等於今天，
     # 否則視為無新節次，不採用（回退舊值曾靜默混入，2026-10-08 全日版教訓）。
     # options-after-hours 不在此列（它供日盤買賣權拆分，非純夜盤歸屬）。
@@ -798,7 +820,8 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             P[_ep] = None
     # Gamma 端點需 TAIEX 收盤 (FMTQIK 落後約一日)：僅查詢 T0 一次，上游 502 則標 unavailable，不再跑 T-1/T-2
     g_pay, g_date = None, None
-    _p = _get("options-gamma-levels", t0)
+    _p = _fetch("options-gamma-levels", t0)
+    _w, _f = None, None
     if _p is not None and (_p.get("date") or t0) == t0:
         _gd = (_p or {}).get("data") or {}
         _w = (_gd.get("gamma_wall") or {}).get("strike")
@@ -822,9 +845,19 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         notes.append(f"GEX Worker 診斷：{_summary[:900]}")
     # Market-structure-compact 的 Wall/Flip 必須分欄位遞補：
     # T-1 只有 Wall 時，仍須繼續查 T-2 的 Flip，不能因任一欄有值就停止。
+    _gamma_proxy_dates = _prev_dates(t0, 2)
+    if _w is not None and _f is not None:
+        _existing_kl = P.get("options-key-levels")
+        _existing_kl_valid = (
+            _existing_kl is not None
+            and (((_existing_kl.get("data") or {}).get("call_wall") or {}).get("strike") is not None)
+        )
+        if _existing_kl_valid:
+            # Keep one T0 compact diagnostic payload, but skip historical proxy scans.
+            _gamma_proxy_dates = _gamma_proxy_dates[:1]
     _gamma_proxy = _gamma_proxy_fallback(
-        lambda _d: _get("options-market-structure-compact", _d),
-        _prev_dates(t0, 2))
+        lambda _d: _fetch("options-market-structure-compact", _d),
+        _gamma_proxy_dates)
     if _gamma_proxy["flip"] is None:
         _proxy_diag = []
         for _attempt in _gamma_proxy.get("attempts", []):
@@ -849,11 +882,11 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     else:
         for _d in _prev_dates(t0, 2):
             if kl_pay is None:
-                _p = _get("options-key-levels", _d, timeout=90)
+                _p = _fetch("options-key-levels", _d, timeout=90)
                 if (((_p or {}).get("data") or {}).get("call_wall") or {}).get("strike") is not None:
                     kl_pay, kl_date = _p, _d
             if cp_pay is None:
-                _p = P["options-market-structure-compact"] if _d == t0 else _get("options-market-structure-compact", _d, timeout=90)
+                _p = P["options-market-structure-compact"] if _d == t0 else _fetch("options-market-structure-compact", _d, timeout=90)
                 if (((_p or {}).get("data") or {}).get("call_wall") or {}).get("strike") is not None:
                     cp_pay, cp_date = _p, _d
             if kl_pay is not None and cp_pay is not None:
@@ -906,7 +939,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
 
     # ---------- 期貨 3：法人 OI + 變化 ----------
     oi = _by_inst(_rows(P["futures-institutional-oi"]))
-    hist = (_get("futures-institutional-oi-history", t0) or {}).get("data") or []
+    hist = (_fetch("futures-institutional-oi-history", t0) or {}).get("data") or []
     prev = {}
     if len(hist) >= 2:
         for r in hist[1].get("data") or []:
@@ -954,7 +987,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # ---------- 選擇權 chain (失敗向 T-1…遞補並標示日期) ----------
     chain, chain_date = [], None
     for _d in _prev_dates(t0, 2):
-        _p = _get("futures-options-chain", _d, timeout=90)
+        _p = _fetch("futures-options-chain", _d, timeout=90)
         if _p is not None:
             chain, chain_date = _rows(_p), _d
             break
