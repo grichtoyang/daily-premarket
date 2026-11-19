@@ -63,6 +63,17 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=90))
         fetch.assert_called_once_with("options-market-structure-compact", "2026-11-06", timeout=40)
 
+    def test_build_fetch_cache_does_not_hide_keylevels_long_timeout_retry(self):
+        from src.sources.taifex import _memoized_build_fetch
+
+        first = {"ok": True, "data": {"call_wall": None}}
+        second = {"ok": True, "data": {"call_wall": {"strike": 39000}}}
+        fetch = Mock(side_effect=[first, second])
+        cached = _memoized_build_fetch(fetch)
+        self.assertIs(cached("options-key-levels", "2026-11-06", timeout=40), first)
+        self.assertIs(cached("options-key-levels", "2026-11-06", timeout=90), second)
+        self.assertEqual(fetch.call_count, 2)
+
     def test_build_fetch_cache_allows_longer_timeout_after_noncompact_failure(self):
         from src.sources.taifex import _memoized_build_fetch
 
