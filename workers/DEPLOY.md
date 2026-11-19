@@ -25,7 +25,7 @@ V1.6 相對 V1.5 的新增內容：
 
 1. 確認目標是既有 Worker `taifex`，正式網址仍為上方網址。
 2. 在 Settings / Bindings 確認既有 KV Namespace binding 名稱為 `SNAPSHOTS`，並確認它指向原本使用的 Namespace。不要新建 Namespace 或更換 ID。
-3. 在 Triggers / Cron Triggers 確認既有快照排程。程式註解中的預期排程為 `30 6 * * 1-5`（UTC，即台北時間週一至週五 14:30）。若現有設定不同，先查明原因，不要自行新增重複排程。
+3. 在 Triggers / Cron Triggers 確認既有快照排程。依目前 Cloudflare Dashboard 截圖，既有排程為週一至週五 08:30 UTC（即台北時間 16:30；cron expression 預期為 `30 8 * * 1-5`）。Cloudflare Cron 使用 UTC。V1.6 原始碼 `scheduled()` 上方仍有舊註解範例 `30 6 * * 1-5`（台北時間 14:30），該註解與目前既有 Dashboard 設定不一致；本文件以已確認的 Dashboard 設定為準。不要新增重複排程，也不要在未經使用者確認前更改現有時間。
 4. 確認目前 `SNAPSHOT_KEY` Secret 的設定狀態並予以保留。它是選用設定：若已設定，`/snapshots/write-now` 需提供正確 key；若未設定，該端點不會因 key 缺少而拒絕請求。不要在本次部署中更換或洩露 Secret。
 5. 記錄目前已部署版本，並確認可透過 Cloudflare Deployments / Versions 回滾。專案先前記錄 V1.5 為已部署版本，但部署前仍應以 Cloudflare Dashboard 顯示為準。
 
