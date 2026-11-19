@@ -994,7 +994,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("前十大交易人多空淨 OI", _f2s(_t10["net"]), _t10_src if _t10["net"] is not None else MISSING),
             ("前十大交易人多空淨 OI 變化" + _t10chg_lbl,
              _f2s(_t10chg["chg"]) if _t10chg else MISSING,
-             SRC_SNAP if _t10chg and _t10chg.get("chg") is not None else MISSING)],
+             SRC_SNAP if _t10chg and _t10chg.get("chg") is not None else ("換月基準重建" if _t10chg and _t10chg.get("status") == "rollover_baseline_reset" else MISSING))],
            ("項目", "口數", "資料來源")))
     A("")
     A("#### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)")
