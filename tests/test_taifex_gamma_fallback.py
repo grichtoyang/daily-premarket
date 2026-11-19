@@ -54,6 +54,25 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertTrue(all(item["response"] == "available" for item in result["attempts"]))
         self.assertTrue(all(item["gamma_flip_proxy"] is None for item in result["attempts"]))
 
+    def test_build_fetch_cache_reuses_compact_failure_even_with_longer_timeout(self):
+        from src.sources.taifex import _memoized_build_fetch
+
+        fetch = Mock(return_value=None)
+        cached = _memoized_build_fetch(fetch)
+        self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=40))
+        self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=90))
+        fetch.assert_called_once_with("options-market-structure-compact", "2026-11-06", timeout=40)
+
+    def test_build_fetch_cache_allows_longer_timeout_after_noncompact_failure(self):
+        from src.sources.taifex import _memoized_build_fetch
+
+        fetch = Mock(side_effect=[None, {"ok": True, "data": {}}])
+        cached = _memoized_build_fetch(fetch)
+        self.assertIsNone(cached("options-key-levels", "2026-11-06", timeout=40))
+        result = cached("options-key-levels", "2026-11-06", timeout=90)
+        self.assertTrue(result["ok"])
+        self.assertEqual(fetch.call_count, 2)
+
     def test_compact_proxy_fallback_records_endpoint_failure_per_date(self):
         with patch.dict(_LAST_FETCH_ERRORS, {
             "options-market-structure-compact": {
