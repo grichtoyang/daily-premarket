@@ -3547,7 +3547,7 @@ export default {
         ok: true,
         service: "taifex-proxy",
         taifex: true,
-        version: "V1.4 — V1.3 + daily snapshots (KV) (additive)"
+        version: "V1.6 — V1.5 + bounded TXO Chain fetch + unified failure diagnostics (additive)"
       });
     }
 
