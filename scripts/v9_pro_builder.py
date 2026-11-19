@@ -1072,6 +1072,12 @@ def parse_data_report(report_path):
             elif (line.startswith("- 原文連結：") or line.startswith("- 連結：")) and curr: curr["link"]=re.sub(r"^- (?:原文連結|連結)：","",line).strip()
         if curr: news_events.append(curr)
 
+    # 將報表的合併換月註記依商品分類，避免期貨與選擇權區塊互相顯示錯誤原因。
+    rollover_note_line = next((line for line in text.splitlines() if line.startswith("- 換月註記：")), "")
+    rollover_note_items = [item.strip() for item in rollover_note_line.split("：", 1)[1].split("；") if item.strip()] if rollover_note_line else []
+    futures_rollover_note = "；".join(item for item in rollover_note_items if item.startswith("期貨前十大：")) or None
+    options_rollover_note = "；".join(item for item in rollover_note_items if item.startswith(("買權前十大：", "賣權前十大："))) or None
+
     return {
         'meta': {'report_date': report_date, 't0_date': t0_date, 'generated_at': gen_time, 'data_quality_warnings': consistency_warnings},
         'usPct_simple': usPct_simple, 'asiaPct_simple': asiaPct_simple, 'futPct_simple': futPct_simple,
@@ -1083,8 +1089,8 @@ def parse_data_report(report_path):
         'turnover': {'listed': listed_turnover, 'otc': otc_turnover, 'total': total_turnover},
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
-        'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'institutional_oi_total': institutional_oi_total, 'top10': top10_oi, 'top10_change_note': next((line.split("：", 1)[1].strip() for line in text.splitlines() if line.startswith("- 換月註記：")), None), 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
-        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'extendedFlip': ((gex_payload.get('wide_range_flip') or {}).get('estimated_underlying') if gamma_flip is None else None), 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'instOptForceAnalysis': build_option_force_analysis(opt_inst_force_table, opt_inst_table), 'top10Call': opt_top10_call, 'top10Put': opt_top10_put, 'top10ChangeNote': next((line.split("：", 1)[1].strip() for line in text.splitlines() if line.startswith("- 換月註記：")), None)},
+        'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'institutional_oi_total': institutional_oi_total, 'top10': top10_oi, 'top10_change_note': futures_rollover_note, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
+        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'extendedFlip': ((gex_payload.get('wide_range_flip') or {}).get('estimated_underlying') if gamma_flip is None else None), 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'instOptForceAnalysis': build_option_force_analysis(opt_inst_force_table, opt_inst_table), 'top10Call': opt_top10_call, 'top10Put': opt_top10_put, 'top10ChangeNote': options_rollover_note},
         'news': news_events,
     }
 
