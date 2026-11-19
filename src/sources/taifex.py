@@ -1294,7 +1294,9 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     """前十大淨變化 (快照 T-1)。dataset: top10fut (期貨) / top10opt (選擇權，需 callput)。
     上游 OpenAPI 落後約一日 (最新 = T-1)，取指定契約月份最新內容日期；
     指定月份或買賣方資料不完整時回傳 None，不跨月份、不將缺值補零。
-    回傳 {chg, prev_date, cur_date, snap_date} 或 None。"""
+    同月份有效比較回傳 {chg, status=available, prev_date, cur_date, snap_date}；
+    前快照只有其他契約月份時回傳 status=rollover_baseline_reset，不跨月相減；
+    快照不存在或資料無法驗證時回傳 None。"""
     import math
     from datetime import date as _dd, timedelta as _td
 
