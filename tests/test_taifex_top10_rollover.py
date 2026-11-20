@@ -17,7 +17,6 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         self.addCleanup(self.prev_day_patcher.stop)
         self.snapshot = {
             "date": "2026-11-17",
-            "trust_pos": True,
             "data": {
                 "top10fut": [
                     {
