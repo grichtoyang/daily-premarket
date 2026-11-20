@@ -27,6 +27,18 @@ FREE_EPS = ["futures-price", "futures-price-after-hours", "futures-institutional
             "futures-institutional-after-hours", "options-institutional",
             "options-institutional-after-hours", "options-after-hours",
             "options-day-call-put"]
+
+# Only endpoints consumed by build() are fetched in the initial batch.
+# options-market-structure is a legacy endpoint with no downstream consumer;
+# keep it in DATE_EPS for explicit compatibility, but never fetch it in build().
+BUILD_INITIAL_EPS = tuple(FREE_EPS) + tuple(sorted(
+    DATE_EPS - {
+        "options-gamma-levels",
+        "options-market-structure-compact",
+        "futures-options-chain",
+        "options-market-structure",
+    }
+))
 INST_ZH = {"foreign": "外資", "investment_trust": "投信", "dealer": "自營商"}
 
 def _missing_night_fields(night: dict) -> list[str]:
@@ -824,7 +836,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     if _content != t0:
         notes.append(f"無日期端點為最新盤勢快照 (判定資料日期 {_content}，非 T0 {t0})，"
                      "適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註")
-    P = {ep: _fetch(ep, t0) for ep in list(FREE_EPS) + sorted(DATE_EPS - {"options-gamma-levels", "options-market-structure-compact", "futures-options-chain"})}
+    P = {ep: _fetch(ep, t0) for ep in BUILD_INITIAL_EPS}
     # 夜盤附屬端點（量/結算/法人夜交易）同口徑把關：payload 日期必須等於今天，
     # 否則視為無新節次，不採用（回退舊值曾靜默混入，2026-10-08 全日版教訓）。
     # options-after-hours 不在此列（它供日盤買賣權拆分，非純夜盤歸屬）。
