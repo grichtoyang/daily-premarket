@@ -133,10 +133,10 @@ def get_institutional(query_date: str = "") -> dict:
             + (dealer_hedge if dealer_hedge is not None else 0)
             if dealer_own is not None or dealer_hedge is not None else None
         )
-        total = (
-            foreign + trust + dealer
-            if None not in (foreign, trust, dealer) else None
-        )
+        if None in (foreign, trust, dealer):
+            print("[WARN] BFI82U incomplete institutional categories; reject fallback payload")
+            return {}
+        total = foreign + trust + dealer
         return {"date": date, "foreign": foreign, "trust": trust, "dealer": dealer, "total": total}
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] TWSE BFI82U parse failed: {e}")
