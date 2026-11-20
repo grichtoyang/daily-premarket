@@ -1,0 +1,32 @@
+name: TAIFEX Worker V1.7 Validation
+
+on:
+  push:
+    branches:
+      - "fix/worker-v1.7-compact-deadline"
+    paths:
+      - "workers/taifex-proxy_V1.7.js"
+      - "tests/test_worker_v1_7_contract.mjs"
+      - "tests/test_worker_v1_7_gamma_regression.mjs"
+      - ".github/workflows/taifex-worker-v1.7-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax check
+        run: node --check workers/taifex-proxy_V1.7.js
+      - name: Contract tests
+        run: node tests/test_worker_v1_7_contract.mjs
+      - name: Gamma and expiry regression tests
+        run: node tests/test_worker_v1_7_gamma_regression.mjs
