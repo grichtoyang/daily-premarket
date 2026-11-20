@@ -804,23 +804,23 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         self.patch_trading_day.start()
         self.addCleanup(self.patch_trading_day.stop)
         self.patch_snapshot = patch("src.sources.taifex.snapshot_bundle", return_value={
-            "date": "2026-11-06",
+            "date": "2026-11-07",
             "trust_pos": True,
             "data": {
                 # Worker collected the snapshot on 2026-11-06; the upstream
                 # TAIFEX top10 endpoint content is expected to be T-1 (11/05).
                 "top10fut": [
-                    {"Date": "20261105", "SettlementMonth": "202611",
+                    {"Date": "20261106", "SettlementMonth": "202611",
                      "Top10Buy": "1,000", "Top10Sell": "700"},
-                    {"Date": "20261105", "SettlementMonth": "202611",
+                    {"Date": "20261106", "SettlementMonth": "202611",
                      "Top10Buy": "1,200", "Top10Sell": "800"},
-                    {"Date": "20261105", "SettlementMonth": "202612",
+                    {"Date": "20261106", "SettlementMonth": "202612",
                      "Top10Buy": "9,000", "Top10Sell": "1,000"},
                 ],
                 "top10opt": [
-                    {"Date": "20261105", "SettlementMonth": "202611",
+                    {"Date": "20261106", "SettlementMonth": "202611",
                      "CallPut": "買權", "Top10Buy": "500", "Top10Sell": "300"},
-                    {"Date": "20261105", "SettlementMonth": "202611",
+                    {"Date": "20261106", "SettlementMonth": "202611",
                      "CallPut": "賣權", "Top10Buy": "700", "Top10Sell": "400"},
                 ],
             },
