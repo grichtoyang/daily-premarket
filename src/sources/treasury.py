@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 from datetime import datetime, timezone
+from time import perf_counter
 from src.sources.us_market import quote
 
 
@@ -91,23 +92,39 @@ def _xml_yield(field: str):
 
 def get_yields() -> dict:
     """Return each tenor independently; use a field-specific fallback for missing tenors."""
-    out = _treasury() or {}
-    fallbacks = {
-        "2Y": ("xml", "BC_2YEAR", None),
-        "10Y": ("yahoo", None, "^TNX"),
-        "20Y": ("xml", "BC_20YEAR", None),
-        "30Y": ("yahoo", None, "^TYX"),
-    }
-    for label, (kind, xml_field, symbol) in fallbacks.items():
-        current = out.get(label) or {}
-        if current.get("yield") is not None:
-            continue
-        if kind == "xml":
-            fallback = _xml_yield(xml_field)
-        else:
-            q = quote(symbol)
-            fallback = {"yield": q.get("price"), "chg": q.get("change"), "date": q.get("date"),
-                        "retrieved_at": q.get("retrieved_at"),
-                        "source": "Yahoo Finance (備援)", "ok": bool(q.get("ok") and q.get("price") is not None)}
-        out[label] = fallback
-    return out
+    total_started = perf_counter()
+    try:
+        stage_started = perf_counter()
+        try:
+            out = _treasury() or {}
+        finally:
+            status = "ok" if any((v or {}).get("yield") is not None for v in out.values()) else "fallback"
+            print(f"[TIMING] treasury_stage=fiscaldata status={status} elapsed={perf_counter() - stage_started:.2f}s")
+
+        fallbacks = {
+            "2Y": ("xml", "BC_2YEAR", None),
+            "10Y": ("yahoo", None, "^TNX"),
+            "20Y": ("xml", "BC_20YEAR", None),
+            "30Y": ("yahoo", None, "^TYX"),
+        }
+        for label, (kind, xml_field, symbol) in fallbacks.items():
+            current = out.get(label) or {}
+            if current.get("yield") is not None:
+                continue
+            stage_started = perf_counter()
+            try:
+                if kind == "xml":
+                    fallback = _xml_yield(xml_field)
+                else:
+                    q = quote(symbol)
+                    fallback = {"yield": q.get("price"), "chg": q.get("change"), "date": q.get("date"),
+                                "retrieved_at": q.get("retrieved_at"),
+                                "source": "Yahoo Finance (備援)", "ok": bool(q.get("ok") and q.get("price") is not None)}
+                out[label] = fallback
+            finally:
+                status = "ok" if (out.get(label) or {}).get("yield") is not None else "unavailable"
+                source = f"xml_{xml_field}" if kind == "xml" else f"yahoo_{symbol}"
+                print(f"[TIMING] treasury_stage={source} tenor={label} status={status} elapsed={perf_counter() - stage_started:.2f}s")
+        return out
+    finally:
+        print(f"[TIMING] treasury_stage=total elapsed={perf_counter() - total_started:.2f}s")
