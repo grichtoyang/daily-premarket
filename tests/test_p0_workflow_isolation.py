@@ -4,39 +4,61 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKFLOW = ROOT / ".github" / "workflows" / "daily-premarket-v9-pro.yml"
-INTEGRATION = ROOT / ".github" / "workflows" / "test-data-report-margin-ratio.yml"
+WORKFLOWS = {
+    "daily_data": ROOT / ".github" / "workflows" / "daily_data.yml",
+    "v9_pro": ROOT / ".github" / "workflows" / "daily-premarket-v9-pro.yml",
+}
 
 
 class P0WorkflowIsolationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.workflow = WORKFLOW.read_text(encoding="utf-8")
-        cls.integration = INTEGRATION.read_text(encoding="utf-8")
+        cls.workflows = {
+            name: path.read_text(encoding="utf-8")
+            for name, path in WORKFLOWS.items()
+        }
 
-    def test_manual_dispatch_and_explicit_master_p0_push_triggers(self):
-        self.assertIn("workflow_dispatch:", self.workflow)
-        push_section = self.workflow.split("  schedule:", 1)[0]
-        self.assertRegex(push_section, r"(?ms)^  push:\s*branches:\s*\n\s+- master(?:\s|$)")
-        self.assertIn("- phase2-p0-data-quality", push_section)
+    def _trigger_block(self, name):
+        workflow = self.workflows[name]
+        match = re.search(
+            r"(?ms)^on:\\s*\\n(?P<body>.*?)(?=^[A-Za-z_][A-Za-z0-9_-]*:|\\Z)",
+            workflow,
+        )
+        self.assertIsNotNone(match, f"{name} workflow has no top-level on block")
+        return match.group("body")
 
-    def test_checkout_and_generated_commit_are_explicitly_p0_scoped(self):
-        self.assertIn("ref: ${{ github.ref }}", self.workflow)
-        self.assertIn("if: github.ref == 'refs/heads/phase2-p0-data-quality'", self.workflow)
-        self.assertIn('${GITHUB_REF_NAME}" != "phase2-p0-data-quality"', self.workflow)
-        self.assertIn('git push origin "HEAD:${GITHUB_REF_NAME}"', self.workflow)
-        self.assertNotRegex(self.workflow, r"(?m)^\s*git push\s*$")
-        self.assertIn("git add dashboards/", self.workflow)
-        self.assertNotIn("git add data_reports", self.workflow)
+    def test_daily_data_is_manual_dispatch_only(self):
+        triggers = self._trigger_block("daily_data")
+        self.assertRegex(triggers, r"(?m)^  workflow_dispatch:\\s*$")
+        self.assertNotRegex(triggers, r"(?m)^  (?:push|schedule|pull_request):")
 
-    def test_pages_deploy_is_restricted_to_default_branch(self):
-        self.assertIn("if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)", self.workflow)
-        self.assertIn("uses: actions/deploy-pages@v4", self.workflow)
+    def test_v9_pro_dashboard_is_manual_dispatch_only(self):
+        triggers = self._trigger_block("v9_pro")
+        self.assertRegex(triggers, r"(?m)^  workflow_dispatch:\\s*$")
+        self.assertNotRegex(triggers, r"(?m)^  (?:push|schedule|pull_request):")
 
-    def test_p0_integration_workflow_cannot_deploy_pages(self):
-        self.assertIn("permissions:\n  contents: read", self.integration)
-        self.assertNotIn("actions/deploy-pages@", self.integration)
-        self.assertNotRegex(self.integration, r"(?m)^\s+deploy:")
+    def test_daily_data_manual_inputs_and_report_validation_are_preserved(self):
+        workflow = self.workflows["daily_data"]
+        self.assertIn("      t0:", workflow)
+        self.assertIn("      force_rewrite:", workflow)
+        self.assertIn("validate_data_report_file", workflow)
+        self.assertIn("git push origin", workflow)
+
+    def test_v9_pro_manual_date_input_and_build_checkout_are_preserved(self):
+        workflow = self.workflows["v9_pro"]
+        self.assertIn("      date:", workflow)
+        self.assertIn("ref: ${{ github.sha }}", workflow)
+        self.assertIn("actions/upload-pages-artifact@v3", workflow)
+        self.assertIn("actions/deploy-pages@v4", workflow)
+
+    def test_v9_pro_pages_deploy_remains_branch_scoped(self):
+        workflow = self.workflows["v9_pro"]
+        self.assertIn(
+            "if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) "
+            "|| github.ref == 'refs/heads/phase2-p0-data-quality' "
+            "|| github.ref == 'refs/heads/phase2-p0-ui-fixes'",
+            workflow,
+        )
 
 
 if __name__ == "__main__":
