@@ -93,6 +93,7 @@ def _xml_yield(field: str):
 def get_yields() -> dict:
     """Return each tenor independently; use a field-specific fallback for missing tenors."""
     total_started = perf_counter()
+    out = {}
     try:
         stage_started = perf_counter()
         try:
