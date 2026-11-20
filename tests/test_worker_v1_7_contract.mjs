@@ -29,9 +29,9 @@ const delta = functionSource(
   "\n\nfunction buildGammaProxy"
 );
 assert.match(delta, /deadlineAt: options\.deadlineAt/);
-assert.match(delta, /fetchTAIFEXText\([^;]+requestContext\)/s);
+assert.match(delta, /Delta_\$\{compact\}\.csv/);\nassert.match(delta, /fetch\(sourceUrl/);\nassert.match(delta, /TextDecoder\("big5"\)/);
 assert.match(delta, /fetchOpenAPIDeltaForDate\(requestedISO, requestContext\)/);
-assert.match(delta, /fetchTAIFEXPost\([^;]+requestContext/s);
+assert.match(delta, /parseTAIFEXDeltaCsv\(text, requestedISO\)/);
 
 const taiEX = functionSource(
   "fetchTAIEXCloseForDate",
