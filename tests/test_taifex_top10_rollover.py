@@ -8,7 +8,10 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def setUp(self):
         self.prev_day_patcher = patch(
             "src.sources.taifex._previous_trading_day_iso",
-            return_value="2026-11-17",
+            side_effect=lambda day: {
+                "2026-11-18": "2026-11-17",
+                "2026-11-17": "2026-11-16",
+            }.get(day),
         )
         self.prev_day_patcher.start()
         self.addCleanup(self.prev_day_patcher.stop)
@@ -77,7 +80,13 @@ class Top10RolloverBaselineTests(unittest.TestCase):
 
 
     @patch("src.sources.taifex.snapshot_bundle")
-    @patch("src.sources.taifex._previous_trading_day_iso", return_value="2026-11-13")
+    @patch(
+        "src.sources.taifex._previous_trading_day_iso",
+        side_effect=lambda day: {
+            "2026-11-16": "2026-11-13",
+            "2026-11-13": "2026-11-12",
+        }.get(day),
+    )
     def test_uses_previous_trading_day_across_weekend(self, previous_day, snapshot_bundle):
         weekend_data = {
             key: [
@@ -130,6 +139,24 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         snapshot_bundle.return_value = bad_snapshot
         self.assertIsNone(
             taifex.snap_top10_change("202612", "2026-11-18", 2500)
+        )
+
+
+    @patch("src.sources.taifex.snapshot_bundle")
+    def test_consistently_stale_source_rows_are_rejected(self, snapshot_bundle):
+        stale_data = {
+            key: [
+                {**row, "Date": "20261115"}
+                for row in rows
+            ]
+            for key, rows in self.snapshot["data"].items()
+        }
+        snapshot_bundle.return_value = {
+            **self.snapshot,
+            "data": stale_data,
+        }
+        self.assertIsNone(
+            taifex.snap_top10_change("202611", "2026-11-18", 3500)
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
