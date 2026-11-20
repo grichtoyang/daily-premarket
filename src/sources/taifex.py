@@ -35,8 +35,9 @@ def _missing_night_fields(night: dict) -> list[str]:
     fields = ("open", "high", "low", "close", "change", "pct", "vol")
     return [f"futures.night.{field}" for field in fields if night.get(field) is None]
 
-# F1（2026-10-19）：快照 bundle memoize。build() 與 snap_top10_change() 取的是同一份
-# T-1 快照（報表多處引用），同一進程內重複請求同一 (proxy, date) 只快取成功結果；
+# F1（2026-10-19）：快照 bundle memoize。build() 的 Chain／法人部位使用 T-1 快照；
+# 前十大 OpenAPI 內容落後一交易日，因此 snap_top10_change() 讀取 T0 Worker 快照。
+# 同一進程內重複請求同一 (proxy, date) 只快取成功結果；
 # 失敗仍每次重抓（不把一次上游故障釘成永久 unavailable）。
 # 呼叫端只讀不寫（build 取 .get/.items、snap_top10_change 複製 list 後才 sort），
 # 故直接回傳同一物件，不做昂貴的深拷貝。
@@ -1324,7 +1325,7 @@ def _iso8(v: str | None) -> str | None:
 
 def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
                       dataset: str = "top10fut", callput: str | None = None) -> dict | None:
-    """前十大淨變化 (快照 T-1)。dataset: top10fut (期貨) / top10opt (選擇權，需 callput)。
+    """前十大淨變化 (Worker T0 快照；Top10 內容日期 T-1)。dataset: top10fut (期貨) / top10opt (選擇權，需 callput)。
     上游 OpenAPI 落後約一日 (最新 = T-1)，取指定契約月份最新內容日期；
     若快照只有其他契約月份，回傳換月基準重建狀態；不跨月份、不將缺值補零。
     快照不存在、指定買賣方資料不存在或數值不完整時回傳 None。
@@ -1333,26 +1334,22 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     快照不存在或資料無法驗證時回傳 None。"""
     import math
 
-    # Worker 每個交易日收盤後寫入當日 KV 快照；報表 T0 的前一交易日基準，
-    # 必須讀取 T-1 key，且快照內 Top10 日期也必須等於該 T-1 交易日。
-    _snapshot_date = _previous_trading_day_iso(t0)
-    if not _snapshot_date:
-        return None
-    # Worker collects on the snapshot date, but TAIFEX Top10 OpenAPI
-    # content is one trading day behind that collection date.
+    # Worker 每個交易日收盤後寫入當日 KV 快照；TAIFEX Top10 OpenAPI 內容落後
+    # Worker 收集日一個交易日。因此 T0 報告應讀取 snapshot:T0，並驗證內容日期為 T-1。
+    _snapshot_date = str(t0 or "").strip()
     _expected_content_date = _previous_trading_day_iso(_snapshot_date)
-    if not _expected_content_date:
+    if not _snapshot_date or not _expected_content_date:
         return None
     _sb = snapshot_bundle(_snapshot_date)
     if not isinstance(_sb, dict):
         return None
 
-    # A dated KV key is not sufficient: position snapshots are trustworthy only
-    # when Worker collection date matches the requested snapshot date.
-    if _sb.get("date") != _snapshot_date or _sb.get("trust_pos") is False:
+    # Top10 自身以 Worker key 日期及 OpenAPI 內容日期驗證；
+    # trust_pos 僅代表無日期法人部位是否可信，不應阻擋有日期可驗證的 Top10。
+    if _sb.get("date") != _snapshot_date:
         print(
             f"[WARN] top10 snapshot rejected: requested={_snapshot_date} "
-            f"returned={_sb.get('date')} trust_pos={_sb.get('trust_pos', 'not_provided')}"
+            f"returned={_sb.get('date')}"
         )
         return None
 
