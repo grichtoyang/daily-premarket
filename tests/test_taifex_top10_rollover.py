@@ -79,9 +79,17 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     @patch("src.sources.taifex.snapshot_bundle")
     @patch("src.sources.taifex._previous_trading_day_iso", return_value="2026-11-13")
     def test_uses_previous_trading_day_across_weekend(self, previous_day, snapshot_bundle):
+        weekend_data = {
+            key: [
+                {**row, "Date": "20261112"}
+                for row in rows
+            ]
+            for key, rows in self.snapshot["data"].items()
+        }
         snapshot_bundle.return_value = {
             **self.snapshot,
             "date": "2026-11-13",
+            "data": weekend_data,
         }
         result = taifex.snap_top10_change(
             "202611", "2026-11-16", 3500, cur_date="2026-11-16"
