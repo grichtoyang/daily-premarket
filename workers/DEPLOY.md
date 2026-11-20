@@ -124,7 +124,8 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 ## 6. 相關版本
 
 - `workers/taifex-proxy_V1.8.js`：候選版，尚未部署。
-- `workers/taifex-proxy_V1.7.js`：目前正式版本程式碼基準。\n- `workers/taifex-proxy_V1.6.js`：歷史版本程式碼基準。
+- `workers/taifex-proxy_V1.7.js`：目前正式版本程式碼基準。
+- `workers/taifex-proxy_V1.6.js`：歷史版本程式碼基準。
 - `workers/taifex-proxy_V1.5.js`、`V1.4.js`：歷史版本。
 - `workers/twse-proxy_V1.2.js`：本次不變更。
 
