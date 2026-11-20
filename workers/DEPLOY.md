@@ -61,9 +61,9 @@ curl -i https://taifex.grichtoyang.workers.dev/health
 - HTTP 200
 - `ok: true`
 - `service: "taifex-proxy"`
-- `version` 以 `V1.7` 開頭，且明確包含 bounded compact fetch / parallel Delta/TAIEX。
+- `version` 以 `V1.8` 開頭，且明確包含 direct historical Delta CSV。
 
-若仍回報 V1.6，表示新版本尚未生效或部署目標錯誤；立即停止後續驗收並評估回滾。
+若仍回報 V1.7，表示新版本尚未生效或部署目標錯誤；立即停止後續驗收並評估回滾。
 
 ### 4.2 Compact endpoint（核心驗收）
 
@@ -76,7 +76,7 @@ curl -i "https://taifex.grichtoyang.workers.dev/options-market-structure-compact
 驗收：
 - HTTP 200 時，確認回應日期與請求日期一致。
 - 確認 Chain、Delta、TAIEX 的 found / reason / diagnostics 狀態能分辨成功與失敗。
-- 確認有 V1.7 compact stage timing 診斷，能分辨 `chain_fetch` 與 `delta_taiex_parallel`。
+- 確認有 V1.8 compact stage timing 診斷，能分辨 `chain_fetch` 與 `delta_taiex_parallel`。
 - 單一 Delta 或 TAIEX 失敗時，另一項成功結果仍應保留；不可因單項例外而丟棄另一項成功結果。
 - 若 Chain 不可用，應回傳明確錯誤，不得偽裝成成功或以 0 代替缺值。
 - 上游暫時性錯誤可造成明確 unavailable / 非 2xx；須區分上游故障與 Worker runtime exception，不可只因一次上游故障判定程式部署失敗。
@@ -104,7 +104,7 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 
 ### 4.5 上線判定
 
-- **PASS**：Health 回報 V1.7；compact endpoint 的 stage 診斷及資料狀態合理；既有端點抽查無回歸；KV bundle 唯讀正常；Cron / binding / Secret 保留。
+- **PASS**：Health 回報 V1.8；compact endpoint 的 stage 診斷及資料狀態合理；既有端點抽查無回歸；KV bundle 唯讀正常；Cron / binding / Secret 保留。
 - **FAIL**：版本錯誤、Worker runtime exception、既有端點回歸、KV binding 遺失或資料 schema 被破壞。
 - **BLOCKED**：Cloudflare 設定或 rollback target 無法確認。
 - **NOT TESTED**：尚未執行的上游情境、單項失敗保留測試或未能觸發的市場資料情境。不得以靜態測試取代真實環境驗收。
@@ -116,9 +116,9 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 若 Health、Worker Runtime、compact endpoint 或既有端點出現部署引入的異常：
 
 1. 停止後續驗收與其他變更。
-2. 在 Cloudflare Dashboard → Deployments / Versions，選擇部署前記錄的正式 V1.6 Deployment / Version 執行 Rollback。
-3. 若需手動貼回程式碼，使用已確認的 V1.6 正式版本來源；不要以 Repo 最新檔案推斷線上版本。
-4. 回滾後重新查詢 `/health)，確認回報 V1.6。
+2. 在 Cloudflare Dashboard → Deployments / Versions，選擇部署前記錄的正式 V1.7 Deployment / Version 執行 Rollback。
+3. 若需手動貼回程式碼，使用已確認的 V1.7 正式版本來源；不要以 Repo 最新檔案推斷線上版本。
+4. 回滾後重新查詢 `/health)，確認回報 V1.7。
 5. 記錄錯誤時間、HTTP status、回應內容、Deployment Version 與回滾結果。
 
 ## 6. 相關版本
@@ -128,4 +128,4 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 - `workers/taifex-proxy_V1.5.js`、`V1.4.js`：歷史版本。
 - `workers/twse-proxy_V1.2.js`：本次不變更。
 
-Python 仍使用既有 `TAIFEX_PROXY_BASE_URL`；本次 V1.7 不變更 Python URL、資料 schema、其他資料來源或 daily-data workflow。
+Python 仍使用既有 `TAIFEX_PROXY_BASE_URL`；本次 V1.8 不變更 Python URL、資料 schema、其他資料來源或 daily-data workflow。
