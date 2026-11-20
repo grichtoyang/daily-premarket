@@ -291,15 +291,17 @@ def _gamma_status(unavailable: list[str], endpoint_unavailable: bool,
     return result, notes
 
 
-def _gamma_proxy_fallback(fetch, dates: list[str]) -> dict:
-    """Resolve Wall and Flip independently across fallback dates.
+def _gamma_proxy_fallback(
+    fetch, dates: list[str], initial_wall=None, initial_flip=None
+) -> dict:
+    """Resolve only missing Wall/Flip fields across fallback dates.
 
-    A date with Wall but no Flip must not stop the search for a later Flip.
-    Preserve the first payload for its surrounding compact-market data, then
-    merge the independently resolved Gamma proxy values and provenance dates.
+    Primary options-gamma-levels values seed the search, so compact history
+    is not fetched again for a Gamma field already resolved by the primary.
+    Preserve the first useful payload and merge proxy values with provenance.
     """
     payload = None
-    wall = flip = None
+    wall, flip = initial_wall, initial_flip
     wall_date = flip_date = None
     attempts = []
     for day in dates:
@@ -869,19 +871,13 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         notes.append(f"GEX Worker 診斷：{_summary[:900]}")
     # Market-structure-compact 的 Wall/Flip 必須分欄位遞補：
     # T-1 只有 Wall 時，仍須繼續查 T-2 的 Flip，不能因任一欄有值就停止。
-    _gamma_proxy_dates = _prev_dates(t0, 2)
-    if _w is not None and _f is not None:
-        _existing_kl = P.get("options-key-levels")
-        _existing_kl_valid = (
-            _existing_kl is not None
-            and (((_existing_kl.get("data") or {}).get("call_wall") or {}).get("strike") is not None)
-        )
-        if _existing_kl_valid:
-            # Keep one T0 compact diagnostic payload, but skip historical proxy scans.
-            _gamma_proxy_dates = _gamma_proxy_dates[:1]
+    # Only query compact history for Gamma fields missing from the primary endpoint.
+    # If both are present, compact data is not needed here; the later Wall fallback
+    # still requests it when Key Levels themselves are unavailable.
+    _gamma_proxy_dates = _prev_dates(t0, 2) if (_w is None or _f is None) else []
     _gamma_proxy = _gamma_proxy_fallback(
         lambda _d: _fetch("options-market-structure-compact", _d),
-        _gamma_proxy_dates)
+        _gamma_proxy_dates, initial_wall=_w, initial_flip=_f)
     if _gamma_proxy["flip"] is None:
         _proxy_diag = []
         for _attempt in _gamma_proxy.get("attempts", []):
