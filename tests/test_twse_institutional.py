@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from src.sources import twse
@@ -45,6 +46,29 @@ class TWSEInstitutionalConsistencyTests(unittest.TestCase):
         fetch.return_value = _Response(payload)
 
         result = twse.get_institutional("20261105")
+
+        self.assertEqual(result["date"], "20261105")
+        self.assertAlmostEqual(result["foreign"], 1.0)
+        self.assertAlmostEqual(result["trust"], 2.0)
+        self.assertAlmostEqual(result["dealer"], 2.0)
+        self.assertAlmostEqual(result["total"], 5.0)
+
+    def test_exact_interactive_simple_namespace_reproduction(self):
+        payload = {
+            "stat": "OK",
+            "date": "2026/11/05",
+            "data": [
+                ["外資及陸資", "", "", "100,000,000"],
+                ["外資自營商", "", "", "0"],
+                ["投信", "", "", "200,000,000"],
+                ["自營商(自行買賣)", "", "", "300,000,000"],
+                ["自營商(避險)", "", "", "-100,000,000"],
+            ],
+        }
+        response = SimpleNamespace(json=lambda: payload)
+        with patch.object(twse, "_proxy_institutional", return_value=None), \\
+             patch.object(twse, "_fetch", return_value=response):
+            result = twse.get_institutional("20261105")
 
         self.assertEqual(result["date"], "20261105")
         self.assertAlmostEqual(result["foreign"], 1.0)
