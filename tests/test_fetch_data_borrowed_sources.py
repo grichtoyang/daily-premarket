@@ -813,7 +813,7 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
             "date": "2026-11-07",
             "trust_pos": True,
             "data": {
-                # Worker collected the snapshot on 2026-11-06; the upstream
+                # Worker collected the snapshot on 2026-11-07; the upstream
                 # TAIFEX top10 endpoint content is expected to be T-1 (11/05).
                 "top10fut": [
                     {"Date": "20261106", "SettlementMonth": "202611",
@@ -838,7 +838,7 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         result = self.taifex.snap_top10_change(
             "202611", "2026-11-07", 450, cur_date="20261107")
         self.assertEqual(result["chg"], 50)
-        self.assertEqual(result["prev_date"], "2026-11-05")
+        self.assertEqual(result["prev_date"], "2026-11-06")
 
     def test_reverse_contract_month_is_unavailable_not_rollover(self):
         result = self.taifex.snap_top10_change(
