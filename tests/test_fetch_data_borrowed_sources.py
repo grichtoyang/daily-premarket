@@ -795,19 +795,22 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         self.taifex = taifex
         self.patch_snapshot = patch("src.sources.taifex.snapshot_bundle", return_value={
             "date": "2026-11-06",
+            "trust_pos": True,
             "data": {
+                # Worker collected the snapshot on 2026-11-06; the upstream
+                # TAIFEX top10 endpoint content is expected to be T-1 (11/05).
                 "top10fut": [
                     {"Date": "20261105", "SettlementMonth": "202611",
                      "Top10Buy": "1,000", "Top10Sell": "700"},
-                    {"Date": "20261106", "SettlementMonth": "202611",
+                    {"Date": "20261105", "SettlementMonth": "202611",
                      "Top10Buy": "1,200", "Top10Sell": "800"},
-                    {"Date": "20261106", "SettlementMonth": "202612",
+                    {"Date": "20261105", "SettlementMonth": "202612",
                      "Top10Buy": "9,000", "Top10Sell": "1,000"},
                 ],
                 "top10opt": [
-                    {"Date": "20261106", "SettlementMonth": "202611",
+                    {"Date": "20261105", "SettlementMonth": "202611",
                      "CallPut": "買權", "Top10Buy": "500", "Top10Sell": "300"},
-                    {"Date": "20261106", "SettlementMonth": "202611",
+                    {"Date": "20261105", "SettlementMonth": "202611",
                      "CallPut": "賣權", "Top10Buy": "700", "Top10Sell": "400"},
                 ],
             },
@@ -815,11 +818,11 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         self.mock_snapshot = self.patch_snapshot.start()
         self.addCleanup(self.patch_snapshot.stop)
 
-    def test_uses_latest_record_of_requested_month_only(self):
+    def test_uses_requested_month_record_from_trusted_snapshot(self):
         result = self.taifex.snap_top10_change(
             "202611", "2026-11-07", 450, cur_date="20261107")
         self.assertEqual(result["chg"], 50)
-        self.assertEqual(result["prev_date"], "2026-11-06")
+        self.assertEqual(result["prev_date"], "2026-11-05")
 
     def test_missing_requested_month_is_unavailable_not_another_month(self):
         result = self.taifex.snap_top10_change(
