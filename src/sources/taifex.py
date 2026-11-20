@@ -385,6 +385,28 @@ def _oi_distribution(rows: list, limit: int = 10) -> list[dict]:
 
 
 
+
+def _normalize_contract_expiry_date(value):
+    """Normalize TAIFEX expiry dates (YYYYMMDD or YYYY-MM-DD) to ISO form."""
+    if not isinstance(value, str):
+        return value
+    value = value.strip()
+    import re
+    from datetime import datetime
+    if re.fullmatch(r"\d{8}", value):
+        try:
+            return datetime.strptime(value, "%Y%m%d").date().isoformat()
+        except ValueError:
+            return value
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").date().isoformat()
+        except ValueError:
+            return value
+    return value
+
+
+
 def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) -> dict | None:
     """Calculate OI deltas on valid common contracts; skip missing OI without zero-filling.
 
@@ -402,7 +424,7 @@ def _options_chain_oi_change(current_chain, previous_chain, primary_month: str) 
         for row in rows:
             if not isinstance(row, dict) or row.get("contract_month") != primary_month:
                 continue
-            key = (row.get("contract_month"), row.get("contract_expiry_date"),
+            key = (row.get("contract_month"), _normalize_contract_expiry_date(row.get("contract_expiry_date")),
                    row.get("strike"), row.get("type"))
             if any(value is None for value in key) or key[3] not in ("call", "put") or key in seen:
                 return None
@@ -472,7 +494,7 @@ def _options_chain_oi_change_diagnostic(current_chain, previous_chain, primary_m
         for row in rows:
             if not isinstance(row, dict) or row.get("contract_month") != primary_month:
                 continue
-            key = (row.get("contract_month"), row.get("contract_expiry_date"),
+            key = (row.get("contract_month"), _normalize_contract_expiry_date(row.get("contract_expiry_date")),
                    row.get("strike"), row.get("type"))
             if any(value is None for value in key) or key[3] not in ("call", "put"):
                 result["invalid_identity"] += 1
