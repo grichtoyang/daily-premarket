@@ -1,17 +1,17 @@
 # Cloudflare Workers 部署與驗收說明
 
-> **版本狀態（2026-11-20）：** 正式環境目前由使用者確認部署 TAIFEX Worker **V1.6**。V1.7 是候選版，位於分支 `fix/worker-v1.7-compact-deadline`，尚未部署。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
+> **版本狀態（2026-11-20）：** 正式環境目前由使用者確認部署 TAIFEX Worker **V1.7**。V1.8 為本分支 `phase2-p0-ui-fixes` 上的候選版，尚未部署。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
 
 ## 1. Worker 與版本
 
 | Worker | 正式基準 | 候選版本 | 用途 |
 |---|---|---|---|
-| `taifex` | `workers/taifex-proxy_V1.6.js` | `workers/taifex-proxy_V1.7.js` | TAIFEX / TXO 資料代理 |
+| `taifex` | `workers/taifex-proxy_V1.7.js` | `workers/taifex-proxy_V1.8.js` | TAIFEX / TXO 資料代理 |
 | `twse-proxy` | `workers/twse-proxy_V1.2.js` | 本次無變更 | TWSE 資料代理 |
 
 正式網址：`https://taifex.grichtoyang.workers.dev`
 
-V1.7 相對 V1.6 的限定新增內容：
+V1.7 相對 V1.6 的既有新增內容：
 - Compact endpoint 設定 75 秒共用 deadline。
 - TXO Chain 仍保留 V1.6 的 25 秒內部 deadline。
 - Delta 與 TAIEX 指數請求在 Chain 完成後平行執行，並共用 compact deadline。
@@ -19,7 +19,7 @@ V1.7 相對 V1.6 的限定新增內容：
 - 增加 compact stage timing / outcome diagnostics。
 - `/health` 版本字串更新為 V1.7。
 
-V1.7 不應更改既有資料來源、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
+V1.8 在保留 V1.7 行為的前提下，新增官方歷史 Delta CSV 直接下載及解析；不更改資料來源的官方性質、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
 
 ## 2. 部署前必要檢查（唯讀）
 
@@ -32,7 +32,7 @@ V1.7 不應更改既有資料來源、GEX 計算公式、expiry selection、既�
 3. Settings / Bindings：KV binding 名稱必須仍是 `SNAPSHOTS`，並確認 Namespace ID 與目前正式環境相同。不要新建 Namespace 或更換 ID。
 4. Triggers / Cron Triggers：確認既有快照排程並記錄 cron expression。過往 Dashboard 紀錄為週一至週五 08:30 UTC（`30 8 * * 1-5`，台北時間 16:30），但部署當下必須以 Dashboard 現況為準；不要新增重複排程或變更時間。
 5. Variables and Secrets：必須確認 `SNAPSHOT_KEY` 存在且保留原值；只確認存在狀態，不讀取、不複製、不洩露 Secret 值。**若 `SNAPSHOT_KEY` 不存在，部署前標記 BLOCKED**：目前程式在 Secret 未設定時，`/snapshots/write-now` 不會要求 key，可能允許未授權寫入 KV。部署不得移除或清空此 Secret。
-6. 記錄正式環境目前的 V1.6 版本作為 rollback target，並確認 Cloudflare Deployments / Versions 可以回滾。
+6. 記錄正式環境目前的 V1.7 版本作為 rollback target，並確認 Cloudflare Deployments / Versions 可以回滾。
 
 任一項無法確認，標記 **BLOCKED**，停止部署。
 
@@ -41,8 +41,8 @@ V1.7 不應更改既有資料來源、GEX 計算公式、expiry selection、既�
 本次只更新既有 `taifex` Worker，不部署 `twse-proxy`，不建立資源。
 
 1. 在 Cloudflare Dashboard 開啟既有 `taifex` Worker。
-2. 再次確認並記錄目前正式 V1.6 Deployment / Version ID。
-3. 開啟 Edit code，將分支 `fix/worker-v1.7-compact-deadline` 中 `workers/taifex-proxy_V1.7.js` 的完整內容貼入。
+2. 再次確認並記錄目前正式 V1.7 Deployment / Version ID。
+3. 開啟 Edit code，將分支 `phase2-p0-ui-fixes` 中 `workers/taifex-proxy_V1.8.js` 的完整內容貼入。
 4. 確認程式碼沒有截斷，且既有 `SNAPSHOTS` binding、Cron、Secret 均保留。
 5. 只有在上述檢查完成且使用者已明確批准時，才執行 Save and deploy。
 6. 不要在本次部署流程中呼叫 `/snapshots/write-now`、手動寫 KV、觸發 GitHub `daily-data` 或修改其他 Worker。
