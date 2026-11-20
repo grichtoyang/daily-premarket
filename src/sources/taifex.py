@@ -1379,17 +1379,33 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
         # A rollover is valid only when the current contract month is strictly
         # later than the latest contract month in the trusted prior snapshot.
         # Reverse or malformed month relationships are unavailable, not rollover.
-        month_rows.sort(key=lambda r: str(r.get("Date", "")))
-        prior = month_rows[-1]
-        prior_month = str(prior.get("SettlementMonth", "")).strip()
+        # SettlementMonth may contain TAIFEX sentinel/non-delivery codes
+        # (for example 666666 or 999912). Only real YYYYMM calendar months
+        # may establish a rollover baseline; never infer from row ordering.
+        def _valid_contract_month(value):
+            value = str(value or "").strip()
+            if len(value) != 6 or not value.isdigit():
+                return False
+            year, month_num = int(value[:4]), int(value[4:])
+            return 2000 <= year <= 2100 and 1 <= month_num <= 12
+
         current_month = str(month).strip()
-        if (
-            len(prior_month) != 6
-            or not prior_month.isdigit()
-            or len(current_month) != 6
-            or not current_month.isdigit()
-            or int(current_month) <= int(prior_month)
-        ):
+        if not _valid_contract_month(current_month):
+            return None
+        prior_rows = [
+            row for row in month_rows
+            if _valid_contract_month(row.get("SettlementMonth"))
+        ]
+        if not prior_rows:
+            return None
+        prior_month = max(
+            str(row.get("SettlementMonth")).strip() for row in prior_rows
+        )
+        prior = next(
+            row for row in prior_rows
+            if str(row.get("SettlementMonth")).strip() == prior_month
+        )
+        if int(current_month) <= int(prior_month):
             return None
         return {
             "chg": None,
