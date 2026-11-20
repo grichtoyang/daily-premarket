@@ -2,8 +2,8 @@
 
 - 報告日期：`2026-11-20`
 - T0 交易日期：`2026-11-19`
-- 首次資料產出時間：`2026-11-20 15:21:28`
-- 本次更新開始時間：`2026-11-20 15:21:28`
+- 首次資料產出時間：`2026-11-20 15:39:51`
+- 本次更新開始時間：`2026-11-20 15:39:51`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -94,8 +94,8 @@
 - 上櫃來源：TPEx S47（上櫃）；增減來源：TPEx S47（上櫃）
 - 借券賣出餘額完整性：`complete`
 - 借券賣出增減完整性：`complete`
-- TWSE TWT93U（上市）：資料日期：`20261119`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:21:44+08:00`；狀態：`available_after_schedule`
-- TPEx S47（上櫃）：資料日期：`20261119`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:21:44+08:00`；狀態：`available_after_schedule`
+- TWSE TWT93U（上市）：資料日期：`20261119`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:40:10+08:00`；狀態：`available_after_schedule`
+- TPEx S47（上櫃）：資料日期：`20261119`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:40:10+08:00`；狀態：`available_after_schedule`
 
 ### 6. 市場成交結構
 
@@ -115,12 +115,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,175.83 | -147.80 | -2.02 | 2026-11-19 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 23,879.20 | -550.68 | -2.25 | 2026-11-19 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 26,517.05 | -599.21 | -2.21 | 2026-11-19 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 49,097.06 | -1,101.11 | -2.19 | 2026-11-19 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 9,419.72 | -233.08 | -2.41 | 2026-11-19 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| VIX | ^VIX | 28.44 | 3.88 | +15.80 | 2026-11-19 | 2026-11-20T07:21:44+00:00 | America/Chicago | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,175.83 | -147.80 | -2.02 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 23,879.20 | -550.68 | -2.25 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 26,517.05 | -599.21 | -2.21 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 49,097.06 | -1,101.11 | -2.19 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 9,419.72 | -233.08 | -2.41 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| VIX | ^VIX | 28.44 | 3.88 | +15.80 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/Chicago | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -128,11 +128,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 日經225 | ^N225 | 56,436.65 | -3,007.56 | -5.06 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Asia/Tokyo | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 4,869.96 | -267.93 | -5.21 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Asia/Seoul | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 22,342.69 | -498.93 | -2.18 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Asia/Hong_Kong | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,533.79 | -43.82 | -1.22 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 10,256.39 | -326.81 | -3.09 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 56,436.65 | -3,007.56 | -5.06 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Tokyo | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 4,869.96 | -267.93 | -5.21 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Seoul | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 22,341.16 | -500.46 | -2.19 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Hong_Kong | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,533.79 | -43.82 | -1.22 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 10,256.39 | -326.81 | -3.09 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -140,10 +140,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,160.50 | -36.75 | -0.51 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 26,332.25 | -268.00 | -1.01 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 49,075.00 | -105.00 | -0.21 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,653.00 | -10.30 | -0.39 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,150.00 | -47.25 | -0.66 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 26,251.50 | -348.75 | -1.31 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 49,051.00 | -129.00 | -0.26 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,651.00 | -12.30 | -0.46 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -151,10 +151,10 @@
 
 | 項目 | API 資料欄位／識別 | 殖利率（%） | 日變化（百分點） | 資料日期 | 擷取時間（UTC） | 資料來源 |
 |---|---|---|---|---|---|---|
-| 美國 2 年期殖利率 | 2 Yr | 4.76 | -0.04 | 19-NOV-26 | 2026-11-20T07:22:02+00:00 | U.S. Treasury yield.xml（BC_2YEAR 備援） |
-| 美國 10 年期殖利率 | 10 Yr | 5.05 | -0.01 | 2026-11-19 | 2026-11-20T07:22:02+00:00 | Yahoo Finance (備援) |
-| 美國 20 年期殖利率 | 20 Yr | 5.43 | -0.01 | 19-NOV-26 | 2026-11-20T07:22:21+00:00 | U.S. Treasury yield.xml（BC_20YEAR 備援） |
-| 美國 30 年期殖利率 | 30 Yr | 5.40 | -0.01 | 2026-11-19 | 2026-11-20T07:22:21+00:00 | Yahoo Finance (備援) |
+| 美國 2 年期殖利率 | 2 Yr | 4.76 | -0.04 | 19-NOV-26 | 2026-11-20T07:40:32+00:00 | U.S. Treasury yield.xml（BC_2YEAR 備援） |
+| 美國 10 年期殖利率 | 10 Yr | 5.05 | -0.01 | 2026-11-19 | 2026-11-20T07:40:32+00:00 | Yahoo Finance (備援) |
+| 美國 20 年期殖利率 | 20 Yr | 5.43 | -0.01 | 19-NOV-26 | 2026-11-20T07:40:51+00:00 | U.S. Treasury yield.xml（BC_20YEAR 備援） |
+| 美國 30 年期殖利率 | 30 Yr | 5.40 | -0.01 | 2026-11-19 | 2026-11-20T07:40:51+00:00 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -162,10 +162,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.95 | 0.02 | +0.07 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Europe/London | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 103.74 | -0.16 | -0.15 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | America/New_York | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 159.16 | -0.22 | -0.14 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Europe/London | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,334.60 | 4.20 | +0.32 | 2026-11-20 | 2026-11-20T07:21:44+00:00 | Europe/London | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.95 | 0.02 | +0.05 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | Europe/London | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 103.73 | -0.17 | -0.16 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 159.06 | -0.32 | -0.20 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | Europe/London | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,333.39 | 2.99 | +0.22 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | Europe/London | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -173,9 +173,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 台積電ADR | TSM | 352.09 | -10.53 | -2.90 | 2026-11-19 | 2026-11-20T07:21:45+00:00 | America/New_York | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 13.40 | -0.56 | -4.01 | 2026-11-19 | 2026-11-20T07:21:45+00:00 | America/New_York | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 30.49 | -2.03 | -6.24 | 2026-11-19 | 2026-11-20T07:21:45+00:00 | America/New_York | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 352.09 | -10.53 | -2.90 | 2026-11-19 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 13.40 | -0.56 | -4.01 | 2026-11-19 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 30.49 | -2.03 | -6.24 | 2026-11-19 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -183,9 +183,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 83.11 | -0.10 | -0.12 | 2026-11-20 | 2026-11-20T07:21:45+00:00 | America/New_York | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 3,553.10 | -132.40 | -3.59 | 2026-11-20 | 2026-11-20T07:21:45+00:00 | America/New_York | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 61,824.03 | -77.79 | -0.13 | 2026-11-20 | 2026-11-20T07:21:45+00:00 | UTC | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 83.02 | -0.19 | -0.23 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 3,553.20 | -132.30 | -3.59 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 61,627.90 | -273.92 | -0.44 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | UTC | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -235,8 +235,8 @@
   - 來源：CNBC；發布時間：Thu, 19 Nov 2026 00:01:23 GMT；台北時間：2026-11-19 08:01
   - 摘要：India’s inflation, which has been on the rise for 12 straight months, is becoming a risk to growth and to the reversal of foreign inflows.
   - 原文連結：https://www.cnbc.com/2026/11/19/india-inflation-foreign-investor-nifty50.html
-- 事件12：SoftBank plunges over 16% as AI sell-off hits Asian tech stocks following Anthropic debut
-  - 來源：CNBC；發布時間：Fri, 20 Nov 2026 03:30:34 GMT；台北時間：2026-11-20 11:30
+- 事件12：SoftBank suffers worst day in over two years as AI sell-off hits Asian tech stocks
+  - 來源：CNBC；發布時間：Fri, 20 Nov 2026 07:23:06 GMT；台北時間：2026-11-20 15:23
   - 摘要：The declines in Asia come after the tech-heavy Nasdaq Composite fell more than 2% overnight following Anthropic's highly anticipated Wall Street debut
   - 原文連結：https://www.cnbc.com/2026/11/20/softbank-ai-tech-stocks-slide-anthropic-debut.html
 
@@ -304,7 +304,7 @@
 | 前十大交易人多方 OI | 100,642 | TAIFEX Proxy |
 | 前十大交易人空方 OI | 95,571 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI | +5,071 | TAIFEX Proxy |
-| 多空淨 OI 變化 | unavailable | 換月基準重建 |
+| 多空淨 OI 變化 (2026-11-18→2026-11-19) | -1,671 | TAIFEX Proxy snapshots (2026-11-18) |
 - 資料日期：2026-11-19 (TypeOfTraders=0 全部交易人；契約月份 202612)
 
 ### 5．日盤、夜盤法人交易資料
@@ -368,7 +368,7 @@
 | 前十大交易人多方 OI | 100,642 | TAIFEX Proxy |
 | 前十大交易人空方 OI | 95,571 | TAIFEX Proxy |
 | 前十大交易人多空淨 OI | +5,071 | TAIFEX Proxy |
-| 前十大交易人多空淨 OI 變化 | unavailable | 換月基準重建 |
+| 前十大交易人多空淨 OI 變化 (2026-11-18→2026-11-19) | -1,671 | TAIFEX Proxy snapshots (2026-11-18) |
 
 #### 7.4 夜盤劇本分類 (規則對應：夜盤漲跌 × 外資夜盤偏多空)
 
@@ -391,7 +391,7 @@
 |---|---|---|
 | 交易日期 | 2026-11-19 | TAIFEX Proxy |
 | 到期月份／到期日 | 202611F3 | TAIFEX Proxy |
-| 本次報告產製時間 | 2026-11-20 15:21:28 | 本機 |
+| 本次報告產製時間 | 2026-11-20 15:39:51 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -425,12 +425,12 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 外資 Call日買 | 130,405 | TAIFEX Proxy |
-| 外資 Call日賣 | 119,895 | TAIFEX Proxy |
-| 外資 Call日淨 | +10,510 | TAIFEX Proxy |
-| 外資 Put日買 | 112,478 | TAIFEX Proxy |
-| 外資 Put日賣 | 111,724 | TAIFEX Proxy |
-| 外資 Put日淨 | +754 | TAIFEX Proxy |
+| 外資 Call日買 | 130,405 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Call日賣 | 119,895 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Call日淨 | +10,510 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Put日買 | 112,478 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Put日賣 | 111,724 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Put日淨 | +754 | 沿用前版（原來源：TAIFEX Proxy） |
 | 外資 Call夜買 | 41,965 | TAIFEX Proxy |
 | 外資 Call夜賣 | 42,801 | TAIFEX Proxy |
 | 外資 Call夜淨 | -836 | TAIFEX Proxy |
@@ -438,19 +438,19 @@
 | 外資 Put夜賣 | 45,767 | TAIFEX Proxy |
 | 外資 Put夜淨 | -235 | TAIFEX Proxy |
 | 外資 日盤淨總量 | +9,756 | TAIFEX Proxy |
-| 外資 Call日夜淨增減 (日－夜) | +11,346 | TAIFEX Proxy |
-| 外資 Put日夜淨增減 (日－夜) | +989 | TAIFEX Proxy |
+| 外資 Call日夜淨增減 (日－夜) | +11,346 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Put日夜淨增減 (日－夜) | +989 | 沿用前版（原來源：TAIFEX Proxy） |
 
 ### 6．自營商 Call／Put 部位
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 自營商 Call日買 | 88,783 | TAIFEX Proxy |
-| 自營商 Call日賣 | 111,101 | TAIFEX Proxy |
-| 自營商 Call日淨 | -22,318 | TAIFEX Proxy |
-| 自營商 Put日買 | 73,633 | TAIFEX Proxy |
-| 自營商 Put日賣 | 86,022 | TAIFEX Proxy |
-| 自營商 Put日淨 | -12,389 | TAIFEX Proxy |
+| 自營商 Call日買 | 88,783 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Call日賣 | 111,101 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Call日淨 | -22,318 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Put日買 | 73,633 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Put日賣 | 86,022 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Put日淨 | -12,389 | 沿用前版（原來源：TAIFEX Proxy） |
 | 自營商 Call夜買 | 18,408 | TAIFEX Proxy |
 | 自營商 Call夜賣 | 22,271 | TAIFEX Proxy |
 | 自營商 Call夜淨 | -3,863 | TAIFEX Proxy |
@@ -458,8 +458,8 @@
 | 自營商 Put夜賣 | 20,619 | TAIFEX Proxy |
 | 自營商 Put夜淨 | -2,326 | TAIFEX Proxy |
 | 自營商 日盤淨總量 | -9,929 | TAIFEX Proxy |
-| 自營商 Call日夜淨增減 (日－夜) | -18,455 | TAIFEX Proxy |
-| 自營商 Put日夜淨增減 (日－夜) | -10,063 | TAIFEX Proxy |
+| 自營商 Call日夜淨增減 (日－夜) | -18,455 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Put日夜淨增減 (日－夜) | -10,063 | 沿用前版（原來源：TAIFEX Proxy） |
 
 ### 7．主要 Call OI 集中區
 
@@ -545,11 +545,11 @@
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| Gamma Wall 價位 | 38,700.00 | options-market-structure-compact (proxy) |
+| Gamma Wall 價位 | 38,700.00 | options-gamma-levels |
 | GEX 實際使用到期月份 | 202611W4 | options-gamma-levels（GEX 實際使用） |
 | GEX 實際到期日 | 2026-11-25 | options-gamma-levels（GEX 實際使用） |
 | Options Key Levels 主到期月份 | 202611F3 | TAIFEX Proxy |
-| 資料日期 | 2026-11-19 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
+| 資料日期 | 2026-11-19 | TAIFEX Proxy (options-gamma-levels) |
 
 ### 14．Gamma Flip
 
@@ -560,10 +560,10 @@
 | GEX 實際到期日 | 2026-11-25 | options-gamma-levels（GEX 實際使用） |
 | 主到期月份（Key Levels） | 202611F3 | TAIFEX Proxy |
 | 原始 Call OI（選定到期日全部有效 Chain 合約） | 15,920 | options-gamma-levels（GEX 到期日） |
-| 模型納入 Call OI（通過 GEX 計算條件） | 0 | TAIFEX Gamma model（逐履約價） |
+| 模型納入 Call OI（通過 GEX 計算條件） | 15,920 | TAIFEX Gamma model（逐履約價） |
 | 原始 Put OI（選定到期日全部有效 Chain 合約） | 3,819 | options-gamma-levels（GEX 到期日） |
-| 模型納入 Put OI（通過 GEX 計算條件） | 0 | TAIFEX Gamma model（逐履約價） |
-| GEX 資料日期 | 2026-11-19 | TAIFEX Proxy (options-market-structure-compact (proxy)) |
+| 模型納入 Put OI（通過 GEX 計算條件） | 3,694 | TAIFEX Gamma model（逐履約價） |
+| GEX 資料日期 | 2026-11-19 | TAIFEX Proxy (options-gamma-levels + options-market-structure-compact (proxy)) |
 - OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。
 
 **Gamma Flip 零交叉搜尋診斷**
@@ -581,7 +581,7 @@
 
 **TAIFEX Delta 原始資料與 Parser 階段診斷**
 ```json
-{"requested_date":"2026-11-19","source":"taifex_web","fallback_used":false,"index_duration_ms":3193,"index_error":null,"openapi_fetch_duration_ms":11,"attempts":[{"attempt":1,"duration_ms":791,"source":"taifex_web","fallback":false,"http_status":502,"raw_rows":0,"primary_error":"TAIFEX primary HTTP 200 / rows 0","parser":{"input_rows":0,"array_rows":0,"object_rows":0,"short_rows":0,"non_txo_rows":0,"txo_rows":0,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":0,"per_expiry":[]},"accepted_txo_rows":0},{"attempt":2,"duration_ms":5775,"source":"taifex_web","fallback":false,"http_status":200,"raw_rows":3237,"primary_error":null,"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"accepted_txo_rows":3232}],"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"final_rows":3232,"per_expiry_rows":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]}
+{"requested_date":"2026-11-19","source":"taifex_web","fallback_used":false,"index_duration_ms":2369,"index_error":null,"openapi_fetch_duration_ms":6,"attempts":[{"attempt":1,"duration_ms":720,"source":"taifex_web","fallback":false,"http_status":502,"raw_rows":0,"primary_error":"TAIFEX primary HTTP 200 / rows 0","parser":{"input_rows":0,"array_rows":0,"object_rows":0,"short_rows":0,"non_txo_rows":0,"txo_rows":0,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":0,"per_expiry":[]},"accepted_txo_rows":0},{"attempt":2,"duration_ms":14070,"source":"taifex_web","fallback":false,"http_status":200,"raw_rows":3237,"primary_error":null,"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"accepted_txo_rows":3232}],"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"final_rows":3232,"per_expiry_rows":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]}
 ```
 
 **擴大區間 Gamma Flip 診斷（±15%；不覆蓋正式 ±10% 結果）**
@@ -596,14 +596,21 @@
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
-| Net GEX（標的變動 1%） | 2,412,597,917.00 NT$ | 沿用前版（原來源：TAIFEX Gamma model；NT$／標的變動 1%） |
-| Gross GEX（標的變動 1%） | 9,714,546,932.77 NT$ | 沿用前版（原來源：TAIFEX Gamma model；NT$／標的變動 1%） |
-| 模型品質 | usable | 沿用前版（原來源：Black-Scholes Gamma using TAIFEX settlement-implied volatility） |
-| 部位正負號假設 | Call 正／Put 負為模型假設；Aggregate OI 不揭露 Dealer 實際淨部位，此值不可視為實際 Dealer GEX | 沿用前版（原來源：模型限制；非 TAIFEX 公布的 Dealer 部位） |
-| 履約價資料筆數 | 201 | 沿用前版（原來源：資料日期：2026-11-19） |
-| 正 Net GEX 最大履約價 | 38,700 | 沿用前版（原來源：依 Net GEX 排序） |
-| 負 Net GEX 最低履約價 | 37,000 | 沿用前版（原來源：依 Net GEX 排序） |
-- GEX 明細 unavailable；不以 Wall／Flip proxy 代替。
+| Net GEX（標的變動 1%） | 532,446,991.50 NT$ | TAIFEX Gamma model；NT$／標的變動 1% |
+| Gross GEX（標的變動 1%） | 1,227,961,919.81 NT$ | TAIFEX Gamma model；NT$／標的變動 1% |
+| 模型品質 | usable | Black-Scholes Gamma using TAIFEX settlement-implied volatility |
+| 部位正負號假設 | Call 正／Put 負為模型假設；Aggregate OI 不揭露 Dealer 實際淨部位，此值不可視為實際 Dealer GEX | 模型限制；非 TAIFEX 公布的 Dealer 部位 |
+| 履約價資料筆數 | 195 | 資料日期：2026-11-19 |
+| 正 Net GEX 最大履約價 | 38,700 | 依 Net GEX 排序 |
+| 負 Net GEX 最低履約價 | 39,500 | 依 Net GEX 排序 |
+- 正 Net GEX Top 5：38,700（209,630,782.74 NT$）、38,900（209,562,636.80 NT$）、39,100（206,387,554.62 NT$）、40,000（36,626,094.79 NT$）、42,000（12,427,622.53 NT$）
+- 負 Net GEX Top 5：39,500（-67,231,907.62 NT$）、37,800（-63,762,287.28 NT$）、36,000（-34,697,784.19 NT$）、36,500（-19,980,674.09 NT$）、38,400（-9,149,164.09 NT$）
+
+#### GEX_LEVELS_JSON（僅衍生後逐履約價 GEX，不含原始報價；GEX 單位 NT$／標的變動 1%）
+
+```json
+{"date":"2026-11-19","underlying":38426.89,"unit":"NTD per 1% underlying move","model":"Black-Scholes Gamma using TAIFEX settlement-implied volatility","quality":"usable","net_gex_1pct":532446991.49909127,"gross_gex_1pct":1227961919.805821,"gamma_diagnostics":{"chain_rows":390,"delta_rows":452,"matched_strike_keys":390,"positive_oi_settlement_eligible":300,"invalid_oi":90,"invalid_settlement":0,"below_intrinsic":30,"iv_failed":0,"iv_out_of_range":0,"gamma_failed":0,"modeled_contracts":270},"formal_flip_diagnostics":{"search_lower_underlying":34584.201,"search_upper_underlying":42269.579000000005,"step":10,"evaluations":770,"start_net_gex_1pct":25681386.30962444,"end_net_gex_1pct":923465502.5879338,"min_net_gex_1pct":25681386.30962444,"max_net_gex_1pct":923465502.5879338,"zero_crossings":0,"found":false},"wide_range_flip":{"lower_underlying":34092.856499999994,"upper_underlying":34102.856499999994,"estimated_underlying":34097.58012357852,"lower_net_gex_1pct":-196394.2995805163,"upper_net_gex_1pct":219376.12817615573},"wide_range_flip_diagnostics":{"search_lower_underlying":32662.856499999998,"search_upper_underlying":44190.9235,"reference_underlying":38426.89,"step":10,"evaluations":1154,"start_net_gex_1pct":-24108730.85708739,"end_net_gex_1pct":1105094326.9691648,"min_net_gex_1pct":-24142169.269735206,"max_net_gex_1pct":1105094326.9691648,"zero_crossings":1,"found":true,"selected_crossing_distance":4329.309876421481},"expiry_selection_diagnostics":{"requested_date":"2026-11-19","chain_expiries":[{"contract_month":"202611F3","expiry":"2026-11-20"},{"contract_month":"202611W4","expiry":"2026-11-25"},{"contract_month":"202611F4","expiry":"2026-11-27"},{"contract_month":"202612W1","expiry":"2026-12-02"},{"contract_month":"202612","expiry":"2026-12-16"},{"contract_month":"202701","expiry":"2027-01-20"},{"contract_month":"202702","expiry":"2027-02-17"},{"contract_month":"202703","expiry":"2027-03-17"},{"contract_month":"202706","expiry":"2027-06-16"}],"delta_expiries":[{"contract_month":"202611W4","expiry":"2026-11-25"},{"contract_month":"202611F4","expiry":"2026-11-27"},{"contract_month":"202612W1","expiry":"2026-12-02"},{"contract_month":"202612F1","expiry":"2026-12-04"},{"contract_month":"202612","expiry":"2026-12-16"},{"contract_month":"202701","expiry":"2027-01-20"},{"contract_month":"202702","expiry":"2027-02-17"},{"contract_month":"202703","expiry":"2027-03-17"},{"contract_month":"202706","expiry":"2027-06-16"}],"common_expiries":[{"contract_month":"202611W4","expiry":"2026-11-25","delta_contract_month":"202611W4","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202611F4","expiry":"2026-11-27","delta_contract_month":"202611F4","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202612W1","expiry":"2026-12-02","delta_contract_month":"202612W1","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202612","expiry":"2026-12-16","delta_contract_month":"202612","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202701","expiry":"2027-01-20","delta_contract_month":"202701","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202702","expiry":"2027-02-17","delta_contract_month":"202702","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202703","expiry":"2027-03-17","delta_contract_month":"202703","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202706","expiry":"2027-06-16","delta_contract_month":"202706","match_type":"exact_contract_month_and_expiry"}],"same_day_common_expiries":[],"future_common_expiries":[{"contract_month":"202611W4","expiry":"2026-11-25","delta_contract_month":"202611W4","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202611F4","expiry":"2026-11-27","delta_contract_month":"202611F4","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202612W1","expiry":"2026-12-02","delta_contract_month":"202612W1","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202612","expiry":"2026-12-16","delta_contract_month":"202612","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202701","expiry":"2027-01-20","delta_contract_month":"202701","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202702","expiry":"2027-02-17","delta_contract_month":"202702","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202703","expiry":"2027-03-17","delta_contract_month":"202703","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202706","expiry":"2027-06-16","delta_contract_month":"202706","match_type":"exact_contract_month_and_expiry"}],"future_exact_common_expiries":[{"contract_month":"202611W4","expiry":"2026-11-25","delta_contract_month":"202611W4","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202611F4","expiry":"2026-11-27","delta_contract_month":"202611F4","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202612W1","expiry":"2026-12-02","delta_contract_month":"202612W1","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202612","expiry":"2026-12-16","delta_contract_month":"202612","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202701","expiry":"2027-01-20","delta_contract_month":"202701","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202702","expiry":"2027-02-17","delta_contract_month":"202702","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202703","expiry":"2027-03-17","delta_contract_month":"202703","match_type":"exact_contract_month_and_expiry"},{"contract_month":"202706","expiry":"2027-06-16","delta_contract_month":"202706","match_type":"exact_contract_month_and_expiry"}],"future_date_fallback_common_expiries":[],"per_expiry_row_counts":[{"contract_month":"202611F3","expiry":"2026-11-20","chain_rows":404,"delta_rows":0},{"contract_month":"202611W4","expiry":"2026-11-25","chain_rows":390,"delta_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","chain_rows":366,"delta_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","chain_rows":218,"delta_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","chain_rows":0,"delta_rows":204},{"contract_month":"202612","expiry":"2026-12-16","chain_rows":562,"delta_rows":572},{"contract_month":"202701","expiry":"2027-01-20","chain_rows":410,"delta_rows":432},{"contract_month":"202702","expiry":"2027-02-17","chain_rows":246,"delta_rows":276},{"contract_month":"202703","expiry":"2027-03-17","chain_rows":284,"delta_rows":294},{"contract_month":"202706","expiry":"2027-06-16","chain_rows":284,"delta_rows":294}],"selected":{"contract_month":"202611W4","expiry":"2026-11-25","delta_contract_month":"202611W4","match_type":"exact_contract_month_and_expiry"},"selection_reason":"earliest_future_exact_common_expiry"},"levels":[{"strike":36000.0,"call_gex_1pct":0.0,"put_gex_1pct":-34697784.19132811,"net_gex_1pct":-34697784.19132811,"gross_gex_1pct":34697784.19132811,"call_oi":0,"put_oi":526},{"strike":36100.0,"call_gex_1pct":0.0,"put_gex_1pct":-2851553.523691007,"net_gex_1pct":-2851553.523691007,"gross_gex_1pct":2851553.523691007,"call_oi":0,"put_oi":42},{"strike":36200.0,"call_gex_1pct":0.0,"put_gex_1pct":-2170504.5524285124,"net_gex_1pct":-2170504.5524285124,"gross_gex_1pct":2170504.5524285124,"call_oi":0,"put_oi":31},{"strike":36300.0,"call_gex_1pct":0.0,"put_gex_1pct":-1236618.5222683602,"net_gex_1pct":-1236618.5222683602,"gross_gex_1pct":1236618.5222683602,"call_oi":0,"put_oi":17},{"strike":36400.0,"call_gex_1pct":0.0,"put_gex_1pct":-3489424.9672819586,"net_gex_1pct":-3489424.9672819586,"gross_gex_1pct":3489424.9672819586,"call_oi":0,"put_oi":47},{"strike":36500.0,"call_gex_1pct":0.0,"put_gex_1pct":-19980674.09332511,"net_gex_1pct":-19980674.09332511,"gross_gex_1pct":19980674.09332511,"call_oi":0,"put_oi":261},{"strike":36600.0,"call_gex_1pct":0.0,"put_gex_1pct":-940172.082569505,"net_gex_1pct":-940172.082569505,"gross_gex_1pct":940172.082569505,"call_oi":0,"put_oi":12},{"strike":36700.0,"call_gex_1pct":0.0,"put_gex_1pct":-483096.01700334204,"net_gex_1pct":-483096.01700334204,"gross_gex_1pct":483096.01700334204,"call_oi":0,"put_oi":6},{"strike":36800.0,"call_gex_1pct":0.0,"put_gex_1pct":-247539.7463904172,"net_gex_1pct":-247539.7463904172,"gross_gex_1pct":247539.7463904172,"call_oi":0,"put_oi":3},{"strike":36900.0,"call_gex_1pct":0.0,"put_gex_1pct":-3054611.948702475,"net_gex_1pct":-3054611.948702475,"gross_gex_1pct":3054611.948702475,"call_oi":0,"put_oi":36},{"strike":37000.0,"call_gex_1pct":0.0,"put_gex_1pct":-7303211.538885635,"net_gex_1pct":-7303211.538885635,"gross_gex_1pct":7303211.538885635,"call_oi":0,"put_oi":84},{"strike":37100.0,"call_gex_1pct":0.0,"put_gex_1pct":-798697.8363953806,"net_gex_1pct":-798697.8363953806,"gross_gex_1pct":798697.8363953806,"call_oi":0,"put_oi":9},{"strike":37200.0,"call_gex_1pct":0.0,"put_gex_1pct":-552046.8303865566,"net_gex_1pct":-552046.8303865566,"gross_gex_1pct":552046.8303865566,"call_oi":0,"put_oi":6},{"strike":37300.0,"call_gex_1pct":0.0,"put_gex_1pct":-3099461.1206334215,"net_gex_1pct":-3099461.1206334215,"gross_gex_1pct":3099461.1206334215,"call_oi":0,"put_oi":33},{"strike":37400.0,"call_gex_1pct":0.0,"put_gex_1pct":-1251554.5623299764,"net_gex_1pct":-1251554.5623299764,"gross_gex_1pct":1251554.5623299764,"call_oi":0,"put_oi":13},{"strike":37500.0,"call_gex_1pct":0.0,"put_gex_1pct":-2501900.5734511553,"net_gex_1pct":-2501900.5734511553,"gross_gex_1pct":2501900.5734511553,"call_oi":0,"put_oi":26},{"strike":37600.0,"call_gex_1pct":0.0,"put_gex_1pct":-1798230.7642941657,"net_gex_1pct":-1798230.7642941657,"gross_gex_1pct":1798230.7642941657,"call_oi":0,"put_oi":18},{"strike":37700.0,"call_gex_1pct":0.0,"put_gex_1pct":-905919.2379107726,"net_gex_1pct":-905919.2379107726,"gross_gex_1pct":905919.2379107726,"call_oi":0,"put_oi":9},{"strike":37800.0,"call_gex_1pct":0.0,"put_gex_1pct":-63762287.28148112,"net_gex_1pct":-63762287.28148112,"gross_gex_1pct":63762287.28148112,"call_oi":0,"put_oi":615},{"strike":37900.0,"call_gex_1pct":0.0,"put_gex_1pct":-1751835.906461365,"net_gex_1pct":-1751835.906461365,"gross_gex_1pct":1751835.906461365,"call_oi":0,"put_oi":17},{"strike":38000.0,"call_gex_1pct":0.0,"put_gex_1pct":-7609504.967440497,"net_gex_1pct":-7609504.967440497,"gross_gex_1pct":7609504.967440497,"call_oi":0,"put_oi":72},{"strike":38100.0,"call_gex_1pct":0.0,"put_gex_1pct":-855573.9882347105,"net_gex_1pct":-855573.9882347105,"gross_gex_1pct":855573.9882347105,"call_oi":0,"put_oi":8},{"strike":38200.0,"call_gex_1pct":103596.11358155323,"put_gex_1pct":-3967498.401415931,"net_gex_1pct":-3863902.287834378,"gross_gex_1pct":4071094.514997484,"call_oi":1,"put_oi":37},{"strike":38300.0,"call_gex_1pct":105748.48681499824,"put_gex_1pct":-545079.185046894,"net_gex_1pct":-439330.6982318958,"gross_gex_1pct":650827.6718618922,"call_oi":1,"put_oi":5},{"strike":38400.0,"call_gex_1pct":318074.6835541907,"put_gex_1pct":-9467238.772490425,"net_gex_1pct":-9149164.088936234,"gross_gex_1pct":9785313.456044616,"call_oi":3,"put_oi":85},{"strike":38500.0,"call_gex_1pct":6590676.477992386,"put_gex_1pct":-5360137.543507355,"net_gex_1pct":1230538.9344850304,"gross_gex_1pct":11950814.021499742,"call_oi":62,"put_oi":48},{"strike":38600.0,"call_gex_1pct":1417586.9701836333,"put_gex_1pct":-2739111.6617136444,"net_gex_1pct":-1321524.6915300111,"gross_gex_1pct":4156698.6318972777,"call_oi":13,"put_oi":24},{"strike":38700.0,"call_gex_1pct":217754901.651812,"put_gex_1pct":-8124118.9073080765,"net_gex_1pct":209630782.74450392,"gross_gex_1pct":225879020.55912006,"call_oi":2001,"put_oi":71},{"strike":38800.0,"call_gex_1pct":4820674.943952711,"put_gex_1pct":-2840361.4154237355,"net_gex_1pct":1980313.5285289758,"gross_gex_1pct":7661036.359376447,"call_oi":45,"put_oi":25},{"strike":38900.0,"call_gex_1pct":216965864.7464811,"put_gex_1pct":-7403227.9481450785,"net_gex_1pct":209562636.798336,"gross_gex_1pct":224369092.69462618,"call_oi":2002,"put_oi":65},{"strike":38950.0,"call_gex_1pct":976557.4277560478,"put_gex_1pct":-462783.8030031922,"net_gex_1pct":513773.6247528556,"gross_gex_1pct":1439341.23075924,"call_oi":9,"put_oi":4},{"strike":39000.0,"call_gex_1pct":8582185.053709047,"put_gex_1pct":-14985010.251831684,"net_gex_1pct":-6402825.198122637,"gross_gex_1pct":23567195.305540733,"call_oi":79,"put_oi":130},{"strike":39050.0,"call_gex_1pct":1740167.098151752,"put_gex_1pct":-341244.290395175,"net_gex_1pct":1398922.8077565772,"gross_gex_1pct":2081411.388546927,"call_oi":16,"put_oi":3},{"strike":39100.0,"call_gex_1pct":219873865.5915802,"put_gex_1pct":-13486310.96937321,"net_gex_1pct":206387554.62220702,"gross_gex_1pct":233360176.5609534,"call_oi":2001,"put_oi":119},{"strike":39150.0,"call_gex_1pct":871969.857543794,"put_gex_1pct":0.0,"net_gex_1pct":871969.857543794,"gross_gex_1pct":871969.857543794,"call_oi":8,"put_oi":0},{"strike":39200.0,"call_gex_1pct":864975.6921974078,"put_gex_1pct":-3065889.9897895236,"net_gex_1pct":-2200914.2975921156,"gross_gex_1pct":3930865.6819869317,"call_oi":8,"put_oi":27},{"strike":39250.0,"call_gex_1pct":757561.8163329604,"put_gex_1pct":-228372.31179983602,"net_gex_1pct":529189.5045331244,"gross_gex_1pct":985934.1281327964,"call_oi":7,"put_oi":2},{"strike":39300.0,"call_gex_1pct":1725299.938238905,"put_gex_1pct":-676031.5207676045,"net_gex_1pct":1049268.4174713006,"gross_gex_1pct":2401331.4590065097,"call_oi":16,"put_oi":6},{"strike":39350.0,"call_gex_1pct":962636.9502634271,"put_gex_1pct":0.0,"net_gex_1pct":962636.9502634271,"gross_gex_1pct":962636.9502634271,"call_oi":9,"put_oi":0},{"strike":39400.0,"call_gex_1pct":3607273.3244108153,"put_gex_1pct":-1564715.9288595316,"net_gex_1pct":2042557.3955512836,"gross_gex_1pct":5171989.253270347,"call_oi":34,"put_oi":14},{"strike":39450.0,"call_gex_1pct":213243.31137661193,"put_gex_1pct":-330882.0687890051,"net_gex_1pct":-117638.75741239317,"gross_gex_1pct":544125.380165617,"call_oi":2,"put_oi":3},{"strike":39500.0,"call_gex_1pct":3278068.527410459,"put_gex_1pct":-70509976.14300856,"net_gex_1pct":-67231907.6155981,"gross_gex_1pct":73788044.67041902,"call_oi":31,"put_oi":642},{"strike":39550.0,"call_gex_1pct":419487.5522369852,"put_gex_1pct":-328050.7503650877,"net_gex_1pct":91436.80187189748,"gross_gex_1pct":747538.302602073,"call_oi":4,"put_oi":3},{"strike":39600.0,"call_gex_1pct":2097729.836182785,"put_gex_1pct":-2394847.243293225,"net_gex_1pct":-297117.4071104396,"gross_gex_1pct":4492577.07947601,"call_oi":20,"put_oi":22},{"strike":39650.0,"call_gex_1pct":832014.8937557536,"put_gex_1pct":-975109.0845222285,"net_gex_1pct":-143094.1907664748,"gross_gex_1pct":1807123.9782779822,"call_oi":8,"put_oi":9},{"strike":39700.0,"call_gex_1pct":1138997.5661986428,"put_gex_1pct":-3153453.613840606,"net_gex_1pct":-2014456.0476419632,"gross_gex_1pct":4292451.180039249,"call_oi":11,"put_oi":29},{"strike":39750.0,"call_gex_1pct":821217.9081930876,"put_gex_1pct":-643549.1316933353,"net_gex_1pct":177668.7764997523,"gross_gex_1pct":1464767.039886423,"call_oi":8,"put_oi":6},{"strike":39800.0,"call_gex_1pct":2543951.0233655656,"put_gex_1pct":-1481225.9274695364,"net_gex_1pct":1062725.0958960291,"gross_gex_1pct":4025176.9508351022,"call_oi":25,"put_oi":14},{"strike":39850.0,"call_gex_1pct":704368.7504407476,"put_gex_1pct":-526048.645880119,"net_gex_1pct":178320.10456062865,"gross_gex_1pct":1230417.3963208664,"call_oi":7,"put_oi":5},{"strike":39900.0,"call_gex_1pct":3103536.630903527,"put_gex_1pct":-726364.23215848,"net_gex_1pct":2377172.398745047,"gross_gex_1pct":3829900.8630620074,"call_oi":31,"put_oi":7},{"strike":39950.0,"call_gex_1pct":1387787.29597592,"put_gex_1pct":-1031268.3329368152,"net_gex_1pct":356518.9630391048,"gross_gex_1pct":2419055.6289127353,"call_oi":14,"put_oi":10},{"strike":40000.0,"call_gex_1pct":39473385.75506541,"put_gex_1pct":-2847290.9606224666,"net_gex_1pct":36626094.794442944,"gross_gex_1pct":42320676.71568788,"call_oi":404,"put_oi":28},{"strike":40050.0,"call_gex_1pct":1256557.5407869031,"put_gex_1pct":-1009889.8499633003,"net_gex_1pct":246667.69082360284,"gross_gex_1pct":2266447.3907502033,"call_oi":13,"put_oi":10},{"strike":40100.0,"call_gex_1pct":3656001.4248900777,"put_gex_1pct":-696837.0639720676,"net_gex_1pct":2959164.36091801,"gross_gex_1pct":4352838.488862146,"call_oi":38,"put_oi":7},{"strike":40150.0,"call_gex_1pct":1230084.5597730568,"put_gex_1pct":-588722.8259216269,"net_gex_1pct":641361.7338514299,"gross_gex_1pct":1818807.3856946835,"call_oi":13,"put_oi":6},{"strike":40200.0,"call_gex_1pct":4517506.429307998,"put_gex_1pct":-1849030.3936798787,"net_gex_1pct":2668476.0356281195,"gross_gex_1pct":6366536.822987877,"call_oi":48,"put_oi":19},{"strike":40250.0,"call_gex_1pct":838262.7529940663,"put_gex_1pct":-671105.8220832124,"net_gex_1pct":167156.9309108539,"gross_gex_1pct":1509368.5750772788,"call_oi":9,"put_oi":7},{"strike":40300.0,"call_gex_1pct":2670577.506876232,"put_gex_1pct":-379853.2392554591,"net_gex_1pct":2290724.267620773,"gross_gex_1pct":3050430.746131691,"call_oi":29,"put_oi":4},{"strike":40350.0,"call_gex_1pct":1000069.6697313129,"put_gex_1pct":-280462.11603532056,"net_gex_1pct":719607.5536959923,"gross_gex_1pct":1280531.7857666335,"call_oi":11,"put_oi":3},{"strike":40400.0,"call_gex_1pct":1884422.0750829438,"put_gex_1pct":-552075.1693072831,"net_gex_1pct":1332346.9057756606,"gross_gex_1pct":2436497.244390227,"call_oi":21,"put_oi":6},{"strike":40450.0,"call_gex_1pct":884986.468698454,"put_gex_1pct":-181072.45965417285,"net_gex_1pct":703914.0090442811,"gross_gex_1pct":1066058.9283526267,"call_oi":10,"put_oi":2},{"strike":40500.0,"call_gex_1pct":10680319.203337917,"put_gex_1pct":-2760729.0837438195,"net_gex_1pct":7919590.119594097,"gross_gex_1pct":13441048.287081737,"call_oi":122,"put_oi":31},{"strike":40550.0,"call_gex_1pct":86268.39943125538,"put_gex_1pct":0.0,"net_gex_1pct":86268.39943125538,"gross_gex_1pct":86268.39943125538,"call_oi":1,"put_oi":0},{"strike":40600.0,"call_gex_1pct":4151220.6854231125,"put_gex_1pct":-774635.8858486268,"net_gex_1pct":3376584.7995744855,"gross_gex_1pct":4925856.571271739,"call_oi":49,"put_oi":9},{"strike":40650.0,"call_gex_1pct":501926.7656679129,"put_gex_1pct":-338238.04395407374,"net_gex_1pct":163688.72171383916,"gross_gex_1pct":840164.8096219867,"call_oi":6,"put_oi":4},{"strike":40700.0,"call_gex_1pct":1150063.0987078655,"put_gex_1pct":-664249.3561470142,"net_gex_1pct":485813.7425608513,"gross_gex_1pct":1814312.4548548795,"call_oi":14,"put_oi":8},{"strike":40750.0,"call_gex_1pct":808117.252847788,"put_gex_1pct":-1222223.3775311147,"net_gex_1pct":-414106.1246833267,"gross_gex_1pct":2030340.630378903,"call_oi":10,"put_oi":15},{"strike":40800.0,"call_gex_1pct":4133483.216428369,"put_gex_1pct":-4075213.359222337,"net_gex_1pct":58269.85720603168,"gross_gex_1pct":8208696.575650706,"call_oi":52,"put_oi":51},{"strike":40850.0,"call_gex_1pct":1407765.3705124569,"put_gex_1pct":-1957495.8148622448,"net_gex_1pct":-549730.4443497879,"gross_gex_1pct":3365261.1853747014,"call_oi":18,"put_oi":25},{"strike":40900.0,"call_gex_1pct":1766974.8797340097,"put_gex_1pct":-2529675.9034813694,"net_gex_1pct":-762701.0237473596,"gross_gex_1pct":4296650.783215379,"call_oi":23,"put_oi":33},{"strike":40950.0,"call_gex_1pct":226264.79099299907,"put_gex_1pct":-74970.56613094594,"net_gex_1pct":151294.22486205312,"gross_gex_1pct":301235.357123945,"call_oi":3,"put_oi":1},{"strike":41000.0,"call_gex_1pct":10144821.109673437,"put_gex_1pct":-1464666.7600856146,"net_gex_1pct":8680154.349587822,"gross_gex_1pct":11609487.869759051,"call_oi":137,"put_oi":20},{"strike":41050.0,"call_gex_1pct":217994.04519168078,"put_gex_1pct":-71436.20502089894,"net_gex_1pct":146557.84017078183,"gross_gex_1pct":289430.25021257973,"call_oi":3,"put_oi":1},{"strike":41100.0,"call_gex_1pct":856333.9685682995,"put_gex_1pct":-280256.4217448738,"net_gex_1pct":576077.5468234257,"gross_gex_1pct":1136590.3903131734,"call_oi":12,"put_oi":4},{"strike":41150.0,"call_gex_1pct":769022.619491156,"put_gex_1pct":-477642.27289178176,"net_gex_1pct":291380.3465993742,"gross_gex_1pct":1246664.8923829377,"call_oi":11,"put_oi":7},{"strike":41200.0,"call_gex_1pct":1781834.586164144,"put_gex_1pct":-331613.1680686227,"net_gex_1pct":1450221.4180955214,"gross_gex_1pct":2113447.754232767,"call_oi":26,"put_oi":5},{"strike":41250.0,"call_gex_1pct":671485.8236725924,"put_gex_1pct":0.0,"net_gex_1pct":671485.8236725924,"gross_gex_1pct":671485.8236725924,"call_oi":10,"put_oi":0},{"strike":41300.0,"call_gex_1pct":854856.4891882987,"put_gex_1pct":-126201.34161670793,"net_gex_1pct":728655.1475715907,"gross_gex_1pct":981057.8308050067,"call_oi":13,"put_oi":2},{"strike":41350.0,"call_gex_1pct":193074.99395246882,"put_gex_1pct":0.0,"net_gex_1pct":193074.99395246882,"gross_gex_1pct":193074.99395246882,"call_oi":3,"put_oi":0},{"strike":41400.0,"call_gex_1pct":566515.5991273436,"put_gex_1pct":-117579.41236206681,"net_gex_1pct":448936.1867652768,"gross_gex_1pct":684095.0114894104,"call_oi":9,"put_oi":2},{"strike":41450.0,"call_gex_1pct":369424.13912335865,"put_gex_1pct":-288482.06161403016,"net_gex_1pct":80942.07750932849,"gross_gex_1pct":657906.2007373888,"call_oi":6,"put_oi":5},{"strike":41500.0,"call_gex_1pct":4462450.967935772,"put_gex_1pct":-387421.7378915869,"net_gex_1pct":4075029.2300441847,"gross_gex_1pct":4849872.705827358,"call_oi":74,"put_oi":7},{"strike":41550.0,"call_gex_1pct":58927.504833033134,"put_gex_1pct":-108659.0494142629,"net_gex_1pct":-49731.54458122977,"gross_gex_1pct":167586.55424729604,"call_oi":1,"put_oi":2},{"strike":41600.0,"call_gex_1pct":1781641.9798973529,"put_gex_1pct":-51818.329806463466,"net_gex_1pct":1729823.6500908893,"gross_gex_1pct":1833460.3097038164,"call_oi":31,"put_oi":1},{"strike":41650.0,"call_gex_1pct":112286.97804609776,"put_gex_1pct":-101754.30559445158,"net_gex_1pct":10532.672451646184,"gross_gex_1pct":214041.28364054934,"call_oi":2,"put_oi":2},{"strike":41700.0,"call_gex_1pct":762606.1331707871,"put_gex_1pct":-192635.2507556009,"net_gex_1pct":569970.8824151863,"gross_gex_1pct":955241.383926388,"call_oi":14,"put_oi":4},{"strike":41750.0,"call_gex_1pct":319775.99080999155,"put_gex_1pct":-141876.91447968356,"net_gex_1pct":177899.076330308,"gross_gex_1pct":461652.9052896751,"call_oi":6,"put_oi":3},{"strike":41800.0,"call_gex_1pct":881270.3760522401,"put_gex_1pct":-44302.38169205898,"net_gex_1pct":836967.9943601812,"gross_gex_1pct":925572.7577442991,"call_oi":17,"put_oi":1},{"strike":41850.0,"call_gex_1pct":606877.3906364527,"put_gex_1pct":-43511.208105935046,"net_gex_1pct":563366.1825305177,"gross_gex_1pct":650388.5987423877,"call_oi":12,"put_oi":1},{"strike":41900.0,"call_gex_1pct":891577.4526016037,"put_gex_1pct":-160620.80510573648,"net_gex_1pct":730956.6474958672,"gross_gex_1pct":1052198.2577073402,"call_oi":18,"put_oi":4},{"strike":41950.0,"call_gex_1pct":481625.57059160905,"put_gex_1pct":-39441.746288507355,"net_gex_1pct":442183.8243031017,"gross_gex_1pct":521067.3168801164,"call_oi":10,"put_oi":1},{"strike":42000.0,"call_gex_1pct":12747759.07130346,"put_gex_1pct":-320136.53811004653,"net_gex_1pct":12427622.533193415,"gross_gex_1pct":13067895.609413506,"call_oi":269,"put_oi":9},{"strike":42050.0,"call_gex_1pct":2517341.2730393894,"put_gex_1pct":-69879.96684714784,"net_gex_1pct":2447461.3061922416,"gross_gex_1pct":2587221.239886537,"call_oi":55,"put_oi":2},{"strike":42100.0,"call_gex_1pct":1322375.64995525,"put_gex_1pct":-102985.61487488463,"net_gex_1pct":1219390.0350803654,"gross_gex_1pct":1425361.2648301348,"call_oi":30,"put_oi":3},{"strike":42150.0,"call_gex_1pct":520588.27942833933,"put_gex_1pct":-148776.24072466177,"net_gex_1pct":371812.0387036776,"gross_gex_1pct":669364.5201530011,"call_oi":12,"put_oi":5},{"strike":42200.0,"call_gex_1pct":2147589.764371832,"put_gex_1pct":-116932.50047095404,"net_gex_1pct":2030657.263900878,"gross_gex_1pct":2264522.264842786,"call_oi":51,"put_oi":4},{"strike":42250.0,"call_gex_1pct":1516480.7495791838,"put_gex_1pct":-143633.52460087487,"net_gex_1pct":1372847.224978309,"gross_gex_1pct":1660114.2741800586,"call_oi":37,"put_oi":5},{"strike":42300.0,"call_gex_1pct":1366574.3552368765,"put_gex_1pct":-22955.318027070516,"net_gex_1pct":1343619.037209806,"gross_gex_1pct":1389529.673263947,"call_oi":34,"put_oi":1},{"strike":42350.0,"call_gex_1pct":1627126.1185970742,"put_gex_1pct":0.0,"net_gex_1pct":1627126.1185970742,"gross_gex_1pct":1627126.1185970742,"call_oi":42,"put_oi":0},{"strike":42400.0,"call_gex_1pct":2031295.7891404305,"put_gex_1pct":-22163.582705575176,"net_gex_1pct":2009132.2064348552,"gross_gex_1pct":2053459.3718460058,"call_oi":54,"put_oi":1},{"strike":42450.0,"call_gex_1pct":222287.38444930775,"put_gex_1pct":0.0,"net_gex_1pct":222287.38444930775,"gross_gex_1pct":222287.38444930775,"call_oi":6,"put_oi":0},{"strike":42500.0,"call_gex_1pct":2015193.2297400136,"put_gex_1pct":-67570.25966568939,"net_gex_1pct":1947622.9700743242,"gross_gex_1pct":2082763.489405703,"call_oi":57,"put_oi":5},{"strike":42550.0,"call_gex_1pct":619575.3213121671,"put_gex_1pct":-119489.28081788302,"net_gex_1pct":500086.04049428407,"gross_gex_1pct":739064.6021300501,"call_oi":18,"put_oi":9},{"strike":42600.0,"call_gex_1pct":793439.3904026522,"put_gex_1pct":-39138.334843400145,"net_gex_1pct":754301.055559252,"gross_gex_1pct":832577.7252460524,"call_oi":24,"put_oi":3},{"strike":42650.0,"call_gex_1pct":388205.4221169142,"put_gex_1pct":0.0,"net_gex_1pct":388205.4221169142,"gross_gex_1pct":388205.4221169142,"call_oi":12,"put_oi":0},{"strike":42700.0,"call_gex_1pct":939302.8881263798,"put_gex_1pct":0.0,"net_gex_1pct":939302.8881263798,"gross_gex_1pct":939302.8881263798,"call_oi":30,"put_oi":0},{"strike":42750.0,"call_gex_1pct":121055.41674630209,"put_gex_1pct":0.0,"net_gex_1pct":121055.41674630209,"gross_gex_1pct":121055.41674630209,"call_oi":4,"put_oi":0},{"strike":42800.0,"call_gex_1pct":955465.9734186754,"put_gex_1pct":0.0,"net_gex_1pct":955465.9734186754,"gross_gex_1pct":955465.9734186754,"call_oi":33,"put_oi":0},{"strike":42850.0,"call_gex_1pct":255664.87158437067,"put_gex_1pct":0.0,"net_gex_1pct":255664.87158437067,"gross_gex_1pct":255664.87158437067,"call_oi":9,"put_oi":0},{"strike":42900.0,"call_gex_1pct":219817.89814321804,"put_gex_1pct":0.0,"net_gex_1pct":219817.89814321804,"gross_gex_1pct":219817.89814321804,"call_oi":8,"put_oi":0},{"strike":42950.0,"call_gex_1pct":265442.10046543734,"put_gex_1pct":0.0,"net_gex_1pct":265442.10046543734,"gross_gex_1pct":265442.10046543734,"call_oi":10,"put_oi":0},{"strike":43000.0,"call_gex_1pct":6100757.034476466,"put_gex_1pct":0.0,"net_gex_1pct":6100757.034476466,"gross_gex_1pct":6100757.034476466,"call_oi":241,"put_oi":0},{"strike":43050.0,"call_gex_1pct":396980.86145634967,"put_gex_1pct":0.0,"net_gex_1pct":396980.86145634967,"gross_gex_1pct":396980.86145634967,"call_oi":16,"put_oi":0},{"strike":43100.0,"call_gex_1pct":384285.7906566621,"put_gex_1pct":0.0,"net_gex_1pct":384285.7906566621,"gross_gex_1pct":384285.7906566621,"call_oi":16,"put_oi":0},{"strike":43150.0,"call_gex_1pct":371602.16921172175,"put_gex_1pct":0.0,"net_gex_1pct":371602.16921172175,"gross_gex_1pct":371602.16921172175,"call_oi":16,"put_oi":0},{"strike":43200.0,"call_gex_1pct":663154.4114495722,"put_gex_1pct":0.0,"net_gex_1pct":663154.4114495722,"gross_gex_1pct":663154.4114495722,"call_oi":30,"put_oi":0},{"strike":43250.0,"call_gex_1pct":562570.9654102462,"put_gex_1pct":0.0,"net_gex_1pct":562570.9654102462,"gross_gex_1pct":562570.9654102462,"call_oi":26,"put_oi":0},{"strike":43300.0,"call_gex_1pct":735355.5230157992,"put_gex_1pct":0.0,"net_gex_1pct":735355.5230157992,"gross_gex_1pct":735355.5230157992,"call_oi":35,"put_oi":0},{"strike":43350.0,"call_gex_1pct":565994.4396272955,"put_gex_1pct":0.0,"net_gex_1pct":565994.4396272955,"gross_gex_1pct":565994.4396272955,"call_oi":28,"put_oi":0},{"strike":43400.0,"call_gex_1pct":450621.0922910835,"put_gex_1pct":0.0,"net_gex_1pct":450621.0922910835,"gross_gex_1pct":450621.0922910835,"call_oi":23,"put_oi":0},{"strike":43450.0,"call_gex_1pct":469758.4129393428,"put_gex_1pct":0.0,"net_gex_1pct":469758.4129393428,"gross_gex_1pct":469758.4129393428,"call_oi":25,"put_oi":0},{"strike":43500.0,"call_gex_1pct":1453628.481579645,"put_gex_1pct":0.0,"net_gex_1pct":1453628.481579645,"gross_gex_1pct":1453628.481579645,"call_oi":80,"put_oi":0},{"strike":43550.0,"call_gex_1pct":684527.7551451018,"put_gex_1pct":0.0,"net_gex_1pct":684527.7551451018,"gross_gex_1pct":684527.7551451018,"call_oi":39,"put_oi":0},{"strike":43600.0,"call_gex_1pct":669409.1469420916,"put_gex_1pct":0.0,"net_gex_1pct":669409.1469420916,"gross_gex_1pct":669409.1469420916,"call_oi":40,"put_oi":0},{"strike":43650.0,"call_gex_1pct":571096.5897025936,"put_gex_1pct":0.0,"net_gex_1pct":571096.5897025936,"gross_gex_1pct":571096.5897025936,"call_oi":35,"put_oi":0},{"strike":43700.0,"call_gex_1pct":675047.2208652901,"put_gex_1pct":0.0,"net_gex_1pct":675047.2208652901,"gross_gex_1pct":675047.2208652901,"call_oi":43,"put_oi":0},{"strike":43750.0,"call_gex_1pct":723778.476732417,"put_gex_1pct":0.0,"net_gex_1pct":723778.476732417,"gross_gex_1pct":723778.476732417,"call_oi":48,"put_oi":0},{"strike":43800.0,"call_gex_1pct":636056.4042481156,"put_gex_1pct":0.0,"net_gex_1pct":636056.4042481156,"gross_gex_1pct":636056.4042481156,"call_oi":44,"put_oi":0},{"strike":43850.0,"call_gex_1pct":562122.6863522887,"put_gex_1pct":0.0,"net_gex_1pct":562122.6863522887,"gross_gex_1pct":562122.6863522887,"call_oi":40,"put_oi":0},{"strike":43900.0,"call_gex_1pct":375987.60714262695,"put_gex_1pct":0.0,"net_gex_1pct":375987.60714262695,"gross_gex_1pct":375987.60714262695,"call_oi":28,"put_oi":0},{"strike":43950.0,"call_gex_1pct":260623.2636522379,"put_gex_1pct":0.0,"net_gex_1pct":260623.2636522379,"gross_gex_1pct":260623.2636522379,"call_oi":20,"put_oi":0},{"strike":44000.0,"call_gex_1pct":5084354.454261684,"put_gex_1pct":0.0,"net_gex_1pct":5084354.454261684,"gross_gex_1pct":5084354.454261684,"call_oi":410,"put_oi":0},{"strike":44050.0,"call_gex_1pct":11761.950696963839,"put_gex_1pct":0.0,"net_gex_1pct":11761.950696963839,"gross_gex_1pct":11761.950696963839,"call_oi":1,"put_oi":0},{"strike":44100.0,"call_gex_1pct":250096.36265590927,"put_gex_1pct":0.0,"net_gex_1pct":250096.36265590927,"gross_gex_1pct":250096.36265590927,"call_oi":22,"put_oi":0},{"strike":44150.0,"call_gex_1pct":96449.32261607288,"put_gex_1pct":0.0,"net_gex_1pct":96449.32261607288,"gross_gex_1pct":96449.32261607288,"call_oi":9,"put_oi":0},{"strike":44200.0,"call_gex_1pct":371877.5555537865,"put_gex_1pct":0.0,"net_gex_1pct":371877.5555537865,"gross_gex_1pct":371877.5555537865,"call_oi":37,"put_oi":0},{"strike":44250.0,"call_gex_1pct":57913.882878040764,"put_gex_1pct":0.0,"net_gex_1pct":57913.882878040764,"gross_gex_1pct":57913.882878040764,"call_oi":6,"put_oi":0},{"strike":44300.0,"call_gex_1pct":338131.03698186664,"put_gex_1pct":0.0,"net_gex_1pct":338131.03698186664,"gross_gex_1pct":338131.03698186664,"call_oi":37,"put_oi":0},{"strike":44350.0,"call_gex_1pct":121489.32617352749,"put_gex_1pct":0.0,"net_gex_1pct":121489.32617352749,"gross_gex_1pct":121489.32617352749,"call_oi":14,"put_oi":0},{"strike":44400.0,"call_gex_1pct":229944.51747609582,"put_gex_1pct":0.0,"net_gex_1pct":229944.51747609582,"gross_gex_1pct":229944.51747609582,"call_oi":28,"put_oi":0},{"strike":44450.0,"call_gex_1pct":116113.2756767558,"put_gex_1pct":0.0,"net_gex_1pct":116113.2756767558,"gross_gex_1pct":116113.2756767558,"call_oi":15,"put_oi":0},{"strike":44500.0,"call_gex_1pct":813396.8983562497,"put_gex_1pct":0.0,"net_gex_1pct":813396.8983562497,"gross_gex_1pct":813396.8983562497,"call_oi":111,"put_oi":0},{"strike":44550.0,"call_gex_1pct":13820.945692098001,"put_gex_1pct":0.0,"net_gex_1pct":13820.945692098001,"gross_gex_1pct":13820.945692098001,"call_oi":2,"put_oi":0},{"strike":44600.0,"call_gex_1pct":64873.83473834332,"put_gex_1pct":0.0,"net_gex_1pct":64873.83473834332,"gross_gex_1pct":64873.83473834332,"call_oi":10,"put_oi":0},{"strike":44650.0,"call_gex_1pct":6129.485161611472,"put_gex_1pct":0.0,"net_gex_1pct":6129.485161611472,"gross_gex_1pct":6129.485161611472,"call_oi":1,"put_oi":0},{"strike":44700.0,"call_gex_1pct":63447.14389611932,"put_gex_1pct":0.0,"net_gex_1pct":63447.14389611932,"gross_gex_1pct":63447.14389611932,"call_oi":11,"put_oi":0},{"strike":44750.0,"call_gex_1pct":27008.219238363607,"put_gex_1pct":0.0,"net_gex_1pct":27008.219238363607,"gross_gex_1pct":27008.219238363607,"call_oi":5,"put_oi":0},{"strike":44800.0,"call_gex_1pct":51083.312261806925,"put_gex_1pct":0.0,"net_gex_1pct":51083.312261806925,"gross_gex_1pct":51083.312261806925,"call_oi":10,"put_oi":0},{"strike":44850.0,"call_gex_1pct":33122.23314788654,"put_gex_1pct":0.0,"net_gex_1pct":33122.23314788654,"gross_gex_1pct":33122.23314788654,"call_oi":7,"put_oi":0},{"strike":44900.0,"call_gex_1pct":39878.00308369427,"put_gex_1pct":0.0,"net_gex_1pct":39878.00308369427,"gross_gex_1pct":39878.00308369427,"call_oi":9,"put_oi":0},{"strike":44950.0,"call_gex_1pct":30665.288502260675,"put_gex_1pct":0.0,"net_gex_1pct":30665.288502260675,"gross_gex_1pct":30665.288502260675,"call_oi":7,"put_oi":0},{"strike":45000.0,"call_gex_1pct":1964557.3544921633,"put_gex_1pct":0.0,"net_gex_1pct":1964557.3544921633,"gross_gex_1pct":1964557.3544921633,"call_oi":877,"put_oi":0},{"strike":45050.0,"call_gex_1pct":33402.39217222696,"put_gex_1pct":0.0,"net_gex_1pct":33402.39217222696,"gross_gex_1pct":33402.39217222696,"call_oi":16,"put_oi":0},{"strike":45100.0,"call_gex_1pct":41275.73574883879,"put_gex_1pct":0.0,"net_gex_1pct":41275.73574883879,"gross_gex_1pct":41275.73574883879,"call_oi":20,"put_oi":0},{"strike":45150.0,"call_gex_1pct":30605.73395006786,"put_gex_1pct":0.0,"net_gex_1pct":30605.73395006786,"gross_gex_1pct":30605.73395006786,"call_oi":15,"put_oi":0},{"strike":45200.0,"call_gex_1pct":42365.89998221463,"put_gex_1pct":0.0,"net_gex_1pct":42365.89998221463,"gross_gex_1pct":42365.89998221463,"call_oi":21,"put_oi":0},{"strike":45250.0,"call_gex_1pct":11969.39820553108,"put_gex_1pct":0.0,"net_gex_1pct":11969.39820553108,"gross_gex_1pct":11969.39820553108,"call_oi":6,"put_oi":0},{"strike":45300.0,"call_gex_1pct":17755.187474187434,"put_gex_1pct":0.0,"net_gex_1pct":17755.187474187434,"gross_gex_1pct":17755.187474187434,"call_oi":9,"put_oi":0},{"strike":45350.0,"call_gex_1pct":13657.767016745338,"put_gex_1pct":0.0,"net_gex_1pct":13657.767016745338,"gross_gex_1pct":13657.767016745338,"call_oi":7,"put_oi":0},{"strike":45400.0,"call_gex_1pct":19298.22000816105,"put_gex_1pct":0.0,"net_gex_1pct":19298.22000816105,"gross_gex_1pct":19298.22000816105,"call_oi":10,"put_oi":0},{"strike":45450.0,"call_gex_1pct":20998.182019328848,"put_gex_1pct":0.0,"net_gex_1pct":20998.182019328848,"gross_gex_1pct":20998.182019328848,"call_oi":11,"put_oi":0},{"strike":45500.0,"call_gex_1pct":1176592.8174917821,"put_gex_1pct":0.0,"net_gex_1pct":1176592.8174917821,"gross_gex_1pct":1176592.8174917821,"call_oi":665,"put_oi":0},{"strike":45550.0,"call_gex_1pct":66514.9186962312,"put_gex_1pct":0.0,"net_gex_1pct":66514.9186962312,"gross_gex_1pct":66514.9186962312,"call_oi":38,"put_oi":0},{"strike":45600.0,"call_gex_1pct":41563.52699739417,"put_gex_1pct":0.0,"net_gex_1pct":41563.52699739417,"gross_gex_1pct":41563.52699739417,"call_oi":24,"put_oi":0},{"strike":45700.0,"call_gex_1pct":50869.34566491034,"put_gex_1pct":0.0,"net_gex_1pct":50869.34566491034,"gross_gex_1pct":50869.34566491034,"call_oi":30,"put_oi":0},{"strike":45800.0,"call_gex_1pct":8303.707679929235,"put_gex_1pct":0.0,"net_gex_1pct":8303.707679929235,"gross_gex_1pct":8303.707679929235,"call_oi":5,"put_oi":0},{"strike":45900.0,"call_gex_1pct":16270.429656973958,"put_gex_1pct":0.0,"net_gex_1pct":16270.429656973958,"gross_gex_1pct":16270.429656973958,"call_oi":10,"put_oi":0},{"strike":46000.0,"call_gex_1pct":2294474.153624503,"put_gex_1pct":0.0,"net_gex_1pct":2294474.153624503,"gross_gex_1pct":2294474.153624503,"call_oi":1439,"put_oi":0},{"strike":46100.0,"call_gex_1pct":10941.24751393151,"put_gex_1pct":0.0,"net_gex_1pct":10941.24751393151,"gross_gex_1pct":10941.24751393151,"call_oi":7,"put_oi":0},{"strike":46200.0,"call_gex_1pct":41324.61842915005,"put_gex_1pct":0.0,"net_gex_1pct":41324.61842915005,"gross_gex_1pct":41324.61842915005,"call_oi":29,"put_oi":0},{"strike":46300.0,"call_gex_1pct":20963.458814263515,"put_gex_1pct":0.0,"net_gex_1pct":20963.458814263515,"gross_gex_1pct":20963.458814263515,"call_oi":15,"put_oi":0},{"strike":46400.0,"call_gex_1pct":4113.087939164662,"put_gex_1pct":0.0,"net_gex_1pct":4113.087939164662,"gross_gex_1pct":4113.087939164662,"call_oi":3,"put_oi":0},{"strike":46500.0,"call_gex_1pct":102246.10677886933,"put_gex_1pct":0.0,"net_gex_1pct":102246.10677886933,"gross_gex_1pct":102246.10677886933,"call_oi":76,"put_oi":0},{"strike":46600.0,"call_gex_1pct":25088.915214504512,"put_gex_1pct":0.0,"net_gex_1pct":25088.915214504512,"gross_gex_1pct":25088.915214504512,"call_oi":19,"put_oi":0},{"strike":46700.0,"call_gex_1pct":16852.82592699232,"put_gex_1pct":0.0,"net_gex_1pct":16852.82592699232,"gross_gex_1pct":16852.82592699232,"call_oi":13,"put_oi":0},{"strike":46800.0,"call_gex_1pct":22914.292101741732,"put_gex_1pct":0.0,"net_gex_1pct":22914.292101741732,"gross_gex_1pct":22914.292101741732,"call_oi":18,"put_oi":0},{"strike":46900.0,"call_gex_1pct":5001.490962523189,"put_gex_1pct":0.0,"net_gex_1pct":5001.490962523189,"gross_gex_1pct":5001.490962523189,"call_oi":4,"put_oi":0},{"strike":47000.0,"call_gex_1pct":2507186.7687578835,"put_gex_1pct":0.0,"net_gex_1pct":2507186.7687578835,"gross_gex_1pct":2507186.7687578835,"call_oi":2041,"put_oi":0},{"strike":47100.0,"call_gex_1pct":6669.905461529586,"put_gex_1pct":0.0,"net_gex_1pct":6669.905461529586,"gross_gex_1pct":6669.905461529586,"call_oi":6,"put_oi":0},{"strike":47200.0,"call_gex_1pct":5462.755808597076,"put_gex_1pct":0.0,"net_gex_1pct":5462.755808597076,"gross_gex_1pct":5462.755808597076,"call_oi":5,"put_oi":0},{"strike":47300.0,"call_gex_1pct":2932.6479045139395,"put_gex_1pct":0.0,"net_gex_1pct":2932.6479045139395,"gross_gex_1pct":2932.6479045139395,"call_oi":3,"put_oi":0},{"strike":47400.0,"call_gex_1pct":2883.320586852602,"put_gex_1pct":0.0,"net_gex_1pct":2883.320586852602,"gross_gex_1pct":2883.320586852602,"call_oi":3,"put_oi":0},{"strike":47500.0,"call_gex_1pct":2541.2564619410355,"put_gex_1pct":0.0,"net_gex_1pct":2541.2564619410355,"gross_gex_1pct":2541.2564619410355,"call_oi":3,"put_oi":0},{"strike":47600.0,"call_gex_1pct":833.1255527493748,"put_gex_1pct":0.0,"net_gex_1pct":833.1255527493748,"gross_gex_1pct":833.1255527493748,"call_oi":1,"put_oi":0},{"strike":47700.0,"call_gex_1pct":7376.00487322125,"put_gex_1pct":0.0,"net_gex_1pct":7376.00487322125,"gross_gex_1pct":7376.00487322125,"call_oi":9,"put_oi":0},{"strike":47800.0,"call_gex_1pct":54479.2703002482,"put_gex_1pct":0.0,"net_gex_1pct":54479.2703002482,"gross_gex_1pct":54479.2703002482,"call_oi":77,"put_oi":0},{"strike":47900.0,"call_gex_1pct":6962.193434231162,"put_gex_1pct":0.0,"net_gex_1pct":6962.193434231162,"gross_gex_1pct":6962.193434231162,"call_oi":10,"put_oi":0},{"strike":48000.0,"call_gex_1pct":41798.57655458679,"put_gex_1pct":0.0,"net_gex_1pct":41798.57655458679,"gross_gex_1pct":41798.57655458679,"call_oi":61,"put_oi":0},{"strike":48100.0,"call_gex_1pct":3442.847845876217,"put_gex_1pct":0.0,"net_gex_1pct":3442.847845876217,"gross_gex_1pct":3442.847845876217,"call_oi":6,"put_oi":0},{"strike":48200.0,"call_gex_1pct":2824.5316407721934,"put_gex_1pct":0.0,"net_gex_1pct":2824.5316407721934,"gross_gex_1pct":2824.5316407721934,"call_oi":5,"put_oi":0},{"strike":48300.0,"call_gex_1pct":2781.197706776518,"put_gex_1pct":0.0,"net_gex_1pct":2781.197706776518,"gross_gex_1pct":2781.197706776518,"call_oi":5,"put_oi":0},{"strike":48400.0,"call_gex_1pct":2738.995418373103,"put_gex_1pct":0.0,"net_gex_1pct":2738.995418373103,"gross_gex_1pct":2738.995418373103,"call_oi":5,"put_oi":0},{"strike":48500.0,"call_gex_1pct":3495.3109459685484,"put_gex_1pct":0.0,"net_gex_1pct":3495.3109459685484,"gross_gex_1pct":3495.3109459685484,"call_oi":8,"put_oi":0},{"strike":48600.0,"call_gex_1pct":1721.5631743572699,"put_gex_1pct":0.0,"net_gex_1pct":1721.5631743572699,"gross_gex_1pct":1721.5631743572699,"call_oi":4,"put_oi":0},{"strike":48700.0,"call_gex_1pct":32226.550747183315,"put_gex_1pct":0.0,"net_gex_1pct":32226.550747183315,"gross_gex_1pct":32226.550747183315,"call_oi":76,"put_oi":0}]}
+```
 
 ### 15．Max Pain
 
@@ -629,10 +636,10 @@
 
 | 法人 | 日多方力道 | 日空方力道 | 日淨多空力道 | 夜多方力道 | 夜空方力道 | 夜淨多空力道 | 日淨－夜淨 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 外資 | 29.72 | 20.17 | +9.54 | 8.81 | 8.89 | -0.09 | +9.63 | TAIFEX Proxy |
-| 投信 | 0.02 | 15.04 | -15.02 | 0.00 | 0.00 | +0 | -15.02 | TAIFEX Proxy |
-| 自營商 | 26.94 | 25.21 | +1.73 | 5.92 | 5.81 | +0.11 | +1.62 | TAIFEX Proxy |
-| 三大法人合計 | 56.68 | 60.42 | -3.74 | 14.73 | 14.70 | +0.02 | -3.76 | TAIFEX Proxy |
+| 外資 | 29.72 | 20.17 | +9.54 | 8.81 | 8.89 | -0.09 | +9.63 | 沿用前版（原來源：TAIFEX Proxy） |
+| 投信 | 0.02 | 15.04 | -15.02 | 0.00 | 0.00 | +0 | -15.02 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 | 26.94 | 25.21 | +1.73 | 5.92 | 5.81 | +0.11 | +1.62 | 沿用前版（原來源：TAIFEX Proxy） |
+| 三大法人合計 | 56.68 | 60.42 | -3.74 | 14.73 | 14.70 | +0.02 | -3.76 | 沿用前版（原來源：TAIFEX Proxy） |
 
 ### 18．選擇權前十大
 
@@ -641,35 +648,34 @@
 | 買權多方 OI | 12,296 | TAIFEX Proxy |
 | 買權空方 OI | 15,231 | TAIFEX Proxy |
 | 買權多空淨 OI | -2,935 | TAIFEX Proxy |
-| 買權多空淨 OI 變化 | unavailable | 換月基準重建 |
+| 買權多空淨 OI 變化 (2026-11-18→2026-11-19) | -508 | TAIFEX Proxy snapshots (2026-11-18) |
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
 | 賣權多方 OI | 10,459 | TAIFEX Proxy |
 | 賣權空方 OI | 10,621 | TAIFEX Proxy |
 | 賣權多空淨 OI | -162 | TAIFEX Proxy |
-| 賣權多空淨 OI 變化 | unavailable | 換月基準重建 |
+| 賣權多空淨 OI 變化 (2026-11-18→2026-11-19) | -291 | TAIFEX Proxy snapshots (2026-11-18) |
 - 資料日期：買權 2026-11-19／賣權 2026-11-19 (TypeOfTraders=0 全部交易人；契約月份 202612)
 
 #### 大戶流向（全日；前十大無日夜拆分）
 
 | 項目 | 淨變化 | 區間 | 資料來源 |
 |---|---|---|---|
-| 期貨前十大 | unavailable | — | 換月基準重建 |
-| 買權前十大 | unavailable | — | 換月基準重建 |
-| 賣權前十大 | unavailable | — | 換月基準重建 |
+| 期貨前十大 | -1,671 | 2026-11-18→2026-11-19 | TAIFEX Proxy snapshots (2026-11-18) |
+| 買權前十大 | -508 | 2026-11-18→2026-11-19 | TAIFEX Proxy snapshots (2026-11-18) |
+| 賣權前十大 | -291 | 2026-11-18→2026-11-19 | TAIFEX Proxy snapshots (2026-11-18) |
 
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-11-19；本次報告產製時間：2026-11-20 15:21:28；時區：`Asia/Taipei`
+- 資料日期：2026-11-19；本次報告產製時間：2026-11-20 15:39:51；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
-- 換月註記：期貨前十大：前一交易日快照只有舊契約月份，無新主力月份可比基準；換月建立新基準，不跨月相減；買權前十大：前一交易日快照只有舊契約月份，無新主力月份可比基準；換月建立新基準，不跨月相減；賣權前十大：前一交易日快照只有舊契約月份，無新主力月份可比基準；換月建立新基準，不跨月相減
 - 部分取得欄位 (0)：無
 - 註記：--force-rewrite 明示覆蓋（人工指定）
-- 註記：同 T0 保護：8 格沿用前版有值（本次抓取缺失不覆寫）
-- 註記：同 T0 覆蓋：203 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
-- 未取得欄位 (2)：futures.top10_change, options.top10_change
+- 註記：同 T0 保護：52 格沿用前版有值（本次抓取缺失不覆寫）
+- 註記：同 T0 覆蓋：90 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 未取得欄位 (1)：futures.opt_split
 
 ## 五、資料來源、時間與完整性
 
@@ -697,11 +703,9 @@
 - 註記：上市市場維持率為當日暫估，以 TWSE 自建計算為主；2 檔採最近有效收盤價（價格日期 20261111 至 20261119）。Blave 同 T0 交叉驗證 147.9030%；差異 0.024 個百分點；門檻 <1.00 個百分點；PASS。Blave 不可用不影響 DATA_REPORT 產出。
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
 - TAIFEX 註記：無日期端點為最新盤勢快照 (判定資料日期 2026-11-20，非 T0 2026-11-19)，適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註
-- TAIFEX 註記：GEX Worker 診斷：code=TXO_DELTA_FETCH_FAILED；stage=delta_fetch；HTTP=502；TAIFEX Daily Delta not found；TAIFEX historical Delta file could not be parsed (last HTTP 502)
 - TAIFEX 註記：法人交易量未提供前日變化端點；日盤、夜盤交易量及日夜淨額差仍照常列示
-- TAIFEX 註記：Gamma 原始端點不可用（上游 502）；已由 options-market-structure-compact (proxy) 備援取得（Wall 有值；Flip 有值）
+- TAIFEX 註記：選擇權日盤買賣權拆分未取得
 - TAIFEX 註記：Gamma GEX 實際使用到期月份 202611W4（到期日 2026-11-25）與 Options Key Levels 主到期月份 202611F3 不同；GEX 數值應以實際使用到期月份為準
-- TAIFEX 註記：逐履約價 GEX／Net GEX／Gross GEX 未取得或資料不完整，標 unavailable（不以 Wall/Flip proxy 代替）
 - TAIFEX 註記：主力到期月份已由 202611 換至 202611F3；僅比較前後快照中相同主力月份的共同合約，不跨月份相減
 - 本報告僅整理資料，不提供交易判斷。
 
@@ -711,6 +715,6 @@
 
 | 法人 | 現貨買賣超(億) | 期貨OI淨(口) | 期貨日淨 | 期貨夜淨 | 選擇權日淨 | 選擇權夜淨 | 判定 | 期選組合 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|---|
-| 外資 | -243.1 | -99,219 | +1,310 | +2,657 | +9,756 | -601 | 避險／對沖 | 對沖避險 | twse-proxy／TAIFEX Proxy |
-| 投信 | +43.9 | +91,791 | -4,192 | +0 | -23,450 | +0 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
-| 自營商 | -233.0 | -1,455 | +1,723 | -366 | -9,929 | -1,537 | 趨勢偏空 | 趨勢偏空 | twse-proxy／TAIFEX Proxy |
+| 外資 | -243.1 | -99,219 | +1,310 | +2,657 | +9,756 | -601 | 避險／對沖 | 資料不足 | twse-proxy／TAIFEX Proxy |
+| 投信 | +43.9 | +91,791 | -4,192 | +0 | -23,450 | +0 | 避險／對沖 | 資料不足 | twse-proxy／TAIFEX Proxy |
+| 自營商 | -233.0 | -1,455 | +1,723 | -366 | -9,929 | -1,537 | 趨勢偏空 | 資料不足 | twse-proxy／TAIFEX Proxy |
