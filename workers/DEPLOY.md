@@ -1,6 +1,6 @@
 # Cloudflare Workers 部署與驗收說明
 
-> **版本狀態（2026-11-20）：** 正式環境目前由使用者確認部署 TAIFEX Worker **V1.6**。V1.7 是候選版，尚未部署；正式版本仍以 Cloudflare `/health` 回報為準。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
+> **版本狀態（2026-11-20）：** 正式環境目前由使用者確認部署 TAIFEX Worker **V1.6**。V1.7 是候選版，位於分支 `fix/worker-v1.7-compact-deadline`，尚未部署。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
 
 ## 1. Worker 與版本
 
@@ -42,7 +42,7 @@ V1.7 不應更改既有資料來源、GEX 計算公式、expiry selection、既�
 
 1. 在 Cloudflare Dashboard 開啟既有 `taifex` Worker。
 2. 再次確認並記錄目前正式 V1.6 Deployment / Version ID。
-3. 開啟 Edit code，將目前候選版本來源中的 `workers/taifex-proxy_V1.7.js` 的完整內容貼入。
+3. 開啟 Edit code，將分支 `fix/worker-v1.7-compact-deadline` 中 `workers/taifex-proxy_V1.7.js` 的完整內容貼入。
 4. 確認程式碼沒有截斷，且既有 `SNAPSHOTS` binding、Cron、Secret 均保留。
 5. 只有在上述檢查完成且使用者已明確批准時，才執行 Save and deploy。
 6. 不要在本次部署流程中呼叫 `/snapshots/write-now`、手動寫 KV、觸發 GitHub `daily-data` 或修改其他 Worker。
@@ -118,7 +118,7 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 1. 停止後續驗收與其他變更。
 2. 在 Cloudflare Dashboard → Deployments / Versions，選擇部署前記錄的正式 V1.6 Deployment / Version 執行 Rollback。
 3. 若需手動貼回程式碼，使用已確認的 V1.6 正式版本來源；不要以 Repo 最新檔案推斷線上版本。
-4. 回滾後重新查詢 `/health`，確認回報 V1.6。
+4. 回滾後重新查詢 `/health)，確認回報 V1.6。
 5. 記錄錯誤時間、HTTP status、回應內容、Deployment Version 與回滾結果。
 
 ## 6. 相關版本
