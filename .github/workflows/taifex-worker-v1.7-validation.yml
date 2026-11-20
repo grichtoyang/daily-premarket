@@ -1,14 +1,14 @@
-name: TAIFEX Worker V1.8 Validation
+name: TAIFEX Worker V1.7 Validation
 
 on:
   push:
     branches:
       - "phase2-p0-ui-fixes"
     paths:
-      - "workers/taifex-proxy_V1.8.js"
-      - "tests/test_worker_v1_8_contract.mjs"
-      - "tests/test_worker_v1_8_gamma_regression.mjs"
-      - "tests/test_worker_v1_8_delta_csv.mjs"
+      - "workers/taifex-proxy_V1.7.js"
+      - "tests/test_worker_v1_7_contract.mjs"
+      - "tests/test_worker_v1_7_gamma_regression.mjs"
+      - "tests/test_worker_v1_7_delta_csv.mjs"
       - ".github/workflows/taifex-worker-v1.7-validation.yml"
 
 permissions:
@@ -26,10 +26,10 @@ jobs:
         with:
           node-version: "22"
       - name: Syntax check
-        run: node --check workers/taifex-proxy_V1.8.js
+        run: node --check workers/taifex-proxy_V1.7.js
       - name: Contract tests
-        run: node tests/test_worker_v1_8_contract.mjs
+        run: node tests/test_worker_v1_7_contract.mjs
       - name: Gamma and expiry regression tests
-        run: node tests/test_worker_v1_8_gamma_regression.mjs
+        run: node tests/test_worker_v1_7_gamma_regression.mjs
       - name: Historical Delta CSV tests
-        run: node tests/test_worker_v1_8_delta_csv.mjs
+        run: node tests/test_worker_v1_7_delta_csv.mjs
