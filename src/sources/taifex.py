@@ -1333,9 +1333,10 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     前快照只有其他契約月份時回傳 status=rollover_baseline_reset，不跨月相減；
     快照不存在或資料無法驗證時回傳 None。"""
     import math
-    from datetime import date as _dd, timedelta as _td
 
-    _t1 = (_dd.fromisoformat(t0) - _td(days=1)).isoformat()
+    _t1 = _previous_trading_day_iso(t0)
+    if not _t1:
+        return None
     _sb = snapshot_bundle(_t1)
     if not isinstance(_sb, dict):
         return None
