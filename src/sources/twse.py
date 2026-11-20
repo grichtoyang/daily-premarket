@@ -134,7 +134,21 @@ def get_institutional(query_date: str = "") -> dict:
             if dealer_own is not None or dealer_hedge is not None else None
         )
         if None in (foreign, trust, dealer):
-            print("[WARN] BFI82U incomplete institutional categories; reject fallback payload")
+            recognized = {
+                "foreign": foreign is not None,
+                "trust": trust is not None,
+                "dealer_own": dealer_own is not None,
+                "dealer_hedge": dealer_hedge is not None,
+            }
+            row_names = [
+                str(row[0] or "") for row in j.get("data", [])
+                if isinstance(row, (list, tuple)) and row
+            ]
+            print(
+                "[WARN] BFI82U incomplete institutional categories; "
+                f"recognized={recognized}; row_names={row_names!r}; "
+                "reject fallback payload"
+            )
             return {}
         total = foreign + trust + dealer
         return {"date": date, "foreign": foreign, "trust": trust, "dealer": dealer, "total": total}
