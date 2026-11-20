@@ -54,13 +54,37 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertTrue(all(item["response"] == "available" for item in result["attempts"]))
         self.assertTrue(all(item["gamma_flip_proxy"] is None for item in result["attempts"]))
 
-    def test_build_fetch_cache_reuses_compact_failure_even_with_longer_timeout(self):
+    def test_build_fetch_cache_retries_compact_failure_at_longer_timeout(self):
+        from src.sources.taifex import _memoized_build_fetch
+
+        recovered = {"ok": True, "data": {"gamma": {"gamma_flip_proxy": 39750}}}
+        fetch = Mock(side_effect=[None, recovered])
+        cached = _memoized_build_fetch(fetch)
+        self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=40))
+        self.assertIs(cached("options-market-structure-compact", "2026-11-06", timeout=90), recovered)
+        self.assertEqual(fetch.call_args_list, [
+            unittest.mock.call("options-market-structure-compact", "2026-11-06", timeout=40),
+            unittest.mock.call("options-market-structure-compact", "2026-11-06", timeout=90),
+        ])
+
+    def test_build_fetch_cache_does_not_repeat_compact_failure_at_same_or_shorter_timeout(self):
         from src.sources.taifex import _memoized_build_fetch
 
         fetch = Mock(return_value=None)
         cached = _memoized_build_fetch(fetch)
+        self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=90))
         self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=40))
         self.assertIsNone(cached("options-market-structure-compact", "2026-11-06", timeout=90))
+        fetch.assert_called_once_with("options-market-structure-compact", "2026-11-06", timeout=90)
+
+    def test_build_fetch_cache_reuses_compact_success_at_longer_timeout(self):
+        from src.sources.taifex import _memoized_build_fetch
+
+        recovered = {"ok": True, "data": {"gamma": {"gamma_flip_proxy": 39750}}}
+        fetch = Mock(return_value=recovered)
+        cached = _memoized_build_fetch(fetch)
+        self.assertIs(cached("options-market-structure-compact", "2026-11-06", timeout=40), recovered)
+        self.assertIs(cached("options-market-structure-compact", "2026-11-06", timeout=90), recovered)
         fetch.assert_called_once_with("options-market-structure-compact", "2026-11-06", timeout=40)
 
     def test_build_fetch_cache_does_not_hide_keylevels_long_timeout_retry(self):
