@@ -5,7 +5,8 @@
  * ============================================================
  *
  * STATUS:
- *   Working revision / NOT DEPLOYED — production V1.7 remains active
+ *   V1.7 maintenance source — production currently runs V1.7.
+ *   Changes in this repository are pending deployment until approved.
  *
  * PURPOSE:
  *   Single production data gateway for the Daily Pre-market
@@ -36,9 +37,10 @@
  *   from aggregate OI, so outputs remain "TAIFEX-derived GEX".
  *
  * VERSION POLICY:
- *   V1.6 remains the production baseline until V1.7 is explicitly
- *   deployed and verified. This candidate is additive; do not silently
- *   alter existing semantics or field meanings.
+ *   Maintain the deployed V1.7 in this same file. The repository source
+ *   may contain pending V1.7 maintenance changes until the user deploys
+ *   them. Do not create a parallel version or silently alter existing
+ *   semantics or field meanings.
  *
  * V1.2 ADDITIVE (2026-09-18):
  *   + /futures-top10?date=YYYY-MM-DD[&month=YYYYMM]
