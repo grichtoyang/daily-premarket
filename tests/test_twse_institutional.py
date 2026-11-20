@@ -30,6 +30,30 @@ def _bfi_payload(date="2026-11-19", total="-999,999,999,999"):
 class TWSEInstitutionalConsistencyTests(unittest.TestCase):
     @patch("src.sources.twse._proxy_institutional", return_value=None)
     @patch("src.sources.twse._fetch")
+    def test_fallback_accepts_exact_20261105_reproduction_payload(self, fetch, _proxy):
+        payload = {
+            "stat": "OK",
+            "date": "2026/11/05",
+            "data": [
+                ["外資及陸資", "", "", "100,000,000"],
+                ["外資自營商", "", "", "0"],
+                ["投信", "", "", "200,000,000"],
+                ["自營商(自行買賣)", "", "", "300,000,000"],
+                ["自營商(避險)", "", "", "-100,000,000"],
+            ],
+        }
+        fetch.return_value = _Response(payload)
+
+        result = twse.get_institutional("20261105")
+
+        self.assertEqual(result["date"], "20261105")
+        self.assertAlmostEqual(result["foreign"], 1.0)
+        self.assertAlmostEqual(result["trust"], 2.0)
+        self.assertAlmostEqual(result["dealer"], 2.0)
+        self.assertAlmostEqual(result["total"], 5.0)
+
+    @patch("src.sources.twse._proxy_institutional", return_value=None)
+    @patch("src.sources.twse._fetch")
     def test_fallback_uses_day_date_and_worker_equivalent_aggregation(self, fetch, _proxy):
         fetch.return_value = _Response(_bfi_payload())
         result = twse.get_institutional("20261119")
