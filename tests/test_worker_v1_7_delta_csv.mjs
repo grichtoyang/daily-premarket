@@ -26,9 +26,9 @@ const parseCsvFields = new Function(
   declaration("parseCsvFields", "\n\nfunction parseTAIFEXDeltaCsv") + "; return parseCsvFields;"
 )();
 const parseTAIFEXDeltaCsv = new Function(
-  "nullableNumber", "isoCompactDate",
+  "nullableNumber", "isoCompactDate", "parseCsvFields",
   declaration("parseTAIFEXDeltaCsv", "\n\nasync function fetchTXODeltaForDate") + "; return parseTAIFEXDeltaCsv;"
-)(nullableNumber, isoCompactDate);
+)(nullableNumber, isoCompactDate, parseCsvFields);
 
 const sample = [
   ",,,公布日期時間,2026/11/19 04:35:34 PM",
