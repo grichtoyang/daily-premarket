@@ -330,8 +330,8 @@ def _gamma_proxy_fallback(
             break
 
     if payload is None:
-        return {"payload": None, "wall": None, "wall_date": None,
-                "flip": None, "flip_date": None, "attempts": attempts}
+        return {"payload": None, "wall": wall, "wall_date": wall_date,
+                "flip": flip, "flip_date": flip_date, "attempts": attempts}
 
     merged = dict(payload)
     data = dict(merged.get("data") or {})
