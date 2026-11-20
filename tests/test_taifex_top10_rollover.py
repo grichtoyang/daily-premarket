@@ -16,7 +16,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         self.prev_day_patcher.start()
         self.addCleanup(self.prev_day_patcher.stop)
         self.snapshot = {
-            "date": "2026-11-18",
+            "date": "2026-11-17",
             "trust_pos": True,
             "data": {
                 "top10fut": [
@@ -52,7 +52,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         result = taifex.snap_top10_change(
             "202612", "2026-11-18", 2500, cur_date="2026-11-18"
         )
-        snapshot_bundle.assert_called_once_with("2026-11-18")
+        snapshot_bundle.assert_called_once_with("2026-11-17")
         self.assertEqual(result["status"], "rollover_baseline_reset")
         self.assertIsNone(result["chg"])
         self.assertEqual(result["prev_month"], "202611")
@@ -106,13 +106,13 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         }
         snapshot_bundle.return_value = {
             **self.snapshot,
-            "date": "2026-11-16",
+            "date": "2026-11-13",
             "data": weekend_data,
         }
         result = taifex.snap_top10_change(
             "202611", "2026-11-16", 3500, cur_date="2026-11-16"
         )
-        snapshot_bundle.assert_called_once_with("2026-11-16")
+        snapshot_bundle.assert_called_once_with("2026-11-13")
         self.assertEqual(result["status"], "available")
 
     @patch("src.sources.taifex.snapshot_bundle")
