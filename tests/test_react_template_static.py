@@ -370,7 +370,7 @@ if(!reverseOut.scenarios.target.includes("偏空價位條件具備")) throw Erro
 console.log("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS");
 """
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
-        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout or f"Node exited with code {result.returncode} and no output")
         self.assertIn("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS", result.stdout)
 
     def test_futures_analysis_narratives_are_derived_from_live_data(self):
@@ -406,7 +406,7 @@ console.log("futures narratives actual + missing + zero fixtures PASS");
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for futures narrative runtime tests")
         result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
-        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout or f"Node exited with code {result.returncode} and no output")
         self.assertIn("futures narratives actual + missing + zero fixtures PASS", result.stdout)
 
     def test_options_analysis_narratives_are_derived_from_visible_data(self):
