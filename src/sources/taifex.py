@@ -1333,12 +1333,12 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     快照不存在或資料無法驗證時回傳 None。"""
     import math
 
-    # Snapshot KV key 是 Worker 收集日 T0；其 Top10 OpenAPI 內容日期落後一個交易日。
-    # 因此讀取 T0 key，再驗證內層資料日期必須等於前一交易日。
-    _snapshot_date = t0
-    _expected_content_date = _previous_trading_day_iso(_snapshot_date)
-    if not _expected_content_date:
+    # Worker 每個交易日收盤後寫入當日 KV 快照；報表 T0 的前一交易日基準，
+    # 必須讀取 T-1 key，且快照內 Top10 日期也必須等於該 T-1 交易日。
+    _snapshot_date = _previous_trading_day_iso(t0)
+    if not _snapshot_date:
         return None
+    _expected_content_date = _snapshot_date
     _sb = snapshot_bundle(_snapshot_date)
     if not isinstance(_sb, dict):
         return None
