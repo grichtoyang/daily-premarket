@@ -47,7 +47,7 @@ class P0WorkflowIsolationTests(unittest.TestCase):
     def test_v9_pro_manual_date_input_and_build_checkout_are_preserved(self):
         workflow = self.workflows["v9_pro"]
         self.assertIn("      date:", workflow)
-        self.assertIn("ref: \${{ github.sha }}", workflow)
+        self.assertIn("ref: ${{ github.sha }}", workflow)
         self.assertIn("actions/upload-pages-artifact@v3", workflow)
         self.assertIn("actions/deploy-pages@v4", workflow)
 
