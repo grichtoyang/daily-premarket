@@ -59,6 +59,14 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         self.assertIn("不跨月相減", result["reason"])
 
     @patch("src.sources.taifex.snapshot_bundle")
+    def test_reverse_contract_month_is_unavailable_not_rollover(self, snapshot_bundle):
+        snapshot_bundle.return_value = self.snapshot
+        result = taifex.snap_top10_change(
+            "202610", "2026-11-18", 2500, cur_date="2026-11-18"
+        )
+        self.assertIsNone(result)
+
+    @patch("src.sources.taifex.snapshot_bundle")
     def test_options_rollover_is_filtered_by_callput(self, snapshot_bundle):
         snapshot_bundle.return_value = self.snapshot
         result = taifex.snap_top10_change(
