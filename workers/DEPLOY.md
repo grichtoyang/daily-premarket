@@ -6,12 +6,12 @@
 
 | Worker | 正式基準 | 候選版本 | 用途 |
 |---|---|---|---|
-| `taifex` | `workers/taifex-proxy_V1.7.js` | `workers/taifex-proxy_V1.7.js` | TAIFEX / TXO 資料代理 |
+| `taifex` | `workers/taifex-proxy_V1.7.js` | 同一檔案持續修正 | TAIFEX / TXO 資料代理 |
 | `twse-proxy` | `workers/twse-proxy_V1.2.js` | 本次無變更 | TWSE 資料代理 |
 
 正式網址：`https://taifex.grichtoyang.workers.dev`
 
-V1.7 相對 V1.6 的既有新增內容：
+V1.7 既有內容（保持不變）：
 - Compact endpoint 設定 75 秒共用 deadline。
 - TXO Chain 仍保留 V1.6 的 25 秒內部 deadline。
 - Delta 與 TAIEX 指數請求在 Chain 完成後平行執行，並共用 compact deadline。
@@ -19,7 +19,7 @@ V1.7 相對 V1.6 的既有新增內容：
 - 增加 compact stage timing / outcome diagnostics。
 - `/health` 版本字串更新為 V1.7。
 
-V1.7 在保留 V1.7 行為的前提下，新增官方歷史 Delta CSV 直接下載及解析；不更改資料來源的官方性質、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
+本次 V1.7 修正新增官方歷史 Delta CSV 直接下載及解析；不更改資料來源的官方性質、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
 
 ## 2. 部署前必要檢查（唯讀）
 
