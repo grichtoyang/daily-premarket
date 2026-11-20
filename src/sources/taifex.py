@@ -1337,9 +1337,36 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
 
     _t1 = (_dd.fromisoformat(t0) - _td(days=1)).isoformat()
     _sb = snapshot_bundle(_t1)
-    if not _sb:
+    if not isinstance(_sb, dict):
         return None
-    rows = [r for r in (_sb["data"].get(dataset) or []) if isinstance(r, dict)]
+
+    # A dated KV key is not sufficient: position snapshots are trustworthy only
+    # when Worker collection date matches the requested snapshot date.
+    if _sb.get("date") != _t1 or _sb.get("trust_pos") is not True:
+        print(
+            f"[WARN] top10 snapshot rejected: requested={_t1} "
+            f"returned={_sb.get('date')} trust_pos={_sb.get('trust_pos')}"
+        )
+        return None
+
+    _snapshot_data = _sb.get("data")
+    if not isinstance(_snapshot_data, dict):
+        return None
+    _raw_rows = _snapshot_data.get(dataset)
+    if not isinstance(_raw_rows, list) or not _raw_rows:
+        return None
+    rows = [r for r in _raw_rows if isinstance(r, dict)]
+    if len(rows) != len(_raw_rows) or not rows:
+        return None
+
+    # Every row in one top10 dataset must carry a parseable, consistent source
+    # date. The source may lag the collection date, but it must not be future-dated.
+    _row_dates = [_iso8(r.get("Date")) for r in rows]
+    if any(d is None for d in _row_dates) or len(set(_row_dates)) != 1:
+        return None
+    if _row_dates[0] > _t1:
+        return None
+
     if callput:
         rows = [r for r in rows if str(r.get("CallPut", "")) == str(callput)]
     month_rows = rows
