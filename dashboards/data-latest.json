@@ -2,13 +2,13 @@
   "meta": {
     "version": "v9-pro-17F",
     "skill": "daily-premarket-analysis-v9-pro",
-    "date": "2026-11-18",
-    "report_date": "2026-11-19",
-    "generated_at": "2026-11-19 08:18:52",
+    "date": "2026-11-19",
+    "report_date": "2026-11-20",
+    "generated_at": "2026-11-20 20:45:59",
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
-    "factors": "17F; active=14/17",
+    "factors": "17F; active=13/17",
     "db_mode": "db",
     "db_rows": 5,
     "output_path_rule": "dashboards/ 唯一",
@@ -16,56 +16,56 @@
     "data_quality_warnings": []
   },
   "spot": {
-    "close": 40194.91,
-    "diff": 102.8,
-    "pct": 0.26,
-    "open": 40720.09,
-    "high": 40938.2,
-    "low": 39260.99,
-    "vol": 10751.7,
-    "vol_str": "10751.7億",
-    "up": 492,
-    "down": 520,
-    "flat": 71,
-    "limit_up": 21,
-    "limit_down": 4,
+    "close": 38426.89,
+    "diff": -1768.02,
+    "pct": -4.4,
+    "open": 40145.73,
+    "high": 40315.53,
+    "low": 38259.7,
+    "vol": 9429.9,
+    "vol_str": "9429.9億",
+    "up": 67,
+    "down": 993,
+    "flat": 25,
+    "limit_up": 1,
+    "limit_down": 128,
     "otc": {
-      "up": 352,
-      "down": 433,
-      "flat": 86,
-      "limit_up": 16,
-      "limit_down": 9
+      "up": 51,
+      "down": 807,
+      "flat": 18,
+      "limit_up": 2,
+      "limit_down": 156
     },
     "spot5": [
-      44257,
-      43092,
       43675,
       41040,
-      40092
+      40092,
+      40195,
+      38427
     ],
     "spot5Dates": [
-      "11/11",
-      "11/12",
       "11/13",
       "11/16",
-      "11/17"
+      "11/17",
+      "11/18",
+      "11/19"
     ]
   },
   "institutional": {
-    "all": -641.5,
-    "foreign": -765.6,
-    "trust": 166.1,
-    "dealer": -42.0
+    "all": -432.3,
+    "foreign": -243.1,
+    "trust": 43.9,
+    "dealer": -233.0
   },
   "margin": {
-    "finance": 6652.5,
-    "finance_diff": -39.1,
-    "short": 223288.0,
-    "ratio": 156.24,
+    "finance": 6317.8,
+    "finance_diff": -334.7,
+    "short": 238338.0,
+    "ratio": 147.93,
     "ratio_status": "estimated_t0",
-    "ratio_source": "TWSE 上市自建估算（當日暫估；資料日期：2026-11-18；估值 1242 檔；1 檔採最近有效收盤價（價格日期 20261111 至 20261118）；Blave 同 T0 交叉驗證 156.2150%；差異 0.024 個百分點；門檻 <1.00 個百分點；PASS）",
+    "ratio_source": "TWSE 上市自建估算（當日暫估；資料日期：2026-11-19；估值 1243 檔；2 檔採最近有效收盤價（價格日期 20261111 至 20261119）；Blave 同 T0 交叉驗證 147.9030%；差異 0.024 個百分點；門檻 <1.00 個百分點；PASS）",
     "ratio_source_name": "twse_self_built",
-    "ratio_source_date": "2026-11-18",
+    "ratio_source_date": "2026-11-19",
     "ratio_is_t0": true,
     "sbl": null,
     "borrow": "unavailable",
@@ -74,2122 +74,2123 @@
     "borrowedSellDiffScope": "範圍未註明"
   },
   "turnover": {
-    "listed": 10751.7,
-    "otc": 2140.5,
-    "total": 12892.3
+    "listed": 9429.9,
+    "otc": 1330.1,
+    "total": 10760.0
   },
   "tx": {
     "day": {
-      "o": 41073.0,
-      "h": 41205.0,
-      "l": 39523.0,
-      "c": 40312.0,
-      "diff": 205.0,
-      "pct": 0.51,
-      "vol": 74871.0,
-      "basis": 117.09,
-      "prem": 0.29
+      "o": 37550.0,
+      "h": 37673.0,
+      "l": 35563.0,
+      "c": 35875.0,
+      "diff": -2732.0,
+      "pct": -7.08,
+      "vol": 109453.0,
+      "basis": null,
+      "prem": -6.64
     },
     "night": {
-      "o": 40330.0,
-      "h": 40689.0,
-      "l": 39411.0,
-      "c": 39987.0,
-      "diff": -345.0,
-      "pct": -0.86,
-      "vol": 56051.0,
-      "change": -325.0
+      "o": 39200.0,
+      "h": 39765.0,
+      "l": 37931.0,
+      "c": 38107.0,
+      "diff": -500.0,
+      "pct": -1.3,
+      "vol": 74153.0,
+      "change": null
     }
   },
   "futures": {
-    "foreign_oi": -99438.0,
-    "trust_oi": 93573.0,
-    "dealer_oi": -1457.0,
-    "institutional_oi_total": -7322.0,
-    "top10": -1681.0,
-    "foreign_day": -2620.0,
-    "foreign_night": -108.0
+    "foreign_oi": -99219.0,
+    "trust_oi": 91791.0,
+    "dealer_oi": -1455.0,
+    "institutional_oi_total": -8883.0,
+    "top10": 5071.0,
+    "top10_change_note": null,
+    "foreign_day": 1310.0,
+    "foreign_night": 2657.0
   },
   "options": {
-    "callVol": 409461.0,
-    "callOi": 167265.0,
-    "putVol": 402395.0,
-    "putOi": 113894.0,
-    "pcr": 0.68,
-    "callWall": 46000.0,
-    "putWall": 33700.0,
-    "gammaWall": 39500.0,
-    "flip": 36223.97,
+    "callVol": 216126.0,
+    "callOi": 83887.0,
+    "putVol": 162246.0,
+    "putOi": 31249.0,
+    "pcr": 0.37,
+    "callWall": 45000.0,
+    "putWall": 35700.0,
+    "gammaWall": 38700.0,
+    "flip": 37575.78,
     "extendedFlip": null,
-    "maxPain": 40500.0,
-    "netGex1pct": 3200834625.9162054,
-    "grossGex1pct": 5449339641.174176,
+    "maxPain": 38900.0,
+    "netGex1pct": 2412597916.998448,
+    "grossGex1pct": 9714546932.766554,
     "gexLevels": [
       {
         "strike": 35700.0,
         "call_gex_1pct": 0.0,
-        "put_gex_1pct": -27511477.754373226,
-        "net_gex_1pct": -27511477.754373226,
-        "gross_gex_1pct": 27511477.754373226,
+        "put_gex_1pct": -179926343.65088996,
+        "net_gex_1pct": -179926343.65088996,
+        "gross_gex_1pct": 179926343.65088996,
         "call_oi": 0,
-        "put_oi": 1736
+        "put_oi": 3728
       },
       {
         "strike": 35800.0,
         "call_gex_1pct": 0.0,
-        "put_gex_1pct": -1318218.8073996266,
-        "net_gex_1pct": -1318218.8073996266,
-        "gross_gex_1pct": 1318218.8073996266,
+        "put_gex_1pct": -21987776.144025106,
+        "net_gex_1pct": -21987776.144025106,
+        "gross_gex_1pct": 21987776.144025106,
         "call_oi": 0,
-        "put_oi": 73
+        "put_oi": 424
       },
       {
         "strike": 35900.0,
         "call_gex_1pct": 0.0,
-        "put_gex_1pct": -1110774.021602753,
-        "net_gex_1pct": -1110774.021602753,
-        "gross_gex_1pct": 1110774.021602753,
+        "put_gex_1pct": -16027300.647547636,
+        "net_gex_1pct": -16027300.647547636,
+        "gross_gex_1pct": 16027300.647547636,
         "call_oi": 0,
-        "put_oi": 55
+        "put_oi": 292
       },
       {
         "strike": 36000.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -7785149.4190820465,
-        "net_gex_1pct": -7785149.4190820465,
-        "gross_gex_1pct": 7785149.4190820465,
-        "call_oi": 0,
-        "put_oi": 368
+        "call_gex_1pct": 135170.51381757134,
+        "put_gex_1pct": -58722922.03586349,
+        "net_gex_1pct": -58587751.52204592,
+        "gross_gex_1pct": 58858092.54968106,
+        "call_oi": 2,
+        "put_oi": 985
       },
       {
         "strike": 36100.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -3983382.9278851314,
-        "net_gex_1pct": -3983382.9278851314,
-        "gross_gex_1pct": 3983382.9278851314,
-        "call_oi": 0,
-        "put_oi": 175
+        "call_gex_1pct": 70952.42770411145,
+        "put_gex_1pct": -13120891.863066994,
+        "net_gex_1pct": -13049939.435362883,
+        "gross_gex_1pct": 13191844.290771104,
+        "call_oi": 1,
+        "put_oi": 203
       },
       {
         "strike": 36200.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -854643.5895073529,
-        "net_gex_1pct": -854643.5895073529,
-        "gross_gex_1pct": 854643.5895073529,
-        "call_oi": 0,
-        "put_oi": 35
+        "call_gex_1pct": 74971.02479421768,
+        "put_gex_1pct": -20364157.87572744,
+        "net_gex_1pct": -20289186.850933224,
+        "gross_gex_1pct": 20439128.90052166,
+        "call_oi": 1,
+        "put_oi": 292
       },
       {
         "strike": 36300.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -2183896.2665691325,
-        "net_gex_1pct": -2183896.2665691325,
-        "gross_gex_1pct": 2183896.2665691325,
-        "call_oi": 0,
-        "put_oi": 83
+        "call_gex_1pct": 157820.71123643042,
+        "put_gex_1pct": -16168029.653001538,
+        "net_gex_1pct": -16010208.941765107,
+        "gross_gex_1pct": 16325850.364237968,
+        "call_oi": 2,
+        "put_oi": 216
       },
       {
         "strike": 36400.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -762987.3577242498,
-        "net_gex_1pct": -762987.3577242498,
-        "gross_gex_1pct": 762987.3577242498,
-        "call_oi": 0,
-        "put_oi": 27
+        "call_gex_1pct": 250136.81049527464,
+        "put_gex_1pct": -29674721.14935521,
+        "net_gex_1pct": -29424584.338859934,
+        "gross_gex_1pct": 29924857.959850486,
+        "call_oi": 3,
+        "put_oi": 370
       },
       {
         "strike": 36500.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -2906607.7574214656,
-        "net_gex_1pct": -2906607.7574214656,
-        "gross_gex_1pct": 2906607.7574214656,
-        "call_oi": 0,
-        "put_oi": 95
+        "call_gex_1pct": 88042.6403581729,
+        "put_gex_1pct": -62282877.22265768,
+        "net_gex_1pct": -62194834.58229951,
+        "gross_gex_1pct": 62370919.86301585,
+        "call_oi": 1,
+        "put_oi": 728
       },
       {
         "strike": 36600.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -1931422.549659001,
-        "net_gex_1pct": -1931422.549659001,
-        "gross_gex_1pct": 1931422.549659001,
-        "call_oi": 0,
-        "put_oi": 60
+        "call_gex_1pct": 278801.0011712281,
+        "put_gex_1pct": -24288627.599415824,
+        "net_gex_1pct": -24009826.598244596,
+        "gross_gex_1pct": 24567428.60058705,
+        "call_oi": 3,
+        "put_oi": 264
       },
       {
         "strike": 36700.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -1967505.5147680603,
-        "net_gex_1pct": -1967505.5147680603,
-        "gross_gex_1pct": 1967505.5147680603,
-        "call_oi": 0,
-        "put_oi": 57
+        "call_gex_1pct": 294261.3301164102,
+        "put_gex_1pct": -37534539.0233415,
+        "net_gex_1pct": -37240277.693225086,
+        "gross_gex_1pct": 37828800.35345791,
+        "call_oi": 3,
+        "put_oi": 382
       },
       {
         "strike": 36800.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -2662544.6000931696,
-        "net_gex_1pct": -2662544.6000931696,
-        "gross_gex_1pct": 2662544.6000931696,
-        "call_oi": 0,
-        "put_oi": 73
+        "call_gex_1pct": 207083.83694209272,
+        "put_gex_1pct": -44362571.33998685,
+        "net_gex_1pct": -44155487.50304476,
+        "gross_gex_1pct": 44569655.176928945,
+        "call_oi": 2,
+        "put_oi": 422
       },
       {
         "strike": 36900.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -2479197.1698330217,
-        "net_gex_1pct": -2479197.1698330217,
-        "gross_gex_1pct": 2479197.1698330217,
-        "call_oi": 0,
-        "put_oi": 62
+        "call_gex_1pct": 437368.0164216113,
+        "put_gex_1pct": -35034354.56054806,
+        "net_gex_1pct": -34596986.54412645,
+        "gross_gex_1pct": 35471722.57696967,
+        "call_oi": 4,
+        "put_oi": 312
       },
       {
         "strike": 37000.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -19001864.467881836,
-        "net_gex_1pct": -19001864.467881836,
-        "gross_gex_1pct": 19001864.467881836,
-        "call_oi": 0,
-        "put_oi": 441
+        "call_gex_1pct": 1155375.6241956663,
+        "put_gex_1pct": -273282817.9458766,
+        "net_gex_1pct": -272127442.3216809,
+        "gross_gex_1pct": 274438193.5700723,
+        "call_oi": 10,
+        "put_oi": 2283
       },
       {
         "strike": 37100.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -1275072.8736037845,
-        "net_gex_1pct": -1275072.8736037845,
-        "gross_gex_1pct": 1275072.8736037845,
-        "call_oi": 0,
-        "put_oi": 28
+        "call_gex_1pct": 969549.6584888623,
+        "put_gex_1pct": -21116381.12650296,
+        "net_gex_1pct": -20146831.4680141,
+        "gross_gex_1pct": 22085930.784991823,
+        "call_oi": 8,
+        "put_oi": 166
       },
       {
         "strike": 37200.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -5148231.841316149,
-        "net_gex_1pct": -5148231.841316149,
-        "gross_gex_1pct": 5148231.841316149,
-        "call_oi": 0,
-        "put_oi": 104
+        "call_gex_1pct": 1025359.9711721524,
+        "put_gex_1pct": -50917409.586000785,
+        "net_gex_1pct": -49892049.61482863,
+        "gross_gex_1pct": 51942769.55717294,
+        "call_oi": 8,
+        "put_oi": 375
       },
       {
         "strike": 37300.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -3065681.082893433,
-        "net_gex_1pct": -3065681.082893433,
-        "gross_gex_1pct": 3065681.082893433,
-        "call_oi": 0,
-        "put_oi": 58
+        "call_gex_1pct": 537348.6634798747,
+        "put_gex_1pct": -40096220.56683759,
+        "net_gex_1pct": -39558871.903357714,
+        "gross_gex_1pct": 40633569.23031746,
+        "call_oi": 4,
+        "put_oi": 280
       },
       {
         "strike": 37400.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -2891295.400789299,
-        "net_gex_1pct": -2891295.400789299,
-        "gross_gex_1pct": 2891295.400789299,
-        "call_oi": 0,
-        "put_oi": 51
+        "call_gex_1pct": 1281095.3706776705,
+        "put_gex_1pct": -44537505.33342253,
+        "net_gex_1pct": -43256409.962744854,
+        "gross_gex_1pct": 45818600.7041002,
+        "call_oi": 9,
+        "put_oi": 293
       },
       {
         "strike": 37500.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -8831458.593543008,
-        "net_gex_1pct": -8831458.593543008,
-        "gross_gex_1pct": 8831458.593543008,
-        "call_oi": 0,
-        "put_oi": 145
+        "call_gex_1pct": 3134631.6801212807,
+        "put_gex_1pct": -131037920.67561907,
+        "net_gex_1pct": -127903288.99549778,
+        "gross_gex_1pct": 134172552.35574035,
+        "call_oi": 21,
+        "put_oi": 824
       },
       {
         "strike": 37600.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -9240809.708696574,
-        "net_gex_1pct": -9240809.708696574,
-        "gross_gex_1pct": 9240809.708696574,
-        "call_oi": 0,
-        "put_oi": 143
+        "call_gex_1pct": 2627322.0693802824,
+        "put_gex_1pct": -101657462.59623954,
+        "net_gex_1pct": -99030140.52685925,
+        "gross_gex_1pct": 104284784.66561982,
+        "call_oi": 17,
+        "put_oi": 608
       },
       {
         "strike": 37700.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -16309674.53857207,
-        "net_gex_1pct": -16309674.53857207,
-        "gross_gex_1pct": 16309674.53857207,
-        "call_oi": 0,
-        "put_oi": 238
+        "call_gex_1pct": 2629313.0317425723,
+        "put_gex_1pct": -83882348.8636898,
+        "net_gex_1pct": -81253035.83194722,
+        "gross_gex_1pct": 86511661.89543237,
+        "call_oi": 16,
+        "put_oi": 473
       },
       {
         "strike": 37800.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -9750109.172081148,
-        "net_gex_1pct": -9750109.172081148,
-        "gross_gex_1pct": 9750109.172081148,
-        "call_oi": 0,
-        "put_oi": 134
+        "call_gex_1pct": 13918536.32645154,
+        "put_gex_1pct": -70034011.56727025,
+        "net_gex_1pct": -56115475.24081871,
+        "gross_gex_1pct": 83952547.89372179,
+        "call_oi": 83,
+        "put_oi": 380
       },
       {
         "strike": 37900.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -6134990.651290165,
-        "net_gex_1pct": -6134990.651290165,
-        "gross_gex_1pct": 6134990.651290165,
-        "call_oi": 0,
-        "put_oi": 79
+        "call_gex_1pct": 12337548.407608321,
+        "put_gex_1pct": -61854798.27195259,
+        "net_gex_1pct": -49517249.86434427,
+        "gross_gex_1pct": 74192346.67956091,
+        "call_oi": 69,
+        "put_oi": 321
       },
       {
         "strike": 38000.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -55033587.59176333,
-        "net_gex_1pct": -55033587.59176333,
-        "gross_gex_1pct": 55033587.59176333,
-        "call_oi": 0,
-        "put_oi": 663
+        "call_gex_1pct": 28153808.33085046,
+        "put_gex_1pct": -289316036.9535517,
+        "net_gex_1pct": -261162228.62270126,
+        "gross_gex_1pct": 317469845.2844022,
+        "call_oi": 152,
+        "put_oi": 1455
       },
       {
         "strike": 38100.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -6787200.899236564,
-        "net_gex_1pct": -6787200.899236564,
-        "gross_gex_1pct": 6787200.899236564,
-        "call_oi": 0,
-        "put_oi": 77
+        "call_gex_1pct": 11423412.12739727,
+        "put_gex_1pct": -81210631.13875768,
+        "net_gex_1pct": -69787219.0113604,
+        "gross_gex_1pct": 92634043.26615494,
+        "call_oi": 60,
+        "put_oi": 400
       },
       {
         "strike": 38200.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -9114183.227964299,
-        "net_gex_1pct": -9114183.227964299,
-        "gross_gex_1pct": 9114183.227964299,
-        "call_oi": 0,
-        "put_oi": 98
+        "call_gex_1pct": 18712434.845892575,
+        "put_gex_1pct": -77084188.35666506,
+        "net_gex_1pct": -58371753.51077248,
+        "gross_gex_1pct": 95796623.20255764,
+        "call_oi": 98,
+        "put_oi": 366
       },
       {
         "strike": 38300.0,
-        "call_gex_1pct": 5680614.147022337,
-        "put_gex_1pct": -11101250.229702115,
-        "net_gex_1pct": -5420636.082679778,
-        "gross_gex_1pct": 16781864.37672445,
-        "call_oi": 63,
-        "put_oi": 113
+        "call_gex_1pct": 24719393.585683815,
+        "put_gex_1pct": -85555180.73075387,
+        "net_gex_1pct": -60835787.14507005,
+        "gross_gex_1pct": 110274574.31643769,
+        "call_oi": 127,
+        "put_oi": 400
       },
       {
         "strike": 38400.0,
-        "call_gex_1pct": 8841291.511251532,
-        "put_gex_1pct": -9832953.37344001,
-        "net_gex_1pct": -991661.8621884789,
-        "gross_gex_1pct": 18674244.884691544,
-        "call_oi": 87,
-        "put_oi": 95
+        "call_gex_1pct": 36766534.79944124,
+        "put_gex_1pct": -91975631.32246982,
+        "net_gex_1pct": -55209096.523028575,
+        "gross_gex_1pct": 128742166.12191105,
+        "call_oi": 179,
+        "put_oi": 414
       },
       {
         "strike": 38500.0,
-        "call_gex_1pct": 227080776.52217233,
-        "put_gex_1pct": -48445180.335077934,
-        "net_gex_1pct": 178635596.1870944,
-        "gross_gex_1pct": 275525956.8572503,
-        "call_oi": 2066,
-        "put_oi": 447
+        "call_gex_1pct": 470357241.08804595,
+        "put_gex_1pct": -213608763.47349298,
+        "net_gex_1pct": 256748477.61455297,
+        "gross_gex_1pct": 683966004.5615389,
+        "call_oi": 2324,
+        "put_oi": 959
       },
       {
         "strike": 38550.0,
-        "call_gex_1pct": 11053130.019067029,
-        "put_gex_1pct": -10097392.060822718,
-        "net_gex_1pct": 955737.9582443107,
-        "gross_gex_1pct": 21150522.079889745,
-        "call_oi": 97,
-        "put_oi": 91
+        "call_gex_1pct": 23919169.777318966,
+        "put_gex_1pct": -46157608.43571248,
+        "net_gex_1pct": -22238438.658393513,
+        "gross_gex_1pct": 70076778.21303144,
+        "call_oi": 116,
+        "put_oi": 205
       },
       {
         "strike": 38600.0,
-        "call_gex_1pct": 235347874.491171,
-        "put_gex_1pct": -20411899.718817223,
-        "net_gex_1pct": 214935974.77235377,
-        "gross_gex_1pct": 255759774.20998824,
-        "call_oi": 2000,
-        "put_oi": 179
+        "call_gex_1pct": 430193781.5740324,
+        "put_gex_1pct": -71452712.02759416,
+        "net_gex_1pct": 358741069.5464383,
+        "gross_gex_1pct": 501646493.6016266,
+        "call_oi": 2080,
+        "put_oi": 323
       },
       {
         "strike": 38650.0,
-        "call_gex_1pct": 11674578.638885932,
-        "put_gex_1pct": -10786235.130897345,
-        "net_gex_1pct": 888343.507988587,
-        "gross_gex_1pct": 22460813.769783277,
-        "call_oi": 96,
-        "put_oi": 92
+        "call_gex_1pct": 69027049.82915464,
+        "put_gex_1pct": -45142875.02480545,
+        "net_gex_1pct": 23884174.80434919,
+        "gross_gex_1pct": 114169924.8539601,
+        "call_oi": 331,
+        "put_oi": 200
       },
       {
         "strike": 38700.0,
-        "call_gex_1pct": 251553071.66971174,
-        "put_gex_1pct": -20997618.377521213,
-        "net_gex_1pct": 230555453.29219052,
-        "gross_gex_1pct": 272550690.0472329,
-        "call_oi": 2000,
-        "put_oi": 174
+        "call_gex_1pct": 433100740.2113754,
+        "put_gex_1pct": -60784464.605752915,
+        "net_gex_1pct": 372316275.60562253,
+        "gross_gex_1pct": 493885204.8171283,
+        "call_oi": 2111,
+        "put_oi": 269
       },
       {
         "strike": 38750.0,
-        "call_gex_1pct": 13268837.10571425,
-        "put_gex_1pct": -6423961.179977157,
-        "net_gex_1pct": 6844875.925737093,
-        "gross_gex_1pct": 19692798.285691407,
-        "call_oi": 103,
-        "put_oi": 53
+        "call_gex_1pct": 29626384.92356494,
+        "put_gex_1pct": -37814147.143968284,
+        "net_gex_1pct": -8187762.220403343,
+        "gross_gex_1pct": 67440532.06753322,
+        "call_oi": 143,
+        "put_oi": 164
       },
       {
         "strike": 38800.0,
-        "call_gex_1pct": 266455604.4508606,
-        "put_gex_1pct": -60799535.91391623,
-        "net_gex_1pct": 205656068.53694436,
-        "gross_gex_1pct": 327255140.36477685,
-        "call_oi": 2000,
-        "put_oi": 493
+        "call_gex_1pct": 431391058.7906918,
+        "put_gex_1pct": -105285526.4393014,
+        "net_gex_1pct": 326105532.35139036,
+        "gross_gex_1pct": 536676585.2299932,
+        "call_oi": 2113,
+        "put_oi": 474
       },
       {
         "strike": 38850.0,
-        "call_gex_1pct": 5368630.947450441,
-        "put_gex_1pct": -7662715.8297470715,
-        "net_gex_1pct": -2294084.88229663,
-        "gross_gex_1pct": 13031346.777197514,
-        "call_oi": 40,
-        "put_oi": 61
+        "call_gex_1pct": 29207730.613958254,
+        "put_gex_1pct": -34746622.796033785,
+        "net_gex_1pct": -5538892.18207553,
+        "gross_gex_1pct": 63954353.40999204,
+        "call_oi": 141,
+        "put_oi": 152
       },
       {
         "strike": 38900.0,
-        "call_gex_1pct": 275934271.02679956,
-        "put_gex_1pct": -28908369.224619776,
-        "net_gex_1pct": 247025901.80217978,
-        "gross_gex_1pct": 304842640.2514193,
-        "call_oi": 2005,
-        "put_oi": 225
+        "call_gex_1pct": 421820484.733505,
+        "put_gex_1pct": -67820197.93978171,
+        "net_gex_1pct": 354000286.7937233,
+        "gross_gex_1pct": 489640682.67328674,
+        "call_oi": 2106,
+        "put_oi": 308
       },
       {
         "strike": 38950.0,
-        "call_gex_1pct": 15376129.528625898,
-        "put_gex_1pct": -7214562.4817904495,
-        "net_gex_1pct": 8161567.046835449,
-        "gross_gex_1pct": 22590692.010416348,
-        "call_oi": 109,
-        "put_oi": 55
+        "call_gex_1pct": 24521275.65474842,
+        "put_gex_1pct": -27699142.07817065,
+        "net_gex_1pct": -3177866.4234222285,
+        "gross_gex_1pct": 52220417.73291907,
+        "call_oi": 122,
+        "put_oi": 127
       },
       {
         "strike": 39000.0,
-        "call_gex_1pct": 286786926.9247767,
-        "put_gex_1pct": -83958047.79921652,
-        "net_gex_1pct": 202828879.12556016,
-        "gross_gex_1pct": 370744974.7239932,
-        "call_oi": 2003,
-        "put_oi": 630
+        "call_gex_1pct": 506402453.0796209,
+        "put_gex_1pct": -214681990.1522623,
+        "net_gex_1pct": 291720462.9273586,
+        "gross_gex_1pct": 721084443.2318832,
+        "call_oi": 2558,
+        "put_oi": 968
       },
       {
         "strike": 39050.0,
-        "call_gex_1pct": 31373305.443109274,
-        "put_gex_1pct": -11042800.193842208,
-        "net_gex_1pct": 20330505.249267064,
-        "gross_gex_1pct": 42416105.636951484,
-        "call_oi": 214,
-        "put_oi": 82
+        "call_gex_1pct": 60923395.7474985,
+        "put_gex_1pct": -32601337.57022662,
+        "net_gex_1pct": 28322058.177271876,
+        "gross_gex_1pct": 93524733.31772512,
+        "call_oi": 311,
+        "put_oi": 150
       },
       {
         "strike": 39100.0,
-        "call_gex_1pct": 297012772.6438754,
-        "put_gex_1pct": -59618254.17072503,
-        "net_gex_1pct": 237394518.47315037,
-        "gross_gex_1pct": 356631026.81460047,
-        "call_oi": 2000,
-        "put_oi": 437
+        "call_gex_1pct": 414699184.7628193,
+        "put_gex_1pct": -94679513.94468775,
+        "net_gex_1pct": 320019670.81813157,
+        "gross_gex_1pct": 509378698.707507,
+        "call_oi": 2137,
+        "put_oi": 441
       },
       {
         "strike": 39150.0,
-        "call_gex_1pct": 13060544.45420295,
-        "put_gex_1pct": -3351063.3265821105,
-        "net_gex_1pct": 9709481.127620839,
-        "gross_gex_1pct": 16411607.780785061,
-        "call_oi": 85,
-        "put_oi": 24
+        "call_gex_1pct": 63771963.81963209,
+        "put_gex_1pct": -16410017.671799172,
+        "net_gex_1pct": 47361946.147832915,
+        "gross_gex_1pct": 80181981.49143127,
+        "call_oi": 334,
+        "put_oi": 80
       },
       {
         "strike": 39200.0,
-        "call_gex_1pct": 84309734.57702392,
-        "put_gex_1pct": -7861819.914745578,
-        "net_gex_1pct": 76447914.66227834,
-        "gross_gex_1pct": 92171554.49176951,
-        "call_oi": 536,
-        "put_oi": 55
+        "call_gex_1pct": 237528371.38095638,
+        "put_gex_1pct": -71475148.06115851,
+        "net_gex_1pct": 166053223.31979787,
+        "gross_gex_1pct": 309003519.4421149,
+        "call_oi": 1265,
+        "put_oi": 348
       },
       {
         "strike": 39250.0,
-        "call_gex_1pct": 0.0,
-        "put_gex_1pct": -3835314.7180213155,
-        "net_gex_1pct": -3835314.7180213155,
-        "gross_gex_1pct": 3835314.7180213155,
-        "call_oi": 0,
-        "put_oi": 27
-      },
-      {
-        "strike": 39300.0,
-        "call_gex_1pct": 23390801.86839408,
-        "put_gex_1pct": -9567772.457388643,
-        "net_gex_1pct": 13823029.411005437,
-        "gross_gex_1pct": 32958574.325782724,
-        "call_oi": 149,
-        "put_oi": 67
-      },
-      {
-        "strike": 39350.0,
-        "call_gex_1pct": 649982.367838289,
-        "put_gex_1pct": -1904080.1492154473,
-        "net_gex_1pct": -1254097.7813771581,
-        "gross_gex_1pct": 2554062.5170537364,
-        "call_oi": 4,
-        "put_oi": 13
-      },
-      {
-        "strike": 39400.0,
-        "call_gex_1pct": 38394185.906116776,
-        "put_gex_1pct": -6455162.447430149,
-        "net_gex_1pct": 31939023.458686627,
-        "gross_gex_1pct": 44849348.353546925,
-        "call_oi": 231,
-        "put_oi": 43
-      },
-      {
-        "strike": 39450.0,
-        "call_gex_1pct": 1635499.7204791468,
-        "put_gex_1pct": -3804622.775492154,
-        "net_gex_1pct": -2169123.0550130075,
-        "gross_gex_1pct": 5440122.495971301,
-        "call_oi": 10,
-        "put_oi": 26
-      },
-      {
-        "strike": 39500.0,
-        "call_gex_1pct": 322392953.36666983,
-        "put_gex_1pct": -43119208.213320754,
-        "net_gex_1pct": 279273745.1533491,
-        "gross_gex_1pct": 365512161.57999057,
-        "call_oi": 2004,
-        "put_oi": 290
-      },
-      {
-        "strike": 39550.0,
-        "call_gex_1pct": 1664899.2002766589,
-        "put_gex_1pct": -4171121.517077531,
-        "net_gex_1pct": -2506222.3168008723,
-        "gross_gex_1pct": 5836020.71735419,
-        "call_oi": 10,
-        "put_oi": 28
-      },
-      {
-        "strike": 39600.0,
-        "call_gex_1pct": 862398.5404504276,
-        "put_gex_1pct": -5587090.086620748,
-        "net_gex_1pct": -4724691.54617032,
-        "gross_gex_1pct": 6449488.627071176,
-        "call_oi": 5,
-        "put_oi": 37
-      },
-      {
-        "strike": 39650.0,
-        "call_gex_1pct": 3556721.0858878535,
-        "put_gex_1pct": -1345226.5907518105,
-        "net_gex_1pct": 2211494.495136043,
-        "gross_gex_1pct": 4901947.676639664,
-        "call_oi": 21,
-        "put_oi": 9
-      },
-      {
-        "strike": 39700.0,
-        "call_gex_1pct": 107902810.53543594,
-        "put_gex_1pct": -5943233.390679122,
-        "net_gex_1pct": 101959577.14475682,
-        "gross_gex_1pct": 113846043.92611507,
-        "call_oi": 636,
-        "put_oi": 39
-      },
-      {
-        "strike": 39750.0,
-        "call_gex_1pct": 4994576.638996001,
-        "put_gex_1pct": -2331172.7489003506,
-        "net_gex_1pct": 2663403.8900956507,
-        "gross_gex_1pct": 7325749.3878963515,
-        "call_oi": 29,
-        "put_oi": 15
-      },
-      {
-        "strike": 39800.0,
-        "call_gex_1pct": 8098820.695148833,
-        "put_gex_1pct": -8350540.733605787,
-        "net_gex_1pct": -251720.03845695406,
-        "gross_gex_1pct": 16449361.42875462,
-        "call_oi": 46,
-        "put_oi": 53
-      },
-      {
-        "strike": 39850.0,
-        "call_gex_1pct": 2503003.0093763834,
-        "put_gex_1pct": -2236508.8745634807,
-        "net_gex_1pct": 266494.13481290266,
-        "gross_gex_1pct": 4739511.883939864,
-        "call_oi": 14,
-        "put_oi": 14
-      },
-      {
-        "strike": 39900.0,
-        "call_gex_1pct": 4701821.24894573,
-        "put_gex_1pct": -10332715.575797305,
-        "net_gex_1pct": -5630894.326851575,
-        "gross_gex_1pct": 15034536.824743034,
-        "call_oi": 27,
-        "put_oi": 65
-      },
-      {
-        "strike": 39950.0,
-        "call_gex_1pct": 7248151.992266426,
-        "put_gex_1pct": -10123770.377527354,
-        "net_gex_1pct": -2875618.3852609284,
-        "gross_gex_1pct": 17371922.36979378,
-        "call_oi": 41,
-        "put_oi": 64
-      },
-      {
-        "strike": 40000.0,
-        "call_gex_1pct": 26184753.412306733,
-        "put_gex_1pct": -46959207.57369671,
-        "net_gex_1pct": -20774454.161389977,
-        "gross_gex_1pct": 73143960.98600344,
-        "call_oi": 151,
-        "put_oi": 302
-      },
-      {
-        "strike": 40050.0,
-        "call_gex_1pct": 4997181.668602008,
-        "put_gex_1pct": -3964610.637801916,
-        "net_gex_1pct": 1032571.0308000925,
-        "gross_gex_1pct": 8961792.306403924,
-        "call_oi": 28,
-        "put_oi": 25
-      },
-      {
-        "strike": 40100.0,
-        "call_gex_1pct": 114447813.05198067,
-        "put_gex_1pct": -12782206.875185492,
-        "net_gex_1pct": 101665606.17679518,
-        "gross_gex_1pct": 127230019.92716616,
-        "call_oi": 636,
-        "put_oi": 81
-      },
-      {
-        "strike": 40150.0,
-        "call_gex_1pct": 4058514.6629158505,
-        "put_gex_1pct": -7426103.184483459,
-        "net_gex_1pct": -3367588.5215676087,
-        "gross_gex_1pct": 11484617.84739931,
-        "call_oi": 23,
-        "put_oi": 47
-      },
-      {
-        "strike": 40200.0,
-        "call_gex_1pct": 10077422.90518335,
-        "put_gex_1pct": -14445584.674546394,
-        "net_gex_1pct": -4368161.769363044,
-        "gross_gex_1pct": 24523007.579729743,
-        "call_oi": 59,
+        "call_gex_1pct": 28208057.861339647,
+        "put_gex_1pct": -18650914.676136106,
+        "net_gex_1pct": 9557143.185203541,
+        "gross_gex_1pct": 46858972.53747575,
+        "call_oi": 152,
         "put_oi": 93
       },
       {
+        "strike": 39300.0,
+        "call_gex_1pct": 50062430.396362096,
+        "put_gex_1pct": -45267565.68083278,
+        "net_gex_1pct": 4794864.715529315,
+        "gross_gex_1pct": 95329996.07719487,
+        "call_oi": 277,
+        "put_oi": 236
+      },
+      {
+        "strike": 39350.0,
+        "call_gex_1pct": 27699573.045365974,
+        "put_gex_1pct": -11219572.787063876,
+        "net_gex_1pct": 16480000.258302098,
+        "gross_gex_1pct": 38919145.83242985,
+        "call_oi": 157,
+        "put_oi": 59
+      },
+      {
+        "strike": 39400.0,
+        "call_gex_1pct": 81970498.88160975,
+        "put_gex_1pct": -40467602.78638083,
+        "net_gex_1pct": 41502896.095228925,
+        "gross_gex_1pct": 122438101.66799058,
+        "call_oi": 474,
+        "put_oi": 217
+      },
+      {
+        "strike": 39450.0,
+        "call_gex_1pct": 19192057.963685274,
+        "put_gex_1pct": -11935708.10591146,
+        "net_gex_1pct": 7256349.857773814,
+        "gross_gex_1pct": 31127766.069596734,
+        "call_oi": 114,
+        "put_oi": 67
+      },
+      {
+        "strike": 39500.0,
+        "call_gex_1pct": 458735492.3814168,
+        "put_gex_1pct": -180730059.65471265,
+        "net_gex_1pct": 278005432.7267041,
+        "gross_gex_1pct": 639465552.0361295,
+        "call_oi": 2796,
+        "put_oi": 1057
+      },
+      {
+        "strike": 39550.0,
+        "call_gex_1pct": 16628387.620235996,
+        "put_gex_1pct": -13526787.528006822,
+        "net_gex_1pct": 3101600.0922291745,
+        "gross_gex_1pct": 30155175.148242816,
+        "call_oi": 104,
+        "put_oi": 83
+      },
+      {
+        "strike": 39600.0,
+        "call_gex_1pct": 54383978.88415292,
+        "put_gex_1pct": -23462647.235345706,
+        "net_gex_1pct": 30921331.648807213,
+        "gross_gex_1pct": 77846626.11949863,
+        "call_oi": 351,
+        "put_oi": 152
+      },
+      {
+        "strike": 39650.0,
+        "call_gex_1pct": 20707539.195878558,
+        "put_gex_1pct": -15506358.905271519,
+        "net_gex_1pct": 5201180.290607039,
+        "gross_gex_1pct": 36213898.10115008,
+        "call_oi": 138,
+        "put_oi": 105
+      },
+      {
+        "strike": 39700.0,
+        "call_gex_1pct": 157245882.43644014,
+        "put_gex_1pct": -19013024.00610607,
+        "net_gex_1pct": 138232858.43033406,
+        "gross_gex_1pct": 176258906.44254622,
+        "call_oi": 1086,
+        "put_oi": 137
+      },
+      {
+        "strike": 39750.0,
+        "call_gex_1pct": 22904008.769188005,
+        "put_gex_1pct": -9020891.459703831,
+        "net_gex_1pct": 13883117.309484174,
+        "gross_gex_1pct": 31924900.228891835,
+        "call_oi": 164,
+        "put_oi": 70
+      },
+      {
+        "strike": 39800.0,
+        "call_gex_1pct": 69514888.09235713,
+        "put_gex_1pct": -12447688.212414121,
+        "net_gex_1pct": 57067199.879943006,
+        "gross_gex_1pct": 81962576.30477124,
+        "call_oi": 517,
+        "put_oi": 106
+      },
+      {
+        "strike": 39850.0,
+        "call_gex_1pct": 16000151.705015596,
+        "put_gex_1pct": -5287637.063762823,
+        "net_gex_1pct": 10712514.641252773,
+        "gross_gex_1pct": 21287788.76877842,
+        "call_oi": 124,
+        "put_oi": 47
+      },
+      {
+        "strike": 39900.0,
+        "call_gex_1pct": 42096674.52443412,
+        "put_gex_1pct": -36787588.99308074,
+        "net_gex_1pct": 5309085.531353377,
+        "gross_gex_1pct": 78884263.51751485,
+        "call_oi": 341,
+        "put_oi": 432
+      },
+      {
+        "strike": 39950.0,
+        "call_gex_1pct": 12308540.30152894,
+        "put_gex_1pct": -4236735.623543338,
+        "net_gex_1pct": 8071804.677985602,
+        "gross_gex_1pct": 16545275.925072279,
+        "call_oi": 104,
+        "put_oi": 52
+      },
+      {
+        "strike": 40000.0,
+        "call_gex_1pct": 280113101.1165351,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 280113101.1165351,
+        "gross_gex_1pct": 280113101.1165351,
+        "call_oi": 2472,
+        "put_oi": 0
+      },
+      {
+        "strike": 40050.0,
+        "call_gex_1pct": 20098705.693250507,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 20098705.693250507,
+        "gross_gex_1pct": 20098705.693250507,
+        "call_oi": 186,
+        "put_oi": 0
+      },
+      {
+        "strike": 40100.0,
+        "call_gex_1pct": 97360414.1782368,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 97360414.1782368,
+        "gross_gex_1pct": 97360414.1782368,
+        "call_oi": 945,
+        "put_oi": 0
+      },
+      {
+        "strike": 40150.0,
+        "call_gex_1pct": 17016747.20958238,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 17016747.20958238,
+        "gross_gex_1pct": 17016747.20958238,
+        "call_oi": 175,
+        "put_oi": 0
+      },
+      {
+        "strike": 40200.0,
+        "call_gex_1pct": 76614634.49354026,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 76614634.49354026,
+        "gross_gex_1pct": 76614634.49354026,
+        "call_oi": 825,
+        "put_oi": 0
+      },
+      {
         "strike": 40250.0,
-        "call_gex_1pct": 4894378.591050504,
-        "put_gex_1pct": -2596757.2775793686,
-        "net_gex_1pct": 2297621.313471135,
-        "gross_gex_1pct": 7491135.868629873,
-        "call_oi": 29,
-        "put_oi": 17
+        "call_gex_1pct": 15294057.253754089,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 15294057.253754089,
+        "gross_gex_1pct": 15294057.253754089,
+        "call_oi": 174,
+        "put_oi": 0
       },
       {
         "strike": 40300.0,
-        "call_gex_1pct": 121637495.75177823,
-        "put_gex_1pct": -13594497.872054566,
-        "net_gex_1pct": 108042997.87972367,
-        "gross_gex_1pct": 135231993.6238328,
-        "call_oi": 734,
-        "put_oi": 91
+        "call_gex_1pct": 88127699.98043093,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 88127699.98043093,
+        "gross_gex_1pct": 88127699.98043093,
+        "call_oi": 1057,
+        "put_oi": 0
       },
       {
         "strike": 40350.0,
-        "call_gex_1pct": 2621041.739249486,
-        "put_gex_1pct": -3400757.8272922286,
-        "net_gex_1pct": -779716.0880427426,
-        "gross_gex_1pct": 6021799.566541715,
-        "call_oi": 16,
-        "put_oi": 23
+        "call_gex_1pct": 10519603.601725094,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 10519603.601725094,
+        "gross_gex_1pct": 10519603.601725094,
+        "call_oi": 132,
+        "put_oi": 0
       },
       {
         "strike": 40400.0,
-        "call_gex_1pct": 5633197.922791539,
-        "put_gex_1pct": -3638418.1554482086,
-        "net_gex_1pct": 1994779.7673433302,
-        "gross_gex_1pct": 9271616.078239746,
-        "call_oi": 35,
-        "put_oi": 25
+        "call_gex_1pct": 27914272.950690884,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 27914272.950690884,
+        "gross_gex_1pct": 27914272.950690884,
+        "call_oi": 371,
+        "put_oi": 0
       },
       {
         "strike": 40450.0,
-        "call_gex_1pct": 6240180.752360697,
-        "put_gex_1pct": -2832470.4009602997,
-        "net_gex_1pct": 3407710.3514003973,
-        "gross_gex_1pct": 9072651.153320996,
-        "call_oi": 38,
-        "put_oi": 19
+        "call_gex_1pct": 9949567.070902433,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 9949567.070902433,
+        "gross_gex_1pct": 9949567.070902433,
+        "call_oi": 142,
+        "put_oi": 0
       },
       {
         "strike": 40500.0,
-        "call_gex_1pct": 37450563.8642266,
-        "put_gex_1pct": -9778051.733404553,
-        "net_gex_1pct": 27672512.130822048,
-        "gross_gex_1pct": 47228615.59763116,
-        "call_oi": 222,
-        "put_oi": 64
+        "call_gex_1pct": 98205628.9076445,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 98205628.9076445,
+        "gross_gex_1pct": 98205628.9076445,
+        "call_oi": 1476,
+        "put_oi": 0
       },
       {
         "strike": 40550.0,
-        "call_gex_1pct": 5537283.63828667,
-        "put_gex_1pct": -2889223.6975549194,
-        "net_gex_1pct": 2648059.9407317503,
-        "gross_gex_1pct": 8426507.335841589,
-        "call_oi": 33,
-        "put_oi": 19
+        "call_gex_1pct": 18729853.266399853,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 18729853.266399853,
+        "gross_gex_1pct": 18729853.266399853,
+        "call_oi": 297,
+        "put_oi": 0
       },
       {
         "strike": 40600.0,
-        "call_gex_1pct": 9452595.908092713,
-        "put_gex_1pct": -4437017.009546132,
-        "net_gex_1pct": 5015578.898546581,
-        "gross_gex_1pct": 13889612.917638846,
-        "call_oi": 57,
-        "put_oi": 30
+        "call_gex_1pct": 23004029.13982819,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 23004029.13982819,
+        "gross_gex_1pct": 23004029.13982819,
+        "call_oi": 394,
+        "put_oi": 0
       },
       {
         "strike": 40650.0,
-        "call_gex_1pct": 41568492.03621792,
-        "put_gex_1pct": -4876975.965947618,
-        "net_gex_1pct": 36691516.0702703,
-        "gross_gex_1pct": 46445468.00216554,
-        "call_oi": 252,
-        "put_oi": 32
+        "call_gex_1pct": 17496809.45934725,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 17496809.45934725,
+        "gross_gex_1pct": 17496809.45934725,
+        "call_oi": 316,
+        "put_oi": 0
       },
       {
         "strike": 40700.0,
-        "call_gex_1pct": 9593609.638409773,
-        "put_gex_1pct": -7059265.214768431,
-        "net_gex_1pct": 2534344.4236413417,
-        "gross_gex_1pct": 16652874.853178203,
-        "call_oi": 57,
-        "put_oi": 46
+        "call_gex_1pct": 20231092.483703308,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 20231092.483703308,
+        "gross_gex_1pct": 20231092.483703308,
+        "call_oi": 397,
+        "put_oi": 0
       },
       {
         "strike": 40750.0,
-        "call_gex_1pct": 5155374.064880184,
-        "put_gex_1pct": -3471703.0676489957,
-        "net_gex_1pct": 1683670.9972311882,
-        "gross_gex_1pct": 8627077.13252918,
-        "call_oi": 31,
-        "put_oi": 23
+        "call_gex_1pct": 9998706.563232632,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 9998706.563232632,
+        "gross_gex_1pct": 9998706.563232632,
+        "call_oi": 202,
+        "put_oi": 0
       },
       {
         "strike": 40800.0,
-        "call_gex_1pct": 19226662.92197426,
-        "put_gex_1pct": -6088636.954687488,
-        "net_gex_1pct": 13138025.967286773,
-        "gross_gex_1pct": 25315299.876661748,
-        "call_oi": 117,
-        "put_oi": 41
+        "call_gex_1pct": 27645907.963556115,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 27645907.963556115,
+        "gross_gex_1pct": 27645907.963556115,
+        "call_oi": 614,
+        "put_oi": 0
       },
       {
         "strike": 40850.0,
-        "call_gex_1pct": 11111060.632983666,
-        "put_gex_1pct": -3546815.3521184637,
-        "net_gex_1pct": 7564245.280865202,
-        "gross_gex_1pct": 14657875.98510213,
-        "call_oi": 68,
-        "put_oi": 24
+        "call_gex_1pct": 8038412.692873834,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 8038412.692873834,
+        "gross_gex_1pct": 8038412.692873834,
+        "call_oi": 191,
+        "put_oi": 0
       },
       {
         "strike": 40900.0,
-        "call_gex_1pct": 38713028.97615941,
-        "put_gex_1pct": -3054042.73045034,
-        "net_gex_1pct": 35658986.24570907,
-        "gross_gex_1pct": 41767071.70660975,
-        "call_oi": 243,
-        "put_oi": 21
+        "call_gex_1pct": 14905627.679237299,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 14905627.679237299,
+        "gross_gex_1pct": 14905627.679237299,
+        "call_oi": 387,
+        "put_oi": 0
       },
       {
         "strike": 40950.0,
-        "call_gex_1pct": 6660518.359768812,
-        "put_gex_1pct": -4196733.483993263,
-        "net_gex_1pct": 2463784.8757755486,
-        "gross_gex_1pct": 10857251.843762074,
-        "call_oi": 42,
-        "put_oi": 29
+        "call_gex_1pct": 5656753.583550529,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 5656753.583550529,
+        "gross_gex_1pct": 5656753.583550529,
+        "call_oi": 151,
+        "put_oi": 0
       },
       {
         "strike": 41000.0,
-        "call_gex_1pct": 127666359.37332527,
-        "put_gex_1pct": -8442984.767375141,
-        "net_gex_1pct": 119223374.60595013,
-        "gross_gex_1pct": 136109344.1407004,
-        "call_oi": 807,
-        "put_oi": 58
+        "call_gex_1pct": 114905276.86813204,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 114905276.86813204,
+        "gross_gex_1pct": 114905276.86813204,
+        "call_oi": 3326,
+        "put_oi": 0
       },
       {
         "strike": 41050.0,
-        "call_gex_1pct": 4054277.8410361684,
-        "put_gex_1pct": -4534937.344130373,
-        "net_gex_1pct": -480659.50309420424,
-        "gross_gex_1pct": 8589215.185166541,
-        "call_oi": 26,
-        "put_oi": 32
+        "call_gex_1pct": 6457108.506737776,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 6457108.506737776,
+        "gross_gex_1pct": 6457108.506737776,
+        "call_oi": 200,
+        "put_oi": 0
       },
       {
         "strike": 41100.0,
-        "call_gex_1pct": 57400571.320441306,
-        "put_gex_1pct": -3906159.8641879936,
-        "net_gex_1pct": 53494411.45625331,
-        "gross_gex_1pct": 61306731.1846293,
-        "call_oi": 376,
-        "put_oi": 28
+        "call_gex_1pct": 13365213.099870339,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 13365213.099870339,
+        "gross_gex_1pct": 13365213.099870339,
+        "call_oi": 445,
+        "put_oi": 0
       },
       {
         "strike": 41150.0,
-        "call_gex_1pct": 7031544.228879599,
-        "put_gex_1pct": -7571670.192053902,
-        "net_gex_1pct": -540125.9631743031,
-        "gross_gex_1pct": 14603214.4209335,
-        "call_oi": 46,
-        "put_oi": 54
+        "call_gex_1pct": 4497399.8336008005,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 4497399.8336008005,
+        "gross_gex_1pct": 4497399.8336008005,
+        "call_oi": 161,
+        "put_oi": 0
       },
       {
         "strike": 41200.0,
-        "call_gex_1pct": 11336478.42499912,
-        "put_gex_1pct": -3551956.6526822993,
-        "net_gex_1pct": 7784521.772316821,
-        "gross_gex_1pct": 14888435.077681419,
-        "call_oi": 76,
-        "put_oi": 26
+        "call_gex_1pct": 11628492.248155996,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 11628492.248155996,
+        "gross_gex_1pct": 11628492.248155996,
+        "call_oi": 471,
+        "put_oi": 0
       },
       {
         "strike": 41250.0,
-        "call_gex_1pct": 4709454.802273805,
-        "put_gex_1pct": -1358500.883274917,
-        "net_gex_1pct": 3350953.918998888,
-        "gross_gex_1pct": 6067955.685548723,
-        "call_oi": 32,
-        "put_oi": 10
+        "call_gex_1pct": 4946809.894329816,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 4946809.894329816,
+        "gross_gex_1pct": 4946809.894329816,
+        "call_oi": 218,
+        "put_oi": 0
       },
       {
         "strike": 41300.0,
-        "call_gex_1pct": 18450004.200730983,
-        "put_gex_1pct": -2781419.5041084075,
-        "net_gex_1pct": 15668584.696622577,
-        "gross_gex_1pct": 21231423.70483939,
-        "call_oi": 128,
-        "put_oi": 21
+        "call_gex_1pct": 13800704.53077354,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 13800704.53077354,
+        "gross_gex_1pct": 13800704.53077354,
+        "call_oi": 650,
+        "put_oi": 0
       },
       {
         "strike": 41350.0,
-        "call_gex_1pct": 4483349.000311891,
-        "put_gex_1pct": -1462296.725010945,
-        "net_gex_1pct": 3021052.2753009456,
-        "gross_gex_1pct": 5945645.725322835,
-        "call_oi": 31,
-        "put_oi": 11
+        "call_gex_1pct": 3906042.188036163,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 3906042.188036163,
+        "gross_gex_1pct": 3906042.188036163,
+        "call_oi": 192,
+        "put_oi": 0
       },
       {
         "strike": 41400.0,
-        "call_gex_1pct": 10699098.291472232,
-        "put_gex_1pct": -4148770.6000747546,
-        "net_gex_1pct": 6550327.691397477,
-        "gross_gex_1pct": 14847868.891546987,
-        "call_oi": 76,
-        "put_oi": 32
+        "call_gex_1pct": 9130178.461089429,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 9130178.461089429,
+        "gross_gex_1pct": 9130178.461089429,
+        "call_oi": 508,
+        "put_oi": 0
       },
       {
         "strike": 41450.0,
-        "call_gex_1pct": 7104212.757721593,
-        "put_gex_1pct": -1531944.4014616415,
-        "net_gex_1pct": 5572268.356259951,
-        "gross_gex_1pct": 8636157.159183234,
-        "call_oi": 51,
-        "put_oi": 12
+        "call_gex_1pct": 2351735.7670932966,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 2351735.7670932966,
+        "gross_gex_1pct": 2351735.7670932966,
+        "call_oi": 144,
+        "put_oi": 0
       },
       {
         "strike": 41500.0,
-        "call_gex_1pct": 25301919.65720047,
-        "put_gex_1pct": -4350187.084026406,
-        "net_gex_1pct": 20951732.573174067,
-        "gross_gex_1pct": 29652106.741226874,
-        "call_oi": 185,
-        "put_oi": 34
+        "call_gex_1pct": 19480602.31187496,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 19480602.31187496,
+        "gross_gex_1pct": 19480602.31187496,
+        "call_oi": 1272,
+        "put_oi": 0
       },
       {
         "strike": 41550.0,
-        "call_gex_1pct": 8155737.907194992,
-        "put_gex_1pct": -2122487.7156476215,
-        "net_gex_1pct": 6033250.19154737,
-        "gross_gex_1pct": 10278225.622842614,
-        "call_oi": 61,
-        "put_oi": 17
+        "call_gex_1pct": 3198989.7652159557,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 3198989.7652159557,
+        "gross_gex_1pct": 3198989.7652159557,
+        "call_oi": 217,
+        "put_oi": 0
       },
       {
         "strike": 41600.0,
-        "call_gex_1pct": 12784444.885498479,
-        "put_gex_1pct": -2335339.4995514336,
-        "net_gex_1pct": 10449105.385947045,
-        "gross_gex_1pct": 15119784.385049913,
-        "call_oi": 97,
-        "put_oi": 19
+        "call_gex_1pct": 5638405.698750017,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 5638405.698750017,
+        "gross_gex_1pct": 5638405.698750017,
+        "call_oi": 454,
+        "put_oi": 0
       },
       {
         "strike": 41650.0,
-        "call_gex_1pct": 7108897.852613709,
-        "put_gex_1pct": -1814994.7747644451,
-        "net_gex_1pct": 5293903.077849263,
-        "gross_gex_1pct": 8923892.627378155,
-        "call_oi": 55,
-        "put_oi": 15
+        "call_gex_1pct": 1964268.9262463087,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1964268.9262463087,
+        "gross_gex_1pct": 1964268.9262463087,
+        "call_oi": 172,
+        "put_oi": 0
       },
       {
         "strike": 41700.0,
-        "call_gex_1pct": 12267585.532344138,
-        "put_gex_1pct": -2501320.352830046,
-        "net_gex_1pct": 9766265.179514091,
-        "gross_gex_1pct": 14768905.885174185,
-        "call_oi": 97,
-        "put_oi": 21
+        "call_gex_1pct": 3152586.61506677,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 3152586.61506677,
+        "gross_gex_1pct": 3152586.61506677,
+        "call_oi": 310,
+        "put_oi": 0
       },
       {
         "strike": 41750.0,
-        "call_gex_1pct": 6204640.447713812,
-        "put_gex_1pct": -1055180.5004980955,
-        "net_gex_1pct": 5149459.947215716,
-        "gross_gex_1pct": 7259820.948211907,
-        "call_oi": 50,
-        "put_oi": 9
+        "call_gex_1pct": 1154081.6943244354,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1154081.6943244354,
+        "gross_gex_1pct": 1154081.6943244354,
+        "call_oi": 126,
+        "put_oi": 0
       },
       {
         "strike": 41800.0,
-        "call_gex_1pct": 18158753.91527411,
-        "put_gex_1pct": -1961666.5285953626,
-        "net_gex_1pct": 16197087.386678748,
-        "gross_gex_1pct": 20120420.44386947,
-        "call_oi": 149,
-        "put_oi": 17
+        "call_gex_1pct": 4931328.8566928785,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 4931328.8566928785,
+        "gross_gex_1pct": 4931328.8566928785,
+        "call_oi": 586,
+        "put_oi": 0
       },
       {
         "strike": 41850.0,
-        "call_gex_1pct": 7173036.428608822,
-        "put_gex_1pct": -3406716.6529298536,
-        "net_gex_1pct": 3766319.775678968,
-        "gross_gex_1pct": 10579753.081538675,
-        "call_oi": 60,
-        "put_oi": 30
+        "call_gex_1pct": 1130309.2631977436,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1130309.2631977436,
+        "gross_gex_1pct": 1130309.2631977436,
+        "call_oi": 153,
+        "put_oi": 0
       },
       {
         "strike": 41900.0,
-        "call_gex_1pct": 10162858.192467561,
-        "put_gex_1pct": -222038.9295489206,
-        "net_gex_1pct": 9940819.26291864,
-        "gross_gex_1pct": 10384897.122016482,
-        "call_oi": 87,
-        "put_oi": 2
+        "call_gex_1pct": 2212028.5186298774,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 2212028.5186298774,
+        "gross_gex_1pct": 2212028.5186298774,
+        "call_oi": 368,
+        "put_oi": 0
       },
       {
         "strike": 41950.0,
-        "call_gex_1pct": 8244634.341347918,
-        "put_gex_1pct": -549605.8570514447,
-        "net_gex_1pct": 7695028.484296473,
-        "gross_gex_1pct": 8794240.198399363,
-        "call_oi": 72,
-        "put_oi": 5
+        "call_gex_1pct": 830014.2498618142,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 830014.2498618142,
+        "gross_gex_1pct": 830014.2498618142,
+        "call_oi": 159,
+        "put_oi": 0
       },
       {
         "strike": 42000.0,
-        "call_gex_1pct": 85920036.57291809,
-        "put_gex_1pct": -3870158.6191088147,
-        "net_gex_1pct": 82049877.95380928,
-        "gross_gex_1pct": 89790195.1920269,
-        "call_oi": 766,
-        "put_oi": 36
+        "call_gex_1pct": 19697897.45245796,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 19697897.45245796,
+        "gross_gex_1pct": 19697897.45245796,
+        "call_oi": 4135,
+        "put_oi": 0
       },
       {
         "strike": 42050.0,
-        "call_gex_1pct": 7122859.608679989,
-        "put_gex_1pct": -1163305.7657911975,
-        "net_gex_1pct": 5959553.842888792,
-        "gross_gex_1pct": 8286165.374471187,
-        "call_oi": 65,
-        "put_oi": 11
+        "call_gex_1pct": 3243574.929958527,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 3243574.929958527,
+        "gross_gex_1pct": 3243574.929958527,
+        "call_oi": 823,
+        "put_oi": 0
       },
       {
         "strike": 42100.0,
-        "call_gex_1pct": 8572902.896716677,
-        "put_gex_1pct": -1872127.8576491077,
-        "net_gex_1pct": 6700775.039067569,
-        "gross_gex_1pct": 10445030.754365785,
-        "call_oi": 80,
-        "put_oi": 18
+        "call_gex_1pct": 1492447.987325891,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1492447.987325891,
+        "gross_gex_1pct": 1492447.987325891,
+        "call_oi": 387,
+        "put_oi": 0
       },
       {
         "strike": 42150.0,
-        "call_gex_1pct": 6698543.605289916,
-        "put_gex_1pct": -1323359.0484906652,
-        "net_gex_1pct": 5375184.556799251,
-        "gross_gex_1pct": 8021902.6537805805,
-        "call_oi": 64,
-        "put_oi": 13
+        "call_gex_1pct": 546362.6377952452,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 546362.6377952452,
+        "gross_gex_1pct": 546362.6377952452,
+        "call_oi": 182,
+        "put_oi": 0
       },
       {
         "strike": 42200.0,
-        "call_gex_1pct": 8594983.685791416,
-        "put_gex_1pct": -900889.7477096737,
-        "net_gex_1pct": 7694093.938081742,
-        "gross_gex_1pct": 9495873.433501089,
-        "call_oi": 84,
-        "put_oi": 9
+        "call_gex_1pct": 1629163.477482402,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1629163.477482402,
+        "gross_gex_1pct": 1629163.477482402,
+        "call_oi": 647,
+        "put_oi": 0
       },
       {
         "strike": 42250.0,
-        "call_gex_1pct": 8494990.144266091,
-        "put_gex_1pct": -1377520.5484371218,
-        "net_gex_1pct": 7117469.595828969,
-        "gross_gex_1pct": 9872510.692703214,
-        "call_oi": 85,
-        "put_oi": 14
+        "call_gex_1pct": 1156252.7828434175,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1156252.7828434175,
+        "gross_gex_1pct": 1156252.7828434175,
+        "call_oi": 469,
+        "put_oi": 0
       },
       {
         "strike": 42300.0,
-        "call_gex_1pct": 8877865.711699896,
-        "put_gex_1pct": -1933592.7091293426,
-        "net_gex_1pct": 6944273.002570553,
-        "gross_gex_1pct": 10811458.420829238,
-        "call_oi": 91,
-        "put_oi": 20
+        "call_gex_1pct": 994762.7492143107,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 994762.7492143107,
+        "gross_gex_1pct": 994762.7492143107,
+        "call_oi": 412,
+        "put_oi": 0
       },
       {
         "strike": 42350.0,
-        "call_gex_1pct": 9426007.070086941,
-        "put_gex_1pct": -2272810.237006048,
-        "net_gex_1pct": 7153196.833080893,
-        "gross_gex_1pct": 11698817.307092989,
-        "call_oi": 99,
-        "put_oi": 24
+        "call_gex_1pct": 330390.0550364922,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 330390.0550364922,
+        "gross_gex_1pct": 330390.0550364922,
+        "call_oi": 171,
+        "put_oi": 0
       },
       {
         "strike": 42400.0,
-        "call_gex_1pct": 4638732.0362692,
-        "put_gex_1pct": -1855913.581848634,
-        "net_gex_1pct": 2782818.454420566,
-        "gross_gex_1pct": 6494645.6181178335,
-        "call_oi": 50,
-        "put_oi": 20
+        "call_gex_1pct": 452429.62090655306,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 452429.62090655306,
+        "gross_gex_1pct": 452429.62090655306,
+        "call_oi": 239,
+        "put_oi": 0
       },
       {
         "strike": 42450.0,
-        "call_gex_1pct": 4986174.933951402,
-        "put_gex_1pct": -1367355.5232638326,
-        "net_gex_1pct": 3618819.4106875695,
-        "gross_gex_1pct": 6353530.457215235,
-        "call_oi": 55,
-        "put_oi": 15
+        "call_gex_1pct": 235610.02047658362,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 235610.02047658362,
+        "gross_gex_1pct": 235610.02047658362,
+        "call_oi": 127,
+        "put_oi": 0
       },
       {
         "strike": 42500.0,
-        "call_gex_1pct": 22358818.836447153,
-        "put_gex_1pct": -2058469.5476511414,
-        "net_gex_1pct": 20300349.28879601,
-        "gross_gex_1pct": 24417288.384098295,
-        "call_oi": 253,
-        "put_oi": 23
+        "call_gex_1pct": 3793613.395729443,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 3793613.395729443,
+        "gross_gex_1pct": 3793613.395729443,
+        "call_oi": 2086,
+        "put_oi": 0
       },
       {
         "strike": 42550.0,
-        "call_gex_1pct": 6447697.31127366,
-        "put_gex_1pct": -2019770.6985417444,
-        "net_gex_1pct": 4427926.612731915,
-        "gross_gex_1pct": 8467468.009815404,
-        "call_oi": 75,
-        "put_oi": 23
+        "call_gex_1pct": 340588.5004887384,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 340588.5004887384,
+        "gross_gex_1pct": 340588.5004887384,
+        "call_oi": 191,
+        "put_oi": 0
       },
       {
         "strike": 42600.0,
-        "call_gex_1pct": 88272785.22115114,
-        "put_gex_1pct": -17393286.666501217,
-        "net_gex_1pct": 70879498.55464992,
-        "gross_gex_1pct": 105666071.88765237,
-        "call_oi": 1055,
-        "put_oi": 202
+        "call_gex_1pct": 2719514.3907328183,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 2719514.3907328183,
+        "gross_gex_1pct": 2719514.3907328183,
+        "call_oi": 1555,
+        "put_oi": 0
       },
       {
         "strike": 42650.0,
-        "call_gex_1pct": 3762387.0847885944,
-        "put_gex_1pct": -1604653.830886081,
-        "net_gex_1pct": 2157733.2539025135,
-        "gross_gex_1pct": 5367040.915674675,
-        "call_oi": 46,
-        "put_oi": 19
+        "call_gex_1pct": 221319.16509136604,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 221319.16509136604,
+        "gross_gex_1pct": 221319.16509136604,
+        "call_oi": 129,
+        "put_oi": 0
       },
       {
         "strike": 42700.0,
-        "call_gex_1pct": 7166643.761587588,
-        "put_gex_1pct": -3561368.6505829673,
-        "net_gex_1pct": 3605275.111004621,
-        "gross_gex_1pct": 10728012.412170555,
-        "call_oi": 90,
-        "put_oi": 43
+        "call_gex_1pct": 1218814.9854875915,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1218814.9854875915,
+        "gross_gex_1pct": 1218814.9854875915,
+        "call_oi": 724,
+        "put_oi": 0
       },
       {
         "strike": 42750.0,
-        "call_gex_1pct": 3573073.140190137,
-        "put_gex_1pct": -2438013.278173234,
-        "net_gex_1pct": 1135059.8620169032,
-        "gross_gex_1pct": 6011086.418363371,
-        "call_oi": 46,
-        "put_oi": 30
+        "call_gex_1pct": 383315.45172271185,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 383315.45172271185,
+        "gross_gex_1pct": 383315.45172271185,
+        "call_oi": 232,
+        "put_oi": 0
       },
       {
         "strike": 42800.0,
-        "call_gex_1pct": 157284237.35947537,
-        "put_gex_1pct": -24230620.35697925,
-        "net_gex_1pct": 133053617.00249612,
-        "gross_gex_1pct": 181514857.71645463,
-        "call_oi": 2119,
-        "put_oi": 305
+        "call_gex_1pct": 3811555.758523343,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 3811555.758523343,
+        "gross_gex_1pct": 3811555.758523343,
+        "call_oi": 2350,
+        "put_oi": 0
       },
       {
         "strike": 42850.0,
-        "call_gex_1pct": 5284954.665540047,
-        "put_gex_1pct": -3352386.441455122,
-        "net_gex_1pct": 1932568.224084925,
-        "gross_gex_1pct": 8637341.10699517,
-        "call_oi": 73,
-        "put_oi": 43
+        "call_gex_1pct": 308956.2475502561,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 308956.2475502561,
+        "gross_gex_1pct": 308956.2475502561,
+        "call_oi": 194,
+        "put_oi": 0
       },
       {
         "strike": 42900.0,
-        "call_gex_1pct": 9287770.063810678,
-        "put_gex_1pct": -2372442.3519955985,
-        "net_gex_1pct": 6915327.71181508,
-        "gross_gex_1pct": 11660212.415806277,
-        "call_oi": 131,
-        "put_oi": 31
+        "call_gex_1pct": 351909.713504991,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 351909.713504991,
+        "gross_gex_1pct": 351909.713504991,
+        "call_oi": 225,
+        "put_oi": 0
       },
       {
         "strike": 42950.0,
-        "call_gex_1pct": 6185453.786261265,
-        "put_gex_1pct": -4283321.848215581,
-        "net_gex_1pct": 1902131.9380456842,
-        "gross_gex_1pct": 10468775.634476846,
-        "call_oi": 90,
-        "put_oi": 57
+        "call_gex_1pct": 308808.2407063817,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 308808.2407063817,
+        "gross_gex_1pct": 308808.2407063817,
+        "call_oi": 201,
+        "put_oi": 0
       },
       {
         "strike": 43000.0,
-        "call_gex_1pct": 145588654.62722617,
-        "put_gex_1pct": -16315562.717492342,
-        "net_gex_1pct": 129273091.90973383,
-        "gross_gex_1pct": 161904217.34471852,
-        "call_oi": 2188,
-        "put_oi": 222
+        "call_gex_1pct": 6622060.893391893,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 6622060.893391893,
+        "gross_gex_1pct": 6622060.893391893,
+        "call_oi": 4387,
+        "put_oi": 0
       },
       {
         "strike": 43050.0,
-        "call_gex_1pct": 7284028.391218524,
-        "put_gex_1pct": -4547779.440994688,
-        "net_gex_1pct": 2736248.950223836,
-        "gross_gex_1pct": 11831807.832213212,
-        "call_oi": 112,
-        "put_oi": 63
+        "call_gex_1pct": 295187.54830862035,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 295187.54830862035,
+        "gross_gex_1pct": 295187.54830862035,
+        "call_oi": 199,
+        "put_oi": 0
       },
       {
         "strike": 43100.0,
-        "call_gex_1pct": 14081221.57259082,
-        "put_gex_1pct": -4255345.969974777,
-        "net_gex_1pct": 9825875.602616044,
-        "gross_gex_1pct": 18336567.5425656,
-        "call_oi": 224,
-        "put_oi": 60
+        "call_gex_1pct": 567151.1773931741,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 567151.1773931741,
+        "gross_gex_1pct": 567151.1773931741,
+        "call_oi": 389,
+        "put_oi": 0
       },
       {
         "strike": 43150.0,
-        "call_gex_1pct": 10779956.796961425,
-        "put_gex_1pct": -4225979.125188394,
-        "net_gex_1pct": 6553977.67177303,
-        "gross_gex_1pct": 15005935.922149818,
-        "call_oi": 176,
-        "put_oi": 61
+        "call_gex_1pct": 248223.20005599418,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 248223.20005599418,
+        "gross_gex_1pct": 248223.20005599418,
+        "call_oi": 232,
+        "put_oi": 0
       },
       {
         "strike": 43200.0,
-        "call_gex_1pct": 92214186.65130508,
-        "put_gex_1pct": -11438149.475255521,
-        "net_gex_1pct": 80776037.17604956,
-        "gross_gex_1pct": 103652336.1265606,
-        "call_oi": 1567,
-        "put_oi": 168
+        "call_gex_1pct": 1777668.3789151672,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1777668.3789151672,
+        "gross_gex_1pct": 1777668.3789151672,
+        "call_oi": 1690,
+        "put_oi": 0
       },
       {
         "strike": 43250.0,
-        "call_gex_1pct": 12899152.319536727,
-        "put_gex_1pct": -6773501.994050685,
-        "net_gex_1pct": 6125650.325486042,
-        "gross_gex_1pct": 19672654.313587412,
-        "call_oi": 227,
-        "put_oi": 102
+        "call_gex_1pct": 263751.0911719898,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 263751.0911719898,
+        "gross_gex_1pct": 263751.0911719898,
+        "call_oi": 255,
+        "put_oi": 0
       },
       {
         "strike": 43300.0,
-        "call_gex_1pct": 13206618.315194692,
-        "put_gex_1pct": -7441877.747796796,
-        "net_gex_1pct": 5764740.567397896,
-        "gross_gex_1pct": 20648496.06299149,
-        "call_oi": 240,
-        "put_oi": 114
+        "call_gex_1pct": 439447.1055580269,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 439447.1055580269,
+        "gross_gex_1pct": 439447.1055580269,
+        "call_oi": 432,
+        "put_oi": 0
       },
       {
         "strike": 43350.0,
-        "call_gex_1pct": 2139577.36531964,
-        "put_gex_1pct": -962802.3392984738,
-        "net_gex_1pct": 1176775.0260211662,
-        "gross_gex_1pct": 3102379.7046181136,
-        "call_oi": 40,
-        "put_oi": 15
+        "call_gex_1pct": 112069.33541683508,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 112069.33541683508,
+        "gross_gex_1pct": 112069.33541683508,
+        "call_oi": 112,
+        "put_oi": 0
       },
       {
         "strike": 43400.0,
-        "call_gex_1pct": 2623994.9004104766,
-        "put_gex_1pct": -1187410.407478247,
-        "net_gex_1pct": 1436584.4929322295,
-        "gross_gex_1pct": 3811405.307888724,
-        "call_oi": 51,
-        "put_oi": 19
+        "call_gex_1pct": 138806.3655577012,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 138806.3655577012,
+        "gross_gex_1pct": 138806.3655577012,
+        "call_oi": 141,
+        "put_oi": 0
       },
       {
         "strike": 43450.0,
-        "call_gex_1pct": 4022772.8194983243,
-        "put_gex_1pct": -1167811.500396296,
-        "net_gex_1pct": 2854961.3191020284,
-        "gross_gex_1pct": 5190584.31989462,
-        "call_oi": 81,
-        "put_oi": 19
+        "call_gex_1pct": 90088.38353563024,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 90088.38353563024,
+        "gross_gex_1pct": 90088.38353563024,
+        "call_oi": 93,
+        "put_oi": 0
       },
       {
         "strike": 43500.0,
-        "call_gex_1pct": 14128443.62536986,
-        "put_gex_1pct": -1148793.6160055157,
-        "net_gex_1pct": 12979650.009364344,
-        "gross_gex_1pct": 15277237.241375376,
-        "call_oi": 297,
-        "put_oi": 19
+        "call_gex_1pct": 588219.2101720669,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 588219.2101720669,
+        "gross_gex_1pct": 588219.2101720669,
+        "call_oi": 617,
+        "put_oi": 0
       },
       {
         "strike": 43550.0,
-        "call_gex_1pct": 2795668.8948143735,
-        "put_gex_1pct": -646184.891525874,
-        "net_gex_1pct": 2149484.0032884995,
-        "gross_gex_1pct": 3441853.7863402474,
-        "call_oi": 62,
-        "put_oi": 11
+        "call_gex_1pct": 82580.23336273592,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 82580.23336273592,
+        "gross_gex_1pct": 82580.23336273592,
+        "call_oi": 88,
+        "put_oi": 0
       },
       {
         "strike": 43600.0,
-        "call_gex_1pct": 19154681.429497663,
-        "put_gex_1pct": -1138563.520726602,
-        "net_gex_1pct": 18016117.90877106,
-        "gross_gex_1pct": 20293244.950224265,
-        "call_oi": 455,
-        "put_oi": 20
+        "call_gex_1pct": 480403.31384743284,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 480403.31384743284,
+        "gross_gex_1pct": 480403.31384743284,
+        "call_oi": 520,
+        "put_oi": 0
       },
       {
         "strike": 43650.0,
-        "call_gex_1pct": 1613239.3238990402,
-        "put_gex_1pct": -1008220.0736440036,
-        "net_gex_1pct": 605019.2502550366,
-        "gross_gex_1pct": 2621459.397543044,
-        "call_oi": 40,
-        "put_oi": 18
+        "call_gex_1pct": 52760.432538940164,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 52760.432538940164,
+        "gross_gex_1pct": 52760.432538940164,
+        "call_oi": 58,
+        "put_oi": 0
       },
       {
         "strike": 43700.0,
-        "call_gex_1pct": 2442005.02516605,
-        "put_gex_1pct": -1819045.8304304278,
-        "net_gex_1pct": 622959.1947356223,
-        "gross_gex_1pct": 4261050.855596478,
-        "call_oi": 62,
-        "put_oi": 33
+        "call_gex_1pct": 120041.12060162073,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 120041.12060162073,
+        "gross_gex_1pct": 120041.12060162073,
+        "call_oi": 134,
+        "put_oi": 0
       },
       {
         "strike": 43750.0,
-        "call_gex_1pct": 3364493.840310492,
-        "put_gex_1pct": -1193680.9207990936,
-        "net_gex_1pct": 2170812.9195113983,
-        "gross_gex_1pct": 4558174.761109586,
-        "call_oi": 87,
-        "put_oi": 22
+        "call_gex_1pct": 79410.61580164649,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 79410.61580164649,
+        "gross_gex_1pct": 79410.61580164649,
+        "call_oi": 90,
+        "put_oi": 0
       },
       {
         "strike": 43800.0,
-        "call_gex_1pct": 9256025.887403116,
-        "put_gex_1pct": -1549124.1820173042,
-        "net_gex_1pct": 7706901.705385812,
-        "gross_gex_1pct": 10805150.06942042,
-        "call_oi": 245,
-        "put_oi": 29
+        "call_gex_1pct": 299868.3681419839,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 299868.3681419839,
+        "gross_gex_1pct": 299868.3681419839,
+        "call_oi": 345,
+        "put_oi": 0
       },
       {
         "strike": 43850.0,
-        "call_gex_1pct": 4244766.440030961,
-        "put_gex_1pct": -1209827.3584795082,
-        "net_gex_1pct": 3034939.081551453,
-        "gross_gex_1pct": 5454593.7985104695,
-        "call_oi": 115,
-        "put_oi": 23
+        "call_gex_1pct": 97623.73521359023,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 97623.73521359023,
+        "gross_gex_1pct": 97623.73521359023,
+        "call_oi": 114,
+        "put_oi": 0
       },
       {
         "strike": 43900.0,
-        "call_gex_1pct": 2851872.532599482,
-        "put_gex_1pct": -1295166.252787668,
-        "net_gex_1pct": 1556706.2798118142,
-        "gross_gex_1pct": 4147038.78538715,
-        "call_oi": 83,
-        "put_oi": 25
+        "call_gex_1pct": 134168.0292796892,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 134168.0292796892,
+        "gross_gex_1pct": 134168.0292796892,
+        "call_oi": 159,
+        "put_oi": 0
       },
       {
         "strike": 43950.0,
-        "call_gex_1pct": 2135096.4740188913,
-        "put_gex_1pct": -1551283.0502863475,
-        "net_gex_1pct": 583813.4237325438,
-        "gross_gex_1pct": 3686379.524305239,
-        "call_oi": 67,
-        "put_oi": 31
+        "call_gex_1pct": 88149.59854422833,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 88149.59854422833,
+        "gross_gex_1pct": 88149.59854422833,
+        "call_oi": 106,
+        "put_oi": 0
       },
       {
         "strike": 44000.0,
-        "call_gex_1pct": 15795735.770139618,
-        "put_gex_1pct": -1577381.8519621235,
-        "net_gex_1pct": 14218353.918177495,
-        "gross_gex_1pct": 17373117.622101743,
-        "call_oi": 536,
-        "put_oi": 32
+        "call_gex_1pct": 719667.1124121358,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 719667.1124121358,
+        "gross_gex_1pct": 719667.1124121358,
+        "call_oi": 878,
+        "put_oi": 0
       },
       {
         "strike": 44050.0,
-        "call_gex_1pct": 795073.0117898353,
-        "put_gex_1pct": -1214123.4472009845,
-        "net_gex_1pct": -419050.43541114917,
-        "gross_gex_1pct": 2009196.4589908198,
-        "call_oi": 28,
-        "put_oi": 25
+        "call_gex_1pct": 15352.264660507333,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 15352.264660507333,
+        "gross_gex_1pct": 15352.264660507333,
+        "call_oi": 19,
+        "put_oi": 0
       },
       {
         "strike": 44100.0,
-        "call_gex_1pct": 1270782.2964094006,
-        "put_gex_1pct": -1483532.8140691032,
-        "net_gex_1pct": -212750.51765970257,
-        "gross_gex_1pct": 2754315.1104785036,
-        "call_oi": 47,
-        "put_oi": 31
+        "call_gex_1pct": 68510.47895987991,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 68510.47895987991,
+        "gross_gex_1pct": 68510.47895987991,
+        "call_oi": 86,
+        "put_oi": 0
       },
       {
         "strike": 44150.0,
-        "call_gex_1pct": 667406.8343353722,
-        "put_gex_1pct": -1697952.2902838266,
-        "net_gex_1pct": -1030545.4559484544,
-        "gross_gex_1pct": 2365359.124619199,
-        "call_oi": 26,
-        "put_oi": 36
+        "call_gex_1pct": 30635.13843006142,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 30635.13843006142,
+        "gross_gex_1pct": 30635.13843006142,
+        "call_oi": 39,
+        "put_oi": 0
       },
       {
         "strike": 44200.0,
-        "call_gex_1pct": 1669908.762183249,
-        "put_gex_1pct": -1270463.8604455295,
-        "net_gex_1pct": 399444.90173771954,
-        "gross_gex_1pct": 2940372.622628778,
-        "call_oi": 74,
-        "put_oi": 28
+        "call_gex_1pct": 166550.66917489888,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 166550.66917489888,
+        "gross_gex_1pct": 166550.66917489888,
+        "call_oi": 215,
+        "put_oi": 0
       },
       {
         "strike": 44250.0,
-        "call_gex_1pct": 343129.9349117999,
-        "put_gex_1pct": -1073390.191661565,
-        "net_gex_1pct": -730260.2567497652,
-        "gross_gex_1pct": 1416520.126573365,
-        "call_oi": 16,
-        "put_oi": 24
+        "call_gex_1pct": 22157.136496001964,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 22157.136496001964,
+        "gross_gex_1pct": 22157.136496001964,
+        "call_oi": 29,
+        "put_oi": 0
       },
       {
         "strike": 44300.0,
-        "call_gex_1pct": 1076706.2484159097,
-        "put_gex_1pct": -661380.1625567473,
-        "net_gex_1pct": 415326.0858591624,
-        "gross_gex_1pct": 1738086.4109726571,
-        "call_oi": 52,
-        "put_oi": 15
+        "call_gex_1pct": 62554.06447327831,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 62554.06447327831,
+        "gross_gex_1pct": 62554.06447327831,
+        "call_oi": 83,
+        "put_oi": 0
       },
       {
         "strike": 44350.0,
-        "call_gex_1pct": 1282515.7653738272,
-        "put_gex_1pct": -739081.2920123145,
-        "net_gex_1pct": 543434.4733615126,
-        "gross_gex_1pct": 2021597.0573861417,
-        "call_oi": 63,
-        "put_oi": 17
+        "call_gex_1pct": 69147.32328608815,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 69147.32328608815,
+        "gross_gex_1pct": 69147.32328608815,
+        "call_oi": 93,
+        "put_oi": 0
       },
       {
         "strike": 44400.0,
-        "call_gex_1pct": 452820.8520540874,
-        "put_gex_1pct": -257244.59586389657,
-        "net_gex_1pct": 195576.25619019082,
-        "gross_gex_1pct": 710065.447917984,
-        "call_oi": 24,
-        "put_oi": 6
+        "call_gex_1pct": 34479.22946924495,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 34479.22946924495,
+        "gross_gex_1pct": 34479.22946924495,
+        "call_oi": 47,
+        "put_oi": 0
       },
       {
         "strike": 44450.0,
-        "call_gex_1pct": 417589.9710668062,
-        "put_gex_1pct": -465164.20342418406,
-        "net_gex_1pct": -47574.232357377885,
-        "gross_gex_1pct": 882754.1744909902,
-        "call_oi": 23,
-        "put_oi": 11
+        "call_gex_1pct": 23888.689136063364,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 23888.689136063364,
+        "gross_gex_1pct": 23888.689136063364,
+        "call_oi": 33,
+        "put_oi": 0
       },
       {
         "strike": 44500.0,
-        "call_gex_1pct": 1976299.0237546782,
-        "put_gex_1pct": -417155.18011950544,
-        "net_gex_1pct": 1559143.8436351728,
-        "gross_gex_1pct": 2393454.203874184,
-        "call_oi": 119,
-        "put_oi": 10
+        "call_gex_1pct": 171458.44224405105,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 171458.44224405105,
+        "gross_gex_1pct": 171458.44224405105,
+        "call_oi": 240,
+        "put_oi": 0
       },
       {
         "strike": 44550.0,
-        "call_gex_1pct": 205533.8075392261,
-        "put_gex_1pct": -452729.1280597028,
-        "net_gex_1pct": -247195.3205204767,
-        "gross_gex_1pct": 658262.935598929,
-        "call_oi": 13,
-        "put_oi": 11
+        "call_gex_1pct": 30320.410750625953,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 30320.410750625953,
+        "gross_gex_1pct": 30320.410750625953,
+        "call_oi": 43,
+        "put_oi": 0
       },
       {
         "strike": 44600.0,
-        "call_gex_1pct": 953907.045764827,
-        "put_gex_1pct": -406122.0801983569,
-        "net_gex_1pct": 547784.9655664702,
-        "gross_gex_1pct": 1360029.125963184,
-        "call_oi": 66,
-        "put_oi": 10
+        "call_gex_1pct": 36890.149870571244,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 36890.149870571244,
+        "gross_gex_1pct": 36890.149870571244,
+        "call_oi": 53,
+        "put_oi": 0
       },
       {
         "strike": 44650.0,
-        "call_gex_1pct": 255409.90519500707,
-        "put_gex_1pct": -272021.34316525975,
-        "net_gex_1pct": -16611.43797025268,
-        "gross_gex_1pct": 527431.2483602668,
-        "call_oi": 19,
-        "put_oi": 7
+        "call_gex_1pct": 10994.376420560195,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 10994.376420560195,
+        "gross_gex_1pct": 10994.376420560195,
+        "call_oi": 16,
+        "put_oi": 0
       },
       {
         "strike": 44700.0,
-        "call_gex_1pct": 3216655.4291183557,
-        "put_gex_1pct": -421838.03648175276,
-        "net_gex_1pct": 2794817.3926366027,
-        "gross_gex_1pct": 3638493.4656001087,
-        "call_oi": 257,
-        "put_oi": 11
+        "call_gex_1pct": 180466.12795466857,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 180466.12795466857,
+        "gross_gex_1pct": 180466.12795466857,
+        "call_oi": 266,
+        "put_oi": 0
       },
       {
         "strike": 44750.0,
-        "call_gex_1pct": 257010.99056847894,
-        "put_gex_1pct": -378496.06524922163,
-        "net_gex_1pct": -121485.07468074269,
-        "gross_gex_1pct": 635507.0558177006,
-        "call_oi": 22,
-        "put_oi": 10
+        "call_gex_1pct": 24787.10780894063,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 24787.10780894063,
+        "gross_gex_1pct": 24787.10780894063,
+        "call_oi": 37,
+        "put_oi": 0
       },
       {
         "strike": 44800.0,
-        "call_gex_1pct": 541852.8333494108,
-        "put_gex_1pct": -186809.38448102667,
-        "net_gex_1pct": 355043.4488683841,
-        "gross_gex_1pct": 728662.2178304375,
-        "call_oi": 50,
-        "put_oi": 5
+        "call_gex_1pct": 40356.168322823694,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 40356.168322823694,
+        "gross_gex_1pct": 40356.168322823694,
+        "call_oi": 61,
+        "put_oi": 0
       },
       {
         "strike": 44850.0,
-        "call_gex_1pct": 200529.94453658117,
+        "call_gex_1pct": 8494.240907375646,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 200529.94453658117,
-        "gross_gex_1pct": 200529.94453658117,
-        "call_oi": 19,
+        "net_gex_1pct": 8494.240907375646,
+        "gross_gex_1pct": 8494.240907375646,
+        "call_oi": 13,
         "put_oi": 0
       },
       {
         "strike": 44900.0,
-        "call_gex_1pct": 322077.5548891915,
+        "call_gex_1pct": 19361.904877684057,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 322077.5548891915,
-        "gross_gex_1pct": 322077.5548891915,
-        "call_oi": 31,
+        "net_gex_1pct": 19361.904877684057,
+        "gross_gex_1pct": 19361.904877684057,
+        "call_oi": 30,
         "put_oi": 0
       },
       {
         "strike": 44950.0,
-        "call_gex_1pct": 220505.60605964228,
-        "put_gex_1pct": -251750.95388848995,
-        "net_gex_1pct": -31245.347828847676,
-        "gross_gex_1pct": 472256.55994813226,
-        "call_oi": 30,
-        "put_oi": 7
+        "call_gex_1pct": 20401.69269482526,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 20401.69269482526,
+        "gross_gex_1pct": 20401.69269482526,
+        "call_oi": 32,
+        "put_oi": 0
       },
       {
         "strike": 45000.0,
-        "call_gex_1pct": 35170789.83737897,
+        "call_gex_1pct": 4201211.783334529,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 35170789.83737897,
-        "gross_gex_1pct": 35170789.83737897,
-        "call_oi": 5419,
+        "net_gex_1pct": 4201211.783334529,
+        "gross_gex_1pct": 4201211.783334529,
+        "call_oi": 6670,
         "put_oi": 0
       },
       {
         "strike": 45050.0,
-        "call_gex_1pct": 74790.74305206322,
+        "call_gex_1pct": 10579.682845069163,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 74790.74305206322,
-        "gross_gex_1pct": 74790.74305206322,
-        "call_oi": 13,
+        "net_gex_1pct": 10579.682845069163,
+        "gross_gex_1pct": 10579.682845069163,
+        "call_oi": 17,
         "put_oi": 0
       },
       {
         "strike": 45100.0,
-        "call_gex_1pct": 147265.78025106335,
+        "call_gex_1pct": 17833.58030720979,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 147265.78025106335,
-        "gross_gex_1pct": 147265.78025106335,
-        "call_oi": 26,
+        "net_gex_1pct": 17833.58030720979,
+        "gross_gex_1pct": 17833.58030720979,
+        "call_oi": 29,
         "put_oi": 0
       },
       {
         "strike": 45150.0,
-        "call_gex_1pct": 27075.296956845254,
-        "put_gex_1pct": -34241.88669552342,
-        "net_gex_1pct": -7166.589738678165,
-        "gross_gex_1pct": 61317.18365236867,
-        "call_oi": 5,
-        "put_oi": 1
+        "call_gex_1pct": 5469.417498963872,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 5469.417498963872,
+        "gross_gex_1pct": 5469.417498963872,
+        "call_oi": 9,
+        "put_oi": 0
       },
       {
         "strike": 45200.0,
-        "call_gex_1pct": 506618.0629932046,
-        "put_gex_1pct": -33834.33007807399,
-        "net_gex_1pct": 472783.7329151306,
-        "gross_gex_1pct": 540452.3930712786,
-        "call_oi": 95,
-        "put_oi": 1
+        "call_gex_1pct": 71473.35121365332,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 71473.35121365332,
+        "gross_gex_1pct": 71473.35121365332,
+        "call_oi": 119,
+        "put_oi": 0
       },
       {
         "strike": 45250.0,
-        "call_gex_1pct": 35641.65001170466,
+        "call_gex_1pct": 9498.516533476271,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 35641.65001170466,
-        "gross_gex_1pct": 35641.65001170466,
-        "call_oi": 7,
+        "net_gex_1pct": 9498.516533476271,
+        "gross_gex_1pct": 9498.516533476271,
+        "call_oi": 16,
         "put_oi": 0
       },
       {
         "strike": 45300.0,
-        "call_gex_1pct": 160504.8349520076,
-        "put_gex_1pct": -297404.67272557004,
-        "net_gex_1pct": -136899.83777356244,
-        "gross_gex_1pct": 457909.50767757767,
-        "call_oi": 32,
-        "put_oi": 9
+        "call_gex_1pct": 15724.648304640898,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 15724.648304640898,
+        "gross_gex_1pct": 15724.648304640898,
+        "call_oi": 45,
+        "put_oi": 0
       },
       {
         "strike": 45350.0,
-        "call_gex_1pct": 14825.301104012293,
+        "call_gex_1pct": 6217.276431329037,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 14825.301104012293,
-        "gross_gex_1pct": 14825.301104012293,
-        "call_oi": 3,
+        "net_gex_1pct": 6217.276431329037,
+        "gross_gex_1pct": 6217.276431329037,
+        "call_oi": 18,
         "put_oi": 0
       },
       {
         "strike": 45400.0,
-        "call_gex_1pct": 82782.74274049727,
-        "put_gex_1pct": -64576.46727969915,
-        "net_gex_1pct": 18206.27546079812,
-        "gross_gex_1pct": 147359.21002019642,
-        "call_oi": 17,
-        "put_oi": 2
+        "call_gex_1pct": 11267.813178583785,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 11267.813178583785,
+        "gross_gex_1pct": 11267.813178583785,
+        "call_oi": 33,
+        "put_oi": 0
       },
       {
         "strike": 45450.0,
-        "call_gex_1pct": 9287.100188807157,
+        "call_gex_1pct": 4050.822326091847,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 9287.100188807157,
-        "gross_gex_1pct": 9287.100188807157,
-        "call_oi": 2,
+        "net_gex_1pct": 4050.822326091847,
+        "gross_gex_1pct": 4050.822326091847,
+        "call_oi": 12,
         "put_oi": 0
       },
       {
         "strike": 45500.0,
-        "call_gex_1pct": 398192.3405254996,
+        "call_gex_1pct": 35378.6899469691,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 398192.3405254996,
-        "gross_gex_1pct": 398192.3405254996,
-        "call_oi": 87,
+        "net_gex_1pct": 35378.6899469691,
+        "gross_gex_1pct": 35378.6899469691,
+        "call_oi": 106,
         "put_oi": 0
       },
       {
         "strike": 45550.0,
-        "call_gex_1pct": 13535.661542957674,
+        "call_gex_1pct": 3960.301142898078,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 13535.661542957674,
-        "gross_gex_1pct": 13535.661542957674,
-        "call_oi": 3,
+        "net_gex_1pct": 3960.301142898078,
+        "gross_gex_1pct": 3960.301142898078,
+        "call_oi": 12,
         "put_oi": 0
       },
       {
         "strike": 45600.0,
-        "call_gex_1pct": 120106.503902656,
+        "call_gex_1pct": 12075.257523873028,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 120106.503902656,
-        "gross_gex_1pct": 120106.503902656,
-        "call_oi": 27,
+        "net_gex_1pct": 12075.257523873028,
+        "gross_gex_1pct": 12075.257523873028,
+        "call_oi": 37,
         "put_oi": 0
       },
       {
         "strike": 45700.0,
-        "call_gex_1pct": 83540.3084665247,
+        "call_gex_1pct": 7342.193002152046,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 83540.3084665247,
-        "gross_gex_1pct": 83540.3084665247,
-        "call_oi": 20,
+        "net_gex_1pct": 7342.193002152046,
+        "gross_gex_1pct": 7342.193002152046,
+        "call_oi": 23,
         "put_oi": 0
       },
       {
         "strike": 45800.0,
-        "call_gex_1pct": 130043.07654519193,
+        "call_gex_1pct": 8433.45514340004,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 130043.07654519193,
-        "gross_gex_1pct": 130043.07654519193,
-        "call_oi": 32,
+        "net_gex_1pct": 8433.45514340004,
+        "gross_gex_1pct": 8433.45514340004,
+        "call_oi": 27,
         "put_oi": 0
       },
       {
         "strike": 45900.0,
-        "call_gex_1pct": 55380.397156334984,
+        "call_gex_1pct": 5502.9406634243605,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 55380.397156334984,
-        "gross_gex_1pct": 55380.397156334984,
-        "call_oi": 14,
+        "net_gex_1pct": 5502.9406634243605,
+        "gross_gex_1pct": 5502.9406634243605,
+        "call_oi": 18,
         "put_oi": 0
       },
       {
         "strike": 46000.0,
-        "call_gex_1pct": 1028041.9996740669,
-        "put_gex_1pct": -28336.203136462882,
-        "net_gex_1pct": 999705.7965376041,
-        "gross_gex_1pct": 1056378.2028105299,
-        "call_oi": 277,
-        "put_oi": 1
+        "call_gex_1pct": 80217.80195365482,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 80217.80195365482,
+        "gross_gex_1pct": 80217.80195365482,
+        "call_oi": 268,
+        "put_oi": 0
       },
       {
         "strike": 46100.0,
-        "call_gex_1pct": 32543.278643679674,
+        "call_gex_1pct": 2638.284937505627,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 32543.278643679674,
-        "gross_gex_1pct": 32543.278643679674,
+        "net_gex_1pct": 2638.284937505627,
+        "gross_gex_1pct": 2638.284937505627,
         "call_oi": 9,
         "put_oi": 0
       },
       {
         "strike": 46200.0,
-        "call_gex_1pct": 17622.80346147531,
+        "call_gex_1pct": 1148.7052957906574,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 17622.80346147531,
-        "gross_gex_1pct": 17622.80346147531,
-        "call_oi": 5,
+        "net_gex_1pct": 1148.7052957906574,
+        "gross_gex_1pct": 1148.7052957906574,
+        "call_oi": 4,
         "put_oi": 0
       },
       {
         "strike": 46300.0,
-        "call_gex_1pct": 9908.042734981407,
+        "call_gex_1pct": 844.2329716949841,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 9908.042734981407,
-        "gross_gex_1pct": 9908.042734981407,
+        "net_gex_1pct": 844.2329716949841,
+        "gross_gex_1pct": 844.2329716949841,
         "call_oi": 3,
         "put_oi": 0
       },
       {
         "strike": 46400.0,
-        "call_gex_1pct": 32218.920548947775,
+        "call_gex_1pct": 3034.212727345775,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 32218.920548947775,
-        "gross_gex_1pct": 32218.920548947775,
-        "call_oi": 10,
+        "net_gex_1pct": 3034.212727345775,
+        "gross_gex_1pct": 3034.212727345775,
+        "call_oi": 11,
         "put_oi": 0
       },
       {
         "strike": 46500.0,
-        "call_gex_1pct": 2462053.254275621,
+        "call_gex_1pct": 211760.15699970053,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 2462053.254275621,
-        "gross_gex_1pct": 2462053.254275621,
+        "net_gex_1pct": 211760.15699970053,
+        "gross_gex_1pct": 211760.15699970053,
         "call_oi": 783,
         "put_oi": 0
       },
       {
         "strike": 46600.0,
-        "call_gex_1pct": 12279.906662709986,
-        "put_gex_1pct": -25181.98815699799,
-        "net_gex_1pct": -12902.081494288006,
-        "gross_gex_1pct": 37461.89481970797,
+        "call_gex_1pct": 1060.9272363160162,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1060.9272363160162,
+        "gross_gex_1pct": 1060.9272363160162,
         "call_oi": 4,
-        "put_oi": 1
+        "put_oi": 0
       },
       {
         "strike": 46700.0,
-        "call_gex_1pct": 50974.470383178494,
-        "put_gex_1pct": -24717.81212444668,
-        "net_gex_1pct": 26256.658258731815,
-        "gross_gex_1pct": 75692.28250762518,
+        "call_gex_1pct": 4423.121145383287,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 4423.121145383287,
+        "gross_gex_1pct": 4423.121145383287,
         "call_oi": 17,
-        "put_oi": 1
+        "put_oi": 0
       },
       {
         "strike": 46800.0,
-        "call_gex_1pct": 117191.66548510492,
+        "call_gex_1pct": 10211.809652737791,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 117191.66548510492,
-        "gross_gex_1pct": 117191.66548510492,
+        "net_gex_1pct": 10211.809652737791,
+        "gross_gex_1pct": 10211.809652737791,
         "call_oi": 40,
         "put_oi": 0
       },
       {
         "strike": 46900.0,
-        "call_gex_1pct": 31500.80599419332,
+        "call_gex_1pct": 2756.1580758767996,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 31500.80599419332,
-        "gross_gex_1pct": 31500.80599419332,
+        "net_gex_1pct": 2756.1580758767996,
+        "gross_gex_1pct": 2756.1580758767996,
         "call_oi": 11,
         "put_oi": 0
       },
       {
         "strike": 47000.0,
-        "call_gex_1pct": 226809.30926256062,
+        "call_gex_1pct": 19923.635387939077,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 226809.30926256062,
-        "gross_gex_1pct": 226809.30926256062,
+        "net_gex_1pct": 19923.635387939077,
+        "gross_gex_1pct": 19923.635387939077,
         "call_oi": 81,
         "put_oi": 0
       },
       {
         "strike": 47100.0,
-        "call_gex_1pct": 15031.756249244703,
+        "call_gex_1pct": 1449.131995178881,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 15031.756249244703,
-        "gross_gex_1pct": 15031.756249244703,
+        "net_gex_1pct": 1449.131995178881,
+        "gross_gex_1pct": 1449.131995178881,
         "call_oi": 6,
         "put_oi": 0
       },
       {
         "strike": 47200.0,
-        "call_gex_1pct": 41973.06395581831,
+        "call_gex_1pct": 4506.943291369051,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 41973.06395581831,
-        "gross_gex_1pct": 41973.06395581831,
+        "net_gex_1pct": 4506.943291369051,
+        "gross_gex_1pct": 4506.943291369051,
         "call_oi": 19,
         "put_oi": 0
       },
       {
         "strike": 47300.0,
-        "call_gex_1pct": 18338.874664272214,
+        "call_gex_1pct": 2097.196953529093,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 18338.874664272214,
-        "gross_gex_1pct": 18338.874664272214,
+        "net_gex_1pct": 2097.196953529093,
+        "gross_gex_1pct": 2097.196953529093,
         "call_oi": 9,
         "put_oi": 0
       },
       {
         "strike": 47400.0,
-        "call_gex_1pct": 67272.3621151645,
+        "call_gex_1pct": 8242.551482687724,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 67272.3621151645,
-        "gross_gex_1pct": 67272.3621151645,
+        "net_gex_1pct": 8242.551482687724,
+        "gross_gex_1pct": 8242.551482687724,
         "call_oi": 36,
         "put_oi": 0
       },
       {
         "strike": 47500.0,
-        "call_gex_1pct": 18573.258013166094,
+        "call_gex_1pct": 2925.210463856995,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 18573.258013166094,
-        "gross_gex_1pct": 18573.258013166094,
+        "net_gex_1pct": 2925.210463856995,
+        "gross_gex_1pct": 2925.210463856995,
         "call_oi": 13,
         "put_oi": 0
       },
       {
         "strike": 47600.0,
-        "call_gex_1pct": 6995.318876727961,
+        "call_gex_1pct": 1105.9321248925723,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 6995.318876727961,
-        "gross_gex_1pct": 6995.318876727961,
+        "net_gex_1pct": 1105.9321248925723,
+        "gross_gex_1pct": 1105.9321248925723,
         "call_oi": 5,
         "put_oi": 0
       },
       {
         "strike": 47700.0,
-        "call_gex_1pct": 22131.305116548116,
+        "call_gex_1pct": 3914.3874826108877,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 22131.305116548116,
-        "gross_gex_1pct": 22131.305116548116,
+        "net_gex_1pct": 3914.3874826108877,
+        "gross_gex_1pct": 3914.3874826108877,
         "call_oi": 18,
         "put_oi": 0
       },
       {
         "strike": 47800.0,
-        "call_gex_1pct": 12046.27567238954,
+        "call_gex_1pct": 2138.5055394120795,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 12046.27567238954,
-        "gross_gex_1pct": 12046.27567238954,
+        "net_gex_1pct": 2138.5055394120795,
+        "gross_gex_1pct": 2138.5055394120795,
         "call_oi": 10,
         "put_oi": 0
       },
       {
         "strike": 47900.0,
-        "call_gex_1pct": 16593.59955345857,
+        "call_gex_1pct": 3365.3777499334187,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 16593.59955345857,
-        "gross_gex_1pct": 16593.59955345857,
+        "net_gex_1pct": 3365.3777499334187,
+        "gross_gex_1pct": 3365.3777499334187,
         "call_oi": 16,
         "put_oi": 0
       },
       {
         "strike": 48000.0,
-        "call_gex_1pct": 12125.687806717566,
-        "put_gex_1pct": -39716.19528851938,
-        "net_gex_1pct": -27590.50748180182,
-        "gross_gex_1pct": 51841.883095236946,
+        "call_gex_1pct": 2896.8628090833686,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 2896.8628090833686,
+        "gross_gex_1pct": 2896.8628090833686,
         "call_oi": 14,
-        "put_oi": 2
+        "put_oi": 0
       },
       {
         "strike": 48200.0,
-        "call_gex_1pct": 8783.135385904008,
+        "call_gex_1pct": 2604.691437613703,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 8783.135385904008,
-        "gross_gex_1pct": 8783.135385904008,
+        "net_gex_1pct": 2604.691437613703,
+        "gross_gex_1pct": 2604.691437613703,
         "call_oi": 13,
         "put_oi": 0
       },
       {
         "strike": 48300.0,
-        "call_gex_1pct": 6626.649952859167,
-        "put_gex_1pct": -37957.24597756657,
-        "net_gex_1pct": -31330.596024707404,
-        "gross_gex_1pct": 44583.89593042574,
+        "call_gex_1pct": 1972.1348445299323,
+        "put_gex_1pct": 0.0,
+        "net_gex_1pct": 1972.1348445299323,
+        "gross_gex_1pct": 1972.1348445299323,
         "call_oi": 10,
-        "put_oi": 2
+        "put_oi": 0
       },
       {
         "strike": 48400.0,
-        "call_gex_1pct": 1446.1230284319174,
+        "call_gex_1pct": 582.4484882469382,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 1446.1230284319174,
-        "gross_gex_1pct": 1446.1230284319174,
+        "net_gex_1pct": 582.4484882469382,
+        "gross_gex_1pct": 582.4484882469382,
         "call_oi": 3,
         "put_oi": 0
       },
       {
         "strike": 48500.0,
-        "call_gex_1pct": 2364.832366010814,
+        "call_gex_1pct": 955.8294054274485,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 2364.832366010814,
-        "gross_gex_1pct": 2364.832366010814,
+        "net_gex_1pct": 955.8294054274485,
+        "gross_gex_1pct": 955.8294054274485,
         "call_oi": 5,
         "put_oi": 0
       },
       {
         "strike": 48600.0,
-        "call_gex_1pct": 464.1765372433738,
+        "call_gex_1pct": 188.25974513610157,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 464.1765372433738,
-        "gross_gex_1pct": 464.1765372433738,
+        "net_gex_1pct": 188.25974513610157,
+        "gross_gex_1pct": 188.25974513610157,
         "call_oi": 1,
         "put_oi": 0
       },
       {
         "strike": 48700.0,
-        "call_gex_1pct": 146266.53630191574,
+        "call_gex_1pct": 60078.77744184875,
         "put_gex_1pct": 0.0,
-        "net_gex_1pct": 146266.53630191574,
-        "gross_gex_1pct": 146266.53630191574,
-        "call_oi": 321,
+        "net_gex_1pct": 60078.77744184875,
+        "gross_gex_1pct": 60078.77744184875,
+        "call_oi": 324,
         "put_oi": 0
       }
     ],
-    "gexDate": "2026-11-18",
+    "gexDate": "2026-11-19",
     "gexStatus": "available",
     "callOiDist": [
       [
         "C1",
-        "46,000",
-        "7,825",
-        "4.68%",
+        "45,000",
+        "6,670",
+        "7.95%",
         "TAIFEX Proxy"
       ],
       [
         "C2",
-        "43,500",
-        "7,630",
-        "4.56%",
+        "43,000",
+        "4,387",
+        "5.23%",
         "TAIFEX Proxy"
       ],
       [
         "C3",
-        "44,000",
-        "6,064",
-        "3.63%",
+        "42,000",
+        "4,135",
+        "4.93%",
         "TAIFEX Proxy"
       ],
       [
         "C4",
         "41,000",
-        "4,767",
-        "2.85%",
+        "3,326",
+        "3.96%",
         "TAIFEX Proxy"
       ],
       [
         "C5",
-        "45,000",
-        "3,808",
-        "2.28%",
+        "39,500",
+        "2,796",
+        "3.33%",
         "TAIFEX Proxy"
       ],
       [
         "C6",
-        "43,000",
-        "3,709",
-        "2.22%",
+        "39,000",
+        "2,558",
+        "3.05%",
         "TAIFEX Proxy"
       ],
       [
         "C7",
-        "42,000",
-        "3,502",
-        "2.09%",
+        "40,000",
+        "2,472",
+        "2.95%",
         "TAIFEX Proxy"
       ],
       [
         "C8",
-        "48,000",
-        "3,396",
-        "2.03%",
+        "42,800",
+        "2,350",
+        "2.8%",
         "TAIFEX Proxy"
       ],
       [
         "C9",
-        "46,500",
-        "3,343",
-        "2.0%",
+        "38,500",
+        "2,324",
+        "2.77%",
         "TAIFEX Proxy"
       ],
       [
         "C10",
-        "47,000",
-        "3,093",
-        "1.85%",
+        "39,100",
+        "2,137",
+        "2.55%",
         "TAIFEX Proxy"
       ]
     ],
     "putOiDist": [
       [
         "P1",
-        "33,700",
-        "11,549",
-        "10.14%",
+        "35,700",
+        "3,728",
+        "11.93%",
         "TAIFEX Proxy"
       ],
       [
         "P2",
-        "40,000",
-        "4,691",
-        "4.12%",
+        "37,000",
+        "2,283",
+        "7.31%",
         "TAIFEX Proxy"
       ],
       [
         "P3",
-        "36,000",
-        "4,490",
-        "3.94%",
+        "38,000",
+        "1,455",
+        "4.66%",
         "TAIFEX Proxy"
       ],
       [
         "P4",
-        "38,000",
-        "4,109",
-        "3.61%",
+        "39,500",
+        "1,057",
+        "3.38%",
         "TAIFEX Proxy"
       ],
       [
         "P5",
-        "37,000",
-        "4,094",
-        "3.59%",
+        "40,000",
+        "1,043",
+        "3.34%",
         "TAIFEX Proxy"
       ],
       [
         "P6",
-        "39,000",
-        "4,030",
-        "3.54%",
+        "36,000",
+        "985",
+        "3.15%",
         "TAIFEX Proxy"
       ],
       [
         "P7",
-        "36,200",
-        "3,830",
-        "3.36%",
+        "39,000",
+        "968",
+        "3.1%",
         "TAIFEX Proxy"
       ],
       [
         "P8",
-        "39,500",
-        "3,525",
-        "3.09%",
+        "38,500",
+        "959",
+        "3.07%",
         "TAIFEX Proxy"
       ],
       [
         "P9",
-        "38,500",
-        "2,697",
-        "2.37%",
+        "37,500",
+        "824",
+        "2.64%",
         "TAIFEX Proxy"
       ],
       [
         "P10",
         "36,500",
-        "2,604",
-        "2.29%",
+        "728",
+        "2.33%",
         "TAIFEX Proxy"
       ]
     ],
     "instOpt": [
       [
         "外資",
-        "294,298",
-        "287,814",
-        "+6,484",
-        "41,540",
-        "41,256",
-        "+284",
-        "+6,200",
+        "242,129",
+        "232,373",
+        "+9,756",
+        "87,732",
+        "88,333",
+        "-601",
+        "+10,357",
         "TAIFEX Proxy"
       ],
       [
         "投信",
-        "374",
-        "17,556",
-        "-17,182",
+        "280",
+        "23,730",
+        "-23,450",
         "0",
         "0",
         "+0",
-        "-17,182",
+        "-23,450",
         "TAIFEX Proxy"
       ],
       [
         "自營商",
-        "214,175",
-        "209,017",
-        "+5,158",
-        "27,971",
-        "28,426",
-        "-455",
-        "+5,613",
+        "174,805",
+        "184,734",
+        "-9,929",
+        "39,027",
+        "40,564",
+        "-1,537",
+        "-8,392",
         "TAIFEX Proxy"
       ],
       [
         "三大法人合計",
-        "508,847",
-        "514,387",
-        "-5,540",
-        "69,511",
-        "69,682",
-        "-171",
-        "-5,369",
+        "417,214",
+        "440,837",
+        "-23,623",
+        "126,759",
+        "128,897",
+        "-2,138",
+        "-21,485",
         "TAIFEX Proxy"
       ]
     ],
     "instOptForce": [
       [
         "外資",
-        "31.21",
-        "25.05",
-        "+6.16",
-        "5.97",
-        "5.92",
-        "+0.04",
-        "+6.12",
+        "29.72",
+        "20.17",
+        "+9.54",
+        "8.81",
+        "8.89",
+        "-0.09",
+        "+9.63",
         "TAIFEX Proxy"
       ],
       [
         "投信",
-        "0.13",
-        "13.02",
-        "-12.89",
+        "0.02",
+        "15.04",
+        "-15.02",
         "0.00",
         "0.00",
         "+0",
-        "-12.89",
+        "-15.02",
         "TAIFEX Proxy"
       ],
       [
         "自營商",
-        "27.68",
-        "22.09",
-        "+5.59",
-        "5.07",
-        "5.03",
-        "+0.05",
-        "+5.54",
+        "26.94",
+        "25.21",
+        "+1.73",
+        "5.92",
+        "5.81",
+        "+0.11",
+        "+1.62",
         "TAIFEX Proxy"
       ],
       [
         "三大法人合計",
-        "59.01",
-        "60.16",
-        "-1.14",
-        "11.04",
-        "10.95",
-        "+0.09",
-        "-1.23",
+        "56.68",
+        "60.42",
+        "-3.74",
+        "14.73",
+        "14.70",
+        "+0.02",
+        "-3.76",
         "TAIFEX Proxy"
       ]
     ],
     "instOptForceAnalysis": {
       "status": "available",
-      "look": "日盤：主要空方為投信（-12.89 億元）；外資（+6.16 億元）提供最大多方抵銷；三大法人淨額 -1.14 億元。夜盤：夜盤沒有法人呈現負淨額；自營商（+0.05 億元）提供最大多方抵銷；三大法人淨額 +0.09 億元。來源日淨－夜淨差 -1.23 億元（日盤淨額較夜盤低 1.23 億元；此為兩個時段數值相減，不代表日對日變化）。",
-      "compass": "日、夜盤淨額方向不同或至少一盤接近平衡，但淨額／多空雙邊金額合計，日盤 -1.0%、夜盤 +0.4%，顯示淨差相對雙邊交易金額有限，不宜解讀為強烈單邊；口數對照：4 組同向、1 組背離、1 組中性；自營商夜盤金額 +0.05 億元、口數 -455 口方向背離。",
-      "target": "優先追蹤自營商夜盤金額 +0.05 億元、口數 -455 口方向背離是否收斂，並觀察主要空方法人是否延續；只有金額、口數方向持續一致，且獲價格與期貨籌碼同步確認，才提高方向判讀權重。背離未解除前，不單憑本區塊追多或追空。",
+      "look": "日盤：主要空方為投信（-15.02 億元）；外資（+9.54 億元）提供最大多方抵銷；三大法人淨額 -3.74 億元。夜盤：主要空方為外資（-0.09 億元）；自營商（+0.11 億元）提供最大多方抵銷；三大法人淨額 +0.02 億元。來源日淨－夜淨差 -3.76 億元（日盤淨額較夜盤低 3.76 億元；此為兩個時段數值相減，不代表日對日變化）。",
+      "compass": "日、夜盤淨額方向不同或至少一盤接近平衡，但淨額／多空雙邊金額合計，日盤 -3.2%、夜盤 +0.1%，顯示淨差相對雙邊交易金額有限，不宜解讀為強烈單邊；口數對照：3 組同向、2 組背離、1 組中性；自營商日盤金額 +1.73 億元、口數 -9,929 口方向背離；自營商夜盤金額 +0.11 億元、口數 -1,537 口方向背離。",
+      "target": "優先追蹤自營商日盤金額 +1.73 億元、口數 -9,929 口方向背離；自營商夜盤金額 +0.11 億元、口數 -1,537 口方向背離是否收斂，並觀察主要空方法人是否延續；只有金額、口數方向持續一致，且獲價格與期貨籌碼同步確認，才提高方向判讀權重。背離未解除前，不單憑本區塊追多或追空。",
       "method": "多方契約金額＝買 Call＋賣 Put；空方契約金額＝賣 Call＋買 Put。這是方向分類代理值，不等同淨權利金現金流或未平倉 OI；來源「日淨－夜淨」是兩個時段淨額相減，不是日對日變化或持倉變化。",
-      "day_imbalance_pct": -0.96,
-      "night_imbalance_pct": 0.41,
-      "day_minus_night": -1.23,
+      "day_imbalance_pct": -3.19,
+      "night_imbalance_pct": 0.07,
+      "day_minus_night": -3.76,
       "volume_divergences": [
-        "自營商夜盤金額 +0.05 億元、口數 -455 口方向背離"
+        "自營商日盤金額 +1.73 億元、口數 -9,929 口方向背離",
+        "自營商夜盤金額 +0.11 億元、口數 -1,537 口方向背離"
       ],
       "volume_concordant": [
         "外資日盤",
         "外資夜盤",
-        "投信日盤",
-        "自營商日盤"
+        "投信日盤"
       ],
       "volume_neutral": [
         "投信夜盤"
@@ -2203,142 +2204,143 @@
     "top10Call": [
       [
         "買權多方 OI",
-        "11,882",
+        "12,296",
         "TAIFEX Proxy"
       ],
       [
         "買權空方 OI",
-        "14,309",
+        "15,231",
         "TAIFEX Proxy"
       ],
       [
         "買權多空淨 OI",
-        "-2,427",
+        "-2,935",
         "TAIFEX Proxy"
       ],
       [
-        "買權多空淨 OI 變化",
-        "unavailable",
-        "unavailable"
+        "買權多空淨 OI 變化 (2026-11-18→2026-11-19)",
+        "-508",
+        "TAIFEX Proxy snapshots (2026-11-18)"
       ]
     ],
     "top10Put": [
       [
         "賣權多方 OI",
-        "10,359",
+        "10,459",
         "TAIFEX Proxy"
       ],
       [
         "賣權空方 OI",
-        "10,230",
+        "10,621",
         "TAIFEX Proxy"
       ],
       [
         "賣權多空淨 OI",
-        "+129",
+        "-162",
         "TAIFEX Proxy"
       ],
       [
-        "賣權多空淨 OI 變化",
-        "unavailable",
-        "unavailable"
+        "賣權多空淨 OI 變化 (2026-11-18→2026-11-19)",
+        "-291",
+        "TAIFEX Proxy snapshots (2026-11-18)"
       ]
-    ]
+    ],
+    "top10ChangeNote": null
   },
   "markets": {
     "us": [
       {
         "l": "S&P 500",
-        "v": -0.23,
-        "close": 7323.63,
+        "v": -2.02,
+        "close": 7175.83,
         "raw": [
           "S&P 500",
           "^GSPC",
-          "7,323.63",
-          "-16.90",
-          "-0.23",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "7,175.83",
+          "-147.80",
+          "-2.02",
+          "2026-11-19",
+          "2026-11-20T12:46:27+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Nasdaq Composite",
-        "v": 0.42,
-        "close": 24429.88,
+        "v": -2.25,
+        "close": 23879.2,
         "raw": [
           "Nasdaq Composite",
           "^IXIC",
-          "24,429.88",
-          "101.50",
-          "+0.42",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "23,879.20",
+          "-550.68",
+          "-2.25",
+          "2026-11-19",
+          "2026-11-20T12:46:27+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Nasdaq 100",
-        "v": 0.42,
-        "close": 27116.26,
+        "v": -2.21,
+        "close": 26517.05,
         "raw": [
           "Nasdaq 100",
           "^NDX",
-          "27,116.26",
-          "114.48",
-          "+0.42",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "26,517.05",
+          "-599.21",
+          "-2.21",
+          "2026-11-19",
+          "2026-11-20T12:46:27+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Dow Jones",
-        "v": -1.11,
-        "close": 50198.17,
+        "v": -2.19,
+        "close": 49097.06,
         "raw": [
           "Dow Jones",
           "^DJI",
-          "50,198.17",
-          "-561.25",
-          "-1.11",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "49,097.06",
+          "-1,101.11",
+          "-2.19",
+          "2026-11-19",
+          "2026-11-20T12:46:27+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "費城半導體 SOX",
-        "v": 0.1,
-        "close": 9652.8,
+        "v": -2.41,
+        "close": 9419.72,
         "raw": [
           "費城半導體 SOX",
           "^SOX",
-          "9,652.80",
-          "9.92",
-          "+0.10",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "9,419.72",
+          "-233.08",
+          "-2.41",
+          "2026-11-19",
+          "2026-11-20T12:46:27+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "VIX",
-        "v": -3.53,
-        "close": 24.56,
+        "v": 8.02,
+        "close": 30.72,
         "raw": [
           "VIX",
           "^VIX",
-          "24.56",
-          "-0.90",
-          "-3.53",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "30.72",
+          "2.28",
+          "+8.02",
+          "2026-11-20",
+          "2026-11-20T12:46:27+00:00",
           "America/Chicago",
           "Yahoo Finance Chart API"
         ]
@@ -2347,80 +2349,80 @@
     "asia": [
       {
         "l": "日經225",
-        "v": 0.69,
-        "close": 59264.55,
+        "v": -5.06,
+        "close": 56436.65,
         "raw": [
           "日經225",
           "^N225",
-          "59,264.55",
-          "404.12",
-          "+0.69",
-          "2026-11-19",
-          "2026-11-19T00:19:16+00:00",
+          "56,436.65",
+          "-3,007.56",
+          "-5.06",
+          "2026-11-20",
+          "2026-11-20T12:46:27+00:00",
           "Asia/Tokyo",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "韓國KOSPI",
-        "v": -2.59,
-        "close": 4968.48,
+        "v": -5.21,
+        "close": 4869.96,
         "raw": [
           "韓國KOSPI",
           "^KS11",
-          "4,968.48",
-          "-132.02",
-          "-2.59",
-          "2026-11-17",
-          "2026-11-19T00:19:16+00:00",
+          "4,869.96",
+          "-267.93",
+          "-5.21",
+          "2026-11-20",
+          "2026-11-20T12:46:27+00:00",
           "Asia/Seoul",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "香港恆生",
-        "v": -1.03,
-        "close": 23508.17,
+        "v": -1.89,
+        "close": 22410.8,
         "raw": [
           "香港恆生",
           "^HSI",
-          "23,508.17",
-          "-245.67",
-          "-1.03",
-          "2026-11-17",
-          "2026-11-19T00:19:16+00:00",
+          "22,410.80",
+          "-430.82",
+          "-1.89",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "Asia/Hong_Kong",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "上海綜合",
-        "v": -0.5,
-        "close": 3584.58,
+        "v": -1.22,
+        "close": 3533.79,
         "raw": [
           "上海綜合",
           "000001.SS",
-          "3,584.58",
-          "-17.99",
-          "-0.50",
-          "2026-11-17",
-          "2026-11-19T00:19:16+00:00",
+          "3,533.79",
+          "-43.82",
+          "-1.22",
+          "2026-11-20",
+          "2026-11-20T12:46:27+00:00",
           "Asia/Shanghai",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "深圳成分",
-        "v": -0.49,
-        "close": 10638.52,
+        "v": -3.09,
+        "close": 10256.39,
         "raw": [
           "深圳成分",
           "399001.SZ",
-          "10,638.52",
-          "-52.26",
-          "-0.49",
-          "2026-11-17",
-          "2026-11-19T00:19:16+00:00",
+          "10,256.39",
+          "-326.81",
+          "-3.09",
+          "2026-11-20",
+          "2026-11-20T12:46:27+00:00",
           "Asia/Shanghai",
           "Yahoo Finance Chart API"
         ]
@@ -2429,64 +2431,64 @@
     "usFut": [
       {
         "l": "S&P500期貨",
-        "v": 0.21,
-        "close": 7374.5,
+        "v": -0.84,
+        "close": 7136.5,
         "raw": [
           "S&P500期貨",
           "ES=F",
-          "7,374.50",
-          "15.50",
-          "+0.21",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "7,136.50",
+          "-60.75",
+          "-0.84",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Nasdaq100期貨",
-        "v": 1.31,
-        "close": 27431.25,
+        "v": -1.69,
+        "close": 26149.75,
         "raw": [
           "Nasdaq100期貨",
           "NQ=F",
-          "27,431.25",
-          "355.75",
-          "+1.31",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "26,149.75",
+          "-450.50",
+          "-1.69",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "道瓊期貨",
-        "v": -0.8,
-        "close": 50410.0,
+        "v": -0.2,
+        "close": 49081.0,
         "raw": [
           "道瓊期貨",
           "YM=F",
-          "50,410.00",
-          "-405.00",
-          "-0.80",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "49,081.00",
+          "-99.00",
+          "-0.20",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Russell2000期貨",
-        "v": 0.67,
-        "close": 2729.3,
+        "v": -0.23,
+        "close": 2657.1,
         "raw": [
           "Russell2000期貨",
           "RTY=F",
-          "2,729.30",
-          "18.10",
-          "+0.67",
-          "2026-11-18",
-          "2026-11-19T00:19:16+00:00",
+          "2,657.10",
+          "-6.20",
+          "-0.23",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
@@ -2495,57 +2497,57 @@
     "yields": [
       {
         "l": "美國 2 年期殖利率",
-        "v": 0.0,
-        "close": 4.8,
+        "v": -0.04,
+        "close": 4.76,
         "raw": [
           "美國 2 年期殖利率",
           "2 Yr",
-          "4.80",
-          "0.00",
-          "18-NOV-26",
-          "2026-11-19T00:19:36+00:00",
+          "4.76",
+          "-0.04",
+          "19-NOV-26",
+          "2026-11-20T12:46:50+00:00",
           "U.S. Treasury yield.xml（BC_2YEAR 備援）"
         ]
       },
       {
         "l": "美國 10 年期殖利率",
-        "v": -0.04,
-        "close": 5.07,
+        "v": -0.01,
+        "close": 5.05,
         "raw": [
           "美國 10 年期殖利率",
           "10 Yr",
-          "5.07",
-          "-0.04",
-          "2026-11-18",
-          "2026-11-19T00:19:36+00:00",
+          "5.05",
+          "-0.01",
+          "2026-11-19",
+          "2026-11-20T12:46:50+00:00",
           "Yahoo Finance (備援)"
         ]
       },
       {
         "l": "美國 20 年期殖利率",
-        "v": -0.06,
-        "close": 5.44,
+        "v": -0.01,
+        "close": 5.43,
         "raw": [
           "美國 20 年期殖利率",
           "20 Yr",
-          "5.44",
-          "-0.06",
-          "18-NOV-26",
-          "2026-11-19T00:19:54+00:00",
+          "5.43",
+          "-0.01",
+          "19-NOV-26",
+          "2026-11-20T12:46:50+00:00",
           "U.S. Treasury yield.xml（BC_20YEAR 備援）"
         ]
       },
       {
         "l": "美國 30 年期殖利率",
-        "v": -0.05,
-        "close": 5.41,
+        "v": -0.01,
+        "close": 5.4,
         "raw": [
           "美國 30 年期殖利率",
           "30 Yr",
-          "5.41",
-          "-0.05",
-          "2026-11-18",
-          "2026-11-19T00:19:54+00:00",
+          "5.40",
+          "-0.01",
+          "2026-11-19",
+          "2026-11-20T12:46:50+00:00",
           "Yahoo Finance (備援)"
         ]
       }
@@ -2553,64 +2555,64 @@
     "fx": [
       {
         "l": "USD/TWD",
-        "v": 0.06,
+        "v": 0.01,
         "close": 32.93,
         "raw": [
           "USD/TWD",
           "TWD=X",
           "32.93",
-          "0.02",
-          "+0.06",
-          "2026-11-19",
-          "2026-11-19T00:19:17+00:00",
+          "0.00",
+          "+0.01",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "Europe/London",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "DXY美元指數",
-        "v": 0.31,
-        "close": 103.81,
+        "v": -0.14,
+        "close": 103.76,
         "raw": [
           "DXY美元指數",
           "DX-Y.NYB",
-          "103.81",
-          "0.32",
-          "+0.31",
-          "2026-11-18",
-          "2026-11-19T00:19:17+00:00",
+          "103.76",
+          "-0.14",
+          "-0.14",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "USD/JPY",
-        "v": -0.06,
-        "close": 159.41,
+        "v": -0.41,
+        "close": 158.73,
         "raw": [
           "USD/JPY",
           "JPY=X",
-          "159.41",
-          "-0.09",
-          "-0.06",
-          "2026-11-19",
-          "2026-11-19T00:19:17+00:00",
+          "158.73",
+          "-0.65",
+          "-0.41",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "Europe/London",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "USD/KRW",
-        "v": -0.28,
-        "close": 1329.25,
+        "v": 0.82,
+        "close": 1341.25,
         "raw": [
           "USD/KRW",
           "KRW=X",
-          "1,329.25",
-          "-3.76",
-          "-0.28",
-          "2026-11-19",
-          "2026-11-19T00:19:17+00:00",
+          "1,341.25",
+          "10.85",
+          "+0.82",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "Europe/London",
           "Yahoo Finance Chart API"
         ]
@@ -2619,48 +2621,48 @@
     "adr": [
       {
         "l": "台積電ADR",
-        "v": 0.81,
-        "close": 362.62,
+        "v": -2.9,
+        "close": 352.09,
         "raw": [
           "台積電ADR",
           "TSM",
-          "362.62",
-          "2.93",
-          "+0.81",
-          "2026-11-18",
-          "2026-11-19T00:19:17+00:00",
+          "352.09",
+          "-10.53",
+          "-2.90",
+          "2026-11-19",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "聯電ADR",
-        "v": -1.27,
-        "close": 13.96,
+        "v": -4.01,
+        "close": 13.4,
         "raw": [
           "聯電ADR",
           "UMC",
-          "13.96",
-          "-0.18",
-          "-1.27",
-          "2026-11-18",
-          "2026-11-19T00:19:17+00:00",
+          "13.40",
+          "-0.56",
+          "-4.01",
+          "2026-11-19",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "日月光ADR",
-        "v": 2.17,
-        "close": 32.52,
+        "v": -6.24,
+        "close": 30.49,
         "raw": [
           "日月光ADR",
           "ASX",
-          "32.52",
-          "0.69",
-          "+2.17",
-          "2026-11-18",
-          "2026-11-19T00:19:17+00:00",
+          "30.49",
+          "-2.03",
+          "-6.24",
+          "2026-11-19",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
@@ -2669,48 +2671,48 @@
     "commodities": [
       {
         "l": "WTI原油期貨",
-        "v": -4.65,
-        "close": 82.01,
+        "v": -1.19,
+        "close": 82.22,
         "raw": [
           "WTI原油期貨",
           "CL=F",
-          "82.01",
-          "-4.00",
-          "-4.65",
-          "2026-11-18",
-          "2026-11-19T00:19:17+00:00",
+          "82.22",
+          "-0.99",
+          "-1.19",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "黃金期貨",
-        "v": -3.2,
-        "close": 3740.4,
+        "v": -3.05,
+        "close": 3573.2,
         "raw": [
           "黃金期貨",
           "GC=F",
-          "3,740.40",
-          "-123.80",
-          "-3.20",
-          "2026-11-18",
-          "2026-11-19T00:19:17+00:00",
+          "3,573.20",
+          "-112.30",
+          "-3.05",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "America/New_York",
           "Yahoo Finance Chart API"
         ]
       },
       {
         "l": "Bitcoin",
-        "v": -3.43,
-        "close": 62669.77,
+        "v": -0.57,
+        "close": 61549.9,
         "raw": [
           "Bitcoin",
           "BTC-USD",
-          "62,669.77",
-          "-2,224.18",
-          "-3.43",
-          "2026-11-19",
-          "2026-11-19T00:19:17+00:00",
+          "61,549.90",
+          "-351.92",
+          "-0.57",
+          "2026-11-20",
+          "2026-11-20T12:46:28+00:00",
           "UTC",
           "Yahoo Finance Chart API"
         ]
@@ -2721,146 +2723,144 @@
     "usPct": [
       {
         "l": "S&P 500",
-        "v": -0.23
+        "v": -2.02
       },
       {
         "l": "Nasdaq Composite",
-        "v": 0.42
+        "v": -2.25
       },
       {
         "l": "Nasdaq 100",
-        "v": 0.42
+        "v": -2.21
       },
       {
         "l": "Dow Jones",
-        "v": -1.11
+        "v": -2.19
       },
       {
         "l": "費城半導體 SOX",
-        "v": 0.1
+        "v": -2.41
       },
       {
         "l": "VIX",
-        "v": -3.53
+        "v": 8.02
       }
     ],
     "asiaPct": [
       {
         "l": "日經225",
-        "v": 0.69
+        "v": -5.06
       },
       {
         "l": "韓國KOSPI",
-        "v": -2.59
+        "v": -5.21
       },
       {
         "l": "香港恆生",
-        "v": -1.03
+        "v": -1.89
       },
       {
         "l": "上海綜合",
-        "v": -0.5
+        "v": -1.22
       },
       {
         "l": "深圳成分",
-        "v": -0.49
+        "v": -3.09
       }
     ],
     "futPct": [
       {
         "l": "S&P500期貨",
-        "v": 0.21
+        "v": -0.84
       },
       {
         "l": "Nasdaq100期貨",
-        "v": 1.31
+        "v": -1.69
       },
       {
         "l": "道瓊期貨",
-        "v": -0.8
+        "v": -0.2
       },
       {
         "l": "Russell2000期貨",
-        "v": 0.67
+        "v": -0.23
       }
     ],
     "yieldPct": [
       {
         "l": "美國 2 年期殖利率",
-        "v": 0.0
-      },
-      {
-        "l": "美國 10 年期殖利率",
         "v": -0.04
       },
       {
+        "l": "美國 10 年期殖利率",
+        "v": -0.01
+      },
+      {
         "l": "美國 20 年期殖利率",
-        "v": -0.06
+        "v": -0.01
       },
       {
         "l": "美國 30 年期殖利率",
-        "v": -0.05
+        "v": -0.01
       }
     ],
     "fxPct": [
       {
         "l": "USD/TWD",
-        "v": 0.06
+        "v": 0.01
       },
       {
         "l": "DXY美元指數",
-        "v": 0.31
+        "v": -0.14
       },
       {
         "l": "USD/JPY",
-        "v": -0.06
+        "v": -0.41
       },
       {
         "l": "USD/KRW",
-        "v": -0.28
+        "v": 0.82
       }
     ],
     "adrPct": [
       {
         "l": "台積電ADR",
-        "v": 0.81
+        "v": -2.9
       },
       {
         "l": "聯電ADR",
-        "v": -1.27
+        "v": -4.01
       },
       {
         "l": "日月光ADR",
-        "v": 2.17
+        "v": -6.24
       }
     ],
     "commPct": [
       {
         "l": "WTI原油期貨",
-        "v": -4.65
+        "v": -1.19
       },
       {
         "l": "黃金期貨",
-        "v": -3.2
+        "v": -3.05
       },
       {
         "l": "Bitcoin",
-        "v": -3.43
+        "v": -0.57
       }
     ]
   },
   "technical": {
-    "rsi": 34.15,
-    "macd": -1461.04,
-    "macd_signal": -1226.72,
-    "macd_hist": -234.32,
-    "k": 51.2,
-    "d": 51.85,
+    "rsi": 30.38,
+    "macd": -1748.75,
+    "macd_signal": -1379.82,
+    "macd_hist": -368.93,
+    "k": 31.48,
+    "d": 43.73,
     "source": "yahoo",
     "valid": true,
     "closes": [
-      48475.73828125,
-      49712.0390625,
       49822.55078125,
       49806.37109375,
       49313.44140625,
@@ -2888,11 +2888,11 @@
       43091.87109375,
       43675.12109375,
       41040.078125,
-      40092.109375
+      40092.109375,
+      40194.91015625,
+      38426.890625
     ],
     "highs": [
-      48491.62109375,
-      49770.66015625,
       49968.921875,
       49966.890625,
       49783.05859375,
@@ -2920,11 +2920,11 @@
       44525.23828125,
       44489.48046875,
       43512.421875,
-      41533.83984375
+      41533.83984375,
+      40938.19921875,
+      40315.53125
     ],
     "lows": [
-      48205.80859375,
-      48574.94921875,
       49479.69140625,
       49567.51953125,
       49189.76953125,
@@ -2952,36 +2952,46 @@
       42943.5,
       43534.12109375,
       41040.078125,
-      39786.44921875
+      39786.44921875,
+      39260.98828125,
+      38259.69921875
     ]
   },
   "analysis": {
-    "bias": 35,
-    "bias_score": 35,
+    "bias": 19,
+    "bias_score": 19,
     "factors": [
       [
+        "現貨趨勢",
+        -4
+      ],
+      [
         "外資現貨",
-        -6
+        -4
       ],
       [
         "外資期貨",
-        -5
-      ],
-      [
-        "投信",
-        2
+        -4
       ],
       [
         "夜盤",
-        -3
+        -4
+      ],
+      [
+        "美股費半",
+        -5
       ],
       [
         "PCR",
-        -2
+        -3
       ],
       [
         "Put Wall",
         1
+      ],
+      [
+        "ADR 表現代理",
+        -1
       ],
       [
         "均線乖離",
@@ -2989,7 +2999,7 @@
       ],
       [
         "VIX",
-        -1
+        -3
       ],
       [
         "MACD",
@@ -2997,133 +3007,133 @@
       ]
     ],
     "weights": {
-      "spot_trend": 12.790698,
-      "foreign_spot": 13.953488,
-      "foreign_fut": 9.302326,
-      "trust": 5.813953,
-      "basis": 2.325581,
-      "night": 9.302326,
-      "us_sox": 18.604651,
-      "pcr": 8.139535,
+      "spot_trend": 8.791209,
+      "foreign_spot": 16.483516,
+      "foreign_fut": 8.791209,
+      "trust": 5.494505,
+      "basis": 0.0,
+      "night": 8.791209,
+      "us_sox": 21.978022,
+      "pcr": 7.692308,
       "gex": 0.0,
-      "put_wall": 3.488372,
-      "adr": 3.488372,
+      "put_wall": 3.296703,
+      "adr": 3.296703,
       "yield": 0.0,
       "volume": 0.0,
-      "ma_bias": 3.488372,
-      "vix_factor": 2.325581,
-      "rsi": 3.488372,
-      "macd": 3.488373
+      "ma_bias": 3.296703,
+      "vix_factor": 5.494505,
+      "rsi": 3.296703,
+      "macd": 3.296705
     },
     "factor_details": [
       {
         "key": "spot_trend",
         "name": "現貨趨勢",
-        "raw_value": 0.26,
-        "score": 0.0,
+        "raw_value": -4.4,
+        "score": -1.0,
         "status": "active",
         "reason": "依加權指數日漲跌幅分級",
         "source": "DATA_REPORT.spot.pct",
         "base_weight": 13,
-        "adaptive_weight": 11,
-        "effective_weight": 12.790698,
-        "contribution": 0.0
+        "adaptive_weight": 8,
+        "effective_weight": 8.791209,
+        "contribution": -4.3956
       },
       {
         "key": "foreign_spot",
         "name": "外資現貨",
-        "raw_value": -765.6,
-        "score": -0.8,
+        "raw_value": -243.1,
+        "score": -0.5,
         "status": "active",
         "reason": "依外資現貨買賣超金額分級",
         "source": "DATA_REPORT.inst.foreign",
         "base_weight": 12,
-        "adaptive_weight": 12,
-        "effective_weight": 13.953488,
-        "contribution": -5.5814
+        "adaptive_weight": 15,
+        "effective_weight": 16.483516,
+        "contribution": -4.1209
       },
       {
         "key": "foreign_fut",
         "name": "外資期貨",
-        "raw_value": -99438.0,
+        "raw_value": -99219.0,
         "score": -1.0,
         "status": "active",
         "reason": "依外資期貨淨未平倉口數分級",
         "source": "DATA_REPORT.futures.foreign_oi",
         "base_weight": 8,
         "adaptive_weight": 8,
-        "effective_weight": 9.302326,
-        "contribution": -4.6512
+        "effective_weight": 8.791209,
+        "contribution": -4.3956
       },
       {
         "key": "trust",
         "name": "投信",
-        "raw_value": 166.1,
-        "score": 0.6,
+        "raw_value": 43.9,
+        "score": 0.0,
         "status": "active",
         "reason": "依投信現貨買賣超金額分級",
         "source": "DATA_REPORT.inst.trust",
         "base_weight": 5,
         "adaptive_weight": 5,
-        "effective_weight": 5.813953,
-        "contribution": 1.7442
+        "effective_weight": 5.494505,
+        "contribution": 0.0
       },
       {
         "key": "basis",
         "name": "基差",
-        "raw_value": 117.09,
-        "score": 0.0,
-        "status": "active",
+        "raw_value": null,
+        "score": null,
+        "status": "disabled",
         "reason": "逆價差或過大正價差視為風險",
         "source": "DATA_REPORT.tx.day.basis",
         "base_weight": 7,
-        "adaptive_weight": 2,
-        "effective_weight": 2.325581,
+        "adaptive_weight": 7,
+        "effective_weight": 0.0,
         "contribution": 0.0
       },
       {
         "key": "night",
         "name": "夜盤",
-        "raw_value": -0.86,
-        "score": -0.6,
+        "raw_value": -1.3,
+        "score": -1.0,
         "status": "active",
         "reason": "依夜盤漲跌幅分級",
         "source": "DATA_REPORT.tx.night.pct",
         "base_weight": 8,
         "adaptive_weight": 8,
-        "effective_weight": 9.302326,
-        "contribution": -2.7907
+        "effective_weight": 8.791209,
+        "contribution": -4.3956
       },
       {
         "key": "us_sox",
         "name": "美股費半",
-        "raw_value": 0.1,
-        "score": 0.0,
+        "raw_value": -2.41,
+        "score": -0.5,
         "status": "active",
         "reason": "依費半日漲跌幅分級",
         "source": "DATA_REPORT.usPct_full.SOX",
         "base_weight": 12,
-        "adaptive_weight": 16,
-        "effective_weight": 18.604651,
-        "contribution": 0.0
+        "adaptive_weight": 20,
+        "effective_weight": 21.978022,
+        "contribution": -5.4945
       },
       {
         "key": "pcr",
         "name": "PCR",
-        "raw_value": 0.68,
-        "score": -0.4,
+        "raw_value": 0.37,
+        "score": -0.8,
         "status": "active",
         "reason": "沿用現行低 PCR 風險規則；其他區間不推定方向",
         "source": "DATA_REPORT.options.pcr",
         "base_weight": 7,
         "adaptive_weight": 7,
-        "effective_weight": 8.139535,
-        "contribution": -1.6279
+        "effective_weight": 7.692308,
+        "contribution": -3.0769
       },
       {
         "key": "gex",
         "name": "GEX",
-        "raw_value": 3200834625.9162054,
+        "raw_value": 2412597916.998448,
         "score": null,
         "status": "disabled",
         "reason": "GEX 正負代表模型曝險方向，不等同市場多空方向；未建立方向化規則前不納入 Bias",
@@ -3136,28 +3146,28 @@
       {
         "key": "put_wall",
         "name": "Put Wall",
-        "raw_value": 33700.0,
+        "raw_value": 35700.0,
         "score": 0.5,
         "status": "active",
         "reason": "現價位於有效 Put Wall 上方／下方；僅作位置方向訊號",
         "source": "DATA_REPORT.spot.close + DATA_REPORT.options.putWall",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.488372,
-        "contribution": 0.8721
+        "effective_weight": 3.296703,
+        "contribution": 0.8242
       },
       {
         "key": "adr",
         "name": "ADR 表現代理",
-        "raw_value": 0.81,
-        "score": 0.0,
+        "raw_value": -2.9,
+        "score": -0.5,
         "status": "active",
         "reason": "使用台積電 ADR 漲跌幅代理，不宣稱為 ADR 溢價",
         "source": "DATA_REPORT.adrPct_full.TSM",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.488372,
-        "contribution": 0.0
+        "effective_weight": 3.296703,
+        "contribution": -0.8242
       },
       {
         "key": "yield",
@@ -3188,83 +3198,84 @@
       {
         "key": "ma_bias",
         "name": "均線乖離",
-        "raw_value": -8.85454397118336,
+        "raw_value": -11.1769445986724,
         "score": -0.5,
         "status": "active",
         "reason": "至少20筆有效收盤價，現價高於／低於SMA20",
         "source": "Yahoo/FinMind/SQLite closes SMA20",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.488372,
-        "contribution": -0.8721
+        "effective_weight": 3.296703,
+        "contribution": -0.8242
       },
       {
         "key": "vix_factor",
         "name": "VIX",
-        "raw_value": 24.56,
-        "score": -0.5,
+        "raw_value": 30.72,
+        "score": -1.0,
         "status": "active",
         "reason": "依 VIX 收盤水準分級",
         "source": "DATA_REPORT.usPct_full.VIX.close",
         "base_weight": 2,
-        "adaptive_weight": 2,
-        "effective_weight": 2.325581,
-        "contribution": -0.5814
+        "adaptive_weight": 5,
+        "effective_weight": 5.494505,
+        "contribution": -2.7473
       },
       {
         "key": "rsi",
         "name": "RSI",
-        "raw_value": 34.15,
+        "raw_value": 30.38,
         "score": 0.0,
         "status": "active",
         "reason": "RSI14 超買超賣分級；缺值不以中性代替",
         "source": "Yahoo/FinMind/SQLite RSI14",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.488372,
+        "effective_weight": 3.296703,
         "contribution": 0.0
       },
       {
         "key": "macd",
         "name": "MACD",
-        "raw_value": -234.32,
+        "raw_value": -368.93,
         "score": -1.0,
         "status": "active",
         "reason": "依 MACD histogram 正負及強度分級",
         "source": "Yahoo/FinMind/SQLite MACD histogram",
         "base_weight": 3,
         "adaptive_weight": 3,
-        "effective_weight": 3.488373,
-        "contribution": -1.7442
+        "effective_weight": 3.296705,
+        "contribution": -1.6484
       }
     ],
     "factor_quality": {
-      "active_count": 14,
+      "active_count": 13,
       "total_factors": 17,
-      "count_coverage_pct": 82.4,
-      "base_weight_coverage_pct": 85.6,
+      "count_coverage_pct": 76.5,
+      "base_weight_coverage_pct": 78.8,
       "base_weight_total": 104,
       "base_weight_unit": "relative_points",
       "weight_normalization": "active_factors_rescaled_to_100_percent",
       "effective_weight_total": 100.0,
-      "confidence": "high",
+      "confidence": "medium",
       "bias_reliable": true,
       "score_status": "calculated",
       "optimizer": "base_dynamic",
       "missing_factors": [
+        "basis",
         "yield",
         "volume"
       ],
       "disabled_factors": [
         "gex"
       ],
-      "inactive_count": 3
+      "inactive_count": 4
     },
-    "regime": "震盪偏空",
-    "factor_str": "外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-    "look": "加權40,194 +0.26% 外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-    "compass": "35分震盪偏空，觀察外資續賣",
-    "target": "依Bias35分操作，Put Wall 33700.0",
+    "regime": "極空",
+    "factor_str": "現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3",
+    "look": "加權38,426 -4.40% 外資-243.1億 現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3 VIX30.7",
+    "compass": "19分極空，Put Wall 35700.0；缺少價位時不推定防線",
+    "target": "Put Wall 35700.0；依有效價位及價格確認風險",
     "cards": {
       "DATA_REPORT 一致性檢查": {
         "look": "DATA_REPORT 一致性檢查：0 項警告",
@@ -3272,32 +3283,40 @@
         "target": "警告只標示資料衝突，不自動修改原始數據；請回查 DATA_REPORT 來源"
       },
       "Bias 盤前偏向": {
-        "bias": 35,
-        "regime": "震盪偏空",
+        "bias": 19,
+        "regime": "極空",
         "factors": [
           [
+            "現貨趨勢",
+            -4
+          ],
+          [
             "外資現貨",
-            -6
+            -4
           ],
           [
             "外資期貨",
-            -5
-          ],
-          [
-            "投信",
-            2
+            -4
           ],
           [
             "夜盤",
-            -3
+            -4
+          ],
+          [
+            "美股費半",
+            -5
           ],
           [
             "PCR",
-            -2
+            -3
           ],
           [
             "Put Wall",
             1
+          ],
+          [
+            "ADR 表現代理",
+            -1
           ],
           [
             "均線乖離",
@@ -3305,105 +3324,113 @@
           ],
           [
             "VIX",
-            -1
+            -3
           ],
           [
             "MACD",
             -2
           ]
         ],
-        "factor_str": "外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "look": "加權40,194 +0.26% 外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "compass": "35分震盪偏空，觀察外資續賣",
-        "target": "依Bias35分操作，Put Wall 33700.0"
+        "factor_str": "現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3",
+        "look": "加權38,426 -4.40% 外資-243.1億 現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3 VIX30.7",
+        "compass": "19分極空，Put Wall 35700.0；缺少價位時不推定防線",
+        "target": "Put Wall 35700.0；依有效價位及價格確認風險"
       },
       "KPI 8宮格": {
-        "look": "KPI 8宮格：加權40,194.91點；漲跌幅0.26%；外資-765.60億元；Bias35分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
-        "compass": "35分盤整／訊號混合；17F有效14/17；正向2、負向7、中性5、缺值2、有值停用1；有效權重100.0%；信心high；費半有效權重18.60%；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
-        "target": "依Bias35分操作，盤整／訊號混合策略，33700.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析"
+        "look": "KPI 8宮格：加權38,426.89點；漲跌幅-4.40%；外資-243.10億元；Bias19分；空方壓力；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
+        "compass": "19分空方壓力；17F有效13/17；正向1、負向10、中性2、缺值3、有值停用1；有效權重100.0%；信心medium；費半有效權重21.98%；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
+        "target": "依Bias19分操作，空方壓力策略，35700.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析"
       },
       "大盤全景": {
-        "look": "加權40194.91點 +0.26% 漲跌492上520下，RSI 34.15 MACD -234.3200",
-        "compass": "Bias35分，492上520下全面普跌",
-        "target": "觀察 Put Wall 33700.00 支撐"
+        "look": "加權38426.89點 -4.40% 漲跌67上993下，RSI 30.38 MACD -368.9300",
+        "compass": "Bias19分，67上993下全面普跌",
+        "target": "觀察 Put Wall 35700.00 支撐"
       },
       "台指期 日夜": {
-        "look": "台指基差117.09點；夜盤-0.86%；夜低39,411.00點；外資期貨淨 OI -99,438口",
-        "compass": "夜盤漲跌幅 -0.86%；基差 117.09點；盤整／訊號混合",
-        "target": "夜盤低點 39,411.00點（觀察價位，非保證支撐）"
+        "look": "台指基差unavailable點；夜盤-1.30%；夜低37,931.00點；外資期貨淨 OI -99,219口",
+        "compass": "夜盤漲跌幅 -1.30%；基差 unavailable點；空方壓力",
+        "target": "夜盤低點 37,931.00點（觀察價位，非保證支撐）"
       },
       "期貨籌碼": {
-        "look": "台指基差117.09點；夜盤-0.86%；夜低39,411.00點；外資期貨淨 OI -99,438口",
-        "compass": "夜盤漲跌幅 -0.86%；基差 117.09點；盤整／訊號混合",
-        "target": "夜盤低點 39,411.00點（觀察價位，非保證支撐）"
+        "look": "台指基差unavailable點；夜盤-1.30%；夜低37,931.00點；外資期貨淨 OI -99,219口",
+        "compass": "夜盤漲跌幅 -1.30%；基差 unavailable點；空方壓力",
+        "target": "夜盤低點 37,931.00點（觀察價位，非保證支撐）"
       },
       "選擇權牆": {
-        "look": "PCR 0.68；GEX 依有效來源資料；Put Wall 33700.0",
-        "compass": "選擇權資料 PCR 0.68、Put Wall 33700.0；缺值不推定方向",
-        "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
+        "look": "PCR 0.37；GEX 依有效來源資料；Put Wall 35700.0",
+        "compass": "PCR0.37偏低，Put Wall 35700.0為觀察位",
+        "target": "Put Wall 35700.0守住觀察震盪，跌破再確認"
       },
       "美股連動": {
-        "look": "SOX +0.10%；股票指數漲跌互見/資料不足；VIX 24.56點；DXY +0.31%",
-        "compass": "費半+0.10%；VIX 24.56點；DXY +0.31%",
+        "look": "SOX -2.41%；股票指數全跌；VIX 30.72點；DXY -0.14%",
+        "compass": "費半-2.41%；VIX 30.72點；DXY -0.14%",
         "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "關鍵水位": {
-        "look": "現價40194.91；Put Wall 33700.0；Flip 36223.97；Regime 盤整／訊號混合",
+        "look": "現價38426.89；Put Wall 35700.0；Flip 37575.78；Regime 空方壓力",
         "compass": "只採用當日有效關鍵位；缺失價位不補硬編碼水位",
-        "target": "依有效 Put Wall 33700.0 與 Flip 36223.97 觀察，缺值時不設定價位目標"
+        "target": "依有效 Put Wall 35700.0 與 Flip 37575.78 觀察，缺值時不設定價位目標"
       },
       "盤前核心判斷": {
-        "look": "有效因子 14/17；正向 2 項、負向 7 項；Bias 35 分／盤整／訊號混合；外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "compass": "依當日有效因子與資料覆蓋判斷：未同時符合上述單日漲跌幅、外資現貨與 OI PCR 條件",
-        "target": "依 盤整／訊號混合 與有效關鍵價位執行；未確認前不預設方向"
+        "look": "有效因子 13/17；正向 1 項、負向 10 項；Bias 19 分／空方壓力；現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3",
+        "compass": "依當日有效因子與資料覆蓋判斷：單日跌幅低於 -1%、外資現貨賣超逾 200 億元、OI PCR 低於 0.8；未使用月線條件",
+        "target": "依 空方壓力 與有效關鍵價位執行；未確認前不預設方向"
       },
       "三劇本": {
-        "look": "情境分析：Bias 35分、盤整／訊號混合；未建立經回測校準的機率模型，不提供悲觀／中性／樂觀機率",
+        "look": "情境分析：Bias 19分、空方壓力；未建立經回測校準的機率模型，不提供悲觀／中性／樂觀機率",
         "compass": "情境路徑僅作條件推演，不代表統計機率",
-        "target": "觀察有效關鍵價位 33700.0；未確認突破／跌破前不啟動劇本"
+        "target": "觀察有效關鍵價位 35700.0；未確認突破／跌破前不啟動劇本"
       },
       "多空條件檢查表": {
-        "look": "17F有效14/17；正向2項、負向7項、缺失3項；資料覆蓋85.6%",
-        "compass": "有效因子權重已正規化；信心等級 high；不以缺失因子推定方向",
-        "target": "Bias 35；資料可信度 high；依有效因子與價格條件決策"
+        "look": "17F有效13/17；正向1項、負向10項、缺失4項；資料覆蓋78.8%",
+        "compass": "有效因子權重已正規化；信心等級 medium；不以缺失因子推定方向",
+        "target": "Bias 19；資料可信度 medium；依有效因子與價格條件決策"
       },
       "開盤前必核": {
-        "look": "KPI 8宮格：加權40,194.91點；漲跌幅0.26%；外資-765.60億元；Bias35分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
-        "compass": "35分盤整／訊號混合；17F有效14/17；正向2、負向7、中性5、缺值2、有值停用1；有效權重100.0%；信心high；費半有效權重18.60%；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
-        "target": "依Bias35分操作，盤整／訊號混合策略，33700.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析"
+        "look": "KPI 8宮格：加權38,426.89點；漲跌幅-4.40%；外資-243.10億元；Bias19分；空方壓力；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
+        "compass": "19分空方壓力；17F有效13/17；正向1、負向10、中性2、缺值3、有值停用1；有效權重100.0%；信心medium；費半有效權重21.98%；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
+        "target": "依Bias19分操作，空方壓力策略，35700.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析"
       },
       "AI 5面向": {
-        "look": "KPI 8宮格：加權40,194.91點；漲跌幅0.26%；外資-765.60億元；Bias35分；盤整／訊號混合；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
-        "compass": "35分盤整／訊號混合；17F有效14/17；正向2、負向7、中性5、缺值2、有值停用1；有效權重100.0%；信心high；費半有效權重18.60%；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
-        "target": "依Bias35分操作，盤整／訊號混合策略，33700.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析"
+        "look": "KPI 8宮格：加權38,426.89點；漲跌幅-4.40%；外資-243.10億元；Bias19分；空方壓力；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
+        "compass": "19分空方壓力；17F有效13/17；正向1、負向10、中性2、缺值3、有值停用1；有效權重100.0%；信心medium；費半有效權重21.98%；SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析",
+        "target": "依Bias19分操作，空方壓力策略，35700.0為關鍵，SQLite已啟用；有效歷史樣本1/3（DB共5筆），未啟用歷史相似分析"
       },
       "AI結論": {
-        "bias": 35,
-        "regime": "震盪偏空",
+        "bias": 19,
+        "regime": "極空",
         "factors": [
           [
+            "現貨趨勢",
+            -4
+          ],
+          [
             "外資現貨",
-            -6
+            -4
           ],
           [
             "外資期貨",
-            -5
-          ],
-          [
-            "投信",
-            2
+            -4
           ],
           [
             "夜盤",
-            -3
+            -4
+          ],
+          [
+            "美股費半",
+            -5
           ],
           [
             "PCR",
-            -2
+            -3
           ],
           [
             "Put Wall",
             1
+          ],
+          [
+            "ADR 表現代理",
+            -1
           ],
           [
             "均線乖離",
@@ -3411,45 +3438,53 @@
           ],
           [
             "VIX",
-            -1
+            -3
           ],
           [
             "MACD",
             -2
           ]
         ],
-        "factor_str": "外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "look": "加權40,194 +0.26% 外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "compass": "35分震盪偏空，觀察外資續賣",
-        "target": "依Bias35分操作，Put Wall 33700.0"
+        "factor_str": "現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3",
+        "look": "加權38,426 -4.40% 外資-243.1億 現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3 VIX30.7",
+        "compass": "19分極空，Put Wall 35700.0；缺少價位時不推定防線",
+        "target": "Put Wall 35700.0；依有效價位及價格確認風險"
       },
       "交易計畫": {
-        "bias": 35,
-        "regime": "震盪偏空",
+        "bias": 19,
+        "regime": "極空",
         "factors": [
           [
+            "現貨趨勢",
+            -4
+          ],
+          [
             "外資現貨",
-            -6
+            -4
           ],
           [
             "外資期貨",
-            -5
-          ],
-          [
-            "投信",
-            2
+            -4
           ],
           [
             "夜盤",
-            -3
+            -4
+          ],
+          [
+            "美股費半",
+            -5
           ],
           [
             "PCR",
-            -2
+            -3
           ],
           [
             "Put Wall",
             1
+          ],
+          [
+            "ADR 表現代理",
+            -1
           ],
           [
             "均線乖離",
@@ -3457,76 +3492,76 @@
           ],
           [
             "VIX",
-            -1
+            -3
           ],
           [
             "MACD",
             -2
           ]
         ],
-        "factor_str": "外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "look": "加權40,194 +0.26% 外資現貨-6 外資期貨-5 投信+2 夜盤-3 PCR-2 Put Wall+1",
-        "compass": "35分震盪偏空，觀察外資續賣",
-        "target": "依Bias35分操作，Put Wall 33700.0"
+        "factor_str": "現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3",
+        "look": "加權38,426 -4.40% 外資-243.1億 現貨趨勢-4 外資現貨-4 外資期貨-4 夜盤-4 美股費半-5 PCR-3 VIX30.7",
+        "compass": "19分極空，Put Wall 35700.0；缺少價位時不推定防線",
+        "target": "Put Wall 35700.0；依有效價位及價格確認風險"
       },
       "行事曆": {
-        "look": "重大新聞12則，首則載板衛星放閃 台股擁兆元行情守4萬關",
+        "look": "重大新聞12則，首則單周狂瀉7641點寫新紀錄！台股再崩2393點史上第三大",
         "compass": "12則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       },
       "法人籌碼": {
-        "look": "外資現貨 -765.60億元（偏空）；期貨淨 OI -99,438口；投信 166.10億元；自營商 -42.00億元",
+        "look": "外資現貨 -243.10億元（偏空）；期貨淨 OI -99,219口；投信 43.90億元；自營商 -233.00億元",
         "compass": "現貨外資 偏空、投信 偏多；依實際數值呈現，不預設對作",
-        "target": "觀察外資現貨後續變化；Put Wall 33700.0僅為價位參考"
+        "target": "觀察外資現貨後續變化；Put Wall 35700.0僅為價位參考"
       },
       "主力三市透視": {
-        "look": "現貨外資 -765.6億元、投信 +166.1億元、自營商 -42.0億元；期貨三法人淨 OI 合計 -7,322口；期貨外資日盤淨交易 -2,620口；選擇權外資日盤 +6,484口／夜盤 +284口",
-        "compass": "結論：三市場方向分歧（跨市場訊號分歧），暫不構成單邊方向共識。現貨外資偏空（-765.6億元），期貨日盤淨交易偏空（-2,620口），選擇權外資日盤偏多（+6,484口）；期貨流量偏多但現貨與選擇權偏空，不能把期貨單一買盤解讀為全面翻多。三法人期貨淨 OI 合計有效；仍與日盤交易流量分開解讀",
+        "look": "現貨外資 -243.1億元、投信 +43.9億元、自營商 -233.0億元；期貨三法人淨 OI 合計 -8,883口；期貨外資日盤淨交易 +1,310口；選擇權外資日盤 +9,756口／夜盤 -601口",
+        "compass": "結論：三市場方向分歧（跨市場訊號分歧），暫不構成單邊方向共識。現貨外資偏空（-243.1億元），期貨日盤淨交易偏多（+1,310口），選擇權外資日盤偏多（+9,756口）；期貨流量偏多但現貨與選擇權偏空，不能把期貨單一買盤解讀為全面翻多。三法人期貨淨 OI 合計有效；仍與日盤交易流量分開解讀",
         "target": "操作：目前以觀望／降低追價為主，不因期貨單日淨買超追多。偏多確認條件：外資現貨賣超明顯收斂或轉買，且選擇權外資日盤流量轉正、期貨日盤淨買超延續；偏空確認條件：現貨賣超延續，且期貨流量轉負或選擇權賣壓延續。若三市場仍互相背離，維持分歧判讀，等待下一交易日數據確認；期貨 OI 可疑時不得作為確認條件。"
       },
       "三市一致性": {
-        "look": "外資跨市場方向檢查：現貨 -765.6億元；期貨日盤淨交易 -2,620口；選擇權日盤 +6,484口、夜盤 +284口。期貨 OI -99,438口；三法人期貨淨 OI 合計有效；仍與日盤交易流量分開解讀",
-        "compass": "一致性判定：現貨偏空、期貨流量偏空、選擇權日盤流量偏多。三市場方向分歧。目前不是三市場同向訊號；且期貨 OI 仍須與前期有效快照比較，單一存量值不代表新增買賣。",
+        "look": "外資跨市場方向檢查：現貨 -243.1億元；期貨日盤淨交易 +1,310口；選擇權日盤 +9,756口、夜盤 -601口。期貨 OI -99,219口；三法人期貨淨 OI 合計有效；仍與日盤交易流量分開解讀",
+        "compass": "一致性判定：現貨偏空、期貨流量偏多、選擇權日盤流量偏多。三市場方向分歧。目前不是三市場同向訊號；且期貨 OI 仍須與前期有效快照比較，單一存量值不代表新增買賣。",
         "target": "升級為偏多共識：外資現貨由賣轉買或賣超顯著收斂，且期貨與選擇權日盤流量連續同向偏多；升級為偏空共識：現貨賣超延續，且期貨與選擇權流量同步偏空。任一市場缺值或期貨 OI 快照異常時，標記為『共識未成立』，不以缺值補方向。"
       },
       "期現選方向對照": {
-        "look": "方向對照（不同單位不可加總）：現貨外資 -765.6億元；期貨日盤淨交易 -2,620口；選擇權外資日盤 +6,484口、夜盤 +284口；PCR（OI 比值）0.68倍；Put Wall 33700.0。",
-        "compass": "期貨流量與選擇權日盤流量：未形成同向訊號。PCR 反映 Put／Call 未平倉量相對結構，不等於當日買賣方向；Put Wall 是履約價集中區，不是保證支撐。因此現有數據若流量背離，應判為訊號衝突，而非用 PCR 抵銷交易流量。",
-        "target": "若期貨與選擇權流量連續同向，才列為短線方向候選；仍須等現貨外資賣壓收斂／買超確認。價格接近 Put Wall 33700.0時，觀察是否止跌並重新站回，不因觸及價位直接進場；跌破且反彈無法收復，才提高下行風險評估。"
+        "look": "方向對照（不同單位不可加總）：現貨外資 -243.1億元；期貨日盤淨交易 +1,310口；選擇權外資日盤 +9,756口、夜盤 -601口；PCR（OI 比值）0.37倍；Put Wall 35700.0。",
+        "compass": "期貨流量與選擇權日盤流量：同向偏多。PCR 反映 Put／Call 未平倉量相對結構，不等於當日買賣方向；Put Wall 是履約價集中區，不是保證支撐。因此現有數據若流量背離，應判為訊號衝突，而非用 PCR 抵銷交易流量。",
+        "target": "若期貨與選擇權流量連續同向，才列為短線方向候選；仍須等現貨外資賣壓收斂／買超確認。價格接近 Put Wall 35700.0時，觀察是否止跌並重新站回，不因觸及價位直接進場；跌破且反彈無法收復，才提高下行風險評估。"
       },
       "籌碼三市矩陣": {
-        "look": "現貨法人淨買賣（億元）：外資 -765.6億元、投信 +166.1億元、自營商 -42.0億元。選擇權日盤淨交易（口）：外資 +6,484口、投信 -17,182口、自營商 +5,158口。",
-        "compass": "現貨三法人：現貨三法人方向分歧。選擇權三法人流量：外資偏多、投信偏空、自營商偏多。交叉觀察：投信現貨偏多但選擇權偏空；自營商現貨偏空但選擇權偏多。這是不同市場的方向配置差異，口數與億元不可相加，也不能直接視為避險等值。",
+        "look": "現貨法人淨買賣（億元）：外資 -243.1億元、投信 +43.9億元、自營商 -233.0億元。選擇權日盤淨交易（口）：外資 +9,756口、投信 -23,450口、自營商 -9,929口。",
+        "compass": "現貨三法人：現貨三法人方向分歧。選擇權三法人流量：外資偏多、投信偏空、自營商偏空。交叉觀察：投信現貨偏多但選擇權偏空；自營商現貨偏空但選擇權偏空。這是不同市場的方向配置差異，口數與億元不可相加，也不能直接視為避險等值。",
         "target": "下一交易日逐法人追蹤：投信現貨買超是否延續、選擇權賣方／買方流量是否反轉；自營商若現貨與選擇權持續反向，先視為跨市場配置或避險可能性，未取得部位方向與 Delta 前不判定淨曝險。外資現貨賣壓若擴大且選擇權流量同步偏空，才提高整體籌碼偏空權重。"
       },
       "主力意圖解碼": {
-        "look": "可觀察證據：外資現貨 -765.6億元；期貨日盤淨交易 -2,620口；期貨淨 OI -99,438口（存量，須與前期比較）；選擇權日盤 +6,484口、夜盤 +284口。",
+        "look": "可觀察證據：外資現貨 -243.1億元；期貨日盤淨交易 +1,310口；期貨淨 OI -99,219口（存量，須與前期比較）；選擇權日盤 +9,756口、夜盤 -601口。",
         "compass": "證據支持的描述：外資在現貨、期貨流量、選擇權流量之間呈現方向分歧。三法人期貨淨 OI 合計有效；仍與日盤交易流量分開解讀。目前沒有足夠資料判斷選擇權交易是買方主動、賣方承接或避險組合，也沒有足夠證據推定主力正在控盤、誘多或出貨。",
         "target": "意圖判讀的最低追加證據：期貨有效 OI 的連續變化、選擇權逐履約價買賣權 OI 與主動買賣流、以及現貨法人連續日買賣超。若三類證據連續同向，才提高方向性意圖的可信度；在資料未齊前只報告『流量分歧／意圖未明』，不採取主力意圖型交易。"
       },
       "夜盤劇本": {
-        "look": "夜盤收盤39987.0點；變化-325.0點；基差117.09點",
-        "compass": "夜盤-0.86% 盤整／訊號混合",
-        "target": "夜盤低39411.0為支撐"
+        "look": "夜盤收盤38107.0點；變化None點；基差None點",
+        "compass": "夜盤-1.3% 空方壓力",
+        "target": "夜盤低37931.0為支撐"
       },
       "台指夜盤劇本": {
-        "look": "台指夜盤收盤39987.0點；變化-325.0點；基差117.09點",
-        "compass": "夜盤-0.86% 盤整／訊號混合",
-        "target": "夜盤低39411.0為支撐"
+        "look": "台指夜盤收盤38107.0點；變化None點；基差None點",
+        "compass": "夜盤-1.3% 空方壓力",
+        "target": "夜盤低37931.0為支撐"
       },
       "資金流向": {
-        "look": "加權40194.91點 +0.26% 漲跌492上520下，RSI 34.15 MACD -234.3200",
-        "compass": "Bias35分，492上520下全面普跌",
-        "target": "觀察 Put Wall 33700.00 支撐"
+        "look": "加權38426.89點 -4.40% 漲跌67上993下，RSI 30.38 MACD -368.9300",
+        "compass": "Bias19分，67上993下全面普跌",
+        "target": "觀察 Put Wall 35700.00 支撐"
       },
       "PCR 極低": {
-        "look": "PCR 0.68；GEX 依有效來源資料；Put Wall 33700.0",
-        "compass": "選擇權資料 PCR 0.68、Put Wall 33700.0；缺值不推定方向",
-        "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
+        "look": "PCR 0.37；GEX 依有效來源資料；Put Wall 35700.0",
+        "compass": "PCR0.37偏低，Put Wall 35700.0為觀察位",
+        "target": "Put Wall 35700.0守住觀察震盪，跌破再確認"
       },
       "VIX & DXY": {
-        "look": "SOX +0.10%；股票指數漲跌互見/資料不足；VIX 24.56點；DXY +0.31%",
-        "compass": "費半+0.10%；VIX 24.56點；DXY +0.31%",
+        "look": "SOX -2.41%；股票指數全跌；VIX 30.72點；DXY -0.14%",
+        "compass": "費半-2.41%；VIX 30.72點；DXY -0.14%",
         "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "相關性熱圖": {
@@ -3535,42 +3570,42 @@
         "target": "累積足夠的同步歷史樣本後再計算"
       },
       "台指期 日盤": {
-        "look": "台指日盤收40312.0點；高41205.0點；低39523.0點；量74871.0口",
-        "compass": "日盤0.51% 基差117.09",
-        "target": "日盤低39523.0為支撐"
+        "look": "台指日盤收35875.0點；高37673.0點；低35563.0點；量109453.0口",
+        "compass": "日盤-7.08% 基差None",
+        "target": "日盤低35563.0為支撐"
       },
       "台指期 夜盤": {
-        "look": "台指夜盤收39987.0點；高40689.0點；低39411.0點；量56051.0口",
-        "compass": "夜盤-0.86% 變化-325.0",
-        "target": "夜盤低39411.0為支撐"
+        "look": "台指夜盤收38107.0點；高39765.0點；低37931.0點；量74153.0口",
+        "compass": "夜盤-1.3% 變化None",
+        "target": "夜盤低37931.0為支撐"
       },
       "期貨籌碼深度圖": {
-        "look": "台指基差117.09點；夜盤-0.86%；夜低39,411.00點；外資期貨淨 OI -99,438口",
-        "compass": "夜盤漲跌幅 -0.86%；基差 117.09點；盤整／訊號混合",
-        "target": "夜盤低點 39,411.00點（觀察價位，非保證支撐）"
+        "look": "台指基差unavailable點；夜盤-1.30%；夜低37,931.00點；外資期貨淨 OI -99,219口",
+        "compass": "夜盤漲跌幅 -1.30%；基差 unavailable點；空方壓力",
+        "target": "夜盤低點 37,931.00點（觀察價位，非保證支撐）"
       },
       "外資期貨": {
-        "look": "外資期貨淨 OI -99,438口；日盤淨交易 -2,620口；夜盤淨交易 -108口",
+        "look": "外資期貨淨 OI -99,219口；日盤淨交易 1,310口；夜盤淨交易 2,657口",
         "compass": "外資期貨淨 OI 偏空（低於 -80,000 口觀察門檻）",
         "target": "淨 OI 為部位存量，日／夜盤淨交易為流量；分開觀察變化"
       },
       "前十大與分歧": {
-        "look": "前十大多空淨 OI -1,681口；外資日盤淨交易 -2,620口；OI 為存量、日盤淨交易為流量，不直接相減",
-        "compass": "前十大淨 OI 偏空；外資日盤淨交易 偏空；分開觀察存量與流量",
+        "look": "前十大多空淨 OI 5,071口；外資日盤淨交易 1,310口；OI 為存量、日盤淨交易為流量，不直接相減",
+        "compass": "前十大淨 OI 偏多；外資日盤淨交易 偏多；分開觀察存量與流量",
         "target": "追蹤前十大多空淨 OI 及其變化；淨 OI 不等同價格支撐／壓力"
       },
       "前十大與分歧bar": {
-        "look": "前十大多空淨 OI -1,681口；外資日盤淨交易 -2,620口；OI 為存量、日盤淨交易為流量，不直接相減",
-        "compass": "前十大淨 OI 偏空；外資日盤淨交易 偏空；分開觀察存量與流量",
+        "look": "前十大多空淨 OI 5,071口；外資日盤淨交易 1,310口；OI 為存量、日盤淨交易為流量，不直接相減",
+        "compass": "前十大淨 OI 偏多；外資日盤淨交易 偏多；分開觀察存量與流量",
         "target": "追蹤前十大多空淨 OI 及其變化；淨 OI 不等同價格支撐／壓力"
       },
       "OI結構": {
-        "look": "PCR 0.68；GEX 依有效來源資料；Put Wall 33700.0",
-        "compass": "選擇權資料 PCR 0.68、Put Wall 33700.0；缺值不推定方向",
-        "target": "PCR／Put Wall 有效資料不足時不設定區間目標"
+        "look": "PCR 0.37；GEX 依有效來源資料；Put Wall 35700.0",
+        "compass": "PCR0.37偏低，Put Wall 35700.0為觀察位",
+        "target": "Put Wall 35700.0守住觀察震盪，跌破再確認"
       },
       "GEX": {
-        "look": "Net GEX 3,200,834,625.92 NT$／標的價格變動 1%；Gross GEX 5,449,339,641.17；Put Wall 33700.0",
+        "look": "Net GEX 2,412,597,917.00 NT$／標的價格變動 1%；Gross GEX 9,714,546,932.77；Put Wall 35700.0",
         "compass": "GEX 是 Gamma 模型曝險估值；正負不直接等同多空方向，須結合 Gamma regime 與價格位置解讀",
         "target": "以 Net／Gross GEX、資料日期及模型品質觀察曝險結構，不單獨產生方向訊號"
       },
@@ -3585,47 +3620,47 @@
         "target": "取得各到期月份 IV 後再分析"
       },
       "PCR 0.74→0.57": {
-        "look": "當日 PCR 0.68；未提供連續歷史序列時不繪製趨勢",
-        "compass": "PCR 0.68；不以單日數值直接推定散戶恐慌",
+        "look": "當日 PCR 0.37；未提供連續歷史序列時不繪製趨勢",
+        "compass": "PCR 0.37；不以單日數值直接推定散戶恐慌",
         "target": "PCR 缺值或缺少歷史序列時不產生趨勢與反向訊號"
       },
       "外資選擇權分歧": {
-        "look": "外資選擇權日盤淨交易 6,484口（偏多）；夜盤 284口（偏多）；日夜同向",
-        "compass": "外資選擇權日盤 偏多、夜盤 偏多；日夜盤方向分開呈現",
+        "look": "外資選擇權日盤淨交易 9,756口（偏多）；夜盤 -601口（偏空）；日夜方向分歧",
+        "compass": "外資選擇權日盤 偏多、夜盤 偏空；日夜盤方向分開呈現",
         "target": "選擇權日夜淨交易是流量口數，不等同 OI 存量或單邊方向保證"
       },
       "美股指數": {
-        "look": "SOX +0.10%；股票指數漲跌互見/資料不足；VIX 24.56點；DXY +0.31%",
-        "compass": "費半+0.10%；VIX 24.56點；DXY +0.31%",
+        "look": "SOX -2.41%；股票指數全跌；VIX 30.72點；DXY -0.14%",
+        "compass": "費半-2.41%；VIX 30.72點；DXY -0.14%",
         "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "亞洲指數": {
-        "look": "亞洲市場資料：[{'l': '日經225', 'v': 0.69, 'close': 59264.55, 'raw': ['日經225', '^N225', '59,264.55', '404.12', '+0.69', '2026-11-19', '2026-11-19T00:19:16+00:00', 'Asia/Tokyo', 'Yahoo Finance Chart API']}, {'l': '韓國KOSPI', 'v': -2.59, 'close': 4968.48, 'raw': ['韓國KOSPI', '^KS11', '4,968.48', '-132.02', '-2.59', '2026-11-17', '2026-11-19T00:19:16+00:00', 'Asia/Seoul', 'Yahoo Finance Chart API']}, {'l': '香港恆生', 'v': -1.03, 'close': 23508.17, 'raw': ['香港恆生', '^HSI', '23,508.17', '-245.67', '-1.03', '2026-11-17', '2026-11-19T00:19:16+00:00', 'Asia/Hong_Kong', 'Yahoo Finance Chart API']}, {'l': '上海綜合', 'v': -0.5, 'close': 3584.58, 'raw': ['上海綜合', '000001.SS', '3,584.58', '-17.99', '-0.50', '2026-11-17', '2026-11-19T00:19:16+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API']}, {'l': '深圳成分', 'v': -0.49, 'close': 10638.52, 'raw': ['深圳成分', '399001.SZ', '10,638.52', '-52.26', '-0.49', '2026-11-17', '2026-11-19T00:19:16+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API']}]",
+        "look": "亞洲市場資料：[{'l': '日經225', 'v': -5.06, 'close': 56436.65, 'raw': ['日經225', '^N225', '56,436.65', '-3,007.56', '-5.06', '2026-11-20', '2026-11-20T12:46:27+00:00', 'Asia/Tokyo', 'Yahoo Finance Chart API']}, {'l': '韓國KOSPI', 'v': -5.21, 'close': 4869.96, 'raw': ['韓國KOSPI', '^KS11', '4,869.96', '-267.93', '-5.21', '2026-11-20', '2026-11-20T12:46:27+00:00', 'Asia/Seoul', 'Yahoo Finance Chart API']}, {'l': '香港恆生', 'v': -1.89, 'close': 22410.8, 'raw': ['香港恆生', '^HSI', '22,410.80', '-430.82', '-1.89', '2026-11-20', '2026-11-20T12:46:28+00:00', 'Asia/Hong_Kong', 'Yahoo Finance Chart API']}, {'l': '上海綜合', 'v': -1.22, 'close': 3533.79, 'raw': ['上海綜合', '000001.SS', '3,533.79', '-43.82', '-1.22', '2026-11-20', '2026-11-20T12:46:27+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API']}, {'l': '深圳成分', 'v': -3.09, 'close': 10256.39, 'raw': ['深圳成分', '399001.SZ', '10,256.39', '-326.81', '-3.09', '2026-11-20', '2026-11-20T12:46:27+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API']}]",
         "compass": "僅呈現有來源的市場數值，不推定同步連動",
         "target": "依各市場實際變動分別觀察"
       },
       "美股期貨": {
-        "look": "美股期貨資料：[{'l': 'S&P500期貨', 'v': 0.21, 'close': 7374.5, 'raw': ['S&P500期貨', 'ES=F', '7,374.50', '15.50', '+0.21', '2026-11-18', '2026-11-19T00:19:16+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'Nasdaq100期貨', 'v': 1.31, 'close': 27431.25, 'raw': ['Nasdaq100期貨', 'NQ=F', '27,431.25', '355.75', '+1.31', '2026-11-18', '2026-11-19T00:19:16+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': '道瓊期貨', 'v': -0.8, 'close': 50410.0, 'raw': ['道瓊期貨', 'YM=F', '50,410.00', '-405.00', '-0.80', '2026-11-18', '2026-11-19T00:19:16+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'Russell2000期貨', 'v': 0.67, 'close': 2729.3, 'raw': ['Russell2000期貨', 'RTY=F', '2,729.30', '18.10', '+0.67', '2026-11-18', '2026-11-19T00:19:16+00:00', 'America/New_York', 'Yahoo Finance Chart API']}]",
+        "look": "美股期貨資料：[{'l': 'S&P500期貨', 'v': -0.84, 'close': 7136.5, 'raw': ['S&P500期貨', 'ES=F', '7,136.50', '-60.75', '-0.84', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'Nasdaq100期貨', 'v': -1.69, 'close': 26149.75, 'raw': ['Nasdaq100期貨', 'NQ=F', '26,149.75', '-450.50', '-1.69', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': '道瓊期貨', 'v': -0.2, 'close': 49081.0, 'raw': ['道瓊期貨', 'YM=F', '49,081.00', '-99.00', '-0.20', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'Russell2000期貨', 'v': -0.23, 'close': 2657.1, 'raw': ['Russell2000期貨', 'RTY=F', '2,657.10', '-6.20', '-0.23', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}]",
         "compass": "僅呈現 DATA_REPORT 有效數值",
         "target": "資料缺值時不推定夜盤方向"
       },
       "美債殖利率": {
-        "look": "美債市場資料：[{'l': '美國 2 年期殖利率', 'v': 0.0, 'close': 4.8, 'raw': ['美國 2 年期殖利率', '2 Yr', '4.80', '0.00', '18-NOV-26', '2026-11-19T00:19:36+00:00', 'U.S. Treasury yield.xml（BC_2YEAR 備援）']}, {'l': '美國 10 年期殖利率', 'v': -0.04, 'close': 5.07, 'raw': ['美國 10 年期殖利率', '10 Yr', '5.07', '-0.04', '2026-11-18', '2026-11-19T00:19:36+00:00', 'Yahoo Finance (備援)']}, {'l': '美國 20 年期殖利率', 'v': -0.06, 'close': 5.44, 'raw': ['美國 20 年期殖利率', '20 Yr', '5.44', '-0.06', '18-NOV-26', '2026-11-19T00:19:54+00:00', 'U.S. Treasury yield.xml（BC_20YEAR 備援）']}, {'l': '美國 30 年期殖利率', 'v': -0.05, 'close': 5.41, 'raw': ['美國 30 年期殖利率', '30 Yr', '5.41', '-0.05', '2026-11-18', '2026-11-19T00:19:54+00:00', 'Yahoo Finance (備援)']}]",
+        "look": "美債市場資料：[{'l': '美國 2 年期殖利率', 'v': -0.04, 'close': 4.76, 'raw': ['美國 2 年期殖利率', '2 Yr', '4.76', '-0.04', '19-NOV-26', '2026-11-20T12:46:50+00:00', 'U.S. Treasury yield.xml（BC_2YEAR 備援）']}, {'l': '美國 10 年期殖利率', 'v': -0.01, 'close': 5.05, 'raw': ['美國 10 年期殖利率', '10 Yr', '5.05', '-0.01', '2026-11-19', '2026-11-20T12:46:50+00:00', 'Yahoo Finance (備援)']}, {'l': '美國 20 年期殖利率', 'v': -0.01, 'close': 5.43, 'raw': ['美國 20 年期殖利率', '20 Yr', '5.43', '-0.01', '19-NOV-26', '2026-11-20T12:46:50+00:00', 'U.S. Treasury yield.xml（BC_20YEAR 備援）']}, {'l': '美國 30 年期殖利率', 'v': -0.01, 'close': 5.4, 'raw': ['美國 30 年期殖利率', '30 Yr', '5.40', '-0.01', '2026-11-19', '2026-11-20T12:46:50+00:00', 'Yahoo Finance (備援)']}]",
         "compass": "顯示 DATA_REPORT 原始列值；不以固定門檻推定殖利率曲線",
         "target": "依當日實際殖利率與期限利差另行判讀"
       },
       "匯率": {
-        "look": "匯率市場資料：[{'l': 'USD/TWD', 'v': 0.06, 'close': 32.93, 'raw': ['USD/TWD', 'TWD=X', '32.93', '0.02', '+0.06', '2026-11-19', '2026-11-19T00:19:17+00:00', 'Europe/London', 'Yahoo Finance Chart API']}, {'l': 'DXY美元指數', 'v': 0.31, 'close': 103.81, 'raw': ['DXY美元指數', 'DX-Y.NYB', '103.81', '0.32', '+0.31', '2026-11-18', '2026-11-19T00:19:17+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'USD/JPY', 'v': -0.06, 'close': 159.41, 'raw': ['USD/JPY', 'JPY=X', '159.41', '-0.09', '-0.06', '2026-11-19', '2026-11-19T00:19:17+00:00', 'Europe/London', 'Yahoo Finance Chart API']}, {'l': 'USD/KRW', 'v': -0.28, 'close': 1329.25, 'raw': ['USD/KRW', 'KRW=X', '1,329.25', '-3.76', '-0.28', '2026-11-19', '2026-11-19T00:19:17+00:00', 'Europe/London', 'Yahoo Finance Chart API']}]",
+        "look": "匯率市場資料：[{'l': 'USD/TWD', 'v': 0.01, 'close': 32.93, 'raw': ['USD/TWD', 'TWD=X', '32.93', '0.00', '+0.01', '2026-11-20', '2026-11-20T12:46:28+00:00', 'Europe/London', 'Yahoo Finance Chart API']}, {'l': 'DXY美元指數', 'v': -0.14, 'close': 103.76, 'raw': ['DXY美元指數', 'DX-Y.NYB', '103.76', '-0.14', '-0.14', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'USD/JPY', 'v': -0.41, 'close': 158.73, 'raw': ['USD/JPY', 'JPY=X', '158.73', '-0.65', '-0.41', '2026-11-20', '2026-11-20T12:46:28+00:00', 'Europe/London', 'Yahoo Finance Chart API']}, {'l': 'USD/KRW', 'v': 0.82, 'close': 1341.25, 'raw': ['USD/KRW', 'KRW=X', '1,341.25', '10.85', '+0.82', '2026-11-20', '2026-11-20T12:46:28+00:00', 'Europe/London', 'Yahoo Finance Chart API']}]",
         "compass": "以當日來源資料呈現，不由單一匯率推定外資匯出",
         "target": "搭配外資現貨與期貨部位交叉觀察"
       },
       "商品": {
-        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': -4.65, 'close': 82.01, 'raw': ['WTI原油期貨', 'CL=F', '82.01', '-4.00', '-4.65', '2026-11-18', '2026-11-19T00:19:17+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': '黃金期貨', 'v': -3.2, 'close': 3740.4, 'raw': ['黃金期貨', 'GC=F', '3,740.40', '-123.80', '-3.20', '2026-11-18', '2026-11-19T00:19:17+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'Bitcoin', 'v': -3.43, 'close': 62669.77, 'raw': ['Bitcoin', 'BTC-USD', '62,669.77', '-2,224.18', '-3.43', '2026-11-19', '2026-11-19T00:19:17+00:00', 'UTC', 'Yahoo Finance Chart API']}]",
+        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': -1.19, 'close': 82.22, 'raw': ['WTI原油期貨', 'CL=F', '82.22', '-0.99', '-1.19', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': '黃金期貨', 'v': -3.05, 'close': 3573.2, 'raw': ['黃金期貨', 'GC=F', '3,573.20', '-112.30', '-3.05', '2026-11-20', '2026-11-20T12:46:28+00:00', 'America/New_York', 'Yahoo Finance Chart API']}, {'l': 'Bitcoin', 'v': -0.57, 'close': 61549.9, 'raw': ['Bitcoin', 'BTC-USD', '61,549.90', '-351.92', '-0.57', '2026-11-20', '2026-11-20T12:46:28+00:00', 'UTC', 'Yahoo Finance Chart API']}]",
         "compass": "商品價格與通膨關係需搭配時間序列判讀",
         "target": "不以缺值或單日變動推定通膨方向"
       },
       "重大經濟數據": {
-        "look": "重大新聞12則，首則載板衛星放閃 台股擁兆元行情守4萬關",
+        "look": "重大新聞12則，首則單周狂瀉7641點寫新紀錄！台股再崩2393點史上第三大",
         "compass": "12則新聞，聚焦Yahoo 台股；發布時間：2026-1",
         "target": "關注法人籌碼與新聞共振"
       }
@@ -3647,82 +3682,82 @@
       "matrix": [
         [
           1.0,
-          0.6482,
-          -0.6973,
-          0.8285,
-          -0.0817,
-          0.5488,
-          0.4137,
-          0.3441
+          0.4512,
+          -0.8205,
+          0.8355,
+          -0.3109,
+          0.5797,
+          0.2985,
+          -0.0294
         ],
         [
-          0.6482,
+          0.4512,
           1.0,
-          -0.4127,
-          0.7717,
-          -0.4546,
-          0.7983,
-          0.6522,
-          0.4041
+          -0.6971,
+          0.4785,
+          0.0665,
+          0.5992,
+          0.2852,
+          -0.4419
         ],
         [
-          -0.6973,
-          -0.4127,
+          -0.8205,
+          -0.6971,
           1.0,
-          -0.8256,
-          -0.1239,
-          -0.0156,
-          0.2003,
-          0.3996
+          -0.6163,
+          -0.1021,
+          -0.4635,
+          -0.0164,
+          0.5666
         ],
         [
-          0.8285,
-          0.7717,
-          -0.8256,
+          0.8355,
+          0.4785,
+          -0.6163,
           1.0,
-          -0.3858,
-          0.5668,
-          0.3726,
-          0.1021
+          -0.7136,
+          0.9153,
+          0.7523,
+          0.258
         ],
         [
-          -0.0817,
-          -0.4546,
-          -0.1239,
-          -0.3858,
+          -0.3109,
+          0.0665,
+          -0.1021,
+          -0.7136,
           1.0,
-          -0.7574,
-          -0.7616,
-          -0.5343
+          -0.7383,
+          -0.9189,
+          -0.8017
         ],
         [
-          0.5488,
-          0.7983,
-          -0.0156,
-          0.5668,
-          -0.7574,
+          0.5797,
+          0.5992,
+          -0.4635,
+          0.9153,
+          -0.7383,
           1.0,
-          0.9722,
-          0.8282
+          0.8874,
+          0.2569
         ],
         [
-          0.4137,
-          0.6522,
-          0.2003,
-          0.3726,
-          -0.7616,
-          0.9722,
+          0.2985,
+          0.2852,
+          -0.0164,
+          0.7523,
+          -0.9189,
+          0.8874,
           1.0,
-          0.9229
+          0.6401
         ],
         [
-          0.3441,
-          0.4041,
-          0.3996,
-          0.1021,
-          -0.5343,
-          0.8282,
-          0.9229,
+          -0.0294,
+          -0.4419,
+          0.5666,
+          0.258,
+          -0.8017,
+          0.2569,
+          0.6401,
           1.0
         ]
       ],
@@ -3731,27 +3766,27 @@
     "levels": [
       {
         "t": "當日高點",
-        "v": 40938,
+        "v": 40315,
         "type": "R"
       },
       {
         "t": "P 樞紐",
-        "v": 40131,
+        "v": 39000,
         "type": "P"
       },
       {
         "t": "當日低點",
-        "v": 39260,
+        "v": 38259,
         "type": "S"
       },
       {
-        "t": "Put Wall 33K",
-        "v": 33700,
+        "t": "Put Wall 35K",
+        "v": 35700,
         "type": "W"
       },
       {
-        "t": "Flip 36K",
-        "v": 36223,
+        "t": "Flip 37K",
+        "v": 37575,
         "type": "F"
       }
     ],
@@ -3766,46 +3801,53 @@
   },
   "news": [
     {
-      "t": "載板衛星放閃 台股擁兆元行情守4萬關",
-      "s": "Yahoo 台股；發布時間：2026-11-18T09:25:58Z；台北時間：2026-11-18 17:25",
-      "d": "台股震盪1677點，尾盤翻紅守住4萬關卡！今(18)日加權指數終場上漲102.80點、漲幅0.26%，收40194.91點，上市成交金額達1兆318.39億元。輝達財報報喜帶動早盤開高，指數一度上漲846.09點，隨後賣壓湧現、最低下探39",
-      "time": "2026-11-18T09:25:58Z；台北時間：2026-11-18 17:25",
-      "link": "https://tw.stock.yahoo.com/news/%E6%AC%8A%E5%80%BC%E5%A4%A7%E8%BB%8D%E6%8B%89%E4%B8%80%E6%8A%8A%EF%BC%81%E5%8F%B0%E8%82%A1%E6%93%81%E5%85%86%E5%85%83%E8%A1%8C%E6%83%85%E5%AE%88%E4%BD%8F4%E8%90%AC%E9%97%9C-%E8%BC%89%E6%9D%BF%E8%A1%9B%E6%98%9F%E9%BD%8A%E6%94%BE%E9%96%83%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-092558726.html"
+      "t": "單周狂瀉7641點寫新紀錄！台股再崩2393點史上第三大",
+      "s": "Yahoo 台股；發布時間：2026-11-20T08:40:04Z；台北時間：2026-11-20 16:40",
+      "d": "台股今(20)日又是歷史級別的崩跌，盤中一度失守3萬6千點，終場下跌2,393.60點，收36,033.29點，寫下史上第三大收盤跌點，跌幅6.23%也是史上第四大，成交金額8,773.50億元，而櫃買指數更是重挫7.72%。",
+      "time": "2026-11-20T08:40:04Z；台北時間：2026-11-20 16:40",
+      "link": "https://tw.stock.yahoo.com/news/%E5%96%AE%E5%91%A8%E7%8B%82%E7%80%897641%E9%BB%9E%E5%AF%AB%E6%96%B0%E7%B4%80%E9%8C%84%EF%BC%81%E5%8F%B0%E8%82%A1%E5%86%8D%E5%B4%A92393%E9%BB%9E%E3%80%8C%E5%8F%B2%E4%B8%8A%E7%AC%AC%E4%B8%89%E5%A4%A7%E3%80%8D%E8%81%AF%E7%99%BC%E7%A7%91%E3%80%81%E5%8F%B0%E9%81%94%E9%9B%BB%E9%BD%8A%E8%B7%8C%E5%81%9C%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-084004851.html"
     },
     {
-      "t": "一天爆9檔違約交割 PCB散熱大廠都入列",
-      "s": "Yahoo 台股；發布時間：2026-11-18T10:30:17Z；台北時間：2026-11-18 18:30",
-      "d": "台股今（18）日爆出多起鉅額違約交割，統計證交所與櫃買中心最新公告，上市櫃單日合計共有9檔個股達到違約資訊揭露標準，包括千金股創意（3443），以及華通（2313）、欣興（3037）、雙鴻（3324）等PCB及散熱大廠全在內，總金額近4.2",
-      "time": "2026-11-18T10:30:17Z；台北時間：2026-11-18 18:30",
-      "link": "https://tw.stock.yahoo.com/news/1%E5%A4%A99%E8%B5%B7%E9%9F%AD%E8%8F%9C%E7%BF%BB%E8%BB%8A%EF%BC%81%E5%8D%83%E9%87%91%E8%82%A1%E5%89%B5%E6%84%8F%E3%80%81%E8%8F%AF%E9%80%9A%E3%80%81%E6%AC%A3%E8%88%88%E5%85%A8%E4%B8%AD%E6%A7%8D-%E9%81%AD%E9%81%95%E7%B4%84%E4%BA%A4%E5%89%B2%E7%A0%B4426%E5%84%84-103716529.html"
+      "t": "美收緊中國晶片管制！台積電接單限制同步升級、輝達利空橫飛　「這檔金融」賺贏去年全年仍遭外資狠砍逾2萬張淪賣超王",
+      "s": "Yahoo 台股；發布時間：2026-11-20T12:30:00Z；台北時間：2026-11-20 20:30",
+      "d": "[FTNN新聞網]記者邱梓欣／綜合報導即使金管會出手祭出「限空令」仍難敵賣壓，台股今（20）日以37,646.13開低後下殺，終場慘摔2393.60點，以36,033.29點作收，...",
+      "time": "2026-11-20T12:30:00Z；台北時間：2026-11-20 20:30",
+      "link": "https://tw.stock.yahoo.com/news/%E7%BE%8E%E6%94%B6%E7%B7%8A%E4%B8%AD%E5%9C%8B%E6%99%B6%E7%89%87%E7%AE%A1%E5%88%B6-%E5%8F%B0%E7%A9%8D%E9%9B%BB%E6%8E%A5%E5%96%AE%E9%99%90%E5%88%B6%E5%90%8C%E6%AD%A5%E5%8D%87%E7%B4%9A-%E8%BC%9D%E9%81%94%E5%88%A9%E7%A9%BA%E6%A9%AB%E9%A3%9B-%E9%80%99%E6%AA%94%E9%87%91%E8%9E%8D-%E8%B3%BA%E8%B4%8F%E5%8E%BB%E5%B9%B4%E5%85%A8%E5%B9%B4%E4%BB%8D%E9%81%AD%E5%A4%96%E8%B3%87%E7%8B%A0%E7%A0%8D%E9%80%BE2%E8%90%AC%E5%BC%B5%E6%B7%AA%E8%B3%A3%E8%B6%85%E7%8E%8B-123000645.html"
     },
     {
-      "t": "17筆盜轉手機卻沒簡訊 北富銀將推驗證新制",
-      "s": "Yahoo 台股；發布時間：2026-11-18T10:07:00Z；台北時間：2026-11-18 18:07",
-      "d": "[FTNN新聞網]記者陳欣瑜／綜合報導近期網銀盜轉事件頻傳，有民眾在社群平台發文表示，家人名下的台北富邦銀行帳戶，於昨（17）日凌晨在一個多小時內遭異常轉...",
-      "time": "2026-11-18T10:07:00Z；台北時間：2026-11-18 18:07",
-      "link": "https://tw.stock.yahoo.com/news/%E7%B6%B2%E9%8A%80%E5%87%8C%E6%99%A8%E7%88%86%E7%9B%9C%E8%BD%89-1%E5%B0%8F%E6%99%8217%E7%AD%86-%E9%81%AD%E7%9B%9C23%E8%90%AC-%E5%8C%97%E5%AF%8C%E9%8A%80%E5%9B%9E%E6%87%89-%E7%A0%94%E5%88%A4%E8%A3%9D%E7%BD%AE%E6%88%96%E5%A4%96%E9%83%A8%E7%B6%B2%E8%B7%AF%E9%87%80%E8%B3%87%E6%96%99%E5%A4%96%E6%B4%A9-100700150.html"
+      "t": "晶圓代工跌深成買點？「這2檔」今日獲外資合計掃入逾9.8萬張　趁低加碼聯電8萬張、斥資65億元",
+      "s": "Yahoo 台股；發布時間：2026-11-20T12:00:00Z；台北時間：2026-11-20 20:00",
+      "d": "[FTNN新聞網]記者王凱暄／綜合報導台股加權指數今（20）日開低走低續跌，盤中一度下殺至3萬5千點、台積電（2330）則一度跌破2000元，指數終場暴跌2393.60點，...",
+      "time": "2026-11-20T12:00:00Z；台北時間：2026-11-20 20:00",
+      "link": "https://tw.stock.yahoo.com/news/%E6%99%B6%E5%9C%93%E4%BB%A3%E5%B7%A5%E8%B7%8C%E6%B7%B1%E6%88%90%E8%B2%B7%E9%BB%9E-%E9%80%992%E6%AA%94-%E4%BB%8A%E6%97%A5%E7%8D%B2%E5%A4%96%E8%B3%87%E5%90%88%E8%A8%88%E6%8E%83%E5%85%A5%E9%80%BE9-8%E8%90%AC%E5%BC%B5-%E8%B6%81%E4%BD%8E%E5%8A%A0%E7%A2%BC%E8%81%AF%E9%9B%BB8%E8%90%AC%E5%BC%B5-120000970.html"
     },
     {
-      "t": "小資族看過來 零股與千金股交易雙升級",
-      "s": "Yahoo 台股；發布時間：2026-11-18T09:19:57Z；台北時間：2026-11-18 17:19",
-      "d": "近 1,500 萬人迎利多！證交所今（18）日宣布明（116）年7月5日起兩大交易變革，不僅盤中零股撮合間隔將從現行的 5 秒大幅縮短至 1 秒、成交更即時，股價 1,000 元以上的「千金股」跳動單位也將由 5 元縮小為 1 元，投資人能",
-      "time": "2026-11-18T09:19:57Z；台北時間：2026-11-18 17:19",
-      "link": "https://tw.stock.yahoo.com/news/%E8%BF%911500%E8%90%AC%E4%BA%BA%E5%88%A9%E5%A4%9A%EF%BC%81%E6%98%8E%E5%B9%B475%E7%9B%A4%E4%B8%AD%E9%9B%B6%E8%82%A11%E7%A7%92%E6%92%AE%E5%90%88%E3%80%81%E5%8D%83%E9%87%91%E8%82%A1%E6%94%B91%E5%85%831%E8%B7%B3-093440343.html"
+      "t": "台股本週跌7641點史上最慘！證交所3度信心喊話　股民噓「麵已經臭酸」再聽2字嘆：涼了",
+      "s": "Yahoo 台股；發布時間：2026-11-20T10:45:00Z；台北時間：2026-11-20 18:45",
+      "d": "[FTNN新聞網]記者吳峻光／綜合報導「禁空令2.0」今（20）日正式生效，仍無法幫助台股止血，加權指數終場收36,033.29點，大跌2,393.60點，為史上第3大跌點，跌...",
+      "time": "2026-11-20T10:45:00Z；台北時間：2026-11-20 18:45",
+      "link": "https://tw.stock.yahoo.com/news/%E5%8F%B0%E8%82%A1%E6%9C%AC%E9%80%B1%E8%B7%8C7641%E9%BB%9E%E5%8F%B2%E4%B8%8A%E6%9C%80%E6%85%98-%E8%AD%89%E4%BA%A4%E6%89%803%E5%BA%A6%E4%BF%A1%E5%BF%83%E5%96%8A%E8%A9%B1-%E8%82%A1%E6%B0%91%E5%99%93-%E9%BA%B5%E5%B7%B2%E7%B6%93%E8%87%AD%E9%85%B8-%E5%86%8D%E8%81%BD2%E5%AD%97%E5%98%86-104500087.html"
     },
     {
-      "t": "晶片管制再收緊 美媒曝輝達牽線阿里內幕",
-      "s": "Yahoo 台股；發布時間：2026-11-18T10:24:00Z；台北時間：2026-11-18 18:24",
-      "d": "外媒報導指出，美國實施晶片出口管制前，輝達銷售團隊曾將阿里巴巴引薦給涉嫌走私晶片的黃樂，助其打入供應鏈並取得融資。美國商務部已針對Megaspeed展開調查，財長貝森特也指控輝達明知故犯售中。隨著華府持續緊縮監管，針對全球資料中心與東南亞買",
-      "time": "2026-11-18T10:24:00Z；台北時間：2026-11-18 18:24",
-      "link": "https://tw.stock.yahoo.com/news/%E7%BE%8E%E5%AA%92%E7%88%86%E8%BC%9D%E9%81%942022%E5%B9%B4%E7%95%B6-%E4%B8%AD%E9%96%93%E4%BA%BA-%E7%89%BD%E7%B7%9A%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4%E6%90%AD%E4%B8%8A%E9%BB%83%E6%A8%82%E7%B9%9E%E9%81%8E%E6%99%B6%E7%89%87%E7%A6%81%E4%BB%A4-102400857.html"
+      "t": "大盤摜殺至3萬6千點！「這4檔主動式ETF」皆遭外資脫手破萬張　0050被出清逾11萬張慘成最大提款機",
+      "s": "Yahoo 台股；發布時間：2026-11-20T10:30:00Z；台北時間：2026-11-20 18:30",
+      "d": "[FTNN新聞網]記者王凱暄／綜合報導台股加權指數今（20）日開低走低續跌，盤中一度下殺至3萬5千點、台積電（2330）則一度跌破2000元，指數終場暴跌2393.60點，...",
+      "time": "2026-11-20T10:30:00Z；台北時間：2026-11-20 18:30",
+      "link": "https://tw.stock.yahoo.com/news/%E5%A4%A7%E7%9B%A4%E6%91%9C%E6%AE%BA%E8%87%B33%E8%90%AC6%E5%8D%83%E9%BB%9E-%E9%80%994%E6%AA%94%E4%B8%BB%E5%8B%95%E5%BC%8Fetf-%E7%9A%86%E9%81%AD%E5%A4%96%E8%B3%87%E8%84%AB%E6%89%8B%E7%A0%B4%E8%90%AC%E5%BC%B5-0050%E8%A2%AB%E5%87%BA%E6%B8%85%E9%80%BE11%E8%90%AC%E5%BC%B5%E6%85%98%E6%88%90%E6%9C%80%E5%A4%A7%E6%8F%90%E6%AC%BE%E6%A9%9F-103000552.html"
     },
     {
-      "t": "破5000元小禮包現身！「保健電商品牌」上櫃啟動　451個機會今開搶",
-      "s": "Yahoo 台股；發布時間：2026-11-19T00:01:00Z；台北時間：2026-11-19 08:01",
-      "d": "[FTNN新聞網]記者張書翰／綜合報導為充實營運資金並因應初次上櫃，保健食品與電商公司騰勢（7889）近期辦理現金增資發行新股，預計將增資1950萬元、發行新股1...",
-      "time": "2026-11-19T00:01:00Z；台北時間：2026-11-19 08:01",
-      "link": "https://tw.stock.yahoo.com/news/%E7%A0%B45000%E5%85%83%E5%B0%8F%E7%A6%AE%E5%8C%85%E7%8F%BE%E8%BA%AB-%E4%BF%9D%E5%81%A5%E9%9B%BB%E5%95%86%E5%93%81%E7%89%8C-%E4%B8%8A%E6%AB%83%E5%95%9F%E5%8B%95-451%E5%80%8B%E6%A9%9F%E6%9C%83%E4%BB%8A%E9%96%8B%E6%90%B6-000100610.html"
+      "t": "PCB血流成河！「這2檔」挫本週第4根領29檔跌停　富喬、華通、台光電、欣興都亮燈",
+      "s": "Yahoo 台股；發布時間：2026-11-20T10:15:00Z；台北時間：2026-11-20 18:15",
+      "d": "[FTNN新聞網]記者陳献朋／綜合報導受到美股四大指數週四全員收跌拖累，台股大盤今（20）日向下走勢顯著，加權指數收36033.29點，下跌2393.60點，跌幅6.23%，...",
+      "time": "2026-11-20T10:15:00Z；台北時間：2026-11-20 18:15",
+      "link": "https://tw.stock.yahoo.com/news/pcb%E8%A1%80%E6%B5%81%E6%88%90%E6%B2%B3-%E9%80%992%E6%AA%94-%E6%8C%AB%E6%9C%AC%E9%80%B1%E7%AC%AC4%E6%A0%B9%E9%A0%9829%E6%AA%94%E8%B7%8C%E5%81%9C-%E5%AF%8C%E5%96%AC-%E8%8F%AF%E9%80%9A-101500761.html"
+    },
+    {
+      "t": "Federal Reserve Board issues enforcement action with former employee of First Security Bancorp",
+      "s": "Federal Reserve；發布時間：Thu, 19 Nov 2026 16:00:00 GMT；台北時間：2026-11-20 00:00",
+      "d": "Federal Reserve Board issues enforcement action with former employee of First Security Bancorp",
+      "time": "",
+      "link": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261119a.htm"
     },
     {
       "t": "Minutes of the Federal Open Market Committee, October 27-28, 2026",
@@ -3815,40 +3857,33 @@
       "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261118a.htm"
     },
     {
-      "t": "Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions, and changes to streamline and adjust their check services",
-      "s": "Federal Reserve；發布時間：Thu, 12 Nov 2026 18:30:00 GMT；台北時間：2026-11-13 02:30",
-      "d": "Federal Reserve Board announces pricing, effective January 1, 2027, for payment services the Federal Reserve Banks provide to banks and credit unions,",
+      "t": "Japan core inflation soars to highest this year as energy subsidy expiry pushes up consumer prices",
+      "s": "CNBC；發布時間：Fri, 20 Nov 2026 01:49:03 GMT；台北時間：2026-11-20 09:49",
+      "d": "The core inflation figure — which strips out prices of food — was lower than the 2.3% expected by Reuters-polled economists.",
       "time": "",
-      "link": "https://www.federalreserve.gov/newsevents/pressreleases/other20261112a.htm"
+      "link": "https://www.cnbc.com/2026/11/20/japan-inflation-cpi-october.html"
     },
     {
-      "t": "Federal Reserve announces revised tentative schedule of Federal Open Market Committee meetings in 2027",
-      "s": "Federal Reserve；發布時間：Thu, 12 Nov 2026 17:45:00 GMT；台北時間：2026-11-13 01:45",
-      "d": "Federal Reserve announces revised tentative schedule of Federal Open Market Committee meetings in 2027",
+      "t": "Trump bought Nvidia, Palantir, SpaceX in September as federal deals, White House ties grew",
+      "s": "CNBC；發布時間：Thu, 19 Nov 2026 19:43:08 GMT；台北時間：2026-11-20 03:43",
+      "d": "President Trump disclosed purchases of Nvidia stock, SpaceX debt and Tesla shares in September, alongside millions of dollars in other investments.",
       "time": "",
-      "link": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20261112a.htm"
+      "link": "https://www.cnbc.com/2026/11/19/trump-nvidia-spacex-palantir-stock-trades-september.html"
     },
     {
-      "t": "Federal Reserve Board issues enforcement action with former employee of United Community Bank",
-      "s": "Federal Reserve；發布時間：Thu, 12 Nov 2026 16:00:00 GMT；台北時間：2026-11-13 00:00",
-      "d": "Federal Reserve Board issues enforcement action with former employee of United Community Bank",
+      "t": "The Tech Download: Anthropic charmed Wall Street. But one big uncertainty hangs over the business",
+      "s": "CNBC；發布時間：Fri, 20 Nov 2026 12:00:02 GMT；台北時間：2026-11-20 20:00",
+      "d": "Access to the huge quantities of compute the company needs to continue developing and deploying models is a challenge for Anthropic to navigate.",
       "time": "",
-      "link": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261112a.htm"
+      "link": "https://www.cnbc.com/2026/11/20/tech-download-anthropic-compute-access.html"
     },
     {
-      "t": "Fed officials expect more rate hikes, worry about AI impact on inflation, minutes show",
-      "s": "CNBC；發布時間：Wed, 18 Nov 2026 19:41:59 GMT；台北時間：2026-11-19 03:41",
-      "d": "The Federal Reserve on Wednesday released minutes from its October policy meeting at which it voted to hold its benchmark interest rate in a range bet",
+      "t": "Commerce approved sales of more than 879,000 AI chips to Chinese companies, Rep. Mast says",
+      "s": "CNBC；發布時間：Fri, 20 Nov 2026 00:53:55 GMT；台北時間：2026-11-20 08:53",
+      "d": "Members of Congress have pushed in the wake of the Jensen Huang scandal for legislation to tighten export controls on chip sales to China.",
       "time": "",
-      "link": "https://www.cnbc.com/2026/11/18/fed-minutes-october-2026.html"
-    },
-    {
-      "t": "Inside India newsletter: Foreign flows helped the market recover. Now it faces the inflation test",
-      "s": "CNBC；發布時間：Thu, 19 Nov 2026 00:01:23 GMT；台北時間：2026-11-19 08:01",
-      "d": "India’s inflation, which has been on the rise for 12 straight months, is becoming a risk to growth and to the reversal of foreign inflows.",
-      "time": "",
-      "link": "https://www.cnbc.com/2026/11/19/india-inflation-foreign-investor-nifty50.html"
+      "link": "https://www.cnbc.com/2026/11/19/nvidia-amd-china-chip-sales-congress.html"
     }
   ],
-  "data_source": "DATA_REPORT 2026-11-18 + technical_history=yahoo (T0 filtered) + historical_learning=SQLite db"
+  "data_source": "DATA_REPORT 2026-11-19 + technical_history=yahoo (T0 filtered) + historical_learning=SQLite db"
 }
