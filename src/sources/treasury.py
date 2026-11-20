@@ -20,6 +20,7 @@ CANDIDATES = [
 ]
 YIELD_XML = "https://home.treasury.gov/sites/default/files/interest-rates/yield.xml"
 
+
 def _treasury() -> dict | None:
     import requests
     from src.utils import HEADERS
@@ -71,35 +72,52 @@ def _treasury() -> dict | None:
                   f"elapsed={perf_counter() - candidate_started:.2f}s")
     return None
 
-def _xml_yield(field: str):
-    """Treasury yield.xml 備援：指定 BC_* 欄位，取最新與前一筆有效值。"""
+
+def _xml_yields(fields: dict[str, str]) -> dict[str, dict]:
+    """Fetch Treasury yield.xml once and extract all requested BC_* tenors."""
     import re
-    from src.utils import HEADERS
     import requests
+    from src.utils import HEADERS
+
+    started = perf_counter()
+    unavailable = {
+        label: {"yield": None, "chg": None, "date": None, "retrieved_at": None,
+                "source": "unavailable", "ok": False}
+        for label in fields
+    }
     try:
         r = requests.get(YIELD_XML, headers={**HEADERS, "Accept": "application/xml"}, timeout=30)
         r.raise_for_status()
         retrieved_at = _retrieved_at()
         bodies = re.findall(r"<G_NEW_DATE>(.*?)</G_NEW_DATE>", r.text, re.S)
-        rows = []
-        for b in bodies:
-            d = re.search(r"<BID_CURVE_DATE>(.*?)</BID_CURVE_DATE>", b)
-            v = re.search(rf"<{re.escape(field)}>(.*?)</{re.escape(field)}>", b)
-            if d and v:
-                try:
-                    rows.append((d.group(1).strip(), float(v.group(1).strip())))
-                except ValueError:
-                    pass
-        if rows:
-            first = rows[-1]
-            prev = rows[-2] if len(rows) > 1 else rows[-1]
-            return {"yield": first[1], "chg": first[1] - prev[1], "date": first[0],
+        results = {}
+        for label, field in fields.items():
+            rows = []
+            for body in bodies:
+                date_match = re.search(r"<BID_CURVE_DATE>(.*?)</BID_CURVE_DATE>", body)
+                value_match = re.search(rf"<{re.escape(field)}>(.*?)</{re.escape(field)}>", body)
+                if date_match and value_match:
+                    try:
+                        rows.append((date_match.group(1).strip(), float(value_match.group(1).strip())))
+                    except ValueError:
+                        pass
+            if rows:
+                latest = rows[-1]
+                previous = rows[-2] if len(rows) > 1 else rows[-1]
+                results[label] = {
+                    "yield": latest[1], "chg": latest[1] - previous[1], "date": latest[0],
                     "retrieved_at": retrieved_at,
-                    "source": f"U.S. Treasury yield.xml（{field} 備援）", "ok": True}
+                    "source": f"U.S. Treasury yield.xml（{field} 備援）", "ok": True,
+                }
+            else:
+                results[label] = unavailable[label]
+        return results
     except Exception as e:  # noqa: BLE001
-        print(f"[WARN] treasury xml {field} failed: {e}")
-    return {"yield": None, "chg": None, "date": None, "retrieved_at": None,
-            "source": "unavailable", "ok": False}
+        print(f"[WARN] treasury xml fetch failed: {e}")
+        return unavailable
+    finally:
+        print(f"[TIMING] treasury_stage=xml_fetch elapsed={perf_counter() - started:.2f}s")
+
 
 def get_yields() -> dict:
     """Return each tenor independently; use a field-specific fallback for missing tenors."""
@@ -120,6 +138,13 @@ def get_yields() -> dict:
             "20Y": ("xml", "BC_20YEAR", None),
             "30Y": ("yahoo", None, "^TYX"),
         }
+        xml_fields = {
+            label: xml_field
+            for label, (kind, xml_field, _symbol) in fallbacks.items()
+            if kind == "xml" and (out.get(label) or {}).get("yield") is None
+        }
+        xml_results = _xml_yields(xml_fields) if xml_fields else {}
+
         for label, (kind, xml_field, symbol) in fallbacks.items():
             current = out.get(label) or {}
             if current.get("yield") is not None:
@@ -127,7 +152,7 @@ def get_yields() -> dict:
             stage_started = perf_counter()
             try:
                 if kind == "xml":
-                    fallback = _xml_yield(xml_field)
+                    fallback = xml_results[label]
                 else:
                     q = quote(symbol)
                     fallback = {"yield": q.get("price"), "chg": q.get("change"), "date": q.get("date"),
