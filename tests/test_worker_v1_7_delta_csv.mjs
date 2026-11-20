@@ -66,7 +66,7 @@ assert.deepEqual(
 }
 
 {
-  const result = parseTAIFEXDeltaCsv(sample.replace("0.6789", "not-a-number"), "2026-11-19");
+  const result = parseTAIFEXDeltaCsv(sample.replace("1.0000", "not-a-number"), "2026-11-19");
   assert.equal(result.diagnostics.invalid_rows, 1);
   assert.equal(result.rows.length, 1);
 }
