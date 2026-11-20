@@ -3583,7 +3583,7 @@ export default {
         ok: true,
         service: "taifex-proxy",
         taifex: true,
-        version: "V1.7 — V1.7 + direct historical Delta CSV (additive)"
+        version: "V1.7 — bounded compact fetch + parallel Delta/TAIEX + historical Delta CSV (additive)"
       });
     }
 
