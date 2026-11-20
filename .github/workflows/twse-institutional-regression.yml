@@ -1,0 +1,35 @@
+name: TWSE Institutional Regression Tests
+
+on:
+  push:
+    branches:
+      - phase2-p0-ui-fixes
+    paths:
+      - "src/sources/twse.py"
+      - "tests/test_twse_institutional.py"
+      - ".github/workflows/twse-institutional-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  twse-institutional-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependency
+        run: python -m pip install requests
+
+      - name: Run TWSE institutional regression tests
+        run: python -m unittest tests.test_twse_institutional -v
