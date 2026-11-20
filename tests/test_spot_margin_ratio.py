@@ -261,11 +261,20 @@ class InstitutionalDateValidationTests(unittest.TestCase):
     def test_rwd_accepts_matching_date(self, fetch, _proxy):
         fetch.return_value = _Response({
             "stat": "OK", "date": "2026/11/05",
-            "data": [["外資及陸資", "", "", "100,000,000"]],
+            "data": [
+                ["外資及陸資", "", "", "100,000,000"],
+                ["外資自營商", "", "", "0"],
+                ["投信", "", "", "200,000,000"],
+                ["自營商(自行買賣)", "", "", "300,000,000"],
+                ["自營商(避險)", "", "", "-100,000,000"],
+            ],
         })
         result = twse.get_institutional("20261105")
         self.assertEqual(result["date"], "20261105")
         self.assertEqual(result["foreign"], 1.0)
+        self.assertEqual(result["trust"], 2.0)
+        self.assertEqual(result["dealer"], 2.0)
+        self.assertEqual(result["total"], 5.0)
 
     def test_spot_contract_rejects_missing_or_wrong_date(self):
         self.assertFalse(spot._institutional_matches_t0({"date": "", "foreign": 1}, "20261105"))
