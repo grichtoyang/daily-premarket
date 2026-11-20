@@ -15,6 +15,7 @@ https://taifex.grichtoyang.workers.dev/
 """
 from __future__ import annotations
 import sys
+from datetime import datetime
 import requests
 from src.utils import HEADERS
 
@@ -391,14 +392,12 @@ def _normalize_contract_expiry_date(value):
     if not isinstance(value, str):
         return value
     value = value.strip()
-    import re
-    from datetime import datetime
-    if re.fullmatch(r"\d{8}", value):
+    if len(value) == 8 and value.isdigit():
         try:
             return datetime.strptime(value, "%Y%m%d").date().isoformat()
         except ValueError:
             return value
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+    if len(value) == 10 and value[4] == "-" and value[7] == "-":
         try:
             return datetime.strptime(value, "%Y-%m-%d").date().isoformat()
         except ValueError:
