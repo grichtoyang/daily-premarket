@@ -9,6 +9,8 @@ on:
       - "tests/test_twse_institutional.py"
       - "src/sources/taifex.py"
       - "tests/test_taifex_top10_rollover.py"
+      - "tests/test_taifex_gamma_fallback.py"
+      - "src/sources/treasury.py"
       - ".github/workflows/twse-institutional-regression.yml"
   workflow_dispatch:
 
@@ -34,4 +36,4 @@ jobs:
         run: python -m pip install requests
 
       - name: Run TWSE and TAIFEX regression tests
-        run: python -m unittest tests.test_twse_institutional tests.test_taifex_top10_rollover -v
+        run: python -m compileall -q src/sources/taifex.py src/sources/treasury.py && python -m unittest tests.test_twse_institutional tests.test_taifex_top10_rollover tests.test_taifex_gamma_fallback -v
