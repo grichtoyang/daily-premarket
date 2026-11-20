@@ -58,7 +58,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_candlestick_volume_unit_is_not_shadowed_by_canvas_coordinate(self):
         # The candle x-coordinate must not overwrite the unit label passed by the chart caller.
-        self.assertRegex(self.html, r'function Pt\\(\\{[^}]*volUnit:unitLabel="口"')
+        self.assertRegex(self.html, r'function Pt\(\{[^}]*volUnit:unitLabel="口"')
         self.assertIn('volScaleMax:volScaleMax=200000', self.html)
         self.assertIn('Math.min(1,o/Math.max(volScaleMax,o))*20', self.html)
         self.assertIn('`${volumeLabel} ${g(o)} ${unitLabel}`', self.html)
@@ -164,7 +164,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('function Pth({current:e,levels:n})', self.html)
         self.assertIn('chart:p(Pth,{current:i.close,levels:{putWall:l.putWall,callWall:l.callWall,gammaWall:l.gammaWall,flip:synthesisFlip,flipEstimated:flipInfo.estimated}})', self.html)
         self.assertIn('const rangeReady = cur != null && put != null && call != null && put < cur && cur < call', self.html)
-        self.assertIn('complete:cur != null && flip != null && cur > flip && bullTargets.length > 0', self.html)
+        self.assertIn('complete:!flipEstimated && cur != null && flip != null && cur > flip && bullTargets.length > 0', self.html)
         self.assertIn('complete:cur != null && put != null && cur < put && bearTargets.length > 0', self.html)
         self.assertIn('站穩／有效跌破仍須後續價格行為確認', self.html)
         self.assertIn('MaxPain 僅作磁吸參考，不當作跌破後的下跌目標', self.html)
@@ -276,7 +276,7 @@ console.log("scenario paths 6/6 PASS");
     def test_synthesis_narratives_are_derived_from_live_data(self):
         self.assertIn("function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,analysis})", self.html)
         self.assertIn('function v2({data:e})', self.html)
-        self.assertIn('v9ProSynthesisAnalysis({day:n.day,night:n.night,futures:r,institutional:e.institutional,spot:e.spot,options:e.options,analysis:e.analysis})', self.html)
+        self.assertIn('v9ProSynthesisAnalysis({day:o.day,night:o.night,futures:r,institutional:n,spot:i,options:l,analysis:u})', self.html)
         night_block_start = self.html.index('title:"區塊C 日夜盤劇本"')
         night_block_end = self.html.index('title:"三劇本路徑"', night_block_start)
         night_block = self.html[night_block_start:night_block_end]
