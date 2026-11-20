@@ -63,7 +63,7 @@ curl -i https://taifex.grichtoyang.workers.dev/health
 - `service: "taifex-proxy"`
 - `version` 以 `V1.7` 開頭，且明確包含 direct historical Delta CSV。
 
-若仍回報 V1.7，表示新版本尚未生效或部署目標錯誤；立即停止後續驗收並評估回滾。
+若 `version` 未包含 `direct historical Delta CSV` 描述，表示本次修正尚未生效或部署目標錯誤；立即停止後續驗收並評估回滾。
 
 ### 4.2 Compact endpoint（核心驗收）
 
