@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from src.sources import twse
 
@@ -75,6 +75,43 @@ class TWSEInstitutionalConsistencyTests(unittest.TestCase):
         result = twse.get_institutional("20261119")
         self.assertEqual(result["via"], "proxy")
         self.assertAlmostEqual(result["total"], -432.25)
+
+    @patch("requests.get")
+    def test_proxy_rejects_incomplete_institutional_payload(self, get):
+        response = get.return_value
+        response.status_code = 200
+        response.json.return_value = {
+            "ok": True,
+            "actual_date": "2026-11-19",
+            "date_mismatch": False,
+            "data": {
+                "foreign": -243.12,
+                "investment_trust": None,
+                "dealer": -233.03,
+                "total": None,
+            },
+        }
+        self.assertIsNone(twse._proxy_institutional("20261119"))
+
+    @patch("requests.get")
+    def test_proxy_accepts_complete_institutional_payload(self, get):
+        response = get.return_value
+        response.status_code = 200
+        response.json.return_value = {
+            "ok": True,
+            "actual_date": "2026-11-19",
+            "date_mismatch": False,
+            "data": {
+                "foreign": -243.12,
+                "investment_trust": 43.90,
+                "dealer": -233.03,
+                "total": -432.25,
+            },
+        }
+        result = twse._proxy_institutional("20261119")
+        self.assertEqual(result["date"], "20261119")
+        self.assertAlmostEqual(result["total"], -432.25)
+        self.assertEqual(result["via"], "proxy")
 
 
 if __name__ == "__main__":
