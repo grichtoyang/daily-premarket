@@ -49,8 +49,9 @@ class DashboardUnitContractTests(unittest.TestCase):
         fetch_data = (ROOT / "src" / "fetch_data.py").read_text(encoding="utf-8")
         self.assertIn('("20Y", ("20 Yr", "20yr", "bc_20year"))', treasury)
         self.assertIn('"20Y": ("xml", "BC_20YEAR", None)', treasury)
-        self.assertIn('y["20Y"]["yield"]', fetch_data)
-        self.assertIn('("美國 20 年期殖利率", "20 Yr"', fetch_data)
+        self.assertIn('("20Y", "20", "20 Yr")', fetch_data)
+        self.assertIn('("20Y", ("20 Yr", "20yr", "bc_20year"))', treasury)
+        self.assertIn('"20Y": ("xml", "BC_20YEAR", None)', treasury)
 
     def test_unit_standard_and_skill_are_present(self):
         standard = (ROOT / "docs" / "DASHBOARD_UNIT_STANDARD.md").read_text(encoding="utf-8")
@@ -91,7 +92,7 @@ class DashboardUnitContractTests(unittest.TestCase):
     def test_chart_notes_and_unit_contracts(self):
         html = (ROOT / "templates" / "v9-pro-react-template.html").read_text(encoding="utf-8")
         self.assertIn("chartNote:chartNote", html)
-        self.assertRegex(html, r'function Pt\\(\\{[^}]*volUnit:unitLabel="口"')
+        self.assertIn('function Pt({o:e,h:n,l:r,c:l,vol:o,basis:u,basisLabel:label="基差",volUnit:unitLabel="口"', html)
         self.assertIn('`${volumeLabel} ${g(o)} ${unitLabel}`', html)
         self.assertIn('volUnit:"億元"', html)
         self.assertNotIn('volUnit:a="口"', html)
