@@ -187,6 +187,98 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
+    def test_invalid_settlement_month_sentinels_do_not_override_valid_rollover_baseline(self, snapshot_bundle):
+        data = {
+            "top10fut": list(self.snapshot["data"]["top10fut"]),
+            "top10opt": list(self.snapshot["data"]["top10opt"]),
+        }
+        for dataset, callput in (
+            ("top10fut", None),
+            ("top10opt", "買權"),
+            ("top10opt", "賣權"),
+        ):
+            sentinels = [
+                {
+                    "Date": "20261116",
+                    "SettlementMonth": "666666",
+                    "Top10Buy": "1",
+                    "Top10Sell": "1",
+                    **({"CallPut": callput} if callput else {}),
+                },
+                {
+                    "Date": "20261116",
+                    "SettlementMonth": "999912",
+                    "Top10Buy": "1",
+                    "Top10Sell": "1",
+                    **({"CallPut": callput} if callput else {}),
+                },
+            ]
+            data[dataset].extend(sentinels)
+
+        snapshot_bundle.return_value = {**self.snapshot, "data": data}
+        cases = (
+            ("top10fut", None),
+            ("top10opt", "買權"),
+            ("top10opt", "賣權"),
+        )
+        for dataset, callput in cases:
+            with self.subTest(dataset=dataset, callput=callput):
+                result = taifex.snap_top10_change(
+                    "202612", "2026-11-18", 2500,
+                    cur_date="2026-11-18", dataset=dataset, callput=callput
+                )
+                self.assertEqual(result["status"], "rollover_baseline_reset")
+                self.assertEqual(result["prev_month"], "202611")
+
+    @patch("src.sources.taifex.snapshot_bundle")
+    def test_rollover_baseline_is_independent_of_snapshot_row_order(self, snapshot_bundle):
+        rows = self.snapshot["data"]["top10fut"] + [
+            {
+                "Date": "20261116",
+                "SettlementMonth": "666666",
+                "Top10Buy": "1",
+                "Top10Sell": "1",
+            },
+            {
+                "Date": "20261116",
+                "SettlementMonth": "999912",
+                "Top10Buy": "1",
+                "Top10Sell": "1",
+            },
+        ]
+        results = []
+        for ordered_rows in (rows, list(reversed(rows))):
+            snapshot_bundle.return_value = {
+                **self.snapshot,
+                "data": {**self.snapshot["data"], "top10fut": ordered_rows},
+            }
+            results.append(taifex.snap_top10_change(
+                "202612", "2026-11-18", 2500, cur_date="2026-11-18"
+            ))
+        for result in results:
+            self.assertEqual(result["status"], "rollover_baseline_reset")
+            self.assertEqual(result["prev_month"], "202611")
+
+    @patch("src.sources.taifex.snapshot_bundle")
+    def test_snapshot_with_only_invalid_settlement_months_is_not_rollover(self, snapshot_bundle):
+        invalid_rows = [
+            {
+                "Date": "20261116",
+                "SettlementMonth": sentinel,
+                "Top10Buy": "1",
+                "Top10Sell": "1",
+            }
+            for sentinel in ("666666", "999912", "000000", "202613")
+        ]
+        snapshot_bundle.return_value = {
+            **self.snapshot,
+            "data": {**self.snapshot["data"], "top10fut": invalid_rows},
+        }
+        self.assertIsNone(
+            taifex.snap_top10_change("202612", "2026-11-18", 2500)
+        )
+
+    @patch("src.sources.taifex.snapshot_bundle")
     def test_missing_snapshot_remains_unavailable_not_rollover(self, snapshot_bundle):
         snapshot_bundle.return_value = None
         self.assertIsNone(
