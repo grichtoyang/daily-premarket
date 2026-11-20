@@ -834,7 +834,7 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         self.assertEqual(result["chg"], 50)
         self.assertEqual(result["prev_date"], "2026-11-05")
 
-    def test_missing_requested_month_is_unavailable_not_another_month(self):
+    def test_reverse_contract_month_is_unavailable_not_rollover(self):
         result = self.taifex.snap_top10_change(
             "202610", "2026-11-07", 450, cur_date="20261107")
         self.assertIsNone(result)
