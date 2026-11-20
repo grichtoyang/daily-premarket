@@ -1345,10 +1345,10 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
 
     # A dated KV key is not sufficient: position snapshots are trustworthy only
     # when Worker collection date matches the requested snapshot date.
-    if _sb.get("date") != _snapshot_date or _sb.get("trust_pos") is not True:
+    if _sb.get("date") != _snapshot_date or _sb.get("trust_pos") is False:
         print(
             f"[WARN] top10 snapshot rejected: requested={_snapshot_date} "
-            f"returned={_sb.get('date')} trust_pos={_sb.get('trust_pos')}"
+            f"returned={_sb.get('date')} trust_pos={_sb.get('trust_pos', 'not_provided')}"
         )
         return None
 
