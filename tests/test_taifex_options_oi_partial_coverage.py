@@ -47,6 +47,50 @@ class OptionsChainOICoverageTests(unittest.TestCase):
         self.assertEqual(result["previous_coverage"], 1.0)
         self.assertTrue(result["partial"])
 
+    def test_compact_and_iso_expiry_dates_match_as_same_contracts(self):
+        current = [
+            contract("202611F3", "20261120", 42000, "call", 3369),
+            contract("202611F3", "20261120", 42000, "put", 1992),
+        ]
+        previous = [
+            contract("202611F3", "2026-11-20", 42000, "call", 0),
+            contract("202611F3", "2026-11-20", 42000, "put", 0),
+        ]
+        result = _options_chain_oi_change(current, previous, "202611F3")
+        diagnostic = _options_chain_oi_change_diagnostic(current, previous, "202611F3")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["matched_count"], 2)
+        self.assertEqual(result["c_chg"], 3369)
+        self.assertEqual(result["p_chg"], 1992)
+        self.assertEqual(diagnostic["reason"], "aligned")
+        self.assertEqual(diagnostic["current_only"], 0)
+        self.assertEqual(diagnostic["previous_only"], 0)
+
+    def test_different_expiry_dates_do_not_match_after_normalization(self):
+        current = [contract("202611F3", "20261120", 42000, "call", 120)]
+        previous = [contract("202611F3", "2026-11-21", 42000, "call", 100)]
+        self.assertIsNone(_options_chain_oi_change(current, previous, "202611F3"))
+        diagnostic = _options_chain_oi_change_diagnostic(current, previous, "202611F3")
+        self.assertEqual(diagnostic["reason"], "no_common_valid_contracts")
+        self.assertEqual(diagnostic["current_only"], 1)
+        self.assertEqual(diagnostic["previous_only"], 1)
+
+    def test_normalized_expiry_keeps_strike_and_option_type_distinct(self):
+        current = [
+            contract("202611F3", "20261120", 42000, "call", 120),
+            contract("202611F3", "20261120", 42000, "put", 80),
+        ]
+        previous = [
+            contract("202611F3", "2026-11-20", 42000, "call", 100),
+            contract("202611F3", "2026-11-20", 42100, "put", 70),
+        ]
+        result = _options_chain_oi_change(current, previous, "202611F3")
+        self.assertIsNotNone(result)
+        self.assertEqual(result["matched_count"], 1)
+        self.assertEqual(result["c_chg"], 20)
+        self.assertIsNone(result["p_chg"])
+
+
     def test_missing_oi_is_skipped_without_zero_fill_and_coverage_uses_all_identities(self):
         current = [
             contract("202611", "2026-11-18", 40000, "call", 110),
