@@ -26,6 +26,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         for field in ("borrowedSell", "borrowedSellDiff", "borrowedSellDiffScope"):
             self.assertIn(field, self.html)
         self.assertIn("借券賣出增減｜", self.html)
+        self.assertIn("借券賣出增減範圍", self.html)
+        self.assertIn('["借券賣出增減範圍",l.borrowedSellDiffScope||"範圍未註明"]', self.html)
         self.assertIn('function qn(e,n){kr(e,n),kr(e+"Capture",n)}', self.html)
 
     def test_borrowed_securities_table_stacks_on_mobile_without_wrapping_values(self):
@@ -35,9 +37,11 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_option_institutional_chart_parses_signed_thousands(self):
         # The chart must render both session fields, not just the daytime field.
-        self.assertIn('{l:String(x[0])+"日",v:v9ProOptionNetNumber(x[3]),extra:"口"}', self.html)
-        self.assertIn('{l:String(x[0])+"夜",v:v9ProOptionNetNumber(x[6]),extra:"口"}', self.html)
-        self.assertIn('height:390}),chartNote:"法人日盤／夜盤淨交易：口；依來源表格定義。"', self.html)
+        self.assertIn('(l.instOptForce||[]).filter((row)=>row[0]!=="三大法人合計").flatMap', self.html)
+        self.assertIn('Number(String(row[3]).replace(/,/g,""))', self.html)
+        self.assertIn('Number(String(row[6]).replace(/,/g,""))', self.html)
+        self.assertIn('height:240,decimals:2', self.html)
+        self.assertIn('淨額＝多方契約金額－空方契約金額', self.html)
         self.assertIn(".filter((item)=>Number.isFinite(item.v))", self.html)
         match = re.search(r"function v9ProOptionNetNumber\(e\)\{[^}]+\}", self.html)
         self.assertIsNotNone(match, "Chart number normalizer v9ProOptionNetNumber must exist")
@@ -54,27 +58,22 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_candlestick_volume_unit_is_not_shadowed_by_canvas_coordinate(self):
         # The candle x-coordinate must not overwrite the unit label passed by the chart caller.
-        self.assertIn('volUnit:unitLabel="口"', self.html)
-        self.assertIn('s.fillText(`VOL ${g(o)}${unitLabel}`,S+Ee+10,A+11)', self.html)
+        self.assertRegex(self.html, r'function Pt\\(\\{[^}]*volUnit:unitLabel="口"')
+        self.assertIn('volScaleMax:volScaleMax=200000', self.html)
+        self.assertIn('Math.min(1,o/Math.max(volScaleMax,o))*20', self.html)
+        self.assertIn('`${volumeLabel} ${g(o)} ${unitLabel}`', self.html)
         self.assertNotIn('volUnit:a="口"', self.html)
-        self.assertNotIn('s.fillText(`VOL ${g(o)}${a}`,S+Ee+10,A+11)', self.html)
 
     def test_all_three_ranked_charts_expand_without_container_clipping(self):
         # Hn is shared by the futures day/night institutional chart, options top-10 chart,
         # and per-strike GEX chart. Its canvas must grow to fit every rendered row.
         self.assertIn("height:Math.max(n,e.length*46+48)", self.html)
-        self.assertIn('style:{minHeight:"180px"}', self.html)
-        self.assertIn('className:"bg-[#0a1424]"', self.html)
         self.assertIn('style:{width:"100%",height:Math.max(n,e.length*46+48),display:"block",maxWidth:"100%"}', self.html)
-        self.assertIn('title:"日夜法人交易"', self.html)
-        self.assertIn('height:220}),chartNote:"未平倉量與日／夜盤淨交易均為口數，統計意義不同。', self.html)
-        self.assertIn('title:"前十大選擇權"', self.html)
-        self.assertIn("(n.top10Call||[]).slice(0,3)", self.html)
-        self.assertIn("(n.top10Put||[]).slice(0,3)", self.html)
-        self.assertIn('title:"履約價 GEX 分布"', self.html)
-        self.assertIn(".sort((a,b)=>Math.abs(b.v)-Math.abs(a.v)).slice(0,16)", self.html)
-        self.assertIn('chartNote:"GEX：新台幣元（NT$）', self.html)
-        self.assertIn('height:260}),chartNote:"GEX：新台幣元', self.html)
+        self.assertIn("function OiCompareChart(", self.html)
+        self.assertIn('title:"主要 OI 集中"', self.html)
+        self.assertIn("callData:n.callOiDist.slice(0,4)", self.html)
+        self.assertIn("putData:n.putOiDist.slice(0,4)", self.html)
+        self.assertIn('chartNote:"履約價／現價／Call Wall／Put Wall：點；OI：口。"', self.html)
 
     def test_bias_card_renders_live_gex_status_and_value(self):
         self.assertIn('gexReady=l.gexStatus==="available"&&Number.isFinite(gexValue)', self.html)
@@ -90,7 +89,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_option_pcr_card_shows_call_put_volume_structure(self):
         self.assertIn('function yf({callVol:e,putVol:n,height:l=200})', self.html)
         self.assertIn('title:"PCR／成交量結構"', self.html)
-        self.assertIn('chart:p(yf,{callVol:n.callVol,putVol:n.putVol,height:200})', self.html)
+        self.assertIn('chart:p(yf,{callVol:n.callVol,putVol:n.putVol,height:220})', self.html)
         self.assertIn('Call／Put 成交量占比（合計 100%）', self.html)
         self.assertIn('Put 成交量', self.html)
         self.assertIn('成交量只呈現 Call／Put 相對結構，不直接代表多空方向', self.html)
@@ -163,7 +162,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_three_scenario_paths_render_conditionally_without_probability_or_maxpain_target(self):
         self.assertIn('function Pth({current:e,levels:n})', self.html)
-        self.assertIn('chart:p(Pth,{current:i.close,levels:{putWall:l.putWall,callWall:l.callWall,gammaWall:l.gammaWall,flip:l.flip}})', self.html)
+        self.assertIn('chart:p(Pth,{current:i.close,levels:{putWall:l.putWall,callWall:l.callWall,gammaWall:l.gammaWall,flip:synthesisFlip,flipEstimated:flipInfo.estimated}})', self.html)
         self.assertIn('const rangeReady = cur != null && put != null && call != null && put < cur && cur < call', self.html)
         self.assertIn('complete:cur != null && flip != null && cur > flip && bullTargets.length > 0', self.html)
         self.assertIn('complete:cur != null && put != null && cur < put && bearTargets.length > 0', self.html)
@@ -223,7 +222,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('(u.factor_details||[]).filter(x=>x.status==="active"&&Number.isFinite(Number(x.contribution)))', self.html)
         self.assertIn('map(x=>({l:x.name,v:Number(x.contribution)}))', self.html)
         self.assertIn("方向貢獻分數（非權重）", self.html)
-        self.assertIn('height:260}),chartNote:"方向貢獻分數', self.html)  # 8 rows need >=242px at current row pitch
+        self.assertIn('height:260,tw:true}),chartNote:"方向貢獻分數', self.html)
         self.assertIn("正值推升 Bias、偏多；負值壓低 Bias、偏空", self.html)
         self.assertNotIn('Object.entries(u.weights).slice(0,8)', self.html)
 
@@ -275,8 +274,9 @@ console.log("scenario paths 6/6 PASS");
         self.assertIn("scenario paths 6/6 PASS", result.stdout)
 
     def test_synthesis_narratives_are_derived_from_live_data(self):
-        self.assertIn("function v9ProSynthesisAnalysis({day,night,futures,spot,options,analysis})", self.html)
-        self.assertIn('function v2({data:e}){let{tx:n,futures:r}=e;const narrative=v9ProSynthesisAnalysis({day:n.day,night:n.night,futures:r,spot:e.spot,options:e.options,analysis:e.analysis});', self.html)
+        self.assertIn("function v9ProSynthesisAnalysis({day,night,futures,institutional,spot,options,analysis})", self.html)
+        self.assertIn('function v2({data:e})', self.html)
+        self.assertIn('v9ProSynthesisAnalysis({day:n.day,night:n.night,futures:r,institutional:e.institutional,spot:e.spot,options:e.options,analysis:e.analysis})', self.html)
         night_block_start = self.html.index('title:"區塊C 日夜盤劇本"')
         night_block_end = self.html.index('title:"三劇本路徑"', night_block_start)
         night_block = self.html[night_block_start:night_block_end]
@@ -433,7 +433,7 @@ if(!out.pcr.look.includes("占比 50.8%")||!out.pcr.look.includes("占比 49.2%"
 if(!out.concentration.look.includes("48,000 點 4,503 口")||!out.concentration.look.includes("44,000 點 2,661 口")) throw Error("main OI concentration not explained");
 if(!out.callOi.look.includes("49,400 點 4,384 口")||!out.callOi.compass.includes("高於現價")) throw Error("Call OI top strikes not aligned with spot");
 if(!out.putOi.look.includes("44,000 點 2,661 口")||!out.putOi.compass.includes("低於現價")) throw Error("Put OI top strikes not aligned with spot");
-if(!out.walls.compass.includes("Max Pain 僅是到期損益分布的磁吸參考")||!out.walls.compass.includes("不作為支撐")) throw Error("Max Pain incorrectly treated as support/target");
+if(!out.walls.compass.includes("Max Pain ")||!out.walls.compass.includes("不是支撐、壓力或價格目標")) throw Error("Max Pain incorrectly treated as support/target");
 if(!out.institution.compass.includes("日夜方向反轉")||!out.institution.look.includes("日盤三大法人合計 +870 口")||!out.institution.look.includes("夜盤合計 -4,222 口")) throw Error("options institution day/night divergence missing");
 if(!out.top10.look.includes("買權多空淨 OI -2,873 口")||!out.top10.look.includes("賣權多空淨 OI -2,040 口")||!out.top10.compass.includes("不是當日交易流量")) throw Error("top10 OI semantics missing");
 if(!out.gex.look.includes("Net GEX +3,510,697,648 NT$")||!out.gex.look.includes("最大正曝險 46,000 點 +458,793,202 NT$")||!out.gex.look.includes("最大負曝險 44,000 點 -271,383,835 NT$")) throw Error("GEX visible bars/totals not explained");
@@ -454,7 +454,8 @@ console.log("options narratives actual + missing + zero fixtures PASS");
         self.assertIn("options narratives actual + missing + zero fixtures PASS", result.stdout)
 
     def test_trade_plan_keeps_max_pain_separate_from_support(self):
-        self.assertIn('["磁吸參考",`${g(l.maxPain)}`]', self.html)
+        self.assertIn("Max Pain 僅作磁吸參考，不作支撐、壓力或交易目標。", self.html)
+        self.assertIn("MaxPain 僅作磁吸參考，不當作跌破後的下跌目標。", self.html)
         self.assertNotIn('["支撐",`${g(l.putWall)} / ${g(l.maxPain)}`]', self.html)
 
 if __name__ == "__main__":
