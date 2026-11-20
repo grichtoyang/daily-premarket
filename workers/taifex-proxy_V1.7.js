@@ -1786,156 +1786,125 @@ function parseTXODeltaRows(rows) {
   return parseTXODeltaRowsWithDiagnostics(rows).data;
 }
 
-function parseCsvFields(line) {
-  const fields = [];
-  let value = "";
-  let quoted = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (quoted && line[i + 1] === '"') { value += '"'; i++; }
-      else quoted = !quoted;
-    } else if (ch === "," && !quoted) {
-      fields.push(value); value = "";
-    } else {
-      value += ch;
-    }
-  }
-  fields.push(value);
-  return fields;
-}
-
-function parseTAIFEXDeltaCsv(text, requestedISO) {
-  const lines = String(text ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).filter(line => line.trim());
-  const metadata = parseCsvFields(lines[0] || "");
-  const publishedAt = metadata[4] || "";
-  const dateMatch = publishedAt.match(/^(\d{4})\/(\d{2})\/(\d{2})/);
-  const sourceDate = dateMatch ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}` : null;
-  const diagnostics = {
-    requested_date: requestedISO, source_date: sourceDate,
-    published_at: publishedAt, input_lines: lines.length,
-    txo_rows: 0, parsed_rows: 0, invalid_rows: 0,
-    call_rows: 0, put_rows: 0
-  };
-  if (!sourceDate || sourceDate !== requestedISO) {
-    return { found: false, rows: [], diagnostics,
-      reason: `TAIFEX Delta CSV date mismatch: expected ${requestedISO}, got ${sourceDate || "unknown"}` };
-  }
-
-  const rows = [];
-  for (const line of lines.slice(2)) {
-    const fields = parseCsvFields(line);
-    if (fields.length < 6) { diagnostics.invalid_rows++; continue; }
-    const [commodityRaw, typeRaw, monthRaw, strikeRaw, deltaRaw, expiryRaw] = fields;
-    if (String(commodityRaw).trim() !== "TXO") continue;
-    diagnostics.txo_rows++;
-    const typeText = String(typeRaw).trim();
-    const type = typeText === "買權" || typeText.toLowerCase() === "call" ? "call" :
-      typeText === "賣權" || typeText.toLowerCase() === "put" ? "put" : null;
-    const contractMonth = String(monthRaw).trim();
-    const expiry = isoCompactDate(String(expiryRaw).trim());
-    const strike = nullableNumber(String(strikeRaw).trim());
-    const delta = nullableNumber(String(deltaRaw).trim());
-    if (!type || !contractMonth || !expiry || strike === null || delta === null) {
-      diagnostics.invalid_rows++;
-      continue;
-    }
-    rows.push({
-      contract: "TXO", contract_month: contractMonth,
-      contract_expiry_date: expiry, strike, type, delta
-    });
-    if (type === "call") diagnostics.call_rows++;
-    else diagnostics.put_rows++;
-  }
-  diagnostics.parsed_rows = rows.length;
-  return {
-    found: rows.length > 0,
-    rows,
-    raw_rows: diagnostics.txo_rows,
-    diagnostics,
-    reason: rows.length ? null : "TAIFEX Delta CSV contains no valid TXO rows"
-  };
-}
-
 async function fetchTXODeltaForDate(requestedISO, options = {}) {
   const requestContext = {
     deadlineAt: options.deadlineAt,
     deltaOpenApiPromise: null,
     deltaOpenApiDurationMs: null
   };
-  const compact = String(requestedISO ?? "").replace(/-/g, "");
-  const sourceUrl = `${TAIFEX}/file/taifex/Dailydownload/delta/chinese/Delta_${compact}.csv`;
-  const attempts = [];
-  const csvStartedAt = Date.now();
-  let csvStatus = null;
-  let csvError = null;
-
+  const indexStartedAt = Date.now();
+  let index;
+  let indexError = null;
   try {
-    const response = await fetch(sourceUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; TAIFEX-Proxy/V1.0-Production)",
-        "Accept": "text/csv,text/plain,*/*"
-      },
-      ...gexFetchOptions(requestContext)
-    });
-    csvStatus = response.status;
-    if (response.ok) {
-      const bytes = await response.arrayBuffer();
-      const text = new TextDecoder("big5").decode(bytes);
-      const parsed = parseTAIFEXDeltaCsv(text, requestedISO);
-      attempts.push({
-        source: "taifex_csv", duration_ms: Date.now() - csvStartedAt,
-        http_status: csvStatus, bytes: bytes.byteLength,
-        parser: parsed.diagnostics, accepted_txo_rows: parsed.rows.length
+    index = await fetchTAIFEXText(`${TAIFEX}/cht/3/dlOptDailyDelta`, requestContext);
+  } catch (error) {
+    indexError = error?.message || String(error);
+    index = { response: { ok: false, status: 599 }, text: "" };
+  }
+  const indexDurationMs = Date.now() - indexStartedAt;
+  const compact = requestedISO.replace(/-/g, "");
+  const endpoint = `${TAIFEX}/cht/3/optDailyDeltaExcel`;
+  const attempts = [];
+
+  const openApiFallback = async reason => {
+    const fallbackStartedAt = Date.now();
+    const fallback = await fetchOpenAPIDeltaForDate(requestedISO, requestContext);
+    const fallbackDurationMs = Date.now() - fallbackStartedAt;
+    const parsed = parseTXODeltaRowsWithDiagnostics(fallback.rows || []);
+    const rows = parsed.data.filter(row =>
+      row.contract_month && String(row.contract_month).startsWith("202")
+    );
+    return {
+      ...fallback, found: Boolean(fallback.found && rows.length),
+      raw_rows: (fallback.rows || []).length, rows,
+      diagnostics: {
+        requested_date: requestedISO, source: "taifex_openapi",
+        fallback_used: true, fallback_reason: reason,
+        index_http_status: index.response?.status ?? null,
+        index_duration_ms: indexDurationMs,
+        index_error: indexError,
+        openapi_fallback_duration_ms: fallbackDurationMs,
+        openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
+        attempts,
+        parser: parsed.diagnostics, final_rows: rows.length,
+        per_expiry_rows: parsed.diagnostics.per_expiry
+      }
+    };
+  };
+
+  if (!index.response.ok) {
+    return openApiFallback(`TAIFEX Delta index HTTP ${index.response.status}${indexError ? `: ${indexError}` : ""}`);
+  }
+  if (!index.text.includes(compact)) {
+    return openApiFallback(`TAIFEX Delta date ${compact} is not listed`);
+  }
+
+  const bodies = [
+    new URLSearchParams({ queryDate: compact, queryDate2: compact, date: compact, scd_kind_id: "TXO" }).toString(),
+    new URLSearchParams({ queryDate: requestedISO, queryDate2: requestedISO, date: requestedISO, scd_kind_id: "TXO" }).toString(),
+    new URLSearchParams({ scd_kind_id: "TXO", date: compact }).toString()
+  ];
+  let lastStatus = null;
+
+  for (let i = 0; i < bodies.length; i++) {
+    const attemptStartedAt = Date.now();
+    try {
+      const result = await fetchTAIFEXPost("/cht/3/optDailyDeltaExcel", bodies[i], {
+        ...requestContext,
+        deltaFallbackContext: requestContext
       });
-      if (parsed.found) {
+      lastStatus = result.response.status;
+      const parsed = parseTXODeltaRowsWithDiagnostics(result.rows || []);
+      const txo = parsed.data.filter(row =>
+        row.contract_month && String(row.contract_month).startsWith("202")
+      );
+      attempts.push({
+        attempt: i + 1, duration_ms: Date.now() - attemptStartedAt,
+        source: result.source || "unknown",
+        fallback: Boolean(result.fallback), http_status: result.response.status,
+        raw_rows: (result.rows || []).length, primary_error: result.primary_error || null,
+        parser: parsed.diagnostics, accepted_txo_rows: txo.length
+      });
+      if (txo.length) {
         return {
-          found: true, source_url: sourceUrl, raw_rows: parsed.raw_rows,
-          rows: parsed.rows,
+          found: true, source_url: result.source_url || endpoint,
+          raw_rows: (result.rows || []).length, rows: txo,
           diagnostics: {
-            requested_date: requestedISO, source: "taifex_csv",
-            fallback_used: false, csv_duration_ms: Date.now() - csvStartedAt,
-            attempts, parser: parsed.diagnostics,
-            final_rows: parsed.rows.length
+            requested_date: requestedISO, source: result.source || "taifex_web",
+            fallback_used: Boolean(result.fallback),
+            index_duration_ms: indexDurationMs,
+            index_error: indexError,
+            openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
+            attempts,
+            parser: parsed.diagnostics, final_rows: txo.length,
+            per_expiry_rows: parsed.diagnostics.per_expiry
           }
         };
       }
-      csvError = parsed.reason;
-    } else {
-      csvError = `TAIFEX Delta CSV HTTP ${response.status}`;
+    } catch (error) {
       attempts.push({
-        source: "taifex_csv", duration_ms: Date.now() - csvStartedAt,
-        http_status: csvStatus, error: csvError
+        attempt: i + 1,
+        duration_ms: Date.now() - attemptStartedAt,
+        source: "taifex_web",
+        fallback: false,
+        http_status: lastStatus,
+        error: error?.message || String(error)
       });
     }
-  } catch (error) {
-    csvError = error?.message || String(error);
-    attempts.push({
-      source: "taifex_csv", duration_ms: Date.now() - csvStartedAt,
-      http_status: csvStatus, error: csvError
-    });
   }
 
-  const fallbackStartedAt = Date.now();
-  const fallback = await fetchOpenAPIDeltaForDate(requestedISO, requestContext);
-  const parsedFallback = parseTXODeltaRowsWithDiagnostics(fallback.rows || []);
-  const fallbackRows = parsedFallback.data.filter(row =>
-    row.contract_month && String(row.contract_month).startsWith("202")
-  );
   return {
-    ...fallback,
-    found: Boolean(fallback.found && fallbackRows.length),
-    raw_rows: (fallback.rows || []).length,
-    rows: fallbackRows,
+    found: false,
+    reason: `TAIFEX historical Delta file could not be parsed (last HTTP ${lastStatus ?? "unknown"})`,
+    source_url: endpoint,
+    raw_rows: attempts.length ? attempts[attempts.length - 1].raw_rows || 0 : 0,
+    rows: [],
     diagnostics: {
-      requested_date: requestedISO, source: "taifex_openapi",
-      fallback_used: true, fallback_reason: csvError,
-      csv_duration_ms: Date.now() - csvStartedAt,
-      openapi_fallback_duration_ms: Date.now() - fallbackStartedAt,
+      requested_date: requestedISO, source: "taifex_web",
+      fallback_used: false, index_duration_ms: indexDurationMs,
+      index_error: indexError,
       openapi_fetch_duration_ms: requestContext.deltaOpenApiDurationMs,
-      attempts, parser: parsedFallback.diagnostics,
-      final_rows: fallbackRows.length,
-      per_expiry_rows: parsedFallback.diagnostics.per_expiry
+      attempts, final_rows: 0
     }
   };
 }
