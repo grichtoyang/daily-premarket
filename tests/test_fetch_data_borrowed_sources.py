@@ -129,11 +129,17 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             "price": 4.2, "change": 0.1, "date": "2026-11-05",
             "retrieved_at": "2026-11-06T00:30:00+00:00", "ok": True,
         }
-        with patch.object(treasury, "_treasury", return_value=None), patch.object(treasury, "_xml_yields", return_value={"2Y": {
-                 "yield": 3.5, "chg": 0.1, "date": "2026-11-05",
-                 "retrieved_at": "2026-11-06T00:20:00+00:00",
-                 "source": "Treasury XML", "ok": True,
-             }}), patch.object(treasury, "quote", return_value=quote_data):
+        with patch.object(treasury, "_treasury", return_value=None), patch.object(treasury, "_xml_yields", return_value={
+                 "2Y": {
+                     "yield": 3.5, "chg": 0.1, "date": "2026-11-05",
+                     "retrieved_at": "2026-11-06T00:20:00+00:00",
+                     "source": "Treasury XML", "ok": True,
+                 },
+                 "20Y": {
+                     "yield": None, "chg": None, "date": None,
+                     "retrieved_at": None, "source": "unavailable", "ok": False,
+                 },
+             }), patch.object(treasury, "quote", return_value=quote_data):
             result = treasury.get_yields()
 
         self.assertEqual(result["10Y"]["retrieved_at"], quote_data["retrieved_at"])
