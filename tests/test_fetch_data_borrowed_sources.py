@@ -793,6 +793,16 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         from unittest.mock import patch
         from src.sources import taifex
         self.taifex = taifex
+        # Keep this contract test deterministic and independent of calendar API availability.
+        self.patch_trading_day = patch(
+            "src.sources.taifex._previous_trading_day_iso",
+            side_effect={
+                "2026-11-07": "2026-11-06",
+                "2026-11-06": "2026-11-05",
+            }.get,
+        )
+        self.patch_trading_day.start()
+        self.addCleanup(self.patch_trading_day.stop)
         self.patch_snapshot = patch("src.sources.taifex.snapshot_bundle", return_value={
             "date": "2026-11-06",
             "trust_pos": True,
