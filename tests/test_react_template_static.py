@@ -185,7 +185,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertNotIn("F=7000,a=9000", self.html)
 
     def test_futures_volume_bar_is_capped_to_available_height(self):
-        self.assertIn("Math.min(1,o/Math.max(200000,o))*20", self.html)
+        self.assertIn("volScaleMax:volScaleMax=200000", self.html)
+        self.assertIn("Math.min(1,o/Math.max(volScaleMax,o))*20", self.html)
         self.assertNotIn("o/200000*22", self.html)
 
     def test_inline_javascript_syntax(self):
