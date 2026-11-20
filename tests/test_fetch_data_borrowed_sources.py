@@ -115,7 +115,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
         with patch("requests.get", return_value=Response()):
             api = treasury._treasury()
-            xml = treasury._xml_yield("BC_2YEAR")
+            xml = treasury._xml_yields({"2Y": "BC_2YEAR"})["2Y"]
 
         for item in list(api.values()) + [xml]:
             self.assertIsNotNone(datetime.fromisoformat(item["retrieved_at"]))
@@ -129,11 +129,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
             "price": 4.2, "change": 0.1, "date": "2026-11-05",
             "retrieved_at": "2026-11-06T00:30:00+00:00", "ok": True,
         }
-        with patch.object(treasury, "_treasury", return_value=None), patch.object(treasury, "_xml_yield", return_value={
+        with patch.object(treasury, "_treasury", return_value=None), patch.object(treasury, "_xml_yields", return_value={"2Y": {
                  "yield": 3.5, "chg": 0.1, "date": "2026-11-05",
                  "retrieved_at": "2026-11-06T00:20:00+00:00",
                  "source": "Treasury XML", "ok": True,
-             }), patch.object(treasury, "quote", return_value=quote_data):
+             }}), patch.object(treasury, "quote", return_value=quote_data):
             result = treasury.get_yields()
 
         self.assertEqual(result["10Y"]["retrieved_at"], quote_data["retrieved_at"])
@@ -429,14 +429,14 @@ class DataReportSemanticRepairTests(unittest.TestCase):
         yahoo = {"price": 4.7, "change": 0.1, "date": "2026-11-06",
                  "retrieved_at": "2026-11-07T00:00:00+00:00", "ok": True}
         with patch.object(treasury, "_treasury", return_value=api), \
-             patch.object(treasury, "_xml_yield", return_value=xml) as xml_mock, \
+             patch.object(treasury, "_xml_yields", return_value={"20Y": xml}) as xml_mock, \
              patch.object(treasury, "quote", return_value=yahoo) as yahoo_mock:
             result = treasury.get_yields()
         self.assertEqual(result["2Y"]["yield"], 3.5)
         self.assertEqual(result["10Y"]["yield"], 4.1)
         self.assertEqual(result["20Y"]["yield"], 4.6)
         self.assertEqual(result["30Y"]["yield"], 4.7)
-        xml_mock.assert_called_once_with("BC_20YEAR")
+        xml_mock.assert_called_once_with({"20Y": "BC_20YEAR"})
         yahoo_mock.assert_called_once_with("^TYX")
 
     def test_finmind_partial_ohlc_is_not_marked_complete(self):
