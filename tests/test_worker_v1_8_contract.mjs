@@ -14,7 +14,7 @@ function functionSource(name, nextMarker) {
   return source.slice(start, end);
 }
 
-assert.match(source, /V1\.7 ADDITIVE/);
+assert.match(source, /V1\\.8 ADDITIVE/);
 assert.match(source, /version: "V1\.7 — V1\.6 \+ bounded compact fetch \+ parallel Delta\/TAIEX \(additive\)"/);
 assert.match(source, /compactDeadlineAt = compactStartedAt \+ 75000/);
 
@@ -56,4 +56,4 @@ assert.match(route, /TAIEX fetch threw/);
 assert.match(route, /stage: "chain_fetch"/);
 assert.match(route, /stage: "delta_taiex_parallel"/);
 
-console.log("PASS: V1.7 compact deadline propagation and parallel fetch contract");
+console.log("PASS: V1.8 compact deadline and historical Delta CSV contract");
