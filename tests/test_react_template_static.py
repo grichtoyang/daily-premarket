@@ -10,6 +10,19 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "templates" / "v9-pro-react-template.html"
 
 
+def run_node_script(node, script):
+    """Run generated JavaScript from a UTF-8 file, avoiding Windows -e command-line limits."""
+    with tempfile.TemporaryDirectory() as tmp:
+        script_path = Path(tmp) / "runtime_test.js"
+        script_path.write_text(script, encoding="utf-8")
+        return subprocess.run(
+            [node, str(script_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+
 class ReactTemplateStaticTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -54,7 +67,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
             + 'const expected=[6624,-4937,0,null,null,null];'
             + 'if(JSON.stringify(actual)!==JSON.stringify(expected)){console.error(actual);process.exit(1)}'
         )
-        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        result = run_node_script(node, script)
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_candlestick_volume_unit_is_not_shadowed_by_canvas_coordinate(self):
@@ -272,7 +285,7 @@ const bearNoPut=cards(90,{putWall:null,gammaWall:80,flip:70});
 if(!bearNoPut[2].includes("偏空條件未成立")||bearNoPut[2].includes("現價 90")) throw Error("bearish path rendered without Put Wall trigger: "+bearNoPut[2]);
 console.log("scenario paths 6/6 PASS");
 """
-        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        result = run_node_script(node, script)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("scenario paths 6/6 PASS", result.stdout)
 
@@ -369,7 +382,7 @@ if(reverseOut.scenarios.compass.includes("偏多價格條件：成立")||!revers
 if(!reverseOut.scenarios.target.includes("偏空價位條件具備")) throw Error("reverse price state narrative prioritizes wrong scenario");
 console.log("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS");
 """
-        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        result = run_node_script(node, script)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout or f"Node exited with code {result.returncode} and no output")
         self.assertIn("synthesis narrative actual + missing + zero + malformed + reverse fixtures PASS", result.stdout)
 
@@ -405,7 +418,7 @@ console.log("futures narratives actual + missing + zero fixtures PASS");
 """
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for futures narrative runtime tests")
-        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        result = run_node_script(node, script)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout or f"Node exited with code {result.returncode} and no output")
         self.assertIn("futures narratives actual + missing + zero fixtures PASS", result.stdout)
 
@@ -452,7 +465,7 @@ console.log("options narratives actual + missing + zero fixtures PASS");
 """
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for options narrative runtime tests")
-        result = subprocess.run([node, "-e", script], capture_output=True, text=True, check=False)
+        result = run_node_script(node, script)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("options narratives actual + missing + zero fixtures PASS", result.stdout)
 
