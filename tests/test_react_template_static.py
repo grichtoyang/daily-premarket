@@ -25,7 +25,8 @@ class ReactTemplateStaticTests(unittest.TestCase):
     def test_borrowed_securities_fields_and_scope_are_rendered(self):
         for field in ("borrowedSell", "borrowedSellDiff", "borrowedSellDiffScope"):
             self.assertIn(field, self.html)
-        self.assertIn("借券賣出增減｜", self.html)
+        self.assertIn('"借券賣出增減"', self.html)
+        self.assertIn('"借券賣出增減範圍"', self.html)
         self.assertIn("借券賣出增減範圍", self.html)
         self.assertIn('["借券賣出增減範圍",l.borrowedSellDiffScope||"範圍未註明"]', self.html)
         self.assertIn('function qn(e,n){kr(e,n),kr(e+"Capture",n)}', self.html)
