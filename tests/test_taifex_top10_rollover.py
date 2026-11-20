@@ -52,6 +52,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         result = taifex.snap_top10_change(
             "202612", "2026-11-18", 2500, cur_date="2026-11-18"
         )
+        snapshot_bundle.assert_called_once_with("2026-11-18")
         self.assertEqual(result["status"], "rollover_baseline_reset")
         self.assertIsNone(result["chg"])
         self.assertEqual(result["prev_month"], "202611")
