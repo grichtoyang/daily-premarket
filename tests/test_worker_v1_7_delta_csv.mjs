@@ -1,16 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const source = readFileSync(
-  new URL("../workers/taifex-proxy_V1.7.js", import.meta.url),
-  "utf8"
-);
+const source = readFileSync(new URL("../workers/taifex-proxy_V1.7.js", import.meta.url), "utf8");
 
 function declaration(name, nextMarker) {
-  const start = source.indexOf(`function ${name}(`);
-  assert.notEqual(start, -1, `Missing Worker function: ${name}`);
+  const start = source.indexOf("function " + name + "(");
+  assert.notEqual(start, -1, "Missing Worker function: " + name);
   const end = source.indexOf(nextMarker, start);
-  assert.notEqual(end, -1, `Missing end marker after ${name}`);
+  assert.notEqual(end, -1, "Missing end marker after " + name);
   return source.slice(start, end).trim();
 }
 
@@ -21,16 +18,16 @@ const nullableNumber = value => {
 };
 const isoCompactDate = value => {
   const text = String(value ?? "").trim();
-  if (/^\\d{4}-\\d{2}-\\d{2}$/.test(text)) return text;
-  if (/^\\d{8}$/.test(text)) return `${text.slice(0,4)}-${text.slice(4,6)}-${text.slice(6,8)}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  if (/^\d{8}$/.test(text)) return text.slice(0,4) + "-" + text.slice(4,6) + "-" + text.slice(6,8);
   return null;
 };
 const parseCsvFields = new Function(
-  `${declaration("parseCsvFields", "\\n\\nfunction parseTAIFEXDeltaCsv")}; return parseCsvFields;`
+  declaration("parseCsvFields", "\n\nfunction parseTAIFEXDeltaCsv") + "; return parseCsvFields;"
 )();
 const parseTAIFEXDeltaCsv = new Function(
   "nullableNumber", "isoCompactDate",
-  `${declaration("parseTAIFEXDeltaCsv", "\\n\\nasync function fetchTXODeltaForDate")}; return parseTAIFEXDeltaCsv;`
+  declaration("parseTAIFEXDeltaCsv", "\n\nasync function fetchTXODeltaForDate") + "; return parseTAIFEXDeltaCsv;"
 )(nullableNumber, isoCompactDate);
 
 const sample = [
@@ -39,10 +36,12 @@ const sample = [
   "TXO,買權,202611W4,21500,0.6789,20261125",
   "TXO,賣權,202611W4,21500,-0.3211,20261125",
   "TEO,買權,202611W4,21500,0.5000,20261125"
-].join("\\n");
+].join("\n");
 
-assert.deepEqual(parseCsvFields('TXO,"買權",202611W4,21500,0.6789,20261125'),
-  ["TXO", "買權", "202611W4", "21500", "0.6789", "20261125"]);
+assert.deepEqual(
+  parseCsvFields('TXO,"買權",202611W4,21500,0.6789,20261125'),
+  ["TXO", "買權", "202611W4", "21500", "0.6789", "20261125"]
+);
 
 {
   const result = parseTAIFEXDeltaCsv(sample, "2026-11-19");
@@ -67,9 +66,7 @@ assert.deepEqual(parseCsvFields('TXO,"買權",202611W4,21500,0.6789,20261125'),
 }
 
 {
-  const result = parseTAIFEXDeltaCsv(
-    sample.replace("0.6789", "not-a-number"), "2026-11-19"
-  );
+  const result = parseTAIFEXDeltaCsv(sample.replace("0.6789", "not-a-number"), "2026-11-19");
   assert.equal(result.diagnostics.invalid_rows, 1);
   assert.equal(result.rows.length, 1);
 }
