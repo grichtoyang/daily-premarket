@@ -1145,8 +1145,8 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     # ---------- 快照差值：嚴格核對前一交易日，選擇權按當日主力月份獨立比較 ----------
     from datetime import date as _dd, timedelta as _td
     _expected_snapshot_date = _previous_trading_day_iso(t0)
-    _t1 = (_dd.fromisoformat(t0) - _td(days=1)).isoformat()
-    _sb = snapshot_bundle(_t1)
+    _t1 = _expected_snapshot_date
+    _sb = snapshot_bundle(_t1) if _t1 else None
     _sdate = (_sb or {}).get("date")
     _sd = (_sb or {}).get("data") or {}
     snapchg = {"date": _sdate, "expected_date": _expected_snapshot_date}
@@ -1278,8 +1278,8 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             notes.append("選擇權 Call Wall／Put Wall／Max Pain 前日變化 unavailable：reason={}; detail={}".format(
                 _wd.get("reason"), _wd.get("detail") or "n/a"))
 
-    # 法人部位差值維持既有換月條件與 trust_pos 規則，不受選擇權 Chain/Walls 比較改動影響。
-    if _sdate and _roll is False:
+    # 法人部位差值獨立於選擇權 Chain/Walls 換月；只要求前一交易日快照可信。
+    if _sdate and (_sb or {}).get("trust_pos") is True:
         _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} if (_sb or {}).get("trust_pos") else {}
         _sod = {x.get("institution"): x for x in _sd.get("opt_pos_day", [])} if (_sb or {}).get("trust_pos") else {}
         _pos = {}
@@ -1334,18 +1334,21 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     快照不存在或資料無法驗證時回傳 None。"""
     import math
 
-    _t1 = _previous_trading_day_iso(t0)
-    if not _t1:
+    # Snapshot KV key 是 Worker 收集日 T0；其 Top10 OpenAPI 內容日期落後一個交易日。
+    # 因此讀取 T0 key，再驗證內層資料日期必須等於前一交易日。
+    _snapshot_date = t0
+    _expected_content_date = _previous_trading_day_iso(_snapshot_date)
+    if not _expected_content_date:
         return None
-    _sb = snapshot_bundle(_t1)
+    _sb = snapshot_bundle(_snapshot_date)
     if not isinstance(_sb, dict):
         return None
 
     # A dated KV key is not sufficient: position snapshots are trustworthy only
     # when Worker collection date matches the requested snapshot date.
-    if _sb.get("date") != _t1 or _sb.get("trust_pos") is not True:
+    if _sb.get("date") != _snapshot_date or _sb.get("trust_pos") is not True:
         print(
-            f"[WARN] top10 snapshot rejected: requested={_t1} "
+            f"[WARN] top10 snapshot rejected: requested={_snapshot_date} "
             f"returned={_sb.get('date')} trust_pos={_sb.get('trust_pos')}"
         )
         return None
@@ -1363,9 +1366,6 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     # The TAIFEX top10 endpoint is one trading day behind the Worker
     # collection date. Require that exact source date; a consistently stale
     # payload must not be accepted as a valid rollover baseline.
-    _expected_content_date = _previous_trading_day_iso(_t1)
-    if not _expected_content_date:
-        return None
     _row_dates = [_iso8(r.get("Date")) for r in rows]
     if any(d is None for d in _row_dates) or set(_row_dates) != {_expected_content_date}:
         return None
