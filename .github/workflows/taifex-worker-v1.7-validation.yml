@@ -9,7 +9,7 @@ on:
       - "tests/test_worker_v1_8_contract.mjs"
       - "tests/test_worker_v1_8_gamma_regression.mjs"
       - "tests/test_worker_v1_8_delta_csv.mjs"
-      - ".github/workflows/taifex-worker-v1.8-validation.yml"
+      - ".github/workflows/taifex-worker-v1.7-validation.yml"
 
 permissions:
   contents: read
