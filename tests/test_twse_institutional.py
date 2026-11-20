@@ -54,8 +54,7 @@ class TWSEInstitutionalConsistencyTests(unittest.TestCase):
 
         result = twse.get_institutional("20261119")
 
-        self.assertIsNone(result["trust"])
-        self.assertIsNone(result["total"])
+        self.assertEqual(result, {})
 
     @patch("src.sources.twse._proxy_institutional", return_value=None)
     @patch("src.sources.twse._fetch")
