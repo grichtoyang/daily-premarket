@@ -6,6 +6,12 @@ from src.sources import taifex
 
 class Top10RolloverBaselineTests(unittest.TestCase):
     def setUp(self):
+        self.prev_day_patcher = patch(
+            "src.sources.taifex._previous_trading_day_iso",
+            return_value="2026-11-17",
+        )
+        self.prev_day_patcher.start()
+        self.addCleanup(self.prev_day_patcher.stop)
         self.snapshot = {
             "date": "2026-11-17",
             "trust_pos": True,
@@ -68,6 +74,20 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         self.assertEqual(result["chg"], 500)
         self.assertEqual(result["status"], "available")
 
+
+
+    @patch("src.sources.taifex.snapshot_bundle")
+    @patch("src.sources.taifex._previous_trading_day_iso", return_value="2026-11-13")
+    def test_uses_previous_trading_day_across_weekend(self, previous_day, snapshot_bundle):
+        snapshot_bundle.return_value = {
+            **self.snapshot,
+            "date": "2026-11-13",
+        }
+        result = taifex.snap_top10_change(
+            "202611", "2026-11-16", 3500, cur_date="2026-11-16"
+        )
+        snapshot_bundle.assert_called_once_with("2026-11-13")
+        self.assertEqual(result["status"], "available")
 
     @patch("src.sources.taifex.snapshot_bundle")
     def test_untrusted_snapshot_is_rejected_not_misclassified_as_rollover(self, snapshot_bundle):
