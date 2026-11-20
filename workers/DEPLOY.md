@@ -4,9 +4,9 @@
 
 ## 1. Worker 與版本
 
-| Worker | 正式基準 | 候選版本 | 用途 |
+| Worker | 正式版本 | 本次維護狀態 | 用途 |
 |---|---|---|---|
-| `taifex` | `workers/taifex-proxy_V1.7.js` | 同一檔案持續修正 | TAIFEX / TXO 資料代理 |
+| `taifex` | V1.7 | 同一份 `workers/taifex-proxy_V1.7.js` 直接維護；修正尚未部署 | TAIFEX / TXO 資料代理 |
 | `twse-proxy` | `workers/twse-proxy_V1.2.js` | 本次無變更 | TWSE 資料代理 |
 
 正式網址：`https://taifex.grichtoyang.workers.dev`
@@ -17,7 +17,7 @@ V1.7 既有內容（保持不變）：
 - Delta 與 TAIEX 指數請求在 Chain 完成後平行執行，並共用 compact deadline。
 - 兩項平行工作使用 `Promise.allSettled`，保留各自成功結果；單項意外失敗會留下明確的 unavailable reason / diagnostics。
 - 增加 compact stage timing / outcome diagnostics。
-- `/health` 版本字串更新為 V1.7。
+- `/health` 版本字串標示 V1.7 與 direct historical Delta CSV 功能。
 
 本次 V1.7 修正新增官方歷史 Delta CSV 直接下載及解析；不更改資料來源的官方性質、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
 
@@ -123,8 +123,8 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 
 ## 6. 相關版本
 
-- `workers/taifex-proxy_V1.7.js`：候選版，尚未部署。
-- `workers/taifex-proxy_V1.7.js`：目前正式版本程式碼基準。
+- `workers/taifex-proxy_V1.7.js`：V1.7 唯一維護檔；Repo 內容包含尚待使用者部署的 Delta CSV 修正。
+- 正式環境目前仍是使用者先前確認部署的 V1.7；未部署前不能假設線上程式與 Repo 檔案相同。
 - `workers/taifex-proxy_V1.6.js`：歷史版本程式碼基準。
 - `workers/taifex-proxy_V1.5.js`、`V1.4.js`：歷史版本。
 - `workers/twse-proxy_V1.2.js`：本次不變更。
