@@ -16,12 +16,12 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         self.prev_day_patcher.start()
         self.addCleanup(self.prev_day_patcher.stop)
         self.snapshot = {
-            "date": "2026-11-17",
+            "date": "2026-11-18",
             "trust_pos": True,
             "data": {
                 "top10fut": [
                     {
-                        "Date": "20261116",
+                        "Date": "20261117",
                         "SettlementMonth": "202611",
                         "Top10Buy": "12000",
                         "Top10Sell": "9000",
@@ -29,14 +29,14 @@ class Top10RolloverBaselineTests(unittest.TestCase):
                 ],
                 "top10opt": [
                     {
-                        "Date": "20261116",
+                        "Date": "20261117",
                         "SettlementMonth": "202611",
                         "CallPut": "買權",
                         "Top10Buy": "5000",
                         "Top10Sell": "4000",
                     },
                     {
-                        "Date": "20261116",
+                        "Date": "20261117",
                         "SettlementMonth": "202611",
                         "CallPut": "賣權",
                         "Top10Buy": "4500",
@@ -98,20 +98,20 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_uses_previous_trading_day_across_weekend(self, previous_day, snapshot_bundle):
         weekend_data = {
             key: [
-                {**row, "Date": "20261112"}
+                {**row, "Date": "20261113"}
                 for row in rows
             ]
             for key, rows in self.snapshot["data"].items()
         }
         snapshot_bundle.return_value = {
             **self.snapshot,
-            "date": "2026-11-13",
+            "date": "2026-11-16",
             "data": weekend_data,
         }
         result = taifex.snap_top10_change(
             "202611", "2026-11-16", 3500, cur_date="2026-11-16"
         )
-        snapshot_bundle.assert_called_once_with("2026-11-13")
+        snapshot_bundle.assert_called_once_with("2026-11-16")
         self.assertEqual(result["status"], "available")
 
     @patch("src.sources.taifex.snapshot_bundle")
@@ -199,14 +199,14 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         ):
             sentinels = [
                 {
-                    "Date": "20261116",
+                    "Date": "20261117",
                     "SettlementMonth": "666666",
                     "Top10Buy": "1",
                     "Top10Sell": "1",
                     **({"CallPut": callput} if callput else {}),
                 },
                 {
-                    "Date": "20261116",
+                    "Date": "20261117",
                     "SettlementMonth": "999912",
                     "Top10Buy": "1",
                     "Top10Sell": "1",
@@ -234,13 +234,13 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_rollover_baseline_is_independent_of_snapshot_row_order(self, snapshot_bundle):
         rows = self.snapshot["data"]["top10fut"] + [
             {
-                "Date": "20261116",
+                "Date": "20261117",
                 "SettlementMonth": "666666",
                 "Top10Buy": "1",
                 "Top10Sell": "1",
             },
             {
-                "Date": "20261116",
+                "Date": "20261117",
                 "SettlementMonth": "999912",
                 "Top10Buy": "1",
                 "Top10Sell": "1",
@@ -263,7 +263,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_snapshot_with_only_invalid_settlement_months_is_not_rollover(self, snapshot_bundle):
         invalid_rows = [
             {
-                "Date": "20261116",
+                "Date": "20261117",
                 "SettlementMonth": sentinel,
                 "Top10Buy": "1",
                 "Top10Sell": "1",
