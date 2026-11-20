@@ -1,6 +1,7 @@
 """TWSE 證交所：加權指數 (OpenAPI) + 三大法人 (RWD JSON)，免 Key。"""
 from __future__ import annotations
 from datetime import datetime
+import math
 import re
 from src.utils import fetch_with_retry as _fetch
 
@@ -114,7 +115,7 @@ def get_institutional(query_date: str = "") -> dict:
             name = str(row[0] or "")
             try:
                 raw_value = float(str(row[3]).replace(",", ""))
-                if not __import__("math").isfinite(raw_value):
+                if not math.isfinite(raw_value):
                     continue
                 val_yi = raw_value / 1e8
             except (TypeError, ValueError):
@@ -128,7 +129,8 @@ def get_institutional(query_date: str = "") -> dict:
             elif "自營商" in name:
                 dealer_own = val_yi if dealer_own is None else dealer_own + val_yi
         dealer = (
-            (dealer_own or 0) + (dealer_hedge or 0)
+            (dealer_own if dealer_own is not None else 0)
+            + (dealer_hedge if dealer_hedge is not None else 0)
             if dealer_own is not None or dealer_hedge is not None else None
         )
         total = (
