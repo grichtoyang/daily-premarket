@@ -66,8 +66,10 @@ class TWSEInstitutionalConsistencyTests(unittest.TestCase):
             ],
         }
         response = SimpleNamespace(json=lambda: payload)
-        with patch.object(twse, "_proxy_institutional", return_value=None), \\
-             patch.object(twse, "_fetch", return_value=response):
+        with (
+            patch.object(twse, "_proxy_institutional", return_value=None),
+            patch.object(twse, "_fetch", return_value=response),
+        ):
             result = twse.get_institutional("20261105")
 
         self.assertEqual(result["date"], "20261105")
