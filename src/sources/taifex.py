@@ -1338,7 +1338,11 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     _snapshot_date = _previous_trading_day_iso(t0)
     if not _snapshot_date:
         return None
-    _expected_content_date = _snapshot_date
+    # Worker collects on the snapshot date, but TAIFEX Top10 OpenAPI
+    # content is one trading day behind that collection date.
+    _expected_content_date = _previous_trading_day_iso(_snapshot_date)
+    if not _expected_content_date:
+        return None
     _sb = snapshot_bundle(_snapshot_date)
     if not isinstance(_sb, dict):
         return None
