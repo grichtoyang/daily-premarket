@@ -15,7 +15,7 @@ function functionSource(name, nextMarker) {
 }
 
 assert.match(source, /V1\.7 ADDITIVE/);
-assert.match(source, /version: "V1\.7 — V1\.6 \+ bounded compact fetch \+ parallel Delta\/TAIEX \(additive\)"/);
+assert.ok(source.includes('version: "V1.7 — bounded compact fetch + parallel Delta/TAIEX + historical Delta CSV (additive)"'));
 assert.match(source, /compactDeadlineAt = compactStartedAt \+ 75000/);
 
 const chain = functionSource(
