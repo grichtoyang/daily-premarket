@@ -1360,12 +1360,14 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
     if len(rows) != len(_raw_rows) or not rows:
         return None
 
-    # Every row in one top10 dataset must carry a parseable, consistent source
-    # date. The source may lag the collection date, but it must not be future-dated.
-    _row_dates = [_iso8(r.get("Date")) for r in rows]
-    if any(d is None for d in _row_dates) or len(set(_row_dates)) != 1:
+    # The TAIFEX top10 endpoint is one trading day behind the Worker
+    # collection date. Require that exact source date; a consistently stale
+    # payload must not be accepted as a valid rollover baseline.
+    _expected_content_date = _previous_trading_day_iso(_t1)
+    if not _expected_content_date:
         return None
-    if _row_dates[0] > _t1:
+    _row_dates = [_iso8(r.get("Date")) for r in rows]
+    if any(d is None for d in _row_dates) or set(_row_dates) != {_expected_content_date}:
         return None
 
     if callput:
