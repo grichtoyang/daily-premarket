@@ -51,9 +51,9 @@ assert.deepEqual(
   assert.equal(result.diagnostics.call_rows, 1);
   assert.equal(result.diagnostics.put_rows, 1);
   assert.deepEqual(result.rows[0], {
-    contract: "TXO", contract_month: "202611W4",
-    contract_expiry_date: "2026-11-25", strike: 21500,
-    type: "call", delta: 0.6789
+    contract: "TXO", contract_month: "202611F3",
+    contract_expiry_date: "2026-11-20", strike: 35700,
+    type: "call", delta: 1.0
   });
   assert.equal(result.rows[1].type, "put");
 }
