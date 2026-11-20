@@ -29,6 +29,15 @@ OUT_DIR = ROOT / "data_reports"
 TAIPEI = ZoneInfo("Asia/Taipei")
 MISSING = "unavailable"
 
+
+def _timed_call(label: str, fn, *args, **kwargs):
+    """Log elapsed wall time for a top-level data-source operation."""
+    _started = time.perf_counter()
+    try:
+        return fn(*args, **kwargs)
+    finally:
+        print(f"[TIMING] source={label} elapsed={time.perf_counter() - _started:.2f}s", flush=True)
+
 def _f2(v) -> str:
     return f"{float(v):,.2f}" if v is not None else MISSING
 
@@ -635,7 +644,7 @@ def last_weekday(d: date) -> date:
 
 def build(report_date: str, t0: str, session: str = "全日", slot: str = "") -> str:
     now = datetime.now(TAIPEI).strftime("%Y-%m-%d %H:%M:%S")
-    s = spot.build(t0)
+    s = _timed_call("spot.build", spot.build, t0)
     tx, lb, ob = s["taiex"], s["listed_breadth"], s["otc_breadth"]
     inst, mg, sb, to = s["inst"], s["margin"], s["sbl"], s["turnover"]
     _src = s["sources"]
@@ -757,7 +766,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("## 二、重要市場")
     A("")
-    mk = us_market.get_all()
+    mk = _timed_call("us_market.get_all", us_market.get_all)
     _asia_note = _asia_stale_note(mk, t0)
     titles = {"美股指數": ("美股指數", "收盤／最新值"), "亞洲主要指數": ("亞洲主要指數", "收盤／最新值"),
               "美股指數期貨": ("美股指數期貨", "最新值"), "主要匯率": ("主要匯率", "最新值"),
@@ -774,7 +783,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A("")
         A(_market_quote_table(rows, col))
         A("")
-    y = treasury.get_yields()
+    y = _timed_call("treasury.get_yields", treasury.get_yields)
     num += 1
     A(f"### {num}. 美國國債殖利率")
     A("")
@@ -797,7 +806,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("**資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)")
     A("")
-    _nw = news.get()
+    _nw = _timed_call("news.get", news.get)
     if _nw["items"]:
         for _i, it in enumerate(_nw["items"], 1):
             A(f"- 事件{_i}：{it['title']}")
@@ -816,7 +825,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("1. Cloudflare Workers：TAIFEX Proxy — https://taifex.grichtoyang.workers.dev/")
     A("2. TAIFEX Open API — https://openapi.taifex.com.tw/")
     A("")
-    fx = taifex.build(t0, taiex_close=tx["close"], session=session)
+    fx = _timed_call("taifex.build", taifex.build, t0, taiex_close=tx["close"], session=session)
     d, n = fx["day"], fx["night"]
     SRC_FX = "TAIFEX Proxy"
     SRC_FX_OFF = "TAIFEX OpenAPI"
@@ -883,7 +892,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("**資料來源：** `TAIFEX OpenAPI OpenInterestOfLargeTradersFutures`（備援 TAIFEX Proxy；欄位依實際取得來源標示）")
     A("")
     _top10_rollover_notes = []
-    _t10 = taifex_official.top10_fut(d["month"] or "", t0)
+    _t10 = _timed_call("taifex_official.top10_fut", taifex_official.top10_fut, d["month"] or "", t0)
     _t10_src = "TAIFEX Proxy" if _t10.get("via") == "proxy" else SRC_FX_OFF
     _t10chg = taifex.snap_top10_change(d["month"] or "", t0, _t10.get("net"),
                                            cur_date=_t10.get("date"))
@@ -1052,7 +1061,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 4．Call／Put 比例與變化")
     A("")
-    _pch = taifex_official.putcall_history()
+    _pch = _timed_call("taifex_official.putcall_history", taifex_official.putcall_history)
     _pc_rows = [
         ("Call／Put 成交量比例", _f2(_ot['vol_ratio']), "倍", SRC_FX if _ot['vol_ratio'] is not None else MISSING),
         ("Call／Put 未平倉量比例", _f2(_ot['oi_ratio']), "倍", SRC_FX if _ot['oi_ratio'] is not None else MISSING),
@@ -1400,8 +1409,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 18．選擇權前十大")
     A("")
-    _t10c = taifex_official.top10_opt(d["month"] or "", "買權", t0)
-    _t10p = taifex_official.top10_opt(d["month"] or "", "賣權", t0)
+    _t10c = _timed_call("taifex_official.top10_opt.call", taifex_official.top10_opt, d["month"] or "", "買權", t0)
+    _t10p = _timed_call("taifex_official.top10_opt.put", taifex_official.top10_opt, d["month"] or "", "賣權", t0)
     _t10c_src = "TAIFEX Proxy" if _t10c.get("via") == "proxy" else SRC_FX_OFF
     _t10p_src = "TAIFEX Proxy" if _t10p.get("via") == "proxy" else SRC_FX_OFF
     _t10c_chg = taifex.snap_top10_change(d["month"] or "", t0, _t10c.get("net"),
