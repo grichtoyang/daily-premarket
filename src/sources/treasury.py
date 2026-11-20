@@ -24,13 +24,18 @@ def _treasury() -> dict | None:
     import requests
     from src.utils import HEADERS
     for url in CANDIDATES:
+        candidate_started = perf_counter()
+        candidate_status = "error"
+        candidate = "v2" if "/v2/" in url else "v1"
         try:
             r = requests.get(url, headers={**HEADERS, "Accept": "application/json"}, timeout=20)
             if r.status_code != 200:
+                candidate_status = f"http_{r.status_code}"
                 continue
             retrieved_at = _retrieved_at()
             rows = r.json().get("data") or []
             if len(rows) < 1:
+                candidate_status = "empty"
                 continue
             last, prev = rows[0], rows[1] if len(rows) > 1 else rows[0]
             def y(row, *keys):
@@ -54,10 +59,16 @@ def _treasury() -> dict | None:
                               "date": last.get("record_date"), "retrieved_at": retrieved_at,
                               "source": "U.S. Treasury FiscalData API", "ok": v is not None}
             if any(v["ok"] for v in out.values()):
+                candidate_status = "ok"
                 return out
+            candidate_status = "no_valid_yields"
         except Exception as e:  # noqa: BLE001
+            candidate_status = "error"
             print(f"[WARN] treasury {url[:60]} failed: {e}")
             continue
+        finally:
+            print(f"[TIMING] treasury_fiscaldata_candidate={candidate} status={candidate_status} "
+                  f"elapsed={perf_counter() - candidate_started:.2f}s")
     return None
 
 def _xml_yield(field: str):
