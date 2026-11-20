@@ -1,51 +1,57 @@
 # Cloudflare Workers 部署與驗收說明
 
-本文件描述 TAIFEX Proxy V1.6 的部署準備、既有設定保留、部署後驗證及回滾程序。
+> **版本狀態（2026-11-20）：** 正式環境目前由使用者確認部署 TAIFEX Worker **V1.6**。V1.7 是候選版，尚未部署；正式版本仍以 Cloudflare `/health` 回報為準。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
 
-## 版本與檔案
+## 1. Worker 與版本
 
-| Worker | 原始碼 | 用途 |
-|---|---|---|
-| `taifex` | `workers/taifex-proxy_V1.6.js` | TAIFEX 資料代理；V1.6 加入 TXO Chain 共用期限、受控重試及一致錯誤診斷 |
-| `twse-proxy` | `workers/twse-proxy_V1.1.js` | TWSE 資料代理；本次 V1.6 不涉及此 Worker |
+| Worker | 正式基準 | 候選版本 | 用途 |
+|---|---|---|---|
+| `taifex` | `workers/taifex-proxy_V1.6.js` | `workers/taifex-proxy_V1.7.js` | TAIFEX / TXO 資料代理 |
+| `twse-proxy` | `workers/twse-proxy_V1.2.js` | 本次無變更 | TWSE 資料代理 |
 
 正式網址：`https://taifex.grichtoyang.workers.dev`
 
-V1.6 相對 V1.5 的新增內容：
-- TXO Chain Primary TAIFEX POST timeout：12 秒。
-- OpenAPI fallback timeout：8 秒。
-- TXO Chain 單次請求總 deadline：25 秒。
-- TXO Chain 路徑共用 fetch helper，並保留 Primary / Fallback 錯誤診斷。
-- Snapshot Chain retry 最多兩次，兩次間隔 3 秒。
-- Python TXO Chain 502 retry 增加 2 秒 backoff；其他端點的既有 retry 行為不變。
+V1.7 相對 V1.6 的限定新增內容：
+- Compact endpoint 設定 75 秒共用 deadline。
+- TXO Chain 仍保留 V1.6 的 25 秒內部 deadline。
+- Delta 與 TAIEX 指數請求在 Chain 完成後平行執行，並共用 compact deadline。
+- 兩項平行工作使用 `Promise.allSettled`，保留各自成功結果；單項意外失敗會留下明確的 unavailable reason / diagnostics。
+- 增加 compact stage timing / outcome diagnostics。
+- `/health` 版本字串更新為 V1.7。
 
-## 部署前檢查（不得重複建立資源）
+V1.7 不應更改既有資料來源、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
 
-部署前先在 Cloudflare Dashboard 確認既有 `taifex` Worker 設定。不要因為看不到設定就直接建立新 Worker、KV Namespace 或 Secret。
+## 2. 部署前必要檢查（唯讀）
 
-1. 確認目標是既有 Worker `taifex`，正式網址仍為上方網址。
-2. 在 Settings / Bindings 確認既有 KV Namespace binding 名稱為 `SNAPSHOTS`，並確認它指向原本使用的 Namespace。不要新建 Namespace 或更換 ID。
-3. 在 Triggers / Cron Triggers 確認既有快照排程。依目前 Cloudflare Dashboard 截圖，既有排程為週一至週五 08:30 UTC（即台北時間 16:30；cron expression 預期為 `30 8 * * 1-5`）。Cloudflare Cron 使用 UTC。V1.6 原始碼 `scheduled()` 上方仍有舊註解範例 `30 6 * * 1-5`（台北時間 14:30），該註解與目前既有 Dashboard 設定不一致；本文件以已確認的 Dashboard 設定為準。不要新增重複排程，也不要在未經使用者確認前更改現有時間。
-4. 確認目前 `SNAPSHOT_KEY` Secret 的設定狀態並予以保留。它是選用設定：若已設定，`/snapshots/write-now` 需提供正確 key；若未設定，該端點不會因 key 缺少而拒絕請求。不要在本次部署中更換或洩露 Secret。
-5. 記錄目前已部署版本，並確認可透過 Cloudflare Deployments / Versions 回滾。專案先前記錄 V1.5 為已部署版本，但部署前仍應以 Cloudflare Dashboard 顯示為準。
+本 Repo 沒有 `wrangler.toml` 或其他 Wrangler 設定檔；本文件所述流程是 Cloudflare Dashboard 手動部署。不得因 Repo 缺少設定檔而建立新 Worker、KV Namespace 或 Secret。
 
-若上述 binding、排程或回滾資訊無法確認，部署狀態應標記 BLOCKED，先不要部署。
+在 Cloudflare Dashboard → Workers & Pages → 既有 `taifex` Worker，先記錄：
 
-## 部署步驟（需經使用者明確批准後執行）
+1. Worker 名稱與正式網址，確認目標是既有 `taifex`，不是新建 Worker。
+2. 現行 Deployment / Version ID、部署時間及可回滾版本。
+3. Settings / Bindings：KV binding 名稱必須仍是 `SNAPSHOTS`，並確認 Namespace ID 與目前正式環境相同。不要新建 Namespace 或更換 ID。
+4. Triggers / Cron Triggers：確認既有快照排程並記錄 cron expression。過往 Dashboard 紀錄為週一至週五 08:30 UTC（`30 8 * * 1-5`，台北時間 16:30），但部署當下必須以 Dashboard 現況為準；不要新增重複排程或變更時間。
+5. Variables and Secrets：必須確認 `SNAPSHOT_KEY` 存在且保留原值；只確認存在狀態，不讀取、不複製、不洩露 Secret 值。**若 `SNAPSHOT_KEY` 不存在，部署前標記 BLOCKED**：目前程式在 Secret 未設定時，`/snapshots/write-now` 不會要求 key，可能允許未授權寫入 KV。部署不得移除或清空此 Secret。
+6. 記錄正式環境目前的 V1.6 版本作為 rollback target，並確認 Cloudflare Deployments / Versions 可以回滾。
 
-本次只更新既有 `taifex` Worker，不部署 `twse-proxy`，也不建立新 Worker。
+任一項無法確認，標記 **BLOCKED**，停止部署。
 
-1. 開啟 Cloudflare Dashboard → Workers & Pages → 選擇既有 `taifex` Worker。
-2. 先記錄目前 Deployment / Version，確認回滾目標。
-3. 開啟 Edit code，將本 Repo 的 `workers/taifex-proxy_V1.6.js` 完整內容貼入。
-4. 確認程式碼完整後才執行 Save and deploy。
-5. 不要在本次部署流程中觸發 GitHub Actions、執行 `daily-data` 或修改其他 Worker。
+## 3. 部署步驟（僅在使用者明確批准後）
 
-## 部署後驗證
+本次只更新既有 `taifex` Worker，不部署 `twse-proxy`，不建立資源。
 
-以下為唯讀 GET 驗證。部署後逐項執行，保留完整 HTTP 狀態碼與 JSON 回應。
+1. 在 Cloudflare Dashboard 開啟既有 `taifex` Worker。
+2. 再次確認並記錄目前正式 V1.6 Deployment / Version ID。
+3. 開啟 Edit code，將目前候選版本來源中的 `workers/taifex-proxy_V1.7.js` 的完整內容貼入。
+4. 確認程式碼沒有截斷，且既有 `SNAPSHOTS` binding、Cron、Secret 均保留。
+5. 只有在上述檢查完成且使用者已明確批准時，才執行 Save and deploy。
+6. 不要在本次部署流程中呼叫 `/snapshots/write-now`、手動寫 KV、觸發 GitHub `daily-data` 或修改其他 Worker。
 
-### 1. Health 與版本
+## 4. 部署後驗收（唯讀 GET）
+
+所有驗收只使用 GET。先查 Health，再測端點；保留 HTTP status、完整 JSON、時間戳及 Cloudflare Deployment Version。
+
+### 4.1 Health / 版本
 
 ```bash
 curl -i https://taifex.grichtoyang.workers.dev/health
@@ -55,52 +61,71 @@ curl -i https://taifex.grichtoyang.workers.dev/health
 - HTTP 200
 - `ok: true`
 - `service: "taifex-proxy"`
-- `version: "V1.6 — V1.5 + bounded TXO Chain fetch + unified failure diagnostics (additive)"`
+- `version` 以 `V1.7` 開頭，且明確包含 bounded compact fetch / parallel Delta/TAIEX。
 
-若仍回報 V1.4 / V1.5，代表正式環境版本尚未更新或部署目標錯誤。
+若仍回報 V1.6，表示新版本尚未生效或部署目標錯誤；立即停止後續驗收並評估回滾。
 
-### 2. TXO Chain 路由
+### 4.2 Compact endpoint（核心驗收）
 
-將 `YYYY-MM-DD` 換成已知可查詢的交易日期：
+以已知可查詢的交易日替換日期：
+
+```bash
+curl -i "https://taifex.grichtoyang.workers.dev/options-market-structure-compact?date=YYYY-MM-DD"
+```
+
+驗收：
+- HTTP 200 時，確認回應日期與請求日期一致。
+- 確認 Chain、Delta、TAIEX 的 found / reason / diagnostics 狀態能分辨成功與失敗。
+- 確認有 V1.7 compact stage timing 診斷，能分辨 `chain_fetch` 與 `delta_taiex_parallel`。
+- 單一 Delta 或 TAIEX 失敗時，另一項成功結果仍應保留；不可因單項例外而丟棄另一項成功結果。
+- 若 Chain 不可用，應回傳明確錯誤，不得偽裝成成功或以 0 代替缺值。
+- 上游暫時性錯誤可造成明確 unavailable / 非 2xx；須區分上游故障與 Worker runtime exception，不可只因一次上游故障判定程式部署失敗。
+- 75 秒是 endpoint deadline，不代表每次都會耗滿 75 秒，也不保證整體 daily-data 一定低於 3 分鐘。
+
+### 4.3 既有端點抽查
 
 ```bash
 curl -i "https://taifex.grichtoyang.workers.dev/options-key-levels?date=YYYY-MM-DD"
 curl -i "https://taifex.grichtoyang.workers.dev/futures-options-chain?date=YYYY-MM-DD"
-curl -i "https://taifex.grichtoyang.workers.dev/options-market-structure-compact?date=YYYY-MM-DD"
-curl -i "https://taifex.grichtoyang.workers.dev/options-market-structure?date=YYYY-MM-DD"
 curl -i "https://taifex.grichtoyang.workers.dev/options-gamma-levels?date=YYYY-MM-DD"
 ```
 
-驗收原則：
-- HTTP 200 時，確認回應 `ok: true`、日期符合請求，且資料欄位存在。
-- 上游暫時故障時，允許回傳明確的非 2xx 錯誤；確認有 `error_code` 及來源診斷，不得把錯誤偽裝成成功、零值或空資料。
-- 單次失敗不能直接判定部署失敗；先區分 TAIFEX / OpenAPI 上游可用性與 Worker Runtime 錯誤。
+確認 HTTP 狀態、日期、欄位及既有錯誤診斷語意沒有回歸。若上游不可用，記錄其明確錯誤，不得把缺值當成 0。
 
-### 3. Snapshot KV（唯讀）
+### 4.4 Snapshot KV（唯讀）
 
-只有在確認既有 `SNAPSHOTS` binding 後，才執行：
+只有確認原有 `SNAPSHOTS` binding 仍存在且 Namespace ID 相同後才執行：
 
 ```bash
 curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD"
 ```
 
-這是讀取既有快照的檢查。本驗收不呼叫 `/snapshots/write-now`，避免在驗收時新增或覆寫快照資料。
+確認既有快照可讀、日期與內容符合預期。本驗收絕不呼叫 `/snapshots/write-now`，避免新增或覆寫 KV 資料。
 
-## 回滾
+### 4.5 上線判定
 
-若 Health、Worker Runtime 或既有端點出現部署引入的異常：
+- **PASS**：Health 回報 V1.7；compact endpoint 的 stage 診斷及資料狀態合理；既有端點抽查無回歸；KV bundle 唯讀正常；Cron / binding / Secret 保留。
+- **FAIL**：版本錯誤、Worker runtime exception、既有端點回歸、KV binding 遺失或資料 schema 被破壞。
+- **BLOCKED**：Cloudflare 設定或 rollback target 無法確認。
+- **NOT TESTED**：尚未執行的上游情境、單項失敗保留測試或未能觸發的市場資料情境。不得以靜態測試取代真實環境驗收。
 
-1. 停止後續驗證與其他變更。
-2. 在 Cloudflare Dashboard 的 Deployments / Versions 選擇部署前記錄的穩定版本執行 Rollback。
-3. 若需手動貼回程式碼，使用部署前保存的正式版本原始碼；不要假設 Repo 中最新檔案就是目前正式環境的前一版。
-4. 回滾後重新查詢 `/health`，確認版本回到預期值。
-5. 記錄錯誤時間、HTTP 狀態、回應內容及部署版本，再決定是否修正 V1.6。
+正式上線驗收 PASS 前，不得宣稱 V1.7 已完成部署驗證。部署 Worker 與觸發 `daily-data` 是兩個不同操作；後者仍須使用者自行手動觸發。
 
-## 相關歷史版本
+## 5. 回滾
 
-- `workers/taifex-proxy_V1.5.js`：V1.6 的前一版程式碼基準。
-- `workers/taifex-proxy_V1.4.js`：加入每日快照（Cron + KV）的歷史版本。
-- `workers/taifex-proxy_V1.3.js`：加入夜盤 OHLC 與 Put/Call Ratio 歷史端點。
-- `workers/taifex-proxy_V1.2.js`：加入期貨及選擇權 Top 10 端點。
+若 Health、Worker Runtime、compact endpoint 或既有端點出現部署引入的異常：
 
-Python 對接設定使用 `TAIFEX_PROXY_BASE_URL` 指向既有 TAIFEX Worker；本次 V1.6 不變更 Python URL、資料 schema 或其他資料來源。
+1. 停止後續驗收與其他變更。
+2. 在 Cloudflare Dashboard → Deployments / Versions，選擇部署前記錄的正式 V1.6 Deployment / Version 執行 Rollback。
+3. 若需手動貼回程式碼，使用已確認的 V1.6 正式版本來源；不要以 Repo 最新檔案推斷線上版本。
+4. 回滾後重新查詢 `/health`，確認回報 V1.6。
+5. 記錄錯誤時間、HTTP status、回應內容、Deployment Version 與回滾結果。
+
+## 6. 相關版本
+
+- `workers/taifex-proxy_V1.7.js`：候選版，尚未部署。
+- `workers/taifex-proxy_V1.6.js`：目前正式版本程式碼基準。
+- `workers/taifex-proxy_V1.5.js`、`V1.4.js`：歷史版本。
+- `workers/twse-proxy_V1.2.js`：本次不變更。
+
+Python 仍使用既有 `TAIFEX_PROXY_BASE_URL`；本次 V1.7 不變更 Python URL、資料 schema、其他資料來源或 daily-data workflow。
