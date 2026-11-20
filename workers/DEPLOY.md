@@ -118,7 +118,7 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 1. 停止後續驗收與其他變更。
 2. 在 Cloudflare Dashboard → Deployments / Versions，選擇部署前記錄的正式 V1.7 Deployment / Version 執行 Rollback。
 3. 若需手動貼回程式碼，使用已確認的 V1.7 正式版本來源；不要以 Repo 最新檔案推斷線上版本。
-4. 回滾後重新查詢 `/health)，確認回報 V1.7。
+4. 回滾後重新查詢 `/health`，確認回報 V1.7。
 5. 記錄錯誤時間、HTTP status、回應內容、Deployment Version 與回滾結果。
 
 ## 6. 相關版本
