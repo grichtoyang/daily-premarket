@@ -2,8 +2,8 @@
 
 - 報告日期：`2026-11-20`
 - T0 交易日期：`2026-11-19`
-- 首次資料產出時間：`2026-11-20 15:39:51`
-- 本次更新開始時間：`2026-11-20 15:39:51`
+- 首次資料產出時間：`2026-11-20 15:52:36`
+- 本次更新開始時間：`2026-11-20 15:52:36`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -94,8 +94,8 @@
 - 上櫃來源：TPEx S47（上櫃）；增減來源：TPEx S47（上櫃）
 - 借券賣出餘額完整性：`complete`
 - 借券賣出增減完整性：`complete`
-- TWSE TWT93U（上市）：資料日期：`20261119`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:40:10+08:00`；狀態：`available_after_schedule`
-- TPEx S47（上櫃）：資料日期：`20261119`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:40:10+08:00`；狀態：`available_after_schedule`
+- TWSE TWT93U（上市）：資料日期：`20261119`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:52:57+08:00`；狀態：`available_after_schedule`
+- TPEx S47（上櫃）：資料日期：`20261119`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-20T15:52:58+08:00`；狀態：`available_after_schedule`
 
 ### 6. 市場成交結構
 
@@ -115,12 +115,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,175.83 | -147.80 | -2.02 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 23,879.20 | -550.68 | -2.25 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 26,517.05 | -599.21 | -2.21 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 49,097.06 | -1,101.11 | -2.19 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 9,419.72 | -233.08 | -2.41 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| VIX | ^VIX | 28.44 | 3.88 | +15.80 | 2026-11-19 | 2026-11-20T07:40:10+00:00 | America/Chicago | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,175.83 | -147.80 | -2.02 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| Nasdaq Composite | ^IXIC | 23,879.20 | -550.68 | -2.25 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| Nasdaq 100 | ^NDX | 26,517.05 | -599.21 | -2.21 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| Dow Jones | ^DJI | 49,097.06 | -1,101.11 | -2.19 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| 費城半導體 SOX | ^SOX | 9,419.72 | -233.08 | -2.41 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| VIX | ^VIX | 28.44 | 3.88 | +15.80 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/Chicago | Yahoo Finance Chart API |
 
 ### 2. 亞洲主要指數
 
@@ -128,11 +128,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 日經225 | ^N225 | 56,436.65 | -3,007.56 | -5.06 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Tokyo | Yahoo Finance Chart API |
-| 韓國KOSPI | ^KS11 | 4,869.96 | -267.93 | -5.21 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Seoul | Yahoo Finance Chart API |
-| 香港恆生 | ^HSI | 22,341.16 | -500.46 | -2.19 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Hong_Kong | Yahoo Finance Chart API |
-| 上海綜合 | 000001.SS | 3,533.79 | -43.82 | -1.22 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
-| 深圳成分 | 399001.SZ | 10,256.39 | -326.81 | -3.09 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
+| 日經225 | ^N225 | 56,436.65 | -3,007.56 | -5.06 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Asia/Tokyo | Yahoo Finance Chart API |
+| 韓國KOSPI | ^KS11 | 4,869.96 | -267.93 | -5.21 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Asia/Seoul | Yahoo Finance Chart API |
+| 香港恆生 | ^HSI | 22,354.53 | -487.09 | -2.13 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Asia/Hong_Kong | Yahoo Finance Chart API |
+| 上海綜合 | 000001.SS | 3,533.79 | -43.82 | -1.22 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
+| 深圳成分 | 399001.SZ | 10,256.39 | -326.81 | -3.09 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Asia/Shanghai | Yahoo Finance Chart API |
 
 ### 3. 美股指數期貨
 
@@ -140,10 +140,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,150.00 | -47.25 | -0.66 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 26,251.50 | -348.75 | -1.31 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 49,051.00 | -129.00 | -0.26 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,651.00 | -12.30 | -0.46 | 2026-11-20 | 2026-11-20T07:40:10+00:00 | America/New_York | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,160.00 | -37.25 | -0.52 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| Nasdaq100期貨 | NQ=F | 26,306.75 | -293.50 | -1.10 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| 道瓊期貨 | YM=F | 49,119.00 | -61.00 | -0.12 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| Russell2000期貨 | RTY=F | 2,654.50 | -8.80 | -0.33 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
 
 ### 4. 美國國債殖利率
 
@@ -151,10 +151,10 @@
 
 | 項目 | API 資料欄位／識別 | 殖利率（%） | 日變化（百分點） | 資料日期 | 擷取時間（UTC） | 資料來源 |
 |---|---|---|---|---|---|---|
-| 美國 2 年期殖利率 | 2 Yr | 4.76 | -0.04 | 19-NOV-26 | 2026-11-20T07:40:32+00:00 | U.S. Treasury yield.xml（BC_2YEAR 備援） |
-| 美國 10 年期殖利率 | 10 Yr | 5.05 | -0.01 | 2026-11-19 | 2026-11-20T07:40:32+00:00 | Yahoo Finance (備援) |
-| 美國 20 年期殖利率 | 20 Yr | 5.43 | -0.01 | 19-NOV-26 | 2026-11-20T07:40:51+00:00 | U.S. Treasury yield.xml（BC_20YEAR 備援） |
-| 美國 30 年期殖利率 | 30 Yr | 5.40 | -0.01 | 2026-11-19 | 2026-11-20T07:40:51+00:00 | Yahoo Finance (備援) |
+| 美國 2 年期殖利率 | 2 Yr | 4.76 | -0.04 | 19-NOV-26 | 2026-11-20T07:53:21+00:00 | U.S. Treasury yield.xml（BC_2YEAR 備援） |
+| 美國 10 年期殖利率 | 10 Yr | 5.05 | -0.01 | 2026-11-19 | 2026-11-20T07:53:21+00:00 | Yahoo Finance (備援) |
+| 美國 20 年期殖利率 | 20 Yr | 5.43 | -0.01 | 19-NOV-26 | 2026-11-20T07:53:40+00:00 | U.S. Treasury yield.xml（BC_20YEAR 備援） |
+| 美國 30 年期殖利率 | 30 Yr | 5.40 | -0.01 | 2026-11-19 | 2026-11-20T07:53:40+00:00 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -162,10 +162,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.95 | 0.02 | +0.05 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | Europe/London | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 103.73 | -0.17 | -0.16 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 159.06 | -0.32 | -0.20 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | Europe/London | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,333.39 | 2.99 | +0.22 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | Europe/London | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.95 | 0.02 | +0.06 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Europe/London | Yahoo Finance Chart API |
+| DXY美元指數 | DX-Y.NYB | 103.72 | -0.18 | -0.17 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| USD/JPY | JPY=X | 159.20 | -0.18 | -0.11 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Europe/London | Yahoo Finance Chart API |
+| USD/KRW | KRW=X | 1,333.59 | 3.19 | +0.24 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | Europe/London | Yahoo Finance Chart API |
 
 ### 6. 台灣相關ADR
 
@@ -173,9 +173,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 台積電ADR | TSM | 352.09 | -10.53 | -2.90 | 2026-11-19 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
-| 聯電ADR | UMC | 13.40 | -0.56 | -4.01 | 2026-11-19 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
-| 日月光ADR | ASX | 30.49 | -2.03 | -6.24 | 2026-11-19 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
+| 台積電ADR | TSM | 352.09 | -10.53 | -2.90 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| 聯電ADR | UMC | 13.40 | -0.56 | -4.01 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| 日月光ADR | ASX | 30.49 | -2.03 | -6.24 | 2026-11-19 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
 
 ### 7. 原油黃金Bitcoin
 
@@ -183,9 +183,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 83.02 | -0.19 | -0.23 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 3,553.20 | -132.30 | -3.59 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | America/New_York | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 61,627.90 | -273.92 | -0.44 | 2026-11-20 | 2026-11-20T07:40:11+00:00 | UTC | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 82.56 | -0.65 | -0.78 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| 黃金期貨 | GC=F | 3,554.20 | -131.30 | -3.56 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | America/New_York | Yahoo Finance Chart API |
+| Bitcoin | BTC-USD | 61,848.67 | -53.15 | -0.09 | 2026-11-20 | 2026-11-20T07:52:58+00:00 | UTC | Yahoo Finance Chart API |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
@@ -391,7 +391,7 @@
 |---|---|---|
 | 交易日期 | 2026-11-19 | TAIFEX Proxy |
 | 到期月份／到期日 | 202611F3 | TAIFEX Proxy |
-| 本次報告產製時間 | 2026-11-20 15:39:51 | 本機 |
+| 本次報告產製時間 | 2026-11-20 15:52:36 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -425,12 +425,12 @@
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 外資 Call日買 | 130,405 | 沿用前版（原來源：TAIFEX Proxy） |
-| 外資 Call日賣 | 119,895 | 沿用前版（原來源：TAIFEX Proxy） |
-| 外資 Call日淨 | +10,510 | 沿用前版（原來源：TAIFEX Proxy） |
-| 外資 Put日買 | 112,478 | 沿用前版（原來源：TAIFEX Proxy） |
-| 外資 Put日賣 | 111,724 | 沿用前版（原來源：TAIFEX Proxy） |
-| 外資 Put日淨 | +754 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Call日買 | 130,405 | TAIFEX Proxy |
+| 外資 Call日賣 | 119,895 | TAIFEX Proxy |
+| 外資 Call日淨 | +10,510 | TAIFEX Proxy |
+| 外資 Put日買 | 112,478 | TAIFEX Proxy |
+| 外資 Put日賣 | 111,724 | TAIFEX Proxy |
+| 外資 Put日淨 | +754 | TAIFEX Proxy |
 | 外資 Call夜買 | 41,965 | TAIFEX Proxy |
 | 外資 Call夜賣 | 42,801 | TAIFEX Proxy |
 | 外資 Call夜淨 | -836 | TAIFEX Proxy |
@@ -438,19 +438,19 @@
 | 外資 Put夜賣 | 45,767 | TAIFEX Proxy |
 | 外資 Put夜淨 | -235 | TAIFEX Proxy |
 | 外資 日盤淨總量 | +9,756 | TAIFEX Proxy |
-| 外資 Call日夜淨增減 (日－夜) | +11,346 | 沿用前版（原來源：TAIFEX Proxy） |
-| 外資 Put日夜淨增減 (日－夜) | +989 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 Call日夜淨增減 (日－夜) | +11,346 | TAIFEX Proxy |
+| 外資 Put日夜淨增減 (日－夜) | +989 | TAIFEX Proxy |
 
 ### 6．自營商 Call／Put 部位
 
 | 項目 | 口數 | 資料來源 |
 |---|---|---|
-| 自營商 Call日買 | 88,783 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 Call日賣 | 111,101 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 Call日淨 | -22,318 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 Put日買 | 73,633 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 Put日賣 | 86,022 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 Put日淨 | -12,389 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Call日買 | 88,783 | TAIFEX Proxy |
+| 自營商 Call日賣 | 111,101 | TAIFEX Proxy |
+| 自營商 Call日淨 | -22,318 | TAIFEX Proxy |
+| 自營商 Put日買 | 73,633 | TAIFEX Proxy |
+| 自營商 Put日賣 | 86,022 | TAIFEX Proxy |
+| 自營商 Put日淨 | -12,389 | TAIFEX Proxy |
 | 自營商 Call夜買 | 18,408 | TAIFEX Proxy |
 | 自營商 Call夜賣 | 22,271 | TAIFEX Proxy |
 | 自營商 Call夜淨 | -3,863 | TAIFEX Proxy |
@@ -458,8 +458,8 @@
 | 自營商 Put夜賣 | 20,619 | TAIFEX Proxy |
 | 自營商 Put夜淨 | -2,326 | TAIFEX Proxy |
 | 自營商 日盤淨總量 | -9,929 | TAIFEX Proxy |
-| 自營商 Call日夜淨增減 (日－夜) | -18,455 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 Put日夜淨增減 (日－夜) | -10,063 | 沿用前版（原來源：TAIFEX Proxy） |
+| 自營商 Call日夜淨增減 (日－夜) | -18,455 | TAIFEX Proxy |
+| 自營商 Put日夜淨增減 (日－夜) | -10,063 | TAIFEX Proxy |
 
 ### 7．主要 Call OI 集中區
 
@@ -581,7 +581,7 @@
 
 **TAIFEX Delta 原始資料與 Parser 階段診斷**
 ```json
-{"requested_date":"2026-11-19","source":"taifex_web","fallback_used":false,"index_duration_ms":2369,"index_error":null,"openapi_fetch_duration_ms":6,"attempts":[{"attempt":1,"duration_ms":720,"source":"taifex_web","fallback":false,"http_status":502,"raw_rows":0,"primary_error":"TAIFEX primary HTTP 200 / rows 0","parser":{"input_rows":0,"array_rows":0,"object_rows":0,"short_rows":0,"non_txo_rows":0,"txo_rows":0,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":0,"per_expiry":[]},"accepted_txo_rows":0},{"attempt":2,"duration_ms":14070,"source":"taifex_web","fallback":false,"http_status":200,"raw_rows":3237,"primary_error":null,"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"accepted_txo_rows":3232}],"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"final_rows":3232,"per_expiry_rows":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]}
+{"requested_date":"2026-11-19","source":"taifex_web","fallback_used":false,"index_duration_ms":1326,"index_error":null,"openapi_fetch_duration_ms":11,"attempts":[{"attempt":1,"duration_ms":543,"source":"taifex_web","fallback":false,"http_status":502,"raw_rows":0,"primary_error":"TAIFEX primary HTTP 200 / rows 0","parser":{"input_rows":0,"array_rows":0,"object_rows":0,"short_rows":0,"non_txo_rows":0,"txo_rows":0,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":0,"per_expiry":[]},"accepted_txo_rows":0},{"attempt":2,"duration_ms":4095,"source":"taifex_web","fallback":false,"http_status":200,"raw_rows":3237,"primary_error":null,"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"accepted_txo_rows":3232}],"parser":{"input_rows":3237,"array_rows":3237,"object_rows":0,"short_rows":4,"non_txo_rows":1,"txo_rows":3232,"invalid_contract_month":0,"invalid_expiry":0,"unknown_option_type_rows":0,"invalid_strike_rows":0,"invalid_delta_rows":0,"parsed_rows":3232,"per_expiry":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]},"final_rows":3232,"per_expiry_rows":[{"contract_month":"202611W4","expiry":"2026-11-25","raw_txo_rows":452,"recognized_type_rows":452,"valid_strike_rows":452,"valid_delta_rows":452,"parsed_rows":452},{"contract_month":"202611F4","expiry":"2026-11-27","raw_txo_rows":428,"recognized_type_rows":428,"valid_strike_rows":428,"valid_delta_rows":428,"parsed_rows":428},{"contract_month":"202612W1","expiry":"2026-12-02","raw_txo_rows":280,"recognized_type_rows":280,"valid_strike_rows":280,"valid_delta_rows":280,"parsed_rows":280},{"contract_month":"202612F1","expiry":"2026-12-04","raw_txo_rows":204,"recognized_type_rows":204,"valid_strike_rows":204,"valid_delta_rows":204,"parsed_rows":204},{"contract_month":"202612","expiry":"2026-12-16","raw_txo_rows":572,"recognized_type_rows":572,"valid_strike_rows":572,"valid_delta_rows":572,"parsed_rows":572},{"contract_month":"202701","expiry":"2027-01-20","raw_txo_rows":432,"recognized_type_rows":432,"valid_strike_rows":432,"valid_delta_rows":432,"parsed_rows":432},{"contract_month":"202702","expiry":"2027-02-17","raw_txo_rows":276,"recognized_type_rows":276,"valid_strike_rows":276,"valid_delta_rows":276,"parsed_rows":276},{"contract_month":"202703","expiry":"2027-03-17","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294},{"contract_month":"202706","expiry":"2027-06-16","raw_txo_rows":294,"recognized_type_rows":294,"valid_strike_rows":294,"valid_delta_rows":294,"parsed_rows":294}]}
 ```
 
 **擴大區間 Gamma Flip 診斷（±15%；不覆蓋正式 ±10% 結果）**
@@ -636,10 +636,10 @@
 
 | 法人 | 日多方力道 | 日空方力道 | 日淨多空力道 | 夜多方力道 | 夜空方力道 | 夜淨多空力道 | 日淨－夜淨 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 外資 | 29.72 | 20.17 | +9.54 | 8.81 | 8.89 | -0.09 | +9.63 | 沿用前版（原來源：TAIFEX Proxy） |
-| 投信 | 0.02 | 15.04 | -15.02 | 0.00 | 0.00 | +0 | -15.02 | 沿用前版（原來源：TAIFEX Proxy） |
-| 自營商 | 26.94 | 25.21 | +1.73 | 5.92 | 5.81 | +0.11 | +1.62 | 沿用前版（原來源：TAIFEX Proxy） |
-| 三大法人合計 | 56.68 | 60.42 | -3.74 | 14.73 | 14.70 | +0.02 | -3.76 | 沿用前版（原來源：TAIFEX Proxy） |
+| 外資 | 29.72 | 20.17 | +9.54 | 8.81 | 8.89 | -0.09 | +9.63 | TAIFEX Proxy |
+| 投信 | 0.02 | 15.04 | -15.02 | 0.00 | 0.00 | +0 | -15.02 | TAIFEX Proxy |
+| 自營商 | 26.94 | 25.21 | +1.73 | 5.92 | 5.81 | +0.11 | +1.62 | TAIFEX Proxy |
+| 三大法人合計 | 56.68 | 60.42 | -3.74 | 14.73 | 14.70 | +0.02 | -3.76 | TAIFEX Proxy |
 
 ### 18．選擇權前十大
 
@@ -669,13 +669,12 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-11-19；本次報告產製時間：2026-11-20 15:39:51；時區：`Asia/Taipei`
+- 資料日期：2026-11-19；本次報告產製時間：2026-11-20 15:52:36；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 部分取得欄位 (0)：無
 - 註記：--force-rewrite 明示覆蓋（人工指定）
-- 註記：同 T0 保護：52 格沿用前版有值（本次抓取缺失不覆寫）
-- 註記：同 T0 覆蓋：90 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
-- 未取得欄位 (1)：futures.opt_split
+- 註記：同 T0 覆蓋：86 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 未取得欄位 (0)：無
 
 ## 五、資料來源、時間與完整性
 
@@ -704,7 +703,6 @@
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
 - TAIFEX 註記：無日期端點為最新盤勢快照 (判定資料日期 2026-11-20，非 T0 2026-11-19)，適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註
 - TAIFEX 註記：法人交易量未提供前日變化端點；日盤、夜盤交易量及日夜淨額差仍照常列示
-- TAIFEX 註記：選擇權日盤買賣權拆分未取得
 - TAIFEX 註記：Gamma GEX 實際使用到期月份 202611W4（到期日 2026-11-25）與 Options Key Levels 主到期月份 202611F3 不同；GEX 數值應以實際使用到期月份為準
 - TAIFEX 註記：主力到期月份已由 202611 換至 202611F3；僅比較前後快照中相同主力月份的共同合約，不跨月份相減
 - 本報告僅整理資料，不提供交易判斷。
@@ -715,6 +713,6 @@
 
 | 法人 | 現貨買賣超(億) | 期貨OI淨(口) | 期貨日淨 | 期貨夜淨 | 選擇權日淨 | 選擇權夜淨 | 判定 | 期選組合 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|---|
-| 外資 | -243.1 | -99,219 | +1,310 | +2,657 | +9,756 | -601 | 避險／對沖 | 資料不足 | twse-proxy／TAIFEX Proxy |
-| 投信 | +43.9 | +91,791 | -4,192 | +0 | -23,450 | +0 | 避險／對沖 | 資料不足 | twse-proxy／TAIFEX Proxy |
-| 自營商 | -233.0 | -1,455 | +1,723 | -366 | -9,929 | -1,537 | 趨勢偏空 | 資料不足 | twse-proxy／TAIFEX Proxy |
+| 外資 | -243.1 | -99,219 | +1,310 | +2,657 | +9,756 | -601 | 避險／對沖 | 對沖避險 | twse-proxy／TAIFEX Proxy |
+| 投信 | +43.9 | +91,791 | -4,192 | +0 | -23,450 | +0 | 避險／對沖 | 分歧 | twse-proxy／TAIFEX Proxy |
+| 自營商 | -233.0 | -1,455 | +1,723 | -366 | -9,929 | -1,537 | 趨勢偏空 | 趨勢偏空 | twse-proxy／TAIFEX Proxy |
