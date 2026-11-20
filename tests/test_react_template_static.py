@@ -174,8 +174,9 @@ class ReactTemplateStaticTests(unittest.TestCase):
 
     def test_market_index_renderer_exists_without_fabricated_sparkline(self):
         self.assertIn('function gf({data:e,height:n=220,changeUnit:unit="%",tw:tw=false})', self.html)
-        self.assertIn('走勢(無資料)', self.html)
-        self.assertIn('F+f/2,k+t/2+1', self.html)
+        self.assertIn('rows=(e||[]).slice(0,7)', self.html)
+        self.assertIn('S.v!=null&&S.v!==""&&Number.isFinite(v)', self.html)
+        self.assertIn('l.fillText("缺值",x+w/2,k+rowH/2+1)', self.html)
         self.assertNotIn("(Math.random()-0.5)*0.6", self.html)
 
     def test_financing_gauge_uses_dynamic_range(self):
