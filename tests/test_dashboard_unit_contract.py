@@ -50,8 +50,6 @@ class DashboardUnitContractTests(unittest.TestCase):
         self.assertIn('("20Y", ("20 Yr", "20yr", "bc_20year"))', treasury)
         self.assertIn('"20Y": ("xml", "BC_20YEAR", None)', treasury)
         self.assertIn('("20Y", "20", "20 Yr")', fetch_data)
-        self.assertIn('("20Y", ("20 Yr", "20yr", "bc_20year"))', treasury)
-        self.assertIn('"20Y": ("xml", "BC_20YEAR", None)', treasury)
 
     def test_unit_standard_and_skill_are_present(self):
         standard = (ROOT / "docs" / "DASHBOARD_UNIT_STANDARD.md").read_text(encoding="utf-8")
