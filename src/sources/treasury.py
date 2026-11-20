@@ -99,7 +99,8 @@ def get_yields() -> dict:
         try:
             out = _treasury() or {}
         finally:
-            status = "ok" if any((v or {}).get("yield") is not None for v in out.values()) else "fallback"
+            _available = [((out.get(k) or {}).get("yield") is not None) for k in ("2Y", "10Y", "20Y", "30Y")]
+            status = "ok" if all(_available) else ("partial" if any(_available) else "fallback")
             print(f"[TIMING] treasury_stage=fiscaldata status={status} elapsed={perf_counter() - stage_started:.2f}s")
 
         fallbacks = {
