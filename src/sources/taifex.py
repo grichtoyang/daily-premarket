@@ -1143,7 +1143,6 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         notes.append(f"Gamma Wall/Flip 資料日期 {gamma_date} (來源 {gsrc})")
 
     # ---------- 快照差值：嚴格核對前一交易日，選擇權按當日主力月份獨立比較 ----------
-    from datetime import date as _dd, timedelta as _td
     _expected_snapshot_date = _previous_trading_day_iso(t0)
     _t1 = _expected_snapshot_date
     _sb = snapshot_bundle(_t1) if _t1 else None
@@ -1279,7 +1278,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 _wd.get("reason"), _wd.get("detail") or "n/a"))
 
     # 法人部位差值獨立於選擇權 Chain/Walls 換月；只要求前一交易日快照可信。
-    if _sdate and (_sb or {}).get("trust_pos") is True:
+    if _sdate == _expected_snapshot_date and (_sb or {}).get("trust_pos") is True:
         _sfd = {x.get("institution"): x for x in _sd.get("fut_trade_day", [])} if (_sb or {}).get("trust_pos") else {}
         _sod = {x.get("institution"): x for x in _sd.get("opt_pos_day", [])} if (_sb or {}).get("trust_pos") else {}
         _pos = {}
