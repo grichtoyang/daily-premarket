@@ -3,11 +3,11 @@ name: TAIFEX Worker V1.7 Validation
 on:
   push:
     branches:
-      - "fix/worker-v1.7-compact-deadline"
+      - "phase2-p0-ui-fixes"
     paths:
       - "workers/taifex-proxy_V1.7.js"
       - "tests/test_worker_v1_7_contract.mjs"
-      - "tests/test_worker_v1_7_gamma_regression.mjs"
+      - "tests/test_worker_v1_7_gamma_regression.mjs"\n      - "tests/test_worker_v1_7_delta_csv.mjs"
       - ".github/workflows/taifex-worker-v1.7-validation.yml"
 
 permissions:
