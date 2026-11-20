@@ -163,22 +163,28 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
             file=sys.stderr, flush=True)
 
 def _memoized_build_fetch(fetch):
-    """Memoize successful endpoint/date responses and compact failures per build.
+    """Memoize endpoint/date responses while allowing failed compact calls a longer retry.
 
     Key-level responses are deliberately not cached so the existing 90s
-    fallback can retry an incomplete 40s response. Compact results (including
-    failures) are cached because that endpoint is scanned by both Gamma and
-    Wall fallback paths; the normal _get retry policy has already run.
+    fallback can retry an incomplete 40s response. Compact successes and
+    failures are shared across Gamma/Wall fallback paths, but a failed result
+    may be retried once at a strictly longer timeout. This preserves the
+    fallback's 90s timeout without repeating successful endpoint/date calls.
     """
     cache = {}
 
     def _cached(ep: str, day: str, timeout: int = 40):
         key = (ep, day)
-        if key in cache:
-            return cache[key]
+        cached = cache.get(key)
+        if cached is not None:
+            cached_result, cached_timeout = cached
+            if cached_result is not None or timeout <= cached_timeout:
+                return cached_result
         result = fetch(ep, day, timeout=timeout)
-        if ep == "options-market-structure-compact" or (result is not None and ep != "options-key-levels"):
-            cache[key] = result
+        if ep == "options-market-structure-compact":
+            cache[key] = (result, timeout)
+        elif result is not None and ep != "options-key-levels":
+            cache[key] = (result, timeout)
         return result
 
     return _cached
