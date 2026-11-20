@@ -38,7 +38,9 @@ def _proxy_institutional(date8: str) -> dict | None:
         d = j.get("data") or {}
         requested_date = _normalize_date8(date8)
         actual_date = _normalize_date8(j.get("actual_date"))
-        if (d.get("foreign") is None or not requested_date or not actual_date
+        required = (d.get("foreign"), d.get("investment_trust"),
+                    d.get("dealer"), d.get("total"))
+        if (any(value is None for value in required) or not requested_date or not actual_date
                 or actual_date != requested_date or j.get("date_mismatch") is True):
             return None
         return {"date": actual_date, "foreign": d.get("foreign"),
@@ -102,34 +104,37 @@ def get_institutional(query_date: str = "") -> dict:
         if query_date and (not date or not requested_date or date != requested_date):
             print(f"[WARN] BFI82U date mismatch: requested={requested_date or query_date}, actual={date or 'missing'}")
             return {}
-        foreign = trust = dealer = None
+        # 與 Worker V1.2 /institutional 保持相同口徑：
+        # 外資(含外資自營商)、投信、自營商(自行買賣+避險)分別加總；
+        # 合計一律由三類法人相加，不採用上游「合計」列。
+        foreign = trust = dealer_own = dealer_hedge = None
         for row in j.get("data", []):
-            name = row[0] if row else ""
-            # 買賣超 = row[3]，格式 "1,234,567,890"，單位元 → 億元
-            try:
-                val_yi = float(str(row[3]).replace(",", "")) / 1e8
-            except Exception:
+            if not isinstance(row, (list, tuple)) or len(row) < 4:
                 continue
-            if "外資" in name:
-                # 外資有兩列：外資及陸資 + 外資自營商，需加總
+            name = str(row[0] or "")
+            try:
+                raw_value = float(str(row[3]).replace(",", ""))
+                if not __import__("math").isfinite(raw_value):
+                    continue
+                val_yi = raw_value / 1e8
+            except (TypeError, ValueError):
+                continue
+            if "外資自營商" in name or "外資" in name:
                 foreign = val_yi if foreign is None else foreign + val_yi
             elif "投信" in name:
                 trust = val_yi if trust is None else trust + val_yi
-            elif "自營商" in name and dealer is None:
-                # 自營商有 (自行買賣) 與 (避險) 兩列，需加總
-                dealer = val_yi
-            elif "自營商" in name and dealer is not None:
-                dealer += val_yi
-        # 若有合計列直接用，否則加總
-        total = None
-        for row in j.get("data", []):
-            if "合計" in str(row[0]):
-                try:
-                    total = float(str(row[3]).replace(",", "")) / 1e8
-                except Exception:
-                    pass
-        if total is None and None not in (foreign, trust, dealer):
-            total = foreign + trust + dealer
+            elif "自營商" in name and "避險" in name:
+                dealer_hedge = val_yi if dealer_hedge is None else dealer_hedge + val_yi
+            elif "自營商" in name:
+                dealer_own = val_yi if dealer_own is None else dealer_own + val_yi
+        dealer = (
+            (dealer_own or 0) + (dealer_hedge or 0)
+            if dealer_own is not None or dealer_hedge is not None else None
+        )
+        total = (
+            foreign + trust + dealer
+            if None not in (foreign, trust, dealer) else None
+        )
         return {"date": date, "foreign": foreign, "trust": trust, "dealer": dealer, "total": total}
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] TWSE BFI82U parse failed: {e}")
