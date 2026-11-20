@@ -505,7 +505,7 @@ function p2({data:e}){
         title:o.title,
         subtitle:countLabel,
         chart:p(gf,{data:chartRows.map(t=>({l:t.l,v:t.v,close:t.close})),changeUnit:o.key==="yields"?"pp":"%",tw:true,height:220}),
-        chartNote:"資料日期逐筆標示；只有資料日期不晚於T0者納入圖表與解析，T0後／日期未核實資料只列示、不作盤前依據。"+(o.key==="us"?"VIX為波動率指標，獨立判讀、不納入股票指數漲跌家數。":""),
+        chartNote:"資料日期逐筆標示；只有資料日期不晚於T0者納入圖表與解析，T0後／日期未核實資料只列示、不作盤前依據。"+(o.key==="us"?"VIX為波動率指標，獨立判讀、不納入股票指數漲跌家數。":o.key==="fx"?"USD/TWD、USD/JPY、USD/KRW 報價為每美元兌本幣；DXY 為指數點。":o.key==="commodities"?"WTI：USD／桶；黃金：USD／金衡盎司；Bitcoin：USD／BTC。":""),
         table:p("div",{className:"space-y-1",children:table}),
         analysis:insight
       });
