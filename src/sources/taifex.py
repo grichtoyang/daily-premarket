@@ -67,7 +67,7 @@ def _worker_error_payload(response) -> dict:
     }
 
 
-def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
+def _get_impl(ep: str, t0: str, timeout: int = 40) -> dict | None:
     import time
     url = f"{BASE}/{ep}?date={t0}" if ep in DATE_EPS else f"{BASE}/{ep}"
     _LAST_FETCH_ERRORS.pop(ep, None)
@@ -145,6 +145,22 @@ def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
             if attempt == 0:
                 time.sleep(2)
     return None
+
+
+def _get(ep: str, t0: str, timeout: int = 40) -> dict | None:
+    """Measure each TAIFEX Worker endpoint call without changing retry behavior."""
+    import time
+    started = time.perf_counter()
+    result = None
+    try:
+        result = _get_impl(ep, t0, timeout=timeout)
+        return result
+    finally:
+        status = "ok" if result is not None else "unavailable"
+        print(
+            f"[TIMING] taifex_endpoint={ep} date={t0} status={status} "
+            f"elapsed={time.perf_counter() - started:.2f}s",
+            file=sys.stderr, flush=True)
 
 def _memoized_build_fetch(fetch):
     """Memoize successful endpoint/date responses and compact failures per build.
