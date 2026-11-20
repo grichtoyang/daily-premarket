@@ -50,7 +50,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_contract_month_mismatch_returns_rollover_baseline_reset(self, snapshot_bundle):
         snapshot_bundle.return_value = self.snapshot
         result = taifex.snap_top10_change(
-            "202612", "2026-11-18", 2500, cur_date="2026-11-18"
+            "202612", "2026-11-19", 2500, cur_date="2026-11-19"
         )
         snapshot_bundle.assert_called_once_with("2026-11-18")
         self.assertEqual(result["status"], "rollover_baseline_reset")
@@ -63,7 +63,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_reverse_contract_month_is_unavailable_not_rollover(self, snapshot_bundle):
         snapshot_bundle.return_value = self.snapshot
         result = taifex.snap_top10_change(
-            "202610", "2026-11-18", 2500, cur_date="2026-11-18"
+            "202610", "2026-11-19", 2500, cur_date="2026-11-19"
         )
         self.assertIsNone(result)
 
@@ -71,8 +71,8 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_options_rollover_is_filtered_by_callput(self, snapshot_bundle):
         snapshot_bundle.return_value = self.snapshot
         result = taifex.snap_top10_change(
-            "202612", "2026-11-18", 1000,
-            cur_date="2026-11-18", dataset="top10opt", callput="買權"
+            "202612", "2026-11-19", 1000,
+            cur_date="2026-11-19", dataset="top10opt", callput="買權"
         )
         self.assertEqual(result["status"], "rollover_baseline_reset")
         self.assertEqual(result["prev_month"], "202611")
@@ -81,7 +81,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
     def test_same_contract_month_still_calculates_daily_change(self, snapshot_bundle):
         snapshot_bundle.return_value = self.snapshot
         result = taifex.snap_top10_change(
-            "202611", "2026-11-18", 3500, cur_date="2026-11-18"
+            "202611", "2026-11-19", 3500, cur_date="2026-11-19"
         )
         self.assertEqual(result["chg"], 500)
         self.assertEqual(result["status"], "available")
@@ -120,7 +120,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         bad_snapshot = dict(self.snapshot, trust_pos=False)
         snapshot_bundle.return_value = bad_snapshot
         self.assertIsNone(
-            taifex.snap_top10_change("202612", "2026-11-18", 2500)
+            taifex.snap_top10_change("202612", "2026-11-19", 2500)
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
@@ -128,7 +128,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         bad_snapshot = dict(self.snapshot, date="2026-11-16")
         snapshot_bundle.return_value = bad_snapshot
         self.assertIsNone(
-            taifex.snap_top10_change("202612", "2026-11-18", 2500)
+            taifex.snap_top10_change("202612", "2026-11-19", 2500)
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
@@ -147,7 +147,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         }
         snapshot_bundle.return_value = bad_snapshot
         self.assertIsNone(
-            taifex.snap_top10_change("202612", "2026-11-18", 2500)
+            taifex.snap_top10_change("202612", "2026-11-19", 2500)
         )
 
 
@@ -165,7 +165,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
             "data": stale_data,
         }
         self.assertIsNone(
-            taifex.snap_top10_change("202611", "2026-11-18", 3500)
+            taifex.snap_top10_change("202611", "2026-11-19", 3500)
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
@@ -184,7 +184,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         }
         snapshot_bundle.return_value = bad_snapshot
         self.assertIsNone(
-            taifex.snap_top10_change("202611", "2026-11-18", 3500)
+            taifex.snap_top10_change("202611", "2026-11-19", 3500)
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
@@ -225,8 +225,8 @@ class Top10RolloverBaselineTests(unittest.TestCase):
         for dataset, callput in cases:
             with self.subTest(dataset=dataset, callput=callput):
                 result = taifex.snap_top10_change(
-                    "202612", "2026-11-18", 2500,
-                    cur_date="2026-11-18", dataset=dataset, callput=callput
+                    "202612", "2026-11-19", 2500,
+                    cur_date="2026-11-19", dataset=dataset, callput=callput
                 )
                 self.assertEqual(result["status"], "rollover_baseline_reset")
                 self.assertEqual(result["prev_month"], "202611")
@@ -254,7 +254,7 @@ class Top10RolloverBaselineTests(unittest.TestCase):
                 "data": {**self.snapshot["data"], "top10fut": ordered_rows},
             }
             results.append(taifex.snap_top10_change(
-                "202612", "2026-11-18", 2500, cur_date="2026-11-18"
+                "202612", "2026-11-19", 2500, cur_date="2026-11-19"
             ))
         for result in results:
             self.assertEqual(result["status"], "rollover_baseline_reset")
@@ -276,14 +276,14 @@ class Top10RolloverBaselineTests(unittest.TestCase):
             "data": {**self.snapshot["data"], "top10fut": invalid_rows},
         }
         self.assertIsNone(
-            taifex.snap_top10_change("202612", "2026-11-18", 2500)
+            taifex.snap_top10_change("202612", "2026-11-19", 2500)
         )
 
     @patch("src.sources.taifex.snapshot_bundle")
     def test_missing_snapshot_remains_unavailable_not_rollover(self, snapshot_bundle):
         snapshot_bundle.return_value = None
         self.assertIsNone(
-            taifex.snap_top10_change("202612", "2026-11-18", 2500)
+            taifex.snap_top10_change("202612", "2026-11-19", 2500)
         )
 
 
