@@ -64,18 +64,48 @@ def quote(sym: str) -> dict:
         print(f"[WARN] yahoo {sym} failed: {e}")
     return out
 
-def get_all() -> dict:
+def _apply_asia_freshness(rows: list[tuple], expected_date: str | None) -> list[tuple]:
+    """Fail closed when every available Asian index is older than the report T0.
+
+    Yahoo can return a successful HTTP response with a stale final daily bar.
+    A shared older date across the Asian-index group is treated as a feed-level
+    delay, not as five valid latest quotes. If at least one market has T0 data,
+    older rows are retained with their exchange-local dates because a local
+    exchange holiday can legitimately explain the difference.
+    """
+    if not expected_date:
+        return rows
+    available_dates = [
+        q.get("date") for _, q in rows
+        if q.get("price") is not None and q.get("date")
+    ]
+    if not available_dates or max(available_dates) >= expected_date:
+        return rows
+    for _, q in rows:
+        if q.get("price") is not None and q.get("date"):
+            q["stale"] = True
+            q["stale_reason"] = f"亞洲指數最新可得日期 {max(available_dates)} 早於報告 T0 {expected_date}"
+            q["price"] = None
+            q["change"] = None
+            q["pct"] = None
+            q["ok"] = False
+            q["source"] = "Yahoo Finance Chart API（資料日期早於 T0，已排除）"
+    return rows
+
+
+def get_all(expected_date: str | None = None) -> dict:
     """{group: [(name, quote)]}。
 
-    F6（2026-10-19）：25 檔改 ThreadPoolExecutor(max_workers=5) 並行抓取。
-    executor.map 保序回傳，故輸出仍是 GROUPS 定義順序、組內仍是定義順序，
-    逐欄位與逐列順序與改前完全一致（quote() 本身無共享狀態，只讀 requests）。
+    expected_date 僅用於亞洲主要指數的新鮮度檢查；不把其他市場的交易日
+    強制對齊台灣 T0。F6（2026-10-19）：25 檔以 ThreadPoolExecutor 並行抓取。
     """
     from concurrent.futures import ThreadPoolExecutor
     out: dict = {}
     with ThreadPoolExecutor(max_workers=5) as ex:
         for g, items in GROUPS.items():
             out[g] = list(ex.map(lambda it: (it[0], quote(it[1])), items))
+    if "亞洲主要指數" in out:
+        out["亞洲主要指數"] = _apply_asia_freshness(out["亞洲主要指數"], expected_date)
     return out
 
 def ohlc(sym: str) -> dict:
