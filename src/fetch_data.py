@@ -470,6 +470,15 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                 )
                 if _borrowed_row:
                     old = None
+                # If the complete Asian-index batch is stale versus T0, the current
+                # unavailable values are authoritative. Do not let same-T0 protection
+                # silently restore yesterday's prices from the previous report.
+                _asia_stale_row = (
+                    any("亞洲主要指數" in (part or "") for part in hkey)
+                    and "亞洲主要指數資料日期落後 T0" in new_text
+                )
+                if _asia_stale_row:
+                    old = None
                 if old and len(old) == len(cells):
                     # 夜盤衍生欄位若數值完全相同、只有來源標籤改善，應更新來源欄，
                     # 不應把「沿用前版」凍結成永久標籤；數值有差異時仍走原同 T0 保護。
