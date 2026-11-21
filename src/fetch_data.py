@@ -609,10 +609,14 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
     return merged, filled
 
 def _asia_stale_note(mk: dict, t0: str) -> str | None:
-    """亞股與前份 DATA 完全相同即疑似 Yahoo 未更新，回傳註記或 None（永不拋錯）。
-    全缺值時無法判斷，回 None（缺值本就會標 unavailable）。"""
+    """Report Asian-index batch staleness explicitly; retain prior-report comparison as a secondary hint."""
     try:
         rows = mk.get("亞洲主要指數") or []
+        stale = [(name, q.get("date")) for name, q in rows if q.get("stale")]
+        if stale:
+            dates = "、".join(f"{name} {date or MISSING}" for name, date in stale)
+            return (f"亞洲主要指數資料日期落後 T0 {t0}，已將舊行情排除並標示 unavailable；"
+                    f"原始資料日期：{dates}")
         cur = [(q.get("symbol"), _f2(q.get("price")), _f2(q.get("change")))
                for _, q in rows if q.get("price") is not None]
         if not cur:
@@ -766,7 +770,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("## 二、重要市場")
     A("")
-    mk = _timed_call("us_market.get_all", us_market.get_all)
+    mk = _timed_call("us_market.get_all", us_market.get_all, expected_date=t0)
     _asia_note = _asia_stale_note(mk, t0)
     titles = {"美股指數": ("美股指數", "收盤／最新值"), "亞洲主要指數": ("亞洲主要指數", "收盤／最新值"),
               "美股指數期貨": ("美股指數期貨", "最新值"), "主要匯率": ("主要匯率", "最新值"),
