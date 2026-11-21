@@ -190,7 +190,7 @@ def _market_quote_table(rows: list[tuple], column_label: str) -> str:
         (name, q["symbol"], _f2(q["price"]), _f2(q["change"]), _pct(q["pct"]),
          q.get("date") or MISSING, q.get("retrieved_at") or MISSING,
          q.get("exchange_timezone") or MISSING,
-         (q.get("source") or "Yahoo Finance Chart API") if q.get("price") is not None else MISSING)
+         (q.get("source") or "Yahoo Finance Chart API") if (q.get("price") is not None or q.get("stale")) else MISSING)
         for name, q in rows
     ], ("項目", "Yahoo Finance 代號", column_label, "漲跌值", "漲跌幅",
         "資料日期（交易所時區）", "擷取時間（UTC）", "交易所時區", "資料來源"))
