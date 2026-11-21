@@ -72,6 +72,36 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertNotIn("| 借券賣出增減 | -1,273 |", merged)
 
 
+
+    def test_stale_asian_quotes_are_not_restored_by_same_t0_protection(self):
+        old = """# DATA_REPORT_20261120
+- T0 交易日期：`2026-11-20`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 2. 亞洲主要指數
+| 指數 | 收盤／最新值 | 漲跌點數 | 漲跌幅 | 資料日期 | 更新時間 | 時區 | 資料來源 |
+|---|---:|---:|---:|---|---|---|---|
+| 日經225 | 59,444.21 | 419.93 | +0.71 | 2026-11-19 | 2026-11-21T00:14:45+00:00 | Asia/Tokyo | 沿用前版（原來源：Yahoo Finance Chart API） |
+"""
+        new = """# DATA_REPORT_20261120
+- T0 交易日期：`2026-11-20`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 2. 亞洲主要指數
+| 指數 | 收盤／最新值 | 漲跌點數 | 漲跌幅 | 資料日期 | 更新時間 | 時區 | 資料來源 |
+|---|---:|---:|---:|---|---|---|---|
+| 日經225 | unavailable | unavailable | unavailable | 2026-11-19 | 2026-11-21T00:14:45+00:00 | Asia/Tokyo | Yahoo Finance Chart API（資料日期早於 T0，已排除） |
+
+- 註記：亞洲主要指數資料日期落後 T0 2026-11-20，已將舊行情排除並標示 unavailable；原始資料日期：日經225 2026-11-19
+"""
+        merged, filled = merge_same_t0(old, new, new_session="全日", protect=True)
+        self.assertEqual(filled, 0)
+        self.assertIn("| 日經225 | unavailable | unavailable | unavailable | 2026-11-19 |", merged)
+        self.assertNotIn("59,444.21", merged)
+        self.assertNotIn("沿用前版（原來源：Yahoo Finance Chart API）", merged)
+
     def test_new_common_contract_oi_values_keep_their_snapshot_source(self):
         old = """# DATA_REPORT_20261106
 - T0 交易日期：`2026-11-06`
