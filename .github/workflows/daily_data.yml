@@ -34,6 +34,8 @@ jobs:
           cache: 'pip'
       - name: Install deps
         run: pip install -r requirements.txt
+      - name: Validate Asian market freshness guard
+        run: python -m unittest discover -s tests -p "test_us_market_freshness.py" -v
       - name: Fetch daily data
         timeout-minutes: 18
         env:
