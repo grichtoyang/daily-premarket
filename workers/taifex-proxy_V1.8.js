@@ -3983,7 +3983,7 @@ async function retryCurrentDaySnapshotChain(env, date) {
         recovered_at: new Date().toISOString(),
         same_day_retry: retryCount + 1
       };
-      await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
+      await putSnapshotBundleWithRetry(env, snapshotKey, bundle, date);
       // Snapshot persistence succeeded. Pending cleanup is a separate
       // housekeeping step; its failure must not be counted as a Chain retry.
       try {
@@ -4204,7 +4204,12 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
         false
       );
       if (existingCheck.valid) {
-        await env.SNAPSHOTS.delete(pendingKey);
+        try {
+          await env.SNAPSHOTS.delete(pendingKey);
+        } catch (error) {
+          console.log("snapshot completed pending cleanup failed", date,
+            error?.message || String(error));
+        }
         continue;
       }
 
@@ -4220,8 +4225,13 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
           validation: chain.validation,
           recovered_at: new Date().toISOString()
         };
-        await env.SNAPSHOTS.put(`snapshot:${date}`, JSON.stringify(bundle));
-        await env.SNAPSHOTS.delete(pendingKey);
+        await putSnapshotBundleWithRetry(env, `snapshot:${date}`, bundle, date);
+        try {
+          await env.SNAPSHOTS.delete(pendingKey);
+        } catch (error) {
+          console.log("snapshot completed pending cleanup failed", date,
+            error?.message || String(error));
+        }
         console.log("snapshot chain recovered", date, JSON.stringify(bundle.chain_diagnostics));
       } else {
         await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
