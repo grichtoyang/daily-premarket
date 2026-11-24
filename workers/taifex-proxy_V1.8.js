@@ -3765,7 +3765,30 @@ async function persistSnapshotBundle(env, bundle) {
 
 async function retryCurrentDaySnapshotChain(env, date) {
   const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
-  const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+  let pendingRaw = null;
+  try {
+    pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+  } catch (error) {
+    // Without the pending metadata the prior retry count is unknown.
+    // Stop conservatively and request manual review rather than retry forever.
+    try {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        date,
+        same_day_retry_count: 4,
+        next_retry_at: null,
+        last_error: {
+          reason: "pending_state_read_failed",
+          detail: error?.message || String(error),
+          action: "manual_review_required"
+        },
+        updated_at: new Date().toISOString()
+      }));
+    } catch (stateError) {
+      console.log("same-day pending read failure state update failed", date, stateError?.message || String(stateError));
+    }
+    console.log("same-day snapshot retry stopped: pending state read failed", date, error?.message || String(error));
+    return;
+  }
   if (!pendingRaw) return;
   let metadata = {};
   try {
