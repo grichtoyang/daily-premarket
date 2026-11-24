@@ -3778,6 +3778,8 @@ async function discoverRecentIncompleteSnapshots(env) {
       const date = item.name.slice("snapshot:".length);
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
       recentDates.push(date);
+      // KV keys are returned in lexical order; retain only the latest 10 dates.
+      if (recentDates.length > 10) recentDates.shift();
     }
     cursor = listing.list_complete ? undefined : listing.cursor;
     if (!listing.list_complete && !cursor) {
@@ -3785,7 +3787,7 @@ async function discoverRecentIncompleteSnapshots(env) {
     }
   } while (cursor);
 
-  const dates = [...new Set(recentDates)].sort().slice(-10);
+  const dates = recentDates;
 
   for (const date of dates) {
     const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
