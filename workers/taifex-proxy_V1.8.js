@@ -3789,18 +3789,20 @@ async function retryCurrentDaySnapshotChain(env, date) {
   if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() + 5 * 60 * 1000 < nextRetryAt) return;
 
   const snapshotKey = `snapshot:${date}`;
-  const raw = await env.SNAPSHOTS.get(snapshotKey);
-  if (!raw) {
-    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-      ...metadata, date, same_day_retry_count: 4, next_retry_at: null,
-      last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
-      updated_at: new Date().toISOString()
-    }));
-    console.log("same-day snapshot retry stopped: bundle missing", date);
-    return;
-  }
-
   try {
+    // Include the KV read in this boundary: a read exception must consume
+    // one retry slot just like parsing, fetching, validation or KV writes.
+    const raw = await env.SNAPSHOTS.get(snapshotKey);
+    if (!raw) {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        ...metadata, date, same_day_retry_count: 4, next_retry_at: null,
+        last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
+        updated_at: new Date().toISOString()
+      }));
+      console.log("same-day snapshot retry stopped: bundle missing", date);
+      return;
+    }
+
     const bundle = JSON.parse(raw);
     const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date, null, false);
     if (existing.valid) {
