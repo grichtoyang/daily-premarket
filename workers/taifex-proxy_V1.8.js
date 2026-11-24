@@ -3848,7 +3848,7 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
       }
     }
 
-    if (pendingRaw) {
+    if (pendingRaw && !(metadata.last_error && metadata.last_error.action === "manual_review_required")) {
       candidates.push({ key: pendingKey, date, metadata });
     }
   }
