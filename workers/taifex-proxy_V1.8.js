@@ -3956,7 +3956,16 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
 
     const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
     const snapshotKey = `snapshot:${date}`;
-    let pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+    let pendingRaw = null;
+    try {
+      pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+    } catch (error) {
+      // A single unreadable date must not abort discovery for the remaining
+      // dates in the bounded window. Do not mutate state we could not read.
+      console.log("snapshot pending discovery read failed", date,
+        error?.message || String(error));
+      continue;
+    }
     let metadata = {};
     try { metadata = JSON.parse(pendingRaw || "{}"); } catch (_) {}
 
@@ -3966,7 +3975,15 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
     // existing recovery candidates remain eligible.
     if (!pendingRaw && inspectedSnapshots >= 10) continue;
 
-    const snapshotRaw = await env.SNAPSHOTS.get(snapshotKey);
+    let snapshotRaw = null;
+    try {
+      snapshotRaw = await env.SNAPSHOTS.get(snapshotKey);
+    } catch (error) {
+      // Skip only this date; other pending dates remain discoverable.
+      console.log("snapshot bundle discovery read failed", date,
+        error?.message || String(error));
+      continue;
+    }
     if (!snapshotRaw) {
       if (pendingRaw) {
         // A historical bundle cannot safely be rebuilt from today's feeds.
