@@ -17,7 +17,7 @@ V1.7 既有功能（V1.8 全數保留）：
 - Delta 與 TAIEX 指數請求在 Chain 完成後平行執行，並共用 compact deadline。
 - 兩項平行工作使用 `Promise.allSettled`，保留各自成功結果；單項意外失敗會留下明確的 unavailable reason / diagnostics。
 - 增加 compact stage timing / outcome diagnostics。
-- `/health` 版本字串標示 V1.7 與 direct historical Delta CSV 功能。
+- `/health` 版本字串標示 V1.8 快照自動補抓；V1.7 direct historical Delta CSV 功能完整保留。
 
 V1.8 快照修正：
 - 快照 Chain 必須通過指定日期、合約數量、Call/Put 覆蓋、合約唯一性及 OI 完整度驗證。
