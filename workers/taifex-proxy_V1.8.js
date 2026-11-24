@@ -3812,7 +3812,7 @@ async function retryPendingSnapshotChains(env, excludeDates = []) {
     try {
       const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
       if (!raw) {
-        const rebuilt = await collectSnapshotBundle(date, date.replace(/-/g, "/"));
+        const rebuilt = await collectSnapshotBundle(date, date.replace(/-/g, "/"), 2);
         await persistSnapshotBundle(env, rebuilt);
         continue;
       }
