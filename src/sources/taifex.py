@@ -862,6 +862,11 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
                 invalid += 1
             if not month or not expiry:
                 invalid += 1
+            else:
+                try:
+                    datetime.strptime(str(expiry).replace("/", "-"), "%Y-%m-%d")
+                except ValueError:
+                    invalid += 1
             key = (month, expiry, kind, strike)
             if key in seen:
                 invalid += 1
@@ -873,6 +878,10 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
             return False, f"Chain invalid rows: oi={oi_missing}, fields_or_duplicates={invalid}"
         if quality.get("parsed_contracts") != len(chain):
             return False, "Chain contract count does not match metadata"
+        if not isinstance(quality.get("raw_rows"), int) or quality["raw_rows"] < len(chain):
+            return False, "Chain raw-row count is invalid"
+        if not isinstance(quality.get("primary_expiry"), dict):
+            return False, "Primary expiry metadata missing"
         if quality.get("call_count") != call_count or quality.get("put_count") != put_count:
             return False, "Chain Call/Put counts do not match metadata"
         if quality.get("oi_missing_count") != 0 or quality.get("invalid_contract_count") != 0:
