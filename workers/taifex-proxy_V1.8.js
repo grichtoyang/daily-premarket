@@ -6415,14 +6415,66 @@ export default {
           actual = dates[dates.length - 1];
           raw = await env.SNAPSHOTS.get(`snapshot:${actual}`);
         }
+        let bundle = JSON.parse(raw);
+
+        // daily-data already reads this endpoint before using the prior-day baseline.
+        // Use that read as one final bounded recovery attempt, without adding a Cron.
+        if (!requested || actual === requested) {
+          const currentCheck = validateSnapshotChain(
+            bundle && bundle.data && bundle.data.chain,
+            actual,
+            bundle && bundle.date
+          );
+          if (!currentCheck.valid) {
+            const retry = await fetchValidatedSnapshotChain(actual, 1);
+            if (retry.found) {
+              bundle.data = bundle.data || {};
+              bundle.data.chain = retry.rows;
+              bundle.data.walls = retry.walls;
+              bundle.chain_status = "complete";
+              bundle.chain_diagnostics = {
+                attempts: retry.attempts,
+                source: retry.source,
+                validation: retry.validation,
+                recovered_on_bundle_read: true,
+                recovered_at: new Date().toISOString()
+              };
+            } else {
+              // Never expose a known-incomplete legacy Chain to downstream calculations.
+              if (bundle.data) {
+                delete bundle.data.chain;
+                delete bundle.data.walls;
+              }
+              bundle.chain_status = "pending";
+              bundle.chain_diagnostics = {
+                read_retry_attempted: true,
+                last_failure: retry.diagnostics
+              };
+            }
+            await persistSnapshotBundle(env, bundle);
+          } else if (bundle.chain_status !== "complete") {
+            bundle.chain_status = "complete";
+            bundle.chain_diagnostics = {
+              validated_existing_chain_on_read: true,
+              validation: {
+                total: currentCheck.total,
+                calls: currentCheck.calls,
+                puts: currentCheck.puts,
+                oi_coverage: currentCheck.oi_coverage
+              }
+            };
+            await persistSnapshotBundle(env, bundle);
+          }
+        }
+
         return json({
           ok: true,
           source: "TAIFEX",
           dataset: "snapshot_bundle",
           date: actual,
           requested_date: requested,
-          data: JSON.parse(raw),
-          parser: { version: "1.4", endpoint: "snapshots-bundle" }
+          data: bundle,
+          parser: { version: "1.8", endpoint: "snapshots-bundle" }
         });
       } catch (error) {
         return json({

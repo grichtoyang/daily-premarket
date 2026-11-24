@@ -23,6 +23,7 @@ V1.8 快照修正：
 - 快照 Chain 必須通過指定日期、來源 TXO 列與解析合約數一致、至少 100 筆且 Call/Put 各至少 30 筆、每個到期月份 Call/Put 履約價集合一致、合約唯一性及至少 95% OI 完整度驗證。
 - Chain 未通過驗證時明確標記 pending，保留一般快照，並建立同一 KV Namespace 內的待補 key。
 - 後續 Cron 自動回頭補抓最近 10 筆舊快照中缺失的 Chain，並持續重試待補日期；每次最多處理 5 個，失敗日期會輪替，避免其他日期餓死。
+- `/snapshots/bundle?date=...` 在回傳指定日期快照前，若 Chain 未通過驗證，會額外進行一次有 25 秒上限的即時補抓；失敗時移除已知不完整 Chain，避免下游誤用。
 - 已驗證的舊 Chain 不會被失敗的新抓取覆蓋。
 - 不新增 Cloudflare 服務、Namespace、Binding、Secret 或 Cron Trigger；沿用既有 `SNAPSHOTS` KV 與 Cron。
 - Python 既有 `/snapshots/bundle` schema 保持相容；未完成狀態透過 bundle 的 `chain_status` / `chain_diagnostics` 明確呈現。
