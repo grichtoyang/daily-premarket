@@ -3470,7 +3470,6 @@ async function institutionalEndpoint(
 ========================= */
 
 const SNAPSHOT_PENDING_PREFIX = "snapshot-pending:";
-const SNAPSHOT_RECOVERY_STATE_KEY = "snapshot-chain-recovery-state";
 const SNAPSHOT_CHAIN_MIN_TOTAL = 100;
 const SNAPSHOT_CHAIN_MIN_PER_SIDE = 30;
 
@@ -3764,202 +3763,101 @@ async function persistSnapshotBundle(env, bundle) {
   }
 }
 
-async function discoverRecentIncompleteSnapshots(env) {
-  // Inspect at most 45 calendar dates, newest first, and stop after finding
-  // 10 existing snapshots. This keeps KV reads bounded as history grows.
+async function recoverRecentSnapshotChains(env, excludeDates = []) {
+  // Cursor-free bounded recovery: inspect pending markers across the latest
+  // 45 calendar days. Snapshot validation/discovery remains capped at the
+  // latest 10 existing snapshots. Failed dates move to the back by updated_at.
   const today = taipeiTodayISO();
   const [year, month, day] = today.split("-").map(Number);
-  const cursor = new Date(Date.UTC(year, month - 1, day));
+  const dateCursor = new Date(Date.UTC(year, month - 1, day));
+  const candidates = [];
   let inspectedSnapshots = 0;
 
-  for (let offset = 0; offset < 45 && inspectedSnapshots < 10; offset++) {
-    const date = cursor.toISOString().slice(0, 10);
-    const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
-    cursor.setUTCDate(cursor.getUTCDate() - 1);
-    if (!raw) continue;
+  for (let offset = 0; offset < 45; offset++) {
+    const date = dateCursor.toISOString().slice(0, 10);
+    dateCursor.setUTCDate(dateCursor.getUTCDate() - 1);
+    if (excludeDates.includes(date)) continue;
 
-    inspectedSnapshots++;
-    try {
-      const bundle = JSON.parse(raw);
-      const chain = bundle && bundle.data && bundle.data.chain;
-      const check = validateSnapshotChain(chain, date, bundle && bundle.date, null, false);
-      if (check.valid) {
-        await env.SNAPSHOTS.delete(`${SNAPSHOT_PENDING_PREFIX}${date}`);
-        continue;
-      }
-      const key = `${SNAPSHOT_PENDING_PREFIX}${date}`;
-      if (!(await env.SNAPSHOTS.get(key))) {
-        await env.SNAPSHOTS.put(key, JSON.stringify({
-          date,
-          attempts: 0,
-          last_error: { reason: check.reason },
-          updated_at: new Date().toISOString()
-        }));
-      }
-    } catch (error) {
-      console.log("snapshot discovery failed", date, String(error));
-    }
-  }
-}
-
-async function retryCurrentDaySnapshotChain(env, date) {
-  const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
-  const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
-  if (!pendingRaw) return;
-  let metadata = {};
-  try { metadata = JSON.parse(pendingRaw); } catch (_) { return; }
-
-  const retryCount = Number(metadata.same_day_retry_count) || 0;
-  const nextRetryAt = Date.parse(metadata.next_retry_at || "");
-  // Cron may start slightly before next_retry_at due to its fixed 30-minute cadence.
-  // A 5-minute early window prevents a due retry from being skipped until the next slot.
-  if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() + 5 * 60 * 1000 < nextRetryAt) return;
-
-  const snapshotKey = `snapshot:${date}`;
-  let chainAttemptStarted = false;
-  try {
-    const raw = await env.SNAPSHOTS.get(snapshotKey);
-    if (!raw) {
-      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-        ...metadata,
-        same_day_retry_count: 4,
-        next_retry_at: null,
-        last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
-        updated_at: new Date().toISOString()
-      }));
-      console.log("same-day snapshot retry stopped: bundle missing; manual review required", date);
-      return;
-    }
-
-    let bundle;
-    try {
-      bundle = JSON.parse(raw);
-    } catch (_) {
-      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-        ...metadata,
-        same_day_retry_count: 4,
-        next_retry_at: null,
-        last_error: { reason: "snapshot_bundle_invalid_json", action: "manual_review_required" },
-        updated_at: new Date().toISOString()
-      }));
-      console.log("same-day snapshot retry stopped: invalid bundle; manual review required", date);
-      return;
-    }
-
-    const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date, null, false);
-    if (existing.valid) {
-      await env.SNAPSHOTS.delete(pendingKey);
-      return;
-    }
-
-    chainAttemptStarted = true;
-    const chain = await fetchValidatedSnapshotChain(date, 1);
-    if (chain.found) {
-      bundle.data = bundle.data || {};
-      bundle.data.chain = chain.rows;
-      bundle.data.walls = chain.walls;
-      bundle.chain_status = "complete";
-      bundle.chain_diagnostics = {
-        attempts: (Number(metadata.attempts) || 1) + 1,
-        source: chain.source,
-        validation: chain.validation,
-        recovered_at: new Date().toISOString(),
-        same_day_retry: retryCount + 1
-      };
-      await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
-      await env.SNAPSHOTS.delete(pendingKey);
-      console.log("same-day snapshot Chain recovered", date, "retry=", retryCount + 1);
-      return;
-    }
-
-    const completedRetries = retryCount + 1;
-    const delaysMinutes = [30, 30, 60, 60];
-    const nextRetryAtValue = completedRetries < 4
-      ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
-      : null;
-    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-      ...metadata,
-      attempts: (Number(metadata.attempts) || 1) + 1,
-      same_day_retry_count: completedRetries,
-      next_retry_at: nextRetryAtValue,
-      last_error: chain.diagnostics,
-      updated_at: new Date().toISOString()
-    }));
-    console.log("same-day snapshot Chain retry failed", date, "retry=", completedRetries,
-      "next_retry_at=", nextRetryAtValue);
-  } catch (error) {
-    // Every failed scheduled retry consumes one of the four retry slots,
-    // including storage/serialization exceptions, so the scheduler cannot loop forever.
-    const completedRetries = Math.min(retryCount + 1, 4);
-    const delaysMinutes = [30, 30, 60, 60];
-    const nextRetryAtValue = completedRetries < 4
-      ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
-      : null;
-    try {
-      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-        ...metadata,
-        same_day_retry_count: completedRetries,
-        next_retry_at: nextRetryAtValue,
-        last_error: {
-          reason: "same_day_retry_exception",
-          detail: error?.message || String(error),
-          chain_fetch_started: chainAttemptStarted
-        },
-        updated_at: new Date().toISOString()
-      }));
-    } catch (persistError) {
-      console.log("same-day retry state update failed", date, persistError?.message || String(persistError));
-    }
-    console.log("same-day snapshot Chain retry exception", date, error?.message || String(error),
-      "retry_count=", completedRetries, "next_retry_at=", nextRetryAtValue);
-  }
-}
-
-async function retryPendingSnapshotChains(env, excludeDates = []) {
-  // Scan one bounded page per daily Cron. Persisting the KV cursor rotates the
-  // scan window, so a large pending queue does not require reading every
-  // pending value on every invocation.
-  let savedCursor = null;
-  try {
-    const stateRaw = await env.SNAPSHOTS.get(SNAPSHOT_RECOVERY_STATE_KEY);
-    savedCursor = JSON.parse(stateRaw || "{}").cursor || null;
-  } catch (_) {}
-
-  let listing;
-  try {
-    listing = await env.SNAPSHOTS.list({
-      prefix: SNAPSHOT_PENDING_PREFIX,
-      limit: 100,
-      ...(savedCursor ? { cursor: savedCursor } : {})
-    });
-  } catch (error) {
-    // A stale cursor must not permanently stop recovery; restart at the first page.
-    console.log("snapshot recovery cursor reset", error?.message || String(error));
-    listing = await env.SNAPSHOTS.list({ prefix: SNAPSHOT_PENDING_PREFIX, limit: 100 });
-  }
-
-  const nextCursor = listing.list_complete ? null : (listing.cursor || null);
-  await env.SNAPSHOTS.put(SNAPSHOT_RECOVERY_STATE_KEY, JSON.stringify({
-    cursor: nextCursor,
-    updated_at: new Date().toISOString()
-  }));
-
-  const candidates = await Promise.all(listing.keys.map(async item => {
-    const raw = await env.SNAPSHOTS.get(item.name);
+    const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
+    const snapshotKey = `snapshot:${date}`;
+    let pendingRaw = await env.SNAPSHOTS.get(pendingKey);
     let metadata = {};
-    try { metadata = JSON.parse(raw || "{}"); } catch (_) {}
-    return {
-      key: item.name,
-      date: item.name.slice(SNAPSHOT_PENDING_PREFIX.length),
-      metadata
-    };
-  }));
-  // Failed dates move to the back after each attempt; older unresolved dates
-  // therefore cannot permanently starve later pending snapshots.
+    try { metadata = JSON.parse(pendingRaw || "{}"); } catch (_) {}
+
+    const snapshotRaw = await env.SNAPSHOTS.get(snapshotKey);
+    if (!snapshotRaw) {
+      if (pendingRaw) {
+        // A historical bundle cannot safely be rebuilt from today's feeds.
+        if (!metadata.last_error || metadata.last_error.reason !== "snapshot_bundle_missing") {
+          await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+            ...metadata,
+            date,
+            last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
+            updated_at: metadata.updated_at || new Date().toISOString()
+          }));
+        }
+        console.log("snapshot historical recovery blocked: bundle missing", date);
+      }
+      continue;
+    }
+
+    let bundle = null;
+    let snapshotValid = false;
+    if (inspectedSnapshots < 10) {
+      inspectedSnapshots++;
+      try {
+        bundle = JSON.parse(snapshotRaw);
+        const check = validateSnapshotChain(
+          bundle && bundle.data && bundle.data.chain,
+          date,
+          bundle && bundle.date,
+          null,
+          false
+        );
+        snapshotValid = check.valid;
+        if (snapshotValid) {
+          if (pendingRaw) await env.SNAPSHOTS.delete(pendingKey);
+          continue;
+        }
+        if (!pendingRaw) {
+          metadata = {
+            date,
+            attempts: 0,
+            last_error: { reason: check.reason },
+            updated_at: new Date().toISOString()
+          };
+          await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
+          pendingRaw = JSON.stringify(metadata);
+        }
+      } catch (error) {
+        if (!pendingRaw) {
+          metadata = {
+            date,
+            attempts: 0,
+            last_error: {
+              reason: "snapshot_bundle_invalid_json",
+              detail: error?.message || String(error),
+              action: "manual_review_required"
+            },
+            updated_at: new Date().toISOString()
+          };
+          await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
+          pendingRaw = JSON.stringify(metadata);
+        }
+        console.log("snapshot discovery failed", date, String(error));
+      }
+    }
+
+    if (pendingRaw) {
+      candidates.push({ key: pendingKey, date, metadata });
+    }
+  }
+
+  // No KV list cursor or persisted scan position: every invocation starts
+  // from the same bounded date window, so a stale cursor cannot skip keys.
+  // The oldest update is attempted first; a failed attempt refreshes updated_at.
   const pending = candidates
-    .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date) && !excludeDates.includes(item.date))
     .sort((a, b) => String(a.metadata.updated_at || "").localeCompare(String(b.metadata.updated_at || "")))
-    // Limit historical recovery to one date per daily Cron invocation to bound CPU work.
     .slice(0, 1);
 
   for (const item of pending) {
@@ -3969,14 +3867,11 @@ async function retryPendingSnapshotChains(env, excludeDates = []) {
     try {
       const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
       if (!raw) {
-        // Never rebuild a historical bundle from current-day endpoints: only
-        // the Chain fetch is date-addressable here, while the other datasets
-        // may silently contain today's values.
         await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
           ...item.metadata,
           date,
           last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
-          updated_at: new Date().toISOString()
+          updated_at: item.metadata.updated_at || new Date().toISOString()
         }));
         console.log("snapshot historical recovery blocked: bundle missing", date);
         continue;
@@ -4073,8 +3968,7 @@ export default {
 
     // Historical recovery remains on the original daily invocation only.
     try {
-      await discoverRecentIncompleteSnapshots(env);
-      await retryPendingSnapshotChains(env, [iso]);
+      await recoverRecentSnapshotChains(env, [iso]);
     } catch (error) {
       console.log("historical snapshot recovery failed", error?.message || String(error));
     }
