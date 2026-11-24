@@ -3785,8 +3785,13 @@ async function persistSnapshotBundle(env, bundle) {
   const snapshotKey = `snapshot:${bundle.date}`;
   const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${bundle.date}`;
 
-  // Never replace a previously verified Chain with a failed refresh.
-  const previousRaw = await env.SNAPSHOTS.get(snapshotKey);
+  // Only an incomplete refresh needs the old bundle as a preservation
+  // source. A newly validated complete Chain can be persisted directly, so
+  // do not let an unnecessary old-snapshot read failure block it.
+  let previousRaw = null;
+  if (bundle.chain_status !== "complete") {
+    previousRaw = await env.SNAPSHOTS.get(snapshotKey);
+  }
   if (previousRaw && bundle.chain_status !== "complete") {
     try {
       const previous = JSON.parse(previousRaw);
