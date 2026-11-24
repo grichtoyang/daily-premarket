@@ -65,31 +65,29 @@ def quote(sym: str) -> dict:
     return out
 
 def _apply_asia_freshness(rows: list[tuple], expected_date: str | None) -> list[tuple]:
-    """Fail closed when every available Asian index is older than the report T0.
+    """Fail closed per index when Yahoo's final daily bar is older than report T0.
 
-    Yahoo can return a successful HTTP response with a stale final daily bar.
-    A shared older date across the Asian-index group is treated as a feed-level
-    delay, not as five valid latest quotes. If at least one market has T0 data,
-    older rows are retained with their exchange-local dates because a local
-    exchange holiday can legitimately explain the difference.
+    Do not use the newest date across the whole group as a proxy for every
+    market: one current index must never make another market's stale quote look
+    fresh. A quote without a usable exchange-local date is also not verifiable.
     """
     if not expected_date:
         return rows
-    available_dates = [
-        q.get("date") for _, q in rows
-        if q.get("price") is not None and q.get("date")
-    ]
-    if not available_dates or max(available_dates) >= expected_date:
-        return rows
-    for _, q in rows:
-        if q.get("price") is not None and q.get("date"):
-            q["stale"] = True
-            q["stale_reason"] = f"亞洲指數最新可得日期 {max(available_dates)} 早於報告 T0 {expected_date}"
-            q["price"] = None
-            q["change"] = None
-            q["pct"] = None
-            q["ok"] = False
-            q["source"] = "Yahoo Finance Chart API（資料日期早於 T0，已排除）"
+    for name, q in rows:
+        if q.get("price") is None:
+            continue
+        actual_date = q.get("date")
+        if actual_date and actual_date >= expected_date:
+            continue
+        q["stale"] = True
+        q["stale_reason"] = (
+            f"{name}資料日期 {actual_date or '缺失'} 早於或無法核對報告 T0 {expected_date}"
+        )
+        q["price"] = None
+        q["change"] = None
+        q["pct"] = None
+        q["ok"] = False
+        q["source"] = "Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除）"
     return rows
 
 
