@@ -3756,6 +3756,30 @@ async function putSnapshotBundleWithRetry(env, snapshotKey, bundle, date) {
   throw lastError || new Error("snapshot bundle KV write failed");
 }
 
+async function putSnapshotPendingWithRetry(env, pendingKey, metadata, date) {
+  const delaysMs = [500, 1500];
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
+      if (attempt > 0) {
+        console.log("snapshot pending KV write recovered", date, "attempts=", attempt + 1);
+      }
+      return true;
+    } catch (error) {
+      lastError = error;
+      console.log("snapshot pending KV write failed", date,
+        "attempt=", attempt + 1, error?.message || String(error));
+      if (attempt < delaysMs.length) {
+        await new Promise(resolve => setTimeout(resolve, delaysMs[attempt]));
+      }
+    }
+  }
+  console.log("snapshot pending KV write exhausted", date,
+    lastError?.message || String(lastError));
+  return false;
+}
+
 async function persistSnapshotBundle(env, bundle) {
   if (!env || !env.SNAPSHOTS) throw new Error("KV SNAPSHOTS not bound");
   const snapshotKey = `snapshot:${bundle.date}`;
@@ -3792,20 +3816,35 @@ async function persistSnapshotBundle(env, bundle) {
   }
 
   if (bundle.chain_status !== "complete") {
-    const previousPending = await env.SNAPSHOTS.get(pendingKey);
+    let previousPending = null;
+    try {
+      previousPending = await env.SNAPSHOTS.get(pendingKey);
+    } catch (error) {
+      // The pending marker is advisory recovery state. Preserve the bundle
+      // even if this read fails; discovery can reconstruct a marker later.
+      console.log("snapshot pending prior-state read failed", bundle.date,
+        error?.message || String(error));
+    }
     let previousMeta = {};
     try { previousMeta = JSON.parse(previousPending || "{}"); } catch (_) {}
     const attempts = Number(previousMeta.attempts) || Number(bundle.chain_diagnostics && bundle.chain_diagnostics.attempts) || 1;
     // Initial failure schedules the first same-day retry 30 minutes later.
-    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+    const pendingSaved = await putSnapshotPendingWithRetry(env, pendingKey, {
       date: bundle.date,
       attempts,
       same_day_retry_count: Number(previousMeta.same_day_retry_count) || 0,
       next_retry_at: previousMeta.next_retry_at || new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       last_error: bundle.chain_diagnostics,
       updated_at: new Date().toISOString()
-    }));
+    }, bundle.date);
+
+    // Do not lose the ordinary data snapshot merely because the advisory
+    // pending marker could not be persisted. The next historical discovery
+    // pass can detect this incomplete snapshot among the latest 10 bundles.
     await putSnapshotBundleWithRetry(env, snapshotKey, bundle, bundle.date);
+    if (!pendingSaved) {
+      console.log("snapshot saved without pending marker; historical discovery required", bundle.date);
+    }
   } else {
     await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
     await env.SNAPSHOTS.delete(pendingKey);
