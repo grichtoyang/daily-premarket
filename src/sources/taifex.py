@@ -796,7 +796,7 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
         return None
 
 def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
-    """讀取並驗證指定日期的 Worker 快照；只快取通過完整性契約的資料。"""
+    """讀取指定日期的一般快照；Chain 另行驗證，不讓 Chain 缺失阻斷其他資料。"""
     import os, time
     from math import isfinite
 
@@ -805,30 +805,17 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
     if _ck in _SNAP_CACHE:
         return _SNAP_CACHE[_ck]
 
-    def _validate_bundle(payload: dict) -> tuple[bool, str]:
-        # API 必須明確證明回傳日期就是要求日期；禁止以較舊快照替代。
-        if payload.get("date") != date or payload.get("requested_date") != date:
-            return False, "snapshot exact-date mismatch"
-        if payload.get("exact_match") is not True:
-            return False, "snapshot exact_match flag missing/false"
-
-        bundle = payload.get("data")
-        if not isinstance(bundle, dict):
-            return False, "snapshot bundle missing"
-        if bundle.get("date") != date or bundle.get("status") != "complete":
-            return False, "snapshot bundle date/status invalid"
-
+    def _validate_chain(bundle: dict) -> tuple[bool, str]:
         quality = bundle.get("chain_quality")
+        inner = bundle.get("data")
         if not isinstance(quality, dict) or quality.get("status") != "complete":
             return False, "Chain quality status is not complete"
         if quality.get("requested_date") != date or quality.get("source_date") != date:
             return False, "Chain source date mismatch"
         if not quality.get("source") or not quality.get("source_url"):
             return False, "Chain source evidence missing"
-
-        inner = bundle.get("data")
         if not isinstance(inner, dict):
-            return False, "snapshot data payload missing"
+            return False, "Chain data payload missing"
         chain = inner.get("chain")
         if not isinstance(chain, list) or not chain:
             return False, "Chain rows missing"
@@ -846,13 +833,10 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
                 put_count += 1
             else:
                 invalid += 1
-            month = row.get("contract_month")
-            expiry = row.get("contract_expiry_date")
-            strike = row.get("strike")
-            oi = row.get("open_interest")
+            month, expiry = row.get("contract_month"), row.get("contract_expiry_date")
+            strike, oi = row.get("strike"), row.get("open_interest")
             try:
-                strike_n = float(strike)
-                oi_n = float(oi)
+                strike_n, oi_n = float(strike), float(oi)
                 if not isfinite(strike_n) or strike_n <= 0:
                     invalid += 1
                 if not isfinite(oi_n) or oi_n < 0:
@@ -880,8 +864,6 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
             return False, "Chain contract count does not match metadata"
         if not isinstance(quality.get("raw_rows"), int) or quality["raw_rows"] < len(chain):
             return False, "Chain raw-row count is invalid"
-        if not isinstance(quality.get("primary_expiry"), dict):
-            return False, "Primary expiry metadata missing"
         if quality.get("call_count") != call_count or quality.get("put_count") != put_count:
             return False, "Chain Call/Put counts do not match metadata"
         if quality.get("oi_missing_count") != 0 or quality.get("invalid_contract_count") != 0:
@@ -907,21 +889,37 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
                 continue
             j = r.json()
             if isinstance(j, dict) and j.get("ok") is True:
-                valid, reason = _validate_bundle(j)
-                if valid:
-                    b = j["data"]
-                    inner = b["data"]
-                    trust_pos = str(b.get("collected_at", ""))[:10] == date
-                    _res = {
-                        "date": date,
-                        "data": inner,
-                        "trust_pos": trust_pos,
-                        "chain_quality": b["chain_quality"],
-                        "snapshot_version": j.get("snapshot_version")
-                    }
-                    _SNAP_CACHE[_ck] = _res
-                    return _res
-                print(f"[WARN] snapshot rejected by integrity validation: {reason}")
+                if j.get("date") != date or j.get("requested_date") != date or j.get("exact_match") is not True:
+                    print("[WARN] snapshot rejected: exact-date contract mismatch")
+                else:
+                    bundle = j.get("data")
+                    if (isinstance(bundle, dict) and bundle.get("date") == date and
+                            bundle.get("status") in ("complete", "partial") and
+                            isinstance(bundle.get("data"), dict)):
+                        inner = dict(bundle["data"])
+                        chain_available = j.get("chain_available") is True and bundle.get("chain_available") is True
+                        chain_quality = bundle.get("chain_quality") if isinstance(bundle.get("chain_quality"), dict) else {}
+                        if chain_available:
+                            valid_chain, reason = _validate_chain(bundle)
+                            if not valid_chain:
+                                print(f"[WARN] snapshot Chain rejected independently: {reason}")
+                                chain_available = False
+                        if not chain_available:
+                            inner.pop("chain", None)
+                            inner.pop("walls", None)
+                        trust_pos = str(bundle.get("collected_at", ""))[:10] == date
+                        result = {
+                            "date": date,
+                            "data": inner,
+                            "trust_pos": trust_pos,
+                            "chain_available": chain_available,
+                            "chain_quality": chain_quality,
+                            "snapshot_version": j.get("snapshot_version"),
+                            "chain_snapshot_version": j.get("chain_snapshot_version")
+                        }
+                        _SNAP_CACHE[_ck] = result
+                        return result
+                    print("[WARN] snapshot rejected: general payload/date/status invalid")
             else:
                 print(f"[WARN] snapshot ok!=true (try {_try + 1})")
             time.sleep(5)
