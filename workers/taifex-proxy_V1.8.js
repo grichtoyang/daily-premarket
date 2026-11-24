@@ -3888,12 +3888,12 @@ async function retryCurrentDaySnapshotChain(env, date) {
     console.log("same-day snapshot Chain retry failed", date, "retry=", completedRetries,
       "next_retry_at=", nextRetryAtValue);
   } catch (error) {
-    // Count only failures after a Chain fetch was actually started. Storage
-    // failures before that are deferred rather than silently consuming a fetch attempt.
-    const completedRetries = chainAttemptStarted ? Math.min(retryCount + 1, 4) : retryCount;
+    // Every failed scheduled retry consumes one of the four retry slots,
+    // including storage/serialization exceptions, so the scheduler cannot loop forever.
+    const completedRetries = Math.min(retryCount + 1, 4);
     const delaysMinutes = [30, 30, 60, 60];
     const nextRetryAtValue = completedRetries < 4
-      ? new Date(Date.now() + delaysMinutes[Math.max(0, completedRetries)] * 60 * 1000).toISOString()
+      ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
       : null;
     try {
       await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
