@@ -4076,6 +4076,7 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
     if (!pendingRaw && inspectedSnapshots >= 10) continue;
 
     let snapshotRaw = null;
+    let pendingCreatedThisRun = false;
     try {
       snapshotRaw = await env.SNAPSHOTS.get(snapshotKey);
     } catch (error) {
@@ -4140,6 +4141,7 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
           try {
             await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
             pendingRaw = JSON.stringify(metadata);
+            pendingCreatedThisRun = true;
           } catch (error) {
             console.log("snapshot pending discovery write failed", date,
               error?.message || String(error));
@@ -4171,7 +4173,11 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
       }
     }
 
-    if (pendingRaw && !(metadata.last_error && metadata.last_error.action === "manual_review_required")) {
+    // A marker created during this discovery pass must not be updated
+    // again by historical recovery in the same invocation. Defer its first
+    // Chain fetch until the next daily Cron to respect KV's per-key write rate.
+    if (pendingRaw && !pendingCreatedThisRun &&
+        !(metadata.last_error && metadata.last_error.action === "manual_review_required")) {
       candidates.push({ key: pendingKey, date, metadata });
     }
   }
