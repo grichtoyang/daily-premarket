@@ -3911,6 +3911,12 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
     let metadata = {};
     try { metadata = JSON.parse(pendingRaw || "{}"); } catch (_) {}
 
+    // Once the 10-snapshot discovery/validation budget is exhausted,
+    // dates without a pending marker need no further snapshot read. Pending
+    // dates are still read so missing historical bundles can be flagged and
+    // existing recovery candidates remain eligible.
+    if (!pendingRaw && inspectedSnapshots >= 10) continue;
+
     const snapshotRaw = await env.SNAPSHOTS.get(snapshotKey);
     if (!snapshotRaw) {
       if (pendingRaw) {
