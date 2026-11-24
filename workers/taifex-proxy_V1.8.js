@@ -3846,8 +3846,19 @@ async function persistSnapshotBundle(env, bundle) {
       console.log("snapshot saved without pending marker; historical discovery required", bundle.date);
     }
   } else {
-    await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
-    await env.SNAPSHOTS.delete(pendingKey);
+    // Use the same bounded, immutable-payload retry path for complete bundles.
+    // A transient KV write failure must not abort after a single attempt.
+    await putSnapshotBundleWithRetry(env, snapshotKey, bundle, bundle.date);
+
+    // The complete bundle is already durable. A pending cleanup failure is
+    // advisory only and must not turn a successful snapshot write into a
+    // failed persistence operation; a later Cron can retry this deletion.
+    try {
+      await env.SNAPSHOTS.delete(pendingKey);
+    } catch (error) {
+      console.log("snapshot completed pending cleanup failed", bundle.date,
+        error?.message || String(error));
+    }
   }
 }
 
