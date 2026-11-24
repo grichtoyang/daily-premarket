@@ -43,7 +43,7 @@ V1.8 快照修正：
 2. 現行 Deployment / Version ID、部署時間及可回滾版本。
 3. Settings / Bindings：KV binding 名稱必須仍是 `SNAPSHOTS`，並確認 Namespace ID 與目前正式環境相同。不要新建 Namespace 或更換 ID。
 4. Triggers / Cron Triggers：確認既有每日快照排程並記錄 cron expression。過往 Dashboard 紀錄為週一至週五 08:30 UTC（`30 8 * * 1-5`，台北時間 16:30），但部署當下必須以 Dashboard 現況為準。保留該每日排程，另外增加 `*/30 * * * *`（每 30 分鐘）作為 Chain 同日恢復 Trigger；不得以新排程取代原每日快照排程。
-5. Variables and Secrets：必須確認 `SNAPSHOT_KEY` 存在且保留原值；只確認存在狀態，不讀取、不複製、不洩露 Secret 值。**若 `SNAPSHOT_KEY` 不存在，部署前標記 BLOCKED**：目前程式在 Secret 未設定時，`/snapshots/write-now` 不會要求 key，可能允許未授權寫入 KV。部署不得移除或清空此 Secret。
+5. Variables and Secrets：必須確認 `SNAPSHOT_KEY` 存在且保留原值；只確認存在狀態，不讀取、不複製、不洩露 Secret 值。**若 `SNAPSHOT_KEY` 不存在，部署前仍標記 BLOCKED**：Worker 已改為 fail-closed；Secret 缺失或空值時，`/snapshots/write-now` 一律回傳 503，只有 Secret 存在且 query key 完全相符才會執行寫入。此時不會因缺少 Secret 而允許未授權寫入，但手動快照端點將無法使用。部署前仍須確認 Secret 存在並保留原值；不得移除或清空此 Secret。
 6. 記錄正式環境目前的 V1.7 版本作為 rollback target，並確認 Cloudflare Deployments / Versions 可以回滾。
 
 任一項無法確認，標記 **BLOCKED**，停止部署。
