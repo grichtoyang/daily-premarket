@@ -3988,12 +3988,17 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
       if (pendingRaw) {
         // A historical bundle cannot safely be rebuilt from today's feeds.
         if (!metadata.last_error || metadata.last_error.reason !== "snapshot_bundle_missing") {
-          await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-            ...metadata,
-            date,
-            last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
-            updated_at: metadata.updated_at || new Date().toISOString()
-          }));
+          try {
+            await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+              ...metadata,
+              date,
+              last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
+              updated_at: metadata.updated_at || new Date().toISOString()
+            }));
+          } catch (error) {
+            console.log("snapshot missing-bundle state update failed", date,
+              error?.message || String(error));
+          }
         }
         console.log("snapshot historical recovery blocked: bundle missing", date);
       }
@@ -4015,7 +4020,14 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
         );
         snapshotValid = check.valid;
         if (snapshotValid) {
-          if (pendingRaw) await env.SNAPSHOTS.delete(pendingKey);
+          if (pendingRaw) {
+            try {
+              await env.SNAPSHOTS.delete(pendingKey);
+            } catch (error) {
+              console.log("snapshot completed pending cleanup failed", date,
+                error?.message || String(error));
+            }
+          }
           continue;
         }
         if (!pendingRaw) {
@@ -4025,8 +4037,14 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
             last_error: { reason: check.reason },
             updated_at: new Date().toISOString()
           };
-          await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
-          pendingRaw = JSON.stringify(metadata);
+          try {
+            await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
+            pendingRaw = JSON.stringify(metadata);
+          } catch (error) {
+            console.log("snapshot pending discovery write failed", date,
+              error?.message || String(error));
+            continue;
+          }
         }
       } catch (error) {
         if (!pendingRaw) {
@@ -4040,8 +4058,14 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
             },
             updated_at: new Date().toISOString()
           };
-          await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
-          pendingRaw = JSON.stringify(metadata);
+          try {
+            await env.SNAPSHOTS.put(pendingKey, JSON.stringify(metadata));
+            pendingRaw = JSON.stringify(metadata);
+          } catch (stateError) {
+            console.log("snapshot invalid-bundle state write failed", date,
+              stateError?.message || String(stateError));
+            continue;
+          }
         }
         console.log("snapshot discovery failed", date, String(error));
       }
