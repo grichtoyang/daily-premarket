@@ -3707,6 +3707,55 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash, chainAttempts = 4) 
   return bundle;
 }
 
+async function putSnapshotBundleWithRetry(env, snapshotKey, bundle, date) {
+  const payload = JSON.stringify(bundle);
+  const delaysMs = [500, 1500];
+  let lastError = null;
+
+  // Retry the same immutable bundle/key only. This handles transient KV
+  // write failures without recollecting market data or creating new keys.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await env.SNAPSHOTS.put(snapshotKey, payload);
+      if (attempt > 0) {
+        console.log("snapshot bundle KV write recovered", date, "attempts=", attempt + 1);
+      }
+      return;
+    } catch (error) {
+      lastError = error;
+      console.log("snapshot bundle KV write failed", date,
+        "attempt=", attempt + 1, error?.message || String(error));
+      if (attempt < delaysMs.length) {
+        await new Promise(resolve => setTimeout(resolve, delaysMs[attempt]));
+      }
+    }
+  }
+
+  // Best-effort diagnostics; the original pending marker remains in place.
+  try {
+    const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
+    const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+    let metadata = {};
+    try { metadata = JSON.parse(pendingRaw || "{}"); } catch (_) {}
+    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+      ...metadata,
+      date,
+      last_error: {
+        reason: "snapshot_bundle_write_failed",
+        detail: lastError?.message || String(lastError),
+        snapshot_write_attempts: 3,
+        action: "manual_review_required"
+      },
+      updated_at: new Date().toISOString()
+    }));
+  } catch (stateError) {
+    console.log("snapshot bundle KV write failure state update failed", date,
+      stateError?.message || String(stateError));
+  }
+
+  throw lastError || new Error("snapshot bundle KV write failed");
+}
+
 async function persistSnapshotBundle(env, bundle) {
   if (!env || !env.SNAPSHOTS) throw new Error("KV SNAPSHOTS not bound");
   const snapshotKey = `snapshot:${bundle.date}`;
@@ -3756,7 +3805,7 @@ async function persistSnapshotBundle(env, bundle) {
       last_error: bundle.chain_diagnostics,
       updated_at: new Date().toISOString()
     }));
-    await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
+    await putSnapshotBundleWithRetry(env, snapshotKey, bundle, bundle.date);
   } else {
     await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
     await env.SNAPSHOTS.delete(pendingKey);
