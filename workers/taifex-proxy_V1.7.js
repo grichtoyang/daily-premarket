@@ -3384,6 +3384,7 @@ function validateSnapshotChain(chainResult, requestedISO) {
   const sourceDate = chainResult?.source_date || null;
   const reasons = [];
   if (sourceDate !== requestedISO) reasons.push("source_date_mismatch_or_missing");
+  if (!chainResult?.source || !chainResult?.source_url) reasons.push("source_provenance_missing");
   if (!rows.length) reasons.push("chain_empty");
   if (!callRows.length) reasons.push("call_side_missing");
   if (!putRows.length) reasons.push("put_side_missing");
@@ -6200,7 +6201,9 @@ export default {
         const bundle = JSON.parse(versionRaw);
         if (bundle?.date !== actual || bundle?.status !== "complete" ||
             bundle?.chain_quality?.status !== "complete" ||
+            bundle?.chain_quality?.requested_date !== actual ||
             bundle?.chain_quality?.source_date !== actual ||
+            !bundle?.chain_quality?.source || !bundle?.chain_quality?.source_url ||
             !Array.isArray(bundle?.data?.chain) || !bundle.data.chain.length ||
             !bundle?.data?.walls?.primary_expiry) {
           return json({ ok: false, error: "Stored snapshot failed integrity validation",
