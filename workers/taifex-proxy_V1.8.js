@@ -3934,8 +3934,8 @@ function taipeiTodayISO(when = null) {
 
 export default {
 
-  /* Original daily snapshot Cron plus an additional "*/30 * * * *"
-     recovery Cron. The retry Cron only services due same-day Chain retries.
+  /* Original daily snapshot Cron plus an additional 30-minute recovery Cron.
+     The retry Cron only services due same-day Chain retries.
      Requires the existing SNAPSHOTS KV binding. */
   async scheduled(event, env, ctx) {
     if (!env || !env.SNAPSHOTS) {
