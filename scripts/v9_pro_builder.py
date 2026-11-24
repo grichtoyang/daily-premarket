@@ -860,6 +860,8 @@ def _extract_wide_section_table_value(report_text, heading, row_label, column_la
             separator_seen=True; continue
         if not separator_seen:
             header=cells; continue
+        if cells and cells[0]=="項目" and ("上市" in cells or "兩者合計" in cells):
+            header=cells; separator_seen=False; continue
         if not header or len(cells)!=len(header) or row_label not in cells: continue
         if column_label not in header: continue
         raw=cells[header.index(column_label)].replace(",","").strip()
@@ -1042,11 +1044,11 @@ def parse_data_report(report_path):
     sbl_scope_source=sbl_scope_row.group(1).strip() if sbl_scope_row else ""
     has_listed_scope=("上市" in sbl_scope_source and ("TWT93U" in sbl_scope_source or "上市" in sbl_scope_source))
     has_otc_scope=("上櫃" in sbl_scope_source and ("S47" in sbl_scope_source or "TPEX" in sbl_scope_source or "上櫃" in sbl_scope_source))
-    if has_listed_scope and has_otc_scope:
+    if sbl_change_listed is not None and sbl_change_otc is not None:
         sbl_sold_change_scope="上市+上櫃"
-    elif has_listed_scope:
+    elif sbl_change_listed is not None:
         sbl_sold_change_scope="上市（上櫃未取得）"
-    elif has_otc_scope:
+    elif sbl_change_otc is not None:
         sbl_sold_change_scope="上櫃（上市未取得）"
     elif re.search(r"借券賣出增減僅上櫃值",text):
         sbl_sold_change_scope="上櫃（上市 TWT93U 未取得）"
