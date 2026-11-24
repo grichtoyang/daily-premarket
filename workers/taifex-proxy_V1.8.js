@@ -3765,33 +3765,20 @@ async function persistSnapshotBundle(env, bundle) {
 }
 
 async function discoverRecentIncompleteSnapshots(env) {
-  // Walk every KV page so the "most recent 10" is not limited to the first 1,000 keys.
-  let cursor;
-  const recentDates = [];
-  do {
-    const listing = await env.SNAPSHOTS.list({
-      prefix: "snapshot:",
-      limit: 1000,
-      ...(cursor ? { cursor } : {})
-    });
-    for (const item of listing.keys) {
-      const date = item.name.slice("snapshot:".length);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-      recentDates.push(date);
-      // KV keys are returned in lexical order; retain only the latest 10 dates.
-      if (recentDates.length > 10) recentDates.shift();
-    }
-    cursor = listing.list_complete ? undefined : listing.cursor;
-    if (!listing.list_complete && !cursor) {
-      throw new Error("SNAPSHOTS.list incomplete without pagination cursor");
-    }
-  } while (cursor);
+  // Inspect at most 45 calendar dates, newest first, and stop after finding
+  // 10 existing snapshots. This keeps KV reads bounded as history grows.
+  const today = taipeiTodayISO();
+  const [year, month, day] = today.split("-").map(Number);
+  const cursor = new Date(Date.UTC(year, month - 1, day));
+  let inspectedSnapshots = 0;
 
-  const dates = recentDates;
-
-  for (const date of dates) {
+  for (let offset = 0; offset < 45 && inspectedSnapshots < 10; offset++) {
+    const date = cursor.toISOString().slice(0, 10);
     const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
+    cursor.setUTCDate(cursor.getUTCDate() - 1);
     if (!raw) continue;
+
+    inspectedSnapshots++;
     try {
       const bundle = JSON.parse(raw);
       const chain = bundle && bundle.data && bundle.data.chain;
@@ -3829,20 +3816,43 @@ async function retryCurrentDaySnapshotChain(env, date) {
   if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() + 5 * 60 * 1000 < nextRetryAt) return;
 
   const snapshotKey = `snapshot:${date}`;
-  const raw = await env.SNAPSHOTS.get(snapshotKey);
-  if (!raw) {
-    console.log("same-day snapshot retry skipped: bundle missing", date);
-    return;
-  }
-
+  let chainAttemptStarted = false;
   try {
-    const bundle = JSON.parse(raw);
+    const raw = await env.SNAPSHOTS.get(snapshotKey);
+    if (!raw) {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        ...metadata,
+        same_day_retry_count: 4,
+        next_retry_at: null,
+        last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
+        updated_at: new Date().toISOString()
+      }));
+      console.log("same-day snapshot retry stopped: bundle missing; manual review required", date);
+      return;
+    }
+
+    let bundle;
+    try {
+      bundle = JSON.parse(raw);
+    } catch (_) {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        ...metadata,
+        same_day_retry_count: 4,
+        next_retry_at: null,
+        last_error: { reason: "snapshot_bundle_invalid_json", action: "manual_review_required" },
+        updated_at: new Date().toISOString()
+      }));
+      console.log("same-day snapshot retry stopped: invalid bundle; manual review required", date);
+      return;
+    }
+
     const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date, null, false);
     if (existing.valid) {
       await env.SNAPSHOTS.delete(pendingKey);
       return;
     }
 
+    chainAttemptStarted = true;
     const chain = await fetchValidatedSnapshotChain(date, 1);
     if (chain.found) {
       bundle.data = bundle.data || {};
@@ -3878,7 +3888,30 @@ async function retryCurrentDaySnapshotChain(env, date) {
     console.log("same-day snapshot Chain retry failed", date, "retry=", completedRetries,
       "next_retry_at=", nextRetryAtValue);
   } catch (error) {
-    console.log("same-day snapshot Chain retry exception", date, error?.message || String(error));
+    // Count only failures after a Chain fetch was actually started. Storage
+    // failures before that are deferred rather than silently consuming a fetch attempt.
+    const completedRetries = chainAttemptStarted ? Math.min(retryCount + 1, 4) : retryCount;
+    const delaysMinutes = [30, 30, 60, 60];
+    const nextRetryAtValue = completedRetries < 4
+      ? new Date(Date.now() + delaysMinutes[Math.max(0, completedRetries)] * 60 * 1000).toISOString()
+      : null;
+    try {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        ...metadata,
+        same_day_retry_count: completedRetries,
+        next_retry_at: nextRetryAtValue,
+        last_error: {
+          reason: "same_day_retry_exception",
+          detail: error?.message || String(error),
+          chain_fetch_started: chainAttemptStarted
+        },
+        updated_at: new Date().toISOString()
+      }));
+    } catch (persistError) {
+      console.log("same-day retry state update failed", date, persistError?.message || String(persistError));
+    }
+    console.log("same-day snapshot Chain retry exception", date, error?.message || String(error),
+      "retry_count=", completedRetries, "next_retry_at=", nextRetryAtValue);
   }
 }
 
