@@ -60,6 +60,12 @@ def _filter_history_to_t0(records, t0_date):
     return sorted(filtered, key=lambda item: item['date'])
 
 
+def _history_matches_t0(records, t0_date):
+    """Require the newest technical observation to match the report T0."""
+    t0_iso=_t0_iso_date(t0_date)
+    return bool(records and t0_iso and _history_record_date(records[-1]) == t0_iso)
+
+
 def fetch_yahoo_twii_30d(t0_date=None):
     try:
         import requests
@@ -89,7 +95,10 @@ def fetch_yahoo_twii_30d(t0_date=None):
         if len(valid) < 14:
             print(f"[V9-17F] Yahoo insufficient {len(valid)}/14")
             return None
-        print(f"[V9-17F] Yahoo fetched {len(valid)} days")
+        if t0_date and not _history_matches_t0(valid, t0_date):
+            print(f"[V9-17F] Yahoo stale: latest={valid[-1].get('date') if valid else None}, required T0={_t0_iso_date(t0_date)}")
+            return None
+        print(f"[V9-17F] Yahoo fetched {len(valid)} days through T0={_t0_iso_date(t0_date) or 'latest'}")
         return valid
     except Exception as e:
         print(f"[V9-17F] Yahoo exception: {e}")
@@ -117,8 +126,14 @@ def fetch_finmind_twii_14d(t0_date=None):
             except (TypeError, ValueError, KeyError):
                 continue
         valid=_filter_history_to_t0(valid,t0_date)[-30:]
+        if len(valid) < 14:
+            print(f"[V9-17F] FinMind insufficient after T0 filter: {len(valid)}/14")
+            return None
+        if t0_date and not _history_matches_t0(valid, t0_date):
+            print(f"[V9-17F] FinMind stale: latest={valid[-1].get('date') if valid else None}, required T0={_t0_iso_date(t0_date)}")
+            return None
         print(f"[V9-17F] FinMind fetched {len(valid)} days through T0={_t0_iso_date(t0_date) or 'latest'}")
-        return valid if len(valid)>=14 else None
+        return valid
     except Exception as e:
         print(f"[V9-17F] FinMind exception: {e}")
         return None
@@ -136,6 +151,9 @@ def fetch_db_history_14d(t0_date=None):
                 conn.close()
                 if len(rows) >=14:
                     valid = [{'date': r[0], 'close': float(r[1]), 'high': None, 'low': None, 'ts': None} for r in reversed(rows)]
+                    if t0_date and not _history_matches_t0(valid, t0_date):
+                        print(f"[V9-17F] DB history stale: latest={valid[-1].get('date') if valid else None}, required T0={t0_iso}")
+                        continue
                     print(f"[V9-17F] DB fallback {len(valid)} days from {p}")
                     return valid
         print("[V9-17F] V9 DB not found for fallback")
@@ -204,13 +222,15 @@ def fetch_technical_indicators_with_fallback(t0_date=None):
             if data: source="db"
     if not data:
         print("[V9-17F] All 3 layers failed, RSI/MACD weight 0% -> 15 factors")
-        return {'rsi':None,'macd':None,'macd_signal':None,'macd_hist':None,'k':None,'d':None,'source':'none','closes':[],'valid':False}
+        return {'rsi':None,'macd':None,'macd_signal':None,'macd_hist':None,'k':None,'d':None,'source':'none','closes':[],'dates':[],'latest_date':None,'valid':False}
     closes=[d['close'] for d in data]; highs=[d.get('high') for d in data]; lows=[d.get('low') for d in data]
     rsi=calc_rsi(closes,14); macd,macd_signal,macd_hist=calc_macd(closes)
     ohlc_valid=all(h is not None and l is not None for h,l in zip(highs,lows))
     k,d=calc_kd(highs,lows,closes,9) if ohlc_valid else (None,None)
     print(f"[V9-17F] Tech RSI={rsi} MACD={macd}/{macd_signal} hist={macd_hist} K={k} D={d} source={source}")
-    return {'rsi':rsi,'macd':macd,'macd_signal':macd_signal,'macd_hist':macd_hist,'k':k,'d':d,'source':source,'closes':closes,'highs':highs,'lows':lows,'valid':any(v is not None for v in (rsi,macd,macd_hist,k,d)),'validity':{'rsi':rsi is not None,'macd':macd is not None and macd_signal is not None and macd_hist is not None,'kd':k is not None and d is not None},'raw':data}
+    dates=[_history_record_date(item) for item in data]
+    latest_date=dates[-1] if dates else None
+    return {'rsi':rsi,'macd':macd,'macd_signal':macd_signal,'macd_hist':macd_hist,'k':k,'d':d,'source':source,'closes':closes,'highs':highs,'lows':lows,'dates':dates,'latest_date':latest_date,'valid':any(v is not None for v in (rsi,macd,macd_hist,k,d)),'validity':{'rsi':rsi is not None,'macd':macd is not None and macd_signal is not None and macd_hist is not None,'kd':k is not None and d is not None},'raw':data}
 
 # ===== SQLite真DB + 歷史相似度 + 無DB回退 =====
 def _ensure_history_table(conn, table_name):
@@ -822,6 +842,35 @@ def build_option_force_analysis(force_rows, volume_rows=None):
         "checks": {"force_rows": len(required_names), "volume_rows_complete": volume_complete, "warnings": warnings}
     }
 
+def _extract_wide_section_table_value(report_text, heading, row_label, column_label, required=False):
+    """Read a numeric value from a named column in a Markdown table section."""
+    start=report_text.find(heading)
+    if start<0:
+        if required: raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing section: {heading}")
+        return None
+    following=re.search(r"(?m)^#{2,3}\s+",report_text[start+len(heading):])
+    end=start+len(heading)+following.start() if following else len(report_text)
+    lines=report_text[start:end].splitlines()
+    header=None; separator_seen=False
+    for line in lines:
+        stripped=line.strip()
+        if not (stripped.startswith("|") and stripped.endswith("|")): continue
+        cells=[cell.strip() for cell in stripped.strip("|").split("|")]
+        if cells and all(re.fullmatch(r":?-{3,}:?",cell or "") for cell in cells):
+            separator_seen=True; continue
+        if not separator_seen:
+            header=cells; continue
+        if not header or len(cells)!=len(header) or row_label not in cells: continue
+        if column_label not in header: continue
+        raw=cells[header.index(column_label)].replace(",","").strip()
+        if raw.lower()=="unavailable": return None
+        if re.fullmatch(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)",raw): return float(raw)
+        if required: raise ValueError(f"[NO-FALLBACK] DATA_REPORT invalid {row_label}/{column_label}")
+        return None
+    if required: raise ValueError(f"[NO-FALLBACK] DATA_REPORT missing {row_label}/{column_label}")
+    return None
+
+
 def _extract_section_table_value(report_text, heading, label, required=False, expected_unit=None):
     """Read one numeric field from its own validated Markdown table."""
     start = report_text.find(heading)
@@ -981,9 +1030,14 @@ def parse_data_report(report_path):
     margin_ratio_source=margin_provenance["source_detail"] or ""
     margin_ratio_source_date=margin_provenance["source_date"]
     margin_ratio_status=margin_provenance["status"]
-    sbl_balance=get_value(r"\| 借券餘額 \| ([0-9,]+) \| 張",None)
-    sbl_sold_balance=get_value(r"\| 借券賣出餘額 \| ([0-9,]+) \| 張",None)
-    sbl_sold_change=get_value(r"\| 借券賣出增減 \| ([-\\+0-9,]+) \| 張",None)
+    sbl_heading="### 5. 借券資料"
+    sbl_balance=_extract_section_table_value(text,sbl_heading,"整體市場借券餘額",expected_unit="張")
+    sbl_sold_listed=_extract_wide_section_table_value(text,sbl_heading,"借券賣出餘額","上市")
+    sbl_sold_otc=_extract_wide_section_table_value(text,sbl_heading,"借券賣出餘額","上櫃")
+    sbl_sold_balance=_extract_wide_section_table_value(text,sbl_heading,"借券賣出餘額","兩者合計")
+    sbl_change_listed=_extract_wide_section_table_value(text,sbl_heading,"借券賣出增減","上市")
+    sbl_change_otc=_extract_wide_section_table_value(text,sbl_heading,"借券賣出增減","上櫃")
+    sbl_sold_change=_extract_wide_section_table_value(text,sbl_heading,"借券賣出增減","兩者合計")
     sbl_scope_row=re.search(r"\|\s*借券賣出增減\s*\|[^|]*\|[^|]*\|\s*([^|]+)\|",text)
     sbl_scope_source=sbl_scope_row.group(1).strip() if sbl_scope_row else ""
     has_listed_scope=("上市" in sbl_scope_source and ("TWT93U" in sbl_scope_source or "上市" in sbl_scope_source))
@@ -1014,7 +1068,7 @@ def parse_data_report(report_path):
     fut_night_l=table_value(night_heading, "最低價", "點"); fut_night_c=table_value(night_heading, "收盤價", "點")
     fut_night_diff=table_value(night_heading, "漲跌點數", "點"); fut_night_pct=table_value(night_heading, "漲跌幅", "%")
     fut_night_vol=table_value(night_heading, "成交量", "口")
-    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9.]+) \|"); basis_pct=optional_get(r"價差百分比 \| ([-\+0-9.]+) \|"); night_change=optional_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9]+) \|")
+    basis=optional_get(r"台指期與加權指數價差 \| ([-\+0-9,.]+) \|"); basis_pct=optional_get(r"價差百分比 \| ([-\+0-9.]+) \|"); night_change=optional_get(r"夜盤價格相對日盤收盤的變化 \| ([-\+0-9,.]+) \|")
     foreign_fut_oi=optional_get(r"外資多空淨 OI \| ([-\+0-9,]+) \|"); trust_fut_oi=must_get(r"投信多空淨 OI \| ([-\+0-9,]+|unavailable) \|","投信OI")
     dealer_fut_oi=must_get(r"自營商多空淨 OI \| ([-\+0-9,]+|unavailable) \|","自營OI"); top10_oi=must_get(r"前十大交易人多空淨 OI \| ([-\+0-9,]+|unavailable) \|","前十大OI")
     institutional_oi_total=calculate_institutional_oi_total([foreign_fut_oi,trust_fut_oi,dealer_fut_oi])
@@ -1052,6 +1106,15 @@ def parse_data_report(report_path):
         {'callOi':call_oi,'putOi':put_oi,'pcr':pcr}
     )
 
+    if re.search(r"夜盤價格相對日盤收盤的變化\s*\|",text) and night_change is None:
+        consistency_warnings.append("夜盤相對日盤收盤變化存在於 DATA_REPORT，但 Builder 未能解析")
+    if re.search(r"整體市場借券餘額\s*\|",text) and sbl_balance is None:
+        consistency_warnings.append("整體市場借券餘額存在於 DATA_REPORT，但 Builder 未能解析")
+    if re.search(r"借券賣出餘額\s*\|",text) and sbl_sold_balance is None:
+        consistency_warnings.append("借券賣出餘額合計存在於 DATA_REPORT，但 Builder 未能解析")
+    if re.search(r"借券賣出增減\s*\|",text) and sbl_sold_change is None:
+        consistency_warnings.append("借券賣出增減合計存在於 DATA_REPORT，但 Builder 未能解析")
+
     news_events=[]
     idx=text.find("- 事件1：")
     if idx!=-1:
@@ -1085,7 +1148,7 @@ def parse_data_report(report_path):
         'usPct_full': usPct_full, 'asiaPct_full': asiaPct_full, 'futPct_full': futPct_full,
         'yieldPct_full': yieldPct_full, 'fxPct_full': fxPct_full, 'adrPct_full': adrPct_full, 'commPct_full': commPct_full,
         'spot': {'close': spot_close, 'open': spot_open, 'high': spot_high, 'low': spot_low, 'diff': spot_diff, 'pct': spot_pct, 'vol': spot_vol_raw, 'up': up, 'down': down, 'flat': flat, 'limit_up': limit_up, 'limit_down': limit_down, 'otc_up': otc_up, 'otc_down': otc_down, 'otc_flat': otc_flat, 'otc_limit_up': otc_limit_up, 'otc_limit_down': otc_limit_down},
-        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_name': margin_provenance["source"], 'ratio_source_date': margin_ratio_source_date, 'ratio_is_t0': margin_provenance["is_t0"], 'sbl': sbl_balance, 'borrowed_sell': sbl_sold_balance, 'borrowed_sell_diff': sbl_sold_change, 'borrowed_sell_diff_scope': sbl_sold_change_scope},
+        'margin': {'finance': margin_finance, 'finance_diff': margin_finance_diff, 'short': margin_short, 'ratio': margin_ratio, 'ratio_status': margin_ratio_status, 'ratio_source': margin_ratio_source, 'ratio_source_name': margin_provenance["source"], 'ratio_source_date': margin_ratio_source_date, 'ratio_is_t0': margin_provenance["is_t0"], 'sbl': sbl_balance, 'borrowed_sell': sbl_sold_balance, 'borrowed_sell_diff': sbl_sold_change, 'borrowed_sell_diff_scope': sbl_sold_change_scope, 'borrowed_sell_listed': sbl_sold_listed, 'borrowed_sell_otc': sbl_sold_otc, 'borrowed_sell_diff_listed': sbl_change_listed, 'borrowed_sell_diff_otc': sbl_change_otc},
         'turnover': {'listed': listed_turnover, 'otc': otc_turnover, 'total': total_turnover},
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
@@ -1721,7 +1784,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'spot5': spot5, 'spot5Dates': spot5Dates
         },
         'institutional': {'all': parsed['inst']['all'], 'foreign': parsed['inst']['foreign'], 'trust': parsed['inst']['trust'], 'dealer': parsed['inst']['dealer']},
-        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': (f"{int(parsed['margin']['sbl']):,}張" if parsed['margin']['sbl'] is not None else "unavailable"), 'borrowedSell': parsed['margin']['borrowed_sell'], 'borrowedSellDiff': parsed['margin']['borrowed_sell_diff'], 'borrowedSellDiffScope': parsed['margin']['borrowed_sell_diff_scope']},
+        'margin': {'finance': parsed['margin']['finance'], 'finance_diff': parsed['margin']['finance_diff'], 'short': parsed['margin']['short'], 'ratio': parsed['margin']['ratio'], 'ratio_status': parsed['margin']['ratio_status'], 'ratio_source': parsed['margin']['ratio_source'], 'ratio_source_name': parsed['margin']['ratio_source_name'], 'ratio_source_date': parsed['margin']['ratio_source_date'], 'ratio_is_t0': parsed['margin']['ratio_is_t0'], 'sbl': parsed['margin']['sbl'], 'borrow': (f"{int(parsed['margin']['sbl']):,}張" if parsed['margin']['sbl'] is not None else "unavailable"), 'borrowedSell': parsed['margin']['borrowed_sell'], 'borrowedSellDiff': parsed['margin']['borrowed_sell_diff'], 'borrowedSellDiffScope': parsed['margin']['borrowed_sell_diff_scope'], 'borrowedSellListed': parsed['margin']['borrowed_sell_listed'], 'borrowedSellOtc': parsed['margin']['borrowed_sell_otc'], 'borrowedSellDiffListed': parsed['margin']['borrowed_sell_diff_listed'], 'borrowedSellDiffOtc': parsed['margin']['borrowed_sell_diff_otc']},
         'turnover': parsed['turnover'],
         'tx': parsed['tx'],
         'futures': parsed['futures'],
@@ -1733,7 +1796,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
             'instOptForce': parsed['options']['instOptForce'], 'instOptForceAnalysis': parsed['options']['instOptForceAnalysis'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put'], 'top10ChangeNote': parsed['options'].get('top10ChangeNote')
         },
         'markets': markets, 'marketPct': marketPct,
-        'technical': {'rsi': tech.get('rsi'), 'macd': tech.get('macd'), 'macd_signal': tech.get('macd_signal'), 'macd_hist': tech.get('macd_hist'), 'k': tech.get('k'), 'd': tech.get('d'), 'source': tech.get('source'), 'valid': tech.get('valid'), 'closes': tech.get('closes',[])[-30:], 'highs': tech.get('highs',[])[-30:], 'lows': tech.get('lows',[])[-30:]},
+        'technical': {'rsi': tech.get('rsi'), 'macd': tech.get('macd'), 'macd_signal': tech.get('macd_signal'), 'macd_hist': tech.get('macd_hist'), 'k': tech.get('k'), 'd': tech.get('d'), 'source': tech.get('source'), 'valid': tech.get('valid'), 'latest_date': tech.get('latest_date'), 'dates': tech.get('dates',[])[-30:], 'closes': tech.get('closes',[])[-30:], 'highs': tech.get('highs',[])[-30:], 'lows': tech.get('lows',[])[-30:]},
         'analysis': {
             'bias': bias, 'bias_score': bias, 'factors': factors, 'weights': weights,
             'factor_details': analyzer.factor_details, 'factor_quality': analyzer.factor_quality,
@@ -1783,6 +1846,26 @@ def run_17f_self_tests():
 | Put | 20 |
 """)
         assert len(sample_tables)==2 and sample_tables[0][0][0]=="Call" and sample_tables[1][0][0]=="Put"
+        # T0 freshness and SBL table parser regressions.
+        assert _history_matches_t0([{'date':'2026-11-20'},{'date':'2026-11-23'}],'20261123')
+        assert not _history_matches_t0([{'date':'2026-11-19'},{'date':'2026-11-20'}],'20261123')
+        assert not _history_matches_t0([{'date':'2026-11-23'}],'20261124')
+        sbl_fixture="""### 5. 借券資料
+| 項目 | 數值 | 單位 | 資料來源 |
+|---|---|---|---|
+| 整體市場借券餘額 | 34,590,832 | 張 | TWSE |
+| 項目 | 上市 | 上櫃 | 兩者合計 | 單位 |
+|---|---:|---:|---:|---|
+| 借券賣出餘額 | 18,440,868.343 | 2,142,041.563 | 20,582,909.906 | 張 |
+| 借券賣出增減 | -51,166.5 | -9,003.564 | -60,170.064 | 張 |
+### 6. 市場成交結構
+"""
+        assert _extract_section_table_value(sbl_fixture,"### 5. 借券資料","整體市場借券餘額",expected_unit="張")==34590832.0
+        assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出餘額","兩者合計")==20582909.906
+        assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出增減","兩者合計")==-60170.064
+        assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出餘額","上市")==18440868.343
+        night_fixture="| 夜盤價格相對日盤收盤的變化 | +3,253 | 點 |"
+        assert re.search(r"夜盤價格相對日盤收盤的變化\s*\|\s*([-+0-9,.]+)\s*\|",night_fixture).group(1)=="+3,253"
         # Institutional futures OI totals require all three finite source values.
         assert calculate_institutional_oi_total([100,-20,5])==85
         assert calculate_institutional_oi_total([0,0,0])==0
@@ -2135,6 +2218,12 @@ def main():
         print(f"[V9-17F] DATA_REPORT WARNING: {warning}")
 
     tech=fetch_technical_indicators_with_fallback(parsed['meta']['t0_date'])
+    required_tech_date=_t0_iso_date(parsed['meta']['t0_date'])
+    if tech.get('latest_date') != required_tech_date:
+        warning=f"技術指標序列未達 T0：latest={tech.get('latest_date') or 'unavailable'}，required={required_tech_date}；RSI/MACD/KD 停用"
+        parsed['meta'].setdefault('data_quality_warnings',[]).append(warning)
+        tech.update({'rsi':None,'macd':None,'macd_signal':None,'macd_hist':None,'k':None,'d':None,'valid':False,'validity':{'rsi':False,'macd':False,'kd':False}})
+        print(f"[V9-17F] DATA QUALITY WARNING: {warning}")
 
     # SQLite flow: all history attribution follows the requested T0 report date.
     try: update_next_day_pct(date_str, parsed['spot']['close'])
