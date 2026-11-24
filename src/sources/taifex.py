@@ -796,32 +796,125 @@ def _night_ohlc(t0: str, month: str | None, session: str = "全日", now=None) -
         return None
 
 def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
-    """讀 worker 快照 (V1.4+ /snapshots/bundle)。未部署/無資料回 None。
-    日盤部位類僅當 collected_at 與標示日期同日才可信 (cron 當日收盤後收集；
-    手動回填舊日期時其無日期源實為抓取當下值，不可採用)。
-    F1：同 (proxy, date) 命中 _SNAP_CACHE 直接回傳（只快取成功結果）。"""
+    """讀取並驗證指定日期的 Worker 快照；只快取通過完整性契約的資料。"""
     import os, time
+    from math import isfinite
+
     base = os.getenv("TAIFEX_PROXY_BASE_URL", BASE).rstrip("/")
     _ck = (base, date)
     if _ck in _SNAP_CACHE:
         return _SNAP_CACHE[_ck]
+
+    def _validate_bundle(payload: dict) -> tuple[bool, str]:
+        # API 必須明確證明回傳日期就是要求日期；禁止以較舊快照替代。
+        if payload.get("date") != date or payload.get("requested_date") != date:
+            return False, "snapshot exact-date mismatch"
+        if payload.get("exact_match") is not True:
+            return False, "snapshot exact_match flag missing/false"
+
+        bundle = payload.get("data")
+        if not isinstance(bundle, dict):
+            return False, "snapshot bundle missing"
+        if bundle.get("date") != date or bundle.get("status") != "complete":
+            return False, "snapshot bundle date/status invalid"
+
+        quality = bundle.get("chain_quality")
+        if not isinstance(quality, dict) or quality.get("status") != "complete":
+            return False, "Chain quality status is not complete"
+        if quality.get("requested_date") != date or quality.get("source_date") != date:
+            return False, "Chain source date mismatch"
+        if not quality.get("source") or not quality.get("source_url"):
+            return False, "Chain source evidence missing"
+
+        inner = bundle.get("data")
+        if not isinstance(inner, dict):
+            return False, "snapshot data payload missing"
+        chain = inner.get("chain")
+        if not isinstance(chain, list) or not chain:
+            return False, "Chain rows missing"
+
+        call_count = put_count = oi_missing = invalid = 0
+        seen = set()
+        for row in chain:
+            if not isinstance(row, dict):
+                invalid += 1
+                continue
+            kind = row.get("type")
+            if kind == "call":
+                call_count += 1
+            elif kind == "put":
+                put_count += 1
+            else:
+                invalid += 1
+            month = row.get("contract_month")
+            expiry = row.get("contract_expiry_date")
+            strike = row.get("strike")
+            oi = row.get("open_interest")
+            try:
+                strike_n = float(strike)
+                oi_n = float(oi)
+                if not isfinite(strike_n) or strike_n <= 0:
+                    invalid += 1
+                if not isfinite(oi_n) or oi_n < 0:
+                    oi_missing += 1
+            except (TypeError, ValueError):
+                oi_missing += 1
+                invalid += 1
+            if not month or not expiry:
+                invalid += 1
+            key = (month, expiry, kind, strike)
+            if key in seen:
+                invalid += 1
+            seen.add(key)
+
+        if call_count == 0 or put_count == 0:
+            return False, "Chain Call/Put side incomplete"
+        if oi_missing or invalid:
+            return False, f"Chain invalid rows: oi={oi_missing}, fields_or_duplicates={invalid}"
+        if quality.get("parsed_contracts") != len(chain):
+            return False, "Chain contract count does not match metadata"
+        if quality.get("call_count") != call_count or quality.get("put_count") != put_count:
+            return False, "Chain Call/Put counts do not match metadata"
+        if quality.get("oi_missing_count") != 0 or quality.get("invalid_contract_count") != 0:
+            return False, "Chain metadata reports invalid contracts/OI"
+        if quality.get("duplicate_contract_count") != 0 or not quality.get("walls_available"):
+            return False, "Chain duplicates or primary-expiry walls unavailable"
+        walls = inner.get("walls")
+        if not isinstance(walls, dict) or not isinstance(walls.get("primary_expiry"), dict):
+            return False, "Primary-expiry walls payload missing"
+        return True, ""
+
     for _try in range(2):
         try:
-            r = requests.get(f"{base}/snapshots/bundle", params={"date": date},
-                             headers={**HEADERS, "accept": "application/json"}, timeout=60)
+            r = requests.get(
+                f"{base}/snapshots/bundle",
+                params={"date": date},
+                headers={**HEADERS, "accept": "application/json"},
+                timeout=timeout
+            )
             if r.status_code != 200:
                 print(f"[WARN] snapshot http {r.status_code} (try {_try + 1})")
                 time.sleep(5)
                 continue
             j = r.json()
-            if isinstance(j, dict) and j.get("ok") is True and isinstance(j.get("data"), dict):
-                b = j["data"]
-                inner = b.get("data") if isinstance(b.get("data"), dict) else b
-                trust_pos = str(b.get("collected_at", ""))[:10] == j.get("date")
-                _res = {"date": j.get("date"), "data": inner, "trust_pos": trust_pos}
-                _SNAP_CACHE[_ck] = _res
-                return _res
-            print(f"[WARN] snapshot ok!=true (try {_try + 1})")
+            if isinstance(j, dict) and j.get("ok") is True:
+                valid, reason = _validate_bundle(j)
+                if valid:
+                    b = j["data"]
+                    inner = b["data"]
+                    trust_pos = str(b.get("collected_at", ""))[:10] == date
+                    _res = {
+                        "date": date,
+                        "data": inner,
+                        "trust_pos": trust_pos,
+                        "chain_quality": b["chain_quality"],
+                        "snapshot_version": j.get("snapshot_version")
+                    }
+                    _SNAP_CACHE[_ck] = _res
+                    return _res
+                print(f"[WARN] snapshot rejected by integrity validation: {reason}")
+            else:
+                print(f"[WARN] snapshot ok!=true (try {_try + 1})")
             time.sleep(5)
         except Exception as e:  # noqa: BLE001
             print(f"[INFO] snapshot 不可用 (try {_try + 1})：{e}")
