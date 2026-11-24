@@ -4093,9 +4093,23 @@ export default {
     const iso = nowTaipei.toISOString().slice(0, 10);
     const retryCron = "*/30 * * * *";
 
-    // The additional 30-minute trigger only services today's due Chain retry.
-    // It must never rebuild the daily bundle or process historical dates.
+    // The daily snapshot Cron is scheduled at 08:30 UTC (16:30 Taipei).
+    // Both triggers otherwise fire together. Skip the retry trigger in that
+    // shared slot so it cannot observe the pending marker between the daily
+    // Cron's pending write and snapshot write, or race its bundle update.
     if (event && event.cron === retryCron) {
+      const scheduledAt = new Date(
+        Number.isFinite(Number(event.scheduledTime)) ? Number(event.scheduledTime) : Date.now()
+      );
+      if (
+        scheduledAt.getUTCHours() === 8 &&
+        scheduledAt.getUTCMinutes() === 30 &&
+        scheduledAt.getUTCDay() >= 1 &&
+        scheduledAt.getUTCDay() <= 5
+      ) {
+        console.log("same-day Chain retry skipped: overlaps daily snapshot Cron", iso);
+        return;
+      }
       try {
         await retryCurrentDaySnapshotChain(env, iso);
       } catch (error) {
