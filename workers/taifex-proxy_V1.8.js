@@ -3881,7 +3881,8 @@ async function retryPendingSnapshotChains(env, excludeDates = []) {
   const pending = candidates
     .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date) && !excludeDates.includes(item.date))
     .sort((a, b) => String(a.metadata.updated_at || "").localeCompare(String(b.metadata.updated_at || "")))
-    .slice(0, 5);
+    // Limit historical recovery to one date per daily Cron invocation to bound CPU work.
+    .slice(0, 1);
 
   for (const item of pending) {
     const pendingKey = item.key;
