@@ -3924,13 +3924,18 @@ async function retryCurrentDaySnapshotChain(env, date) {
   try {
     metadata = JSON.parse(pendingRaw);
   } catch (error) {
-    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-      date,
-      same_day_retry_count: 4,
-      next_retry_at: null,
-      last_error: { reason: "pending_metadata_invalid_json", detail: error?.message || String(error), action: "manual_review_required" },
-      updated_at: new Date().toISOString()
-    }));
+    try {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        date,
+        same_day_retry_count: 4,
+        next_retry_at: null,
+        last_error: { reason: "pending_metadata_invalid_json", detail: error?.message || String(error), action: "manual_review_required" },
+        updated_at: new Date().toISOString()
+      }));
+    } catch (stateError) {
+      console.log("same-day invalid pending metadata state update failed", date,
+        stateError?.message || String(stateError));
+    }
     console.log("same-day snapshot retry stopped: invalid pending metadata", date);
     return;
   }
