@@ -3798,7 +3798,9 @@ async function retryCurrentDaySnapshotChain(env, date) {
 
   const retryCount = Number(metadata.same_day_retry_count) || 0;
   const nextRetryAt = Date.parse(metadata.next_retry_at || "");
-  if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() < nextRetryAt) return;
+  // Cron may start slightly before next_retry_at due to its fixed 30-minute cadence.
+  // A 5-minute early window prevents a due retry from being skipped until the next slot.
+  if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() + 5 * 60 * 1000 < nextRetryAt) return;
 
   const snapshotKey = `snapshot:${date}`;
   const raw = await env.SNAPSHOTS.get(snapshotKey);
