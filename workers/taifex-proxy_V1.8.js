@@ -3982,6 +3982,22 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
         console.log("snapshot chain remains pending", date, JSON.stringify(chain.diagnostics));
       }
     } catch (error) {
+      // Rotate a date after any recovery exception so one repeatedly failing
+      // pending item cannot monopolize the first slot on every daily Cron.
+      // If KV itself is unavailable, this best-effort write may also fail.
+      try {
+        await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+          ...item.metadata,
+          date,
+          last_error: {
+            reason: "snapshot_recovery_exception",
+            detail: error?.message || String(error)
+          },
+          updated_at: new Date().toISOString()
+        }));
+      } catch (stateError) {
+        console.log("snapshot pending retry state update failed", date, String(stateError));
+      }
       console.log("snapshot pending retry failed", date, String(error));
     }
   }
