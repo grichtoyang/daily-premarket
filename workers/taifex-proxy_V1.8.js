@@ -4186,10 +4186,12 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
   for (const item of pending) {
     const pendingKey = item.key;
     const date = item.date;
+    let pendingStateWriteAttempted = false;
 
     try {
       const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
       if (!raw) {
+        pendingStateWriteAttempted = true;
         await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
           ...item.metadata,
           date,
@@ -4239,6 +4241,7 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
         }
         console.log("snapshot chain recovered", date, JSON.stringify(bundle.chain_diagnostics));
       } else {
+        pendingStateWriteAttempted = true;
         await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
           date,
           attempts: (Number(item.metadata.attempts) || 0) + chain.attempts,
@@ -4252,6 +4255,13 @@ async function recoverRecentSnapshotChains(env, excludeDates = []) {
       // pending item cannot monopolize the first slot on every daily Cron.
       // If KV itself is unavailable, this best-effort write may also fail.
       try {
+        // If a pending-state write already failed in this invocation, do not
+        // immediately write the same key again from the recovery catch block.
+        if (pendingStateWriteAttempted) {
+          console.log("snapshot pending state write failed; defer repair to next daily Cron",
+            date, error?.message || String(error));
+          continue;
+        }
         await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
           ...item.metadata,
           date,
