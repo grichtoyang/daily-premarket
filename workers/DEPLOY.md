@@ -117,7 +117,7 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 - **BLOCKED**：Cloudflare 設定或 rollback target 無法確認。
 - **NOT TESTED**：尚未執行的上游情境、單項失敗保留測試或未能觸發的市場資料情境。不得以靜態測試取代真實環境驗收。
 
-正式上線驗收 PASS 前，不得宣稱 V1.7 已完成部署驗證。部署 Worker 與觸發 `daily-data` 是兩個不同操作；後者仍須使用者自行手動觸發。
+正式上線驗收 PASS 前，不得宣稱 V1.8 已完成部署驗證。部署 Worker 與觸發 `daily-data` 是兩個不同操作；後者仍須使用者自行手動觸發。
 
 ## 5. 回滾
 
@@ -138,4 +138,4 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 - `workers/taifex-proxy_V1.5.js`、`V1.4.js`：歷史版本。
 - `workers/twse-proxy_V1.2.js`：本次不變更。
 
-Python 仍使用既有 `TAIFEX_PROXY_BASE_URL`；本次 V1.7 不變更 Python URL、資料 schema、其他資料來源或 daily-data workflow。
+Python 仍使用既有 `TAIFEX_PROXY_BASE_URL`；本次 V1.8 不變更 Python URL、資料 schema、其他資料來源或 daily-data workflow。
