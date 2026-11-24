@@ -1912,6 +1912,9 @@ def run_17f_self_tests():
         assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出餘額","兩者合計")==20582909.906
         assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出增減","兩者合計")==-60170.064
         assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出餘額","上市")==18440868.343
+        _repo_root = str(pathlib.Path(__file__).resolve().parent.parent)
+        if _repo_root not in sys.path:
+            sys.path.insert(0, _repo_root)
         from src.sources.us_market import _apply_asia_freshness
         asia_source_fixture=[
             ("日經225",{"price":38600,"change":100,"pct":0.3,"date":"2026-11-24","ok":True}),
