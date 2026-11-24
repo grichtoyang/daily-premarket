@@ -3731,27 +3731,12 @@ async function putSnapshotBundleWithRetry(env, snapshotKey, bundle, date) {
     }
   }
 
-  // Best-effort diagnostics; the original pending marker remains in place.
-  try {
-    const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
-    const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
-    let metadata = {};
-    try { metadata = JSON.parse(pendingRaw || "{}"); } catch (_) {}
-    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
-      ...metadata,
-      date,
-      last_error: {
-        reason: "snapshot_bundle_write_failed",
-        detail: lastError?.message || String(lastError),
-        snapshot_write_attempts: 3,
-        action: "verify_snapshot_presence"
-      },
-      updated_at: new Date().toISOString()
-    }));
-  } catch (stateError) {
-    console.log("snapshot bundle KV write failure state update failed", date,
-      stateError?.message || String(stateError));
-  }
+  // Do not immediately rewrite the pending key after the final failed
+  // Snapshot write: the KV per-key write-rate limit may still apply. The
+  // existing pending marker is deliberately left untouched for the next Cron.
+  console.log("snapshot bundle KV write exhausted; pending marker left unchanged",
+    date, "snapshot_write_attempts=3",
+    lastError?.message || String(lastError));
 
   throw lastError || new Error("snapshot bundle KV write failed");
 }
@@ -3947,6 +3932,7 @@ async function retryCurrentDaySnapshotChain(env, date) {
   if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() + 5 * 60 * 1000 < nextRetryAt) return;
 
   const snapshotKey = `snapshot:${date}`;
+  let pendingStateWriteAttempted = false;
   try {
     // Include the KV read in this boundary: a read exception must consume
     // one retry slot just like parsing, fetching, validation or KV writes.
@@ -4006,6 +3992,7 @@ async function retryCurrentDaySnapshotChain(env, date) {
     const nextRetryAtValue = completedRetries < 4
       ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
       : null;
+    pendingStateWriteAttempted = true;
     await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
       ...metadata,
       attempts: (Number(metadata.attempts) || 1) + 1,
@@ -4024,6 +4011,13 @@ async function retryCurrentDaySnapshotChain(env, date) {
       ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
       : null;
     try {
+      // If the normal retry-state write itself failed, do not immediately
+      // issue a second write to the same KV key from this catch block.
+      if (pendingStateWriteAttempted) {
+        console.log("same-day retry state write failed; defer state repair to next Cron",
+          date, error?.message || String(error));
+        return;
+      }
       await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
         ...metadata, date, same_day_retry_count: completedRetries,
         next_retry_at: nextRetryAtValue,
