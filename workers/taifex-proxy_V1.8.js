@@ -3473,7 +3473,7 @@ const SNAPSHOT_PENDING_PREFIX = "snapshot-pending:";
 const SNAPSHOT_CHAIN_MIN_TOTAL = 100;
 const SNAPSHOT_CHAIN_MIN_PER_SIDE = 30;
 
-function validateSnapshotChain(chain, expectedDate, actualDate, sourceTaoRows = null) {
+function validateSnapshotChain(chain, expectedDate, actualDate, sourceTaoRows = null, includeKeyLevels = true) {
   if (actualDate !== expectedDate) {
     return { valid: false, reason: "chain_date_mismatch", expected_date: expectedDate, actual_date: actualDate || null };
   }
@@ -3561,14 +3561,16 @@ function validateSnapshotChain(chain, expectedDate, actualDate, sourceTaoRows = 
     }
   }
 
-  let keyLevels;
-  try {
-    keyLevels = calculateTXOKeyLevels(chain, expectedDate);
-  } catch (error) {
-    return { valid: false, reason: "chain_key_levels_calculation_failed", detail: error?.message || String(error), total, calls, puts, oi_coverage: oiCoverage };
-  }
-  if (!keyLevels || !keyLevels.found) {
-    return { valid: false, reason: "chain_key_levels_unavailable", detail: keyLevels && keyLevels.reason || null, total, calls, puts, oi_coverage: oiCoverage };
+  let keyLevels = null;
+  if (includeKeyLevels) {
+    try {
+      keyLevels = calculateTXOKeyLevels(chain, expectedDate);
+    } catch (error) {
+      return { valid: false, reason: "chain_key_levels_calculation_failed", detail: error?.message || String(error), total, calls, puts, oi_coverage: oiCoverage };
+    }
+    if (!keyLevels || !keyLevels.found) {
+      return { valid: false, reason: "chain_key_levels_unavailable", detail: keyLevels && keyLevels.reason || null, total, calls, puts, oi_coverage: oiCoverage };
+    }
   }
 
   return {
@@ -3577,7 +3579,7 @@ function validateSnapshotChain(chain, expectedDate, actualDate, sourceTaoRows = 
     calls,
     puts,
     oi_coverage: oiCoverage,
-    key_levels: keyLevels
+    ...(keyLevels ? { key_levels: keyLevels } : {})
   };
 }
 
@@ -3716,7 +3718,7 @@ async function persistSnapshotBundle(env, bundle) {
     try {
       const previous = JSON.parse(previousRaw);
       const previousChain = previous && previous.data && previous.data.chain;
-      const previousCheck = validateSnapshotChain(previousChain, bundle.date, previous.date);
+      const previousCheck = validateSnapshotChain(previousChain, bundle.date, previous.date, null, !previous.data.walls);
       if (previousCheck.valid) {
         bundle.data.chain = previousChain;
         bundle.data.walls = previous.data.walls || {
@@ -3769,7 +3771,7 @@ async function discoverRecentIncompleteSnapshots(env) {
     try {
       const bundle = JSON.parse(raw);
       const chain = bundle && bundle.data && bundle.data.chain;
-      const check = validateSnapshotChain(chain, date, bundle && bundle.date);
+      const check = validateSnapshotChain(chain, date, bundle && bundle.date, null, false);
       if (check.valid) {
         await env.SNAPSHOTS.delete(`${SNAPSHOT_PENDING_PREFIX}${date}`);
         continue;
@@ -3811,7 +3813,7 @@ async function retryCurrentDaySnapshotChain(env, date) {
 
   try {
     const bundle = JSON.parse(raw);
-    const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date);
+    const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date, null, false);
     if (existing.valid) {
       await env.SNAPSHOTS.delete(pendingKey);
       return;
@@ -3891,7 +3893,9 @@ async function retryPendingSnapshotChains(env, excludeDates = []) {
       const existingCheck = validateSnapshotChain(
         bundle && bundle.data && bundle.data.chain,
         date,
-        bundle && bundle.date
+        bundle && bundle.date,
+        null,
+        false
       );
       if (existingCheck.valid) {
         await env.SNAPSHOTS.delete(pendingKey);
@@ -6519,7 +6523,9 @@ export default {
           const currentCheck = validateSnapshotChain(
             bundle && bundle.data && bundle.data.chain,
             actual,
-            bundle && bundle.date
+            bundle && bundle.date,
+            null,
+            false
           );
           bundle.chain_status = currentCheck.valid ? "complete" : "pending";
           if (currentCheck.valid) {
