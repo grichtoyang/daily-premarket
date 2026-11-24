@@ -3768,7 +3768,19 @@ async function retryCurrentDaySnapshotChain(env, date) {
   const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
   if (!pendingRaw) return;
   let metadata = {};
-  try { metadata = JSON.parse(pendingRaw); } catch (_) { return; }
+  try {
+    metadata = JSON.parse(pendingRaw);
+  } catch (error) {
+    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+      date,
+      same_day_retry_count: 4,
+      next_retry_at: null,
+      last_error: { reason: "pending_metadata_invalid_json", detail: error?.message || String(error), action: "manual_review_required" },
+      updated_at: new Date().toISOString()
+    }));
+    console.log("same-day snapshot retry stopped: invalid pending metadata", date);
+    return;
+  }
 
   const retryCount = Number(metadata.same_day_retry_count) || 0;
   const nextRetryAt = Date.parse(metadata.next_retry_at || "");
@@ -3779,7 +3791,12 @@ async function retryCurrentDaySnapshotChain(env, date) {
   const snapshotKey = `snapshot:${date}`;
   const raw = await env.SNAPSHOTS.get(snapshotKey);
   if (!raw) {
-    console.log("same-day snapshot retry skipped: bundle missing", date);
+    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+      ...metadata, date, same_day_retry_count: 4, next_retry_at: null,
+      last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
+      updated_at: new Date().toISOString()
+    }));
+    console.log("same-day snapshot retry stopped: bundle missing", date);
     return;
   }
 
@@ -3826,7 +3843,25 @@ async function retryCurrentDaySnapshotChain(env, date) {
     console.log("same-day snapshot Chain retry failed", date, "retry=", completedRetries,
       "next_retry_at=", nextRetryAtValue);
   } catch (error) {
-    console.log("same-day snapshot Chain retry exception", date, error?.message || String(error));
+    // Every failed scheduled retry consumes one of the four retry slots.
+    const completedRetries = Math.min(retryCount + 1, 4);
+    const delaysMinutes = [30, 30, 60, 60];
+    const nextRetryAtValue = completedRetries < 4
+      ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
+      : null;
+    try {
+      await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+        ...metadata, date, same_day_retry_count: completedRetries,
+        next_retry_at: nextRetryAtValue,
+        last_error: { reason: "same_day_retry_exception", detail: error?.message || String(error) },
+        updated_at: new Date().toISOString()
+      }));
+    } catch (stateError) {
+      console.log("same-day snapshot retry state update failed", date, stateError?.message || String(stateError));
+    }
+    console.log("same-day snapshot Chain retry exception", date,
+      "retry=", completedRetries, "next_retry_at=", nextRetryAtValue,
+      error?.message || String(error));
   }
 }
 
