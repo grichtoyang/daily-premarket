@@ -3786,7 +3786,7 @@ async function discoverRecentIncompleteSnapshots(env) {
   }
 }
 
-async function retryPendingSnapshotChains(env) {
+async function retryPendingSnapshotChains(env, excludeDates = []) {
   const listing = await env.SNAPSHOTS.list({ prefix: SNAPSHOT_PENDING_PREFIX, limit: 1000 });
   const candidates = await Promise.all(listing.keys.map(async item => {
     const raw = await env.SNAPSHOTS.get(item.name);
@@ -3801,7 +3801,7 @@ async function retryPendingSnapshotChains(env) {
   // Failed dates move to the back after each attempt; older unresolved dates
   // therefore cannot permanently starve later pending snapshots.
   const pending = candidates
-    .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date))
+    .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date) && !excludeDates.includes(item.date))
     .sort((a, b) => String(a.metadata.updated_at || "").localeCompare(String(b.metadata.updated_at || "")))
     .slice(0, 5);
 
@@ -3895,7 +3895,9 @@ export default {
     // error or one failed date cannot abort today's capture or the whole Cron.
     try {
       await discoverRecentIncompleteSnapshots(env);
-      await retryPendingSnapshotChains(env);
+      // Do not immediately spend another retry batch on today's date; its
+      // four-attempt capture above is the complete same-day retry budget.
+      await retryPendingSnapshotChains(env, [iso]);
     } catch (error) {
       console.log("historical snapshot recovery failed", error?.message || String(error));
     }
@@ -6440,11 +6442,7 @@ export default {
             bundle && bundle.date
           );
           bundle.chain_status = currentCheck.valid ? "complete" : "pending";
-          if (!currentCheck.valid) {
-            bundle.chain_diagnostics = bundle.chain_diagnostics || {
-              read_validation: { reason: currentCheck.reason }
-            };
-          } else if (!bundle.chain_diagnostics || bundle.chain_status !== "complete") {
+          if (currentCheck.valid) {
             bundle.chain_diagnostics = {
               read_validation: {
                 total: currentCheck.total,
@@ -6452,6 +6450,10 @@ export default {
                 puts: currentCheck.puts,
                 oi_coverage: currentCheck.oi_coverage
               }
+            };
+          } else {
+            bundle.chain_diagnostics = bundle.chain_diagnostics || {
+              read_validation: { reason: currentCheck.reason }
             };
           }
         }
