@@ -25,7 +25,7 @@ V1.8 快照修正：
 - 原定每日 Cron 只建立一次當日快照；首次 Chain 抓取最多 1 次，每次共用 25 秒 deadline。若失敗，建立 pending 並安排同日定時恢復。
 - 必須在既有每日 Cron 之外，於同一個 Worker 增加一個 `*/30 * * * *` Cron Trigger（每 30 分鐘）。此 Trigger 只檢查當日 Chain pending 是否到期，不重新建立每日快照，也不處理歷史日期。
 - 當日最多額外重試 **4 次**，每次最多 1 次抓取、25 秒 deadline；相對於前一次失敗，排程等待時間依序為 **30／30／60／60 分鐘**。任何一次取得通過完整性驗證的 Chain，立即更新原日期快照並刪除 pending；四次額外重試仍失敗則停止當日重試，保留 pending。
-- 每 30 分鐘 Trigger 不會等待或 sleep；透過 KV 的 `next_retry_at` 控制實際重試時間。考量 Cron 固定在每小時的 :00／:30 執行，程式允許在 `next_retry_at` 前最多 5 分鐘進入重試，避免因排程啟動早於時間戳而整整錯過一個週期；因此 30／30／60／60 分鐘是目標排程間隔，實際執行以 Cron 觸發時點為準。原定每日 Cron 才會執行歷史 pending 恢復：自動分頁掃描快照清單，發現最近 10 筆快照中的 Chain 缺口；pending 清單每次只掃描 100 筆並以 KV cursor 跨日輪替，每次最多處理 1 個日期，每日期最多 2 次抓取。若 pending 對應的歷史快照本體不存在，程式不會重建整份 bundle（避免把未驗證日期的即時資料寫入歷史日期），只保留 pending 並標記 `snapshot_bundle_missing`，需人工檢查。
+- 每 30 分鐘 Trigger 不會等待或 sleep；透過 KV 的 `next_retry_at` 控制實際重試時間。考量 Cron 固定在每小時的 :00／:30 執行，程式允許在 `next_retry_at` 前最多 5 分鐘進入重試，避免因排程啟動早於時間戳而整整錯過一個週期；因此 30／30／60／60 分鐘是目標排程間隔，實際執行以 Cron 觸發時點為準。原定每日 Cron 才會執行歷史 pending 恢復：以台北日期為基準，從今天往前最多檢查 45 個日曆日，遇到 10 筆既有快照即停止，因此快照發現最多 45 次 KV 讀取，不再全量分頁掃描歷史快照；若 45 日內不足 10 筆，只檢查實際找到的快照。pending 清單每次只掃描 100 筆並以 KV cursor 跨日輪替，每次最多處理 1 個日期，每日期最多 2 次抓取。當日重試若發現快照本體遺失或 JSON 損壞，會標記人工檢查並終止當日重試；執行例外會記錄狀態與下一次時間，若 KV 本身不可寫入則只能留下錯誤 log，待 KV 恢復後再處理。若 pending 對應的歷史快照本體不存在，程式不會重建整份 bundle（避免把未驗證日期的即時資料寫入歷史日期），只保留 pending 並標記 `snapshot_bundle_missing`，需人工檢查。
 - `/snapshots/bundle?date=...` 改為**純讀取**：只驗證並回報 `chain_status` / `chain_diagnostics`，不發出 Chain 上游請求、不重試、不等待、不寫入 KV。daily-data 不再負責補抓，也不增加等待時間。
 - 已驗證的舊 Chain 不會被失敗的新抓取覆蓋。
 - 不新增 Cloudflare 服務、Namespace、Binding 或 Secret；沿用既有 `SNAPSHOTS` KV，並在同一 Worker 增加一個 30 分鐘 Cron Trigger。
