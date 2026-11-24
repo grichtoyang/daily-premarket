@@ -679,7 +679,8 @@ async function fetchTAIFEXPost(path, body, options = {}) {
         rows,
         source: "taifex_web",
         fallback: false,
-        source_url: `${TAIFEX}${path}`
+        source_url: `${TAIFEX}${path}`,
+        source_date: pageDataDate(html)
       };
     }
 
@@ -710,6 +711,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
           source: "taifex_openapi",
           fallback: true,
           source_url: "https://openapi.taifex.com.tw/v1/DailyMarketReportOpt",
+          source_date: fb.date,
           requested_date: requestedISO,
           primary_error: primaryError
         };
@@ -3343,11 +3345,69 @@ async function fetchTXOChainForDate(taifexDate, options = {}) {
     found: parsed.found,
     raw_rows: result.rows.length,
     rows: parsed.data,
+    source: result.source || null,
+    source_url: result.source_url || null,
+    source_date: result.source_date || null,
+    requested_date: queryDateToISO(taifexDate),
     error_code: parsed.found ? null : "TXO_CHAIN_PARSE_EMPTY",
     diagnostics: {
       primary_error: result.primary_error || null,
       fallback_error: result.fallback_error || null
     }
+  };
+}
+
+function validateSnapshotChain(chainResult, requestedISO) {
+  const rows = Array.isArray(chainResult?.rows) ? chainResult.rows : [];
+  const callRows = rows.filter(row => row?.type === "call");
+  const putRows = rows.filter(row => row?.type === "put");
+  const oiMissing = rows.filter(row =>
+    row?.open_interest === null ||
+    row?.open_interest === undefined ||
+    !Number.isFinite(Number(row.open_interest)) ||
+    Number(row.open_interest) < 0
+  ).length;
+  const invalidContracts = rows.filter(row =>
+    !row?.contract_month ||
+    !isoCompactDate(row?.contract_expiry_date) ||
+    !Number.isFinite(Number(row?.strike)) ||
+    Number(row.strike) <= 0 ||
+    !["call", "put"].includes(row?.type)
+  ).length;
+  const keys = rows.map(row =>
+    `${row?.contract_month}|${isoCompactDate(row?.contract_expiry_date)}|${row?.type}|${row?.strike}`
+  );
+  const duplicateContracts = keys.length - new Set(keys).size;
+  const walls = rows.length
+    ? calculateTXOKeyLevels(rows, requestedISO)
+    : { found: false, reason: "Chain is empty" };
+  const sourceDate = chainResult?.source_date || null;
+  const reasons = [];
+  if (sourceDate !== requestedISO) reasons.push("source_date_mismatch_or_missing");
+  if (!rows.length) reasons.push("chain_empty");
+  if (!callRows.length) reasons.push("call_side_missing");
+  if (!putRows.length) reasons.push("put_side_missing");
+  if (oiMissing) reasons.push("open_interest_missing_or_invalid");
+  if (invalidContracts) reasons.push("invalid_contract_fields");
+  if (duplicateContracts) reasons.push("duplicate_contracts");
+  if (!walls.found) reasons.push("primary_expiry_walls_unavailable");
+  return {
+    status: reasons.length ? "partial" : "complete",
+    requested_date: requestedISO,
+    source_date: sourceDate,
+    source: chainResult?.source || null,
+    source_url: chainResult?.source_url || null,
+    raw_rows: Number(chainResult?.raw_rows) || 0,
+    parsed_contracts: rows.length,
+    call_count: callRows.length,
+    put_count: putRows.length,
+    oi_missing_count: oiMissing,
+    invalid_contract_count: invalidContracts,
+    duplicate_contract_count: duplicateContracts,
+    primary_expiry: walls.found ? walls.primary_expiry : null,
+    walls_available: Boolean(walls.found),
+    reasons,
+    diagnostics: chainResult?.diagnostics || {}
   };
 }
 
@@ -3458,9 +3518,11 @@ async function institutionalEndpoint(
 
 async function collectSnapshotBundle(taipeiISO, taifexSlash) {
   const bundle = {
-    version: "1.4",
+    version: "1.5",
+    snapshot_schema_version: 2,
     date: taipeiISO,
     collected_at: new Date().toISOString(),
+    status: "partial",
     data: {}
   };
 
@@ -3485,23 +3547,29 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     }
   } catch (_) { /* keep partial bundle */ }
 
-  /* Chain 每次請求已有 25 秒整體 deadline；最多 2 次，間隔 3 秒，避免長時間重試放大上游負載。 */
+  /* Chain 每次請求已有 25 秒整體 deadline；最多 2 次。只接受來源日期與指定日期一致且結構完整的 Chain。 */
+  let chainResult = { found: false, rows: [], raw_rows: 0 };
   try {
-    let c = { found: false };
-    for (let attempt = 1; attempt <= 2 && !c.found; attempt++) {
+    for (let attempt = 1; attempt <= 2 && !chainResult.found; attempt++) {
       try {
-        c = await fetchTXOChainForDate(taifexSlash);
+        chainResult = await fetchTXOChainForDate(taifexSlash);
       } catch (error) {
-        c = { found: false, reason: error?.message || String(error) };
+        chainResult = { found: false, rows: [], raw_rows: 0, reason: error?.message || String(error) };
       }
-      if (!c.found) {
-        console.log(`snapshot chain attempt ${attempt} failed: ${c.error_code || c.reason || "unavailable"}`);
+      if (!chainResult.found) {
+        console.log(`snapshot chain attempt ${attempt} failed: ${chainResult.error_code || chainResult.reason || "unavailable"}`);
         if (attempt < 2) await new Promise(r => setTimeout(r, 3000));
       }
     }
-    if (c.found) bundle.data.chain = c.rows;
-    else console.log("snapshot chain all attempts failed — bundle without chain");
-  } catch (_) { /* keep partial bundle */ }
+  } catch (error) {
+    chainResult = { found: false, rows: [], raw_rows: 0, reason: error?.message || String(error) };
+  }
+  bundle.chain_quality = validateSnapshotChain(chainResult, taipeiISO);
+  if (bundle.chain_quality.status === "complete") {
+    bundle.data.chain = chainResult.rows;
+  } else {
+    console.log("snapshot chain rejected:", JSON.stringify(bundle.chain_quality));
+  }
 
   const dayPaths = [
     ["fut_trade_day", "/cht/3/futContractsDate", parseFuturesInstitutional],
@@ -3535,7 +3603,28 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     }
   } catch (_) { /* keep partial bundle */ }
 
+  bundle.status = bundle.chain_quality?.status === "complete" ? "complete" : "partial";
   return bundle;
+}
+
+async function persistSnapshotBundle(env, bundle) {
+  if (!env || !env.SNAPSHOTS) throw new Error("KV SNAPSHOTS not bound");
+  if (!bundle || bundle.status !== "complete" ||
+      bundle.chain_quality?.status !== "complete" ||
+      bundle.chain_quality?.source_date !== bundle.date) {
+    throw new Error("Snapshot rejected: Chain completeness contract not satisfied");
+  }
+  const versionKey = `snapshot-version:${bundle.date}:${String(bundle.collected_at).replace(/[^0-9TZ]/g, "-")}`;
+  const pointer = {
+    schema_version: 2,
+    date: bundle.date,
+    version_key: versionKey,
+    activated_at: new Date().toISOString()
+  };
+  // Immutable payload first; only then advance the date's active pointer.
+  await env.SNAPSHOTS.put(versionKey, JSON.stringify(bundle));
+  await env.SNAPSHOTS.put(`snapshot-active:${bundle.date}`, JSON.stringify(pointer));
+  return { version_key: versionKey, date: bundle.date };
 }
 
 function taipeiTodayISO(when = null) {
@@ -3556,11 +3645,15 @@ export default {
       const iso = nowTaipei.toISOString().slice(0, 10);
       const slash = iso.replace(/-/g, "/");
       const bundle = await collectSnapshotBundle(iso, slash);
-      if (env && env.SNAPSHOTS) {
-        ctx.waitUntil(
-          env.SNAPSHOTS.put(`snapshot:${iso}`, JSON.stringify(bundle))
-        );
+      if (bundle.status !== "complete") {
+        console.log("snapshot cron rejected incomplete bundle:", JSON.stringify(bundle.chain_quality || {}));
+        return;
       }
+      ctx.waitUntil(
+        persistSnapshotBundle(env, bundle).catch(error =>
+          console.log("snapshot cron persistence failed", String(error))
+        )
+      );
     } catch (e) {
       console.log("snapshot cron failed", e);
     }
@@ -6068,47 +6161,58 @@ export default {
       try {
         const requested = url.searchParams.get("date");
         if (!env || !env.SNAPSHOTS) {
-          return json({
-            ok: false,
-            error: "KV SNAPSHOTS not bound"
-          }, 500);
+          return json({ ok: false, error: "KV SNAPSHOTS not bound" }, 500);
+        }
+        if (requested && !/^\\d{4}-\\d{2}-\\d{2}$/.test(requested)) {
+          return json({ ok: false, error: "Invalid date. Use YYYY-MM-DD." }, 400);
         }
         let actual = requested;
-        let raw = actual
-          ? await env.SNAPSHOTS.get(`snapshot:${actual}`)
-          : null;
-        if (!raw) {
-          const list = await env.SNAPSHOTS.list({
-            prefix: "snapshot:"
-          });
+        if (!actual) {
+          const list = await env.SNAPSHOTS.list({ prefix: "snapshot-active:" });
           const dates = list.keys
-            .map(k => k.name.replace("snapshot:", ""))
-            .filter(d => !requested || d <= requested)
+            .map(k => k.name.slice("snapshot-active:".length))
+            .filter(d => /^\\d{4}-\\d{2}-\\d{2}$/.test(d))
             .sort();
           if (!dates.length) {
-            return json({
-              ok: false,
-              error: "No snapshot available"
-            }, 502);
+            return json({ ok: false, error: "No validated snapshot available" }, 404);
           }
           actual = dates[dates.length - 1];
-          raw = await env.SNAPSHOTS.get(`snapshot:${actual}`);
+        }
+        const pointerRaw = await env.SNAPSHOTS.get(`snapshot-active:${actual}`);
+        if (!pointerRaw) {
+          return json({
+            ok: false, error: "No validated snapshot for requested date",
+            error_code: "SNAPSHOT_EXACT_DATE_UNAVAILABLE",
+            requested_date: requested || actual, date: null, exact_match: false
+          }, 404);
+        }
+        const pointer = JSON.parse(pointerRaw);
+        if (pointer?.date !== actual || typeof pointer?.version_key !== "string" ||
+            !pointer.version_key.startsWith(`snapshot-version:${actual}:`)) {
+          return json({ ok: false, error: "Invalid snapshot active pointer",
+            error_code: "SNAPSHOT_POINTER_INVALID" }, 502);
+        }
+        const versionRaw = await env.SNAPSHOTS.get(pointer.version_key);
+        if (!versionRaw) {
+          return json({ ok: false, error: "Active snapshot payload not yet visible",
+            error_code: "SNAPSHOT_VERSION_NOT_VISIBLE" }, 503);
+        }
+        const bundle = JSON.parse(versionRaw);
+        if (bundle?.date !== actual || bundle?.status !== "complete" ||
+            bundle?.chain_quality?.status !== "complete" ||
+            bundle?.chain_quality?.source_date !== actual) {
+          return json({ ok: false, error: "Stored snapshot failed integrity validation",
+            error_code: "SNAPSHOT_INTEGRITY_INVALID" }, 502);
         }
         return json({
-          ok: true,
-          source: "TAIFEX",
-          dataset: "snapshot_bundle",
-          date: actual,
-          requested_date: requested,
-          data: JSON.parse(raw),
-          parser: { version: "1.4", endpoint: "snapshots-bundle" }
+          ok: true, source: "TAIFEX", dataset: "snapshot_bundle",
+          date: actual, requested_date: requested || actual, exact_match: true,
+          snapshot_version: pointer.version_key, data: bundle,
+          parser: { version: "2.0", endpoint: "snapshots-bundle" }
         });
       } catch (error) {
-        return json({
-          ok: false,
-          source: "TAIFEX",
-          error: String(error)
-        }, 500);
+        return json({ ok: false, source: "TAIFEX", error: String(error),
+          error_code: "SNAPSHOT_READ_FAILED" }, 500);
       }
     }
 
@@ -6127,11 +6231,20 @@ export default {
         const iso =
           url.searchParams.get("date") || taipeiTodayISO();
         const slash = iso.replace(/-/g, "/");
+        if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso)) {
+          return json({ ok: false, error: "Invalid date. Use YYYY-MM-DD." }, 400);
+        }
         const bundle = await collectSnapshotBundle(iso, slash);
-        await env.SNAPSHOTS.put(
-          `snapshot:${iso}`,
-          JSON.stringify(bundle)
-        );
+        if (bundle.status !== "complete") {
+          return json({
+            ok: false, source: "TAIFEX", dataset: "snapshot_write",
+            date: iso, error: "Snapshot rejected: Chain completeness contract not satisfied",
+            error_code: "SNAPSHOT_CHAIN_INCOMPLETE",
+            chain_quality: bundle.chain_quality,
+            saved: false
+          }, 422);
+        }
+        const saved = await persistSnapshotBundle(env, bundle);
         const sizes = {};
         for (const k of Object.keys(bundle.data)) {
           const v = bundle.data[k];
@@ -6143,7 +6256,10 @@ export default {
           dataset: "snapshot_write",
           date: iso,
           coverage: sizes,
-          parser: { version: "1.4", endpoint: "snapshots-write-now" }
+          chain_quality: bundle.chain_quality,
+          snapshot_version: saved.version_key,
+          saved: true,
+          parser: { version: "2.0", endpoint: "snapshots-write-now" }
         });
       } catch (error) {
         return json({
