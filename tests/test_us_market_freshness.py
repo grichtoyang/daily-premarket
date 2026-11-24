@@ -34,7 +34,7 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             self.assertIsNone(quote["change"])
             self.assertIsNone(quote["pct"])
             self.assertEqual(quote["date"], "2026-11-19")
-            self.assertIn("早於報告 T0", quote["stale_reason"])
+            self.assertIn("早於或無法核對報告 T0", quote["stale_reason"])
 
     def test_batch_with_t0_data_is_not_rejected(self):
         rows = self._rows([
@@ -49,8 +49,9 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             self.assertTrue(quote["ok"])
             self.assertIsNotNone(quote["price"])
 
-    def test_older_single_market_is_retained_when_another_market_has_t0(self):
-        # A different exchange calendar/holiday may explain an older local date.
+    def test_older_single_market_is_rejected_when_another_market_has_t0(self):
+        # Freshness is evaluated per index; another market's T0 quote cannot
+        # make this older quote appear current.
         rows = self._rows([
             ("日經225", "^N225", 56000.0, "2026-11-20"),
             ("香港恆生", "^HSI", 22841.62, "2026-11-19"),
@@ -58,8 +59,13 @@ class AsianMarketFreshnessTests(unittest.TestCase):
 
         result = _apply_asia_freshness(rows, "2026-11-20")
 
-        self.assertTrue(all(not quote.get("stale") for _, quote in result))
-        self.assertEqual(result[1][1]["price"], 22841.62)
+        self.assertFalse(result[0][1].get("stale", False))
+        self.assertEqual(result[0][1]["price"], 56000.0)
+        self.assertTrue(result[1][1]["stale"])
+        self.assertFalse(result[1][1]["ok"])
+        self.assertIsNone(result[1][1]["price"])
+        self.assertIsNone(result[1][1]["change"])
+        self.assertIsNone(result[1][1]["pct"])
 
     def test_missing_expected_date_preserves_legacy_behavior(self):
         rows = self._rows([
