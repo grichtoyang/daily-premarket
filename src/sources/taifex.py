@@ -917,7 +917,10 @@ def snapshot_bundle(date: str, timeout: int = 40) -> dict | None:
                             "snapshot_version": j.get("snapshot_version"),
                             "chain_snapshot_version": j.get("chain_snapshot_version")
                         }
-                        _SNAP_CACHE[_ck] = result
+                        # Keep retrying an unavailable Chain on later calls; cache
+                        # only when both general data and the independent Chain are valid.
+                        if chain_available:
+                            _SNAP_CACHE[_ck] = result
                         return result
                     print("[WARN] snapshot rejected: general payload/date/status invalid")
             else:
