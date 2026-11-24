@@ -6163,7 +6163,7 @@ export default {
         if (!env || !env.SNAPSHOTS) {
           return json({ ok: false, error: "KV SNAPSHOTS not bound" }, 500);
         }
-        if (requested && !/^\\d{4}-\\d{2}-\\d{2}$/.test(requested)) {
+        if (requested && !/^\d{4}-\d{2}-\d{2}$/.test(requested)) {
           return json({ ok: false, error: "Invalid date. Use YYYY-MM-DD." }, 400);
         }
         let actual = requested;
@@ -6171,7 +6171,7 @@ export default {
           const list = await env.SNAPSHOTS.list({ prefix: "snapshot-active:" });
           const dates = list.keys
             .map(k => k.name.slice("snapshot-active:".length))
-            .filter(d => /^\\d{4}-\\d{2}-\\d{2}$/.test(d))
+            .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
             .sort();
           if (!dates.length) {
             return json({ ok: false, error: "No validated snapshot available" }, 404);
@@ -6233,7 +6233,7 @@ export default {
         const iso =
           url.searchParams.get("date") || taipeiTodayISO();
         const slash = iso.replace(/-/g, "/");
-        if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(iso)) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
           return json({ ok: false, error: "Invalid date. Use YYYY-MM-DD." }, 400);
         }
         const bundle = await collectSnapshotBundle(iso, slash);
