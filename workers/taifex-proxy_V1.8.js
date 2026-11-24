@@ -3756,6 +3756,32 @@ async function putSnapshotBundleWithRetry(env, snapshotKey, bundle, date) {
   throw lastError || new Error("snapshot bundle KV write failed");
 }
 
+async function getSnapshotBundleWithRetry(env, snapshotKey, date) {
+  const delaysMs = [500, 1500];
+  let lastError = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const raw = await env.SNAPSHOTS.get(snapshotKey);
+      if (attempt > 0) {
+        console.log("previous snapshot KV read recovered", date, "attempts=", attempt + 1);
+      }
+      return raw;
+    } catch (error) {
+      lastError = error;
+      console.log("previous snapshot KV read failed", date,
+        "attempt=", attempt + 1, error?.message || String(error));
+      if (attempt < delaysMs.length) {
+        await new Promise(resolve => setTimeout(resolve, delaysMs[attempt]));
+      }
+    }
+  }
+
+  // Fail closed: without reading the prior bundle we cannot know whether it
+  // contains a verified Chain. Never overwrite that key with an incomplete
+  // refresh when preservation cannot be established.
+  throw lastError || new Error("previous snapshot KV read failed");
+}
+
 async function putSnapshotPendingWithRetry(env, pendingKey, metadata, date) {
   const delaysMs = [500, 1500];
   let lastError = null;
@@ -3790,7 +3816,7 @@ async function persistSnapshotBundle(env, bundle) {
   // do not let an unnecessary old-snapshot read failure block it.
   let previousRaw = null;
   if (bundle.chain_status !== "complete") {
-    previousRaw = await env.SNAPSHOTS.get(snapshotKey);
+    previousRaw = await getSnapshotBundleWithRetry(env, snapshotKey, bundle.date);
   }
   if (previousRaw && bundle.chain_status !== "complete") {
     try {
