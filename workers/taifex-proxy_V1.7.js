@@ -6200,7 +6200,9 @@ export default {
         const bundle = JSON.parse(versionRaw);
         if (bundle?.date !== actual || bundle?.status !== "complete" ||
             bundle?.chain_quality?.status !== "complete" ||
-            bundle?.chain_quality?.source_date !== actual) {
+            bundle?.chain_quality?.source_date !== actual ||
+            !Array.isArray(bundle?.data?.chain) || !bundle.data.chain.length ||
+            !bundle?.data?.walls?.primary_expiry) {
           return json({ ok: false, error: "Stored snapshot failed integrity validation",
             error_code: "SNAPSHOT_INTEGRITY_INVALID" }, 502);
         }
