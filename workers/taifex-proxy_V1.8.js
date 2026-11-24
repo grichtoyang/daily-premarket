@@ -3635,7 +3635,7 @@ async function fetchValidatedSnapshotChain(date, maxAttempts = 2) {
   return { found: false, attempts: maxAttempts, diagnostics: last };
 }
 
-async function collectSnapshotBundle(taipeiISO, taifexSlash) {
+async function collectSnapshotBundle(taipeiISO, taifexSlash, chainAttempts = 4) {
   const bundle = {
     version: "1.8",
     date: taipeiISO,
@@ -3666,7 +3666,9 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     }
   } catch (_) { /* keep partial bundle */ }
 
-  const chain = await fetchValidatedSnapshotChain(taipeiISO, 2);
+  // Retry the current day's Chain several times inside this Cron invocation.
+  // This keeps recovery in the Worker and never adds latency to daily-data.
+  const chain = await fetchValidatedSnapshotChain(taipeiISO, chainAttempts);
   if (chain.found) {
     bundle.data.chain = chain.rows;
     bundle.data.walls = chain.walls;
@@ -3867,23 +3869,35 @@ export default {
   /* V1.4 — daily snapshot cron (configure in wrangler.toml, e.g.
      "30 6 * * 1-5"). Requires KV binding SNAPSHOTS. */
   async scheduled(event, env, ctx) {
-    try {
-      if (!env || !env.SNAPSHOTS) throw new Error("KV SNAPSHOTS not bound");
+    if (!env || !env.SNAPSHOTS) {
+      console.log("snapshot cron failed: KV SNAPSHOTS not bound");
+      return;
+    }
 
-      // Discover legacy incomplete snapshots, then retry the oldest pending dates.
+    const nowTaipei = new Date(Date.now() + 8 * 3600 * 1000);
+    const wd = nowTaipei.getUTCDay();
+    if (wd === 0 || wd === 6) return;
+
+    // Priority 1: capture today's snapshot first. Chain gets up to four
+    // bounded attempts (25s deadline each, 3s between attempts) in this run.
+    const iso = nowTaipei.toISOString().slice(0, 10);
+    try {
+      const bundle = await collectSnapshotBundle(iso, iso.replace(/-/g, "/"), 4);
+      await persistSnapshotBundle(env, bundle);
+      console.log("snapshot saved", iso, "chain_status=", bundle.chain_status,
+        "chain_attempts=", bundle.chain_diagnostics && bundle.chain_diagnostics.attempts);
+    } catch (error) {
+      // A recovery-task failure must never prevent today's snapshot attempt.
+      console.log("current snapshot cron failed", iso, error?.message || String(error));
+    }
+
+    // Priority 2: recover older pending dates. Keep this isolated so a KV/list
+    // error or one failed date cannot abort today's capture or the whole Cron.
+    try {
       await discoverRecentIncompleteSnapshots(env);
       await retryPendingSnapshotChains(env);
-
-      const nowTaipei = new Date(Date.now() + 8 * 3600 * 1000);
-      const wd = nowTaipei.getUTCDay();
-      if (wd === 0 || wd === 6) return;
-
-      const iso = nowTaipei.toISOString().slice(0, 10);
-      const bundle = await collectSnapshotBundle(iso, iso.replace(/-/g, "/"));
-      await persistSnapshotBundle(env, bundle);
-      console.log("snapshot saved", iso, "chain_status=", bundle.chain_status);
-    } catch (e) {
-      console.log("snapshot cron failed", e);
+    } catch (error) {
+      console.log("historical snapshot recovery failed", error?.message || String(error));
     }
   },
 
@@ -6417,53 +6431,28 @@ export default {
         }
         let bundle = JSON.parse(raw);
 
-        // daily-data already reads this endpoint before using the prior-day baseline.
-        // Use that read as one final bounded recovery attempt, without adding a Cron.
+        // Read-only contract: daily-data must never trigger Chain fetches,
+        // retries, sleeps or KV writes. Report the stored Chain quality only.
         if (!requested || actual === requested) {
           const currentCheck = validateSnapshotChain(
             bundle && bundle.data && bundle.data.chain,
             actual,
             bundle && bundle.date
           );
+          bundle.chain_status = currentCheck.valid ? "complete" : "pending";
           if (!currentCheck.valid) {
-            const retry = await fetchValidatedSnapshotChain(actual, 1);
-            if (retry.found) {
-              bundle.data = bundle.data || {};
-              bundle.data.chain = retry.rows;
-              bundle.data.walls = retry.walls;
-              bundle.chain_status = "complete";
-              bundle.chain_diagnostics = {
-                attempts: retry.attempts,
-                source: retry.source,
-                validation: retry.validation,
-                recovered_on_bundle_read: true,
-                recovered_at: new Date().toISOString()
-              };
-            } else {
-              // Never expose a known-incomplete legacy Chain to downstream calculations.
-              if (bundle.data) {
-                delete bundle.data.chain;
-                delete bundle.data.walls;
-              }
-              bundle.chain_status = "pending";
-              bundle.chain_diagnostics = {
-                read_retry_attempted: true,
-                last_failure: retry.diagnostics
-              };
-            }
-            await persistSnapshotBundle(env, bundle);
-          } else if (bundle.chain_status !== "complete") {
-            bundle.chain_status = "complete";
+            bundle.chain_diagnostics = bundle.chain_diagnostics || {
+              read_validation: { reason: currentCheck.reason }
+            };
+          } else if (!bundle.chain_diagnostics || bundle.chain_status !== "complete") {
             bundle.chain_diagnostics = {
-              validated_existing_chain_on_read: true,
-              validation: {
+              read_validation: {
                 total: currentCheck.total,
                 calls: currentCheck.calls,
                 puts: currentCheck.puts,
                 oi_coverage: currentCheck.oi_coverage
               }
             };
-            await persistSnapshotBundle(env, bundle);
           }
         }
 
