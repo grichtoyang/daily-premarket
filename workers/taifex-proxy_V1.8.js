@@ -3938,6 +3938,7 @@ async function retryCurrentDaySnapshotChain(env, date) {
     // one retry slot just like parsing, fetching, validation or KV writes.
     const raw = await env.SNAPSHOTS.get(snapshotKey);
     if (!raw) {
+      pendingStateWriteAttempted = true;
       await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
         ...metadata, date, same_day_retry_count: 4, next_retry_at: null,
         last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
