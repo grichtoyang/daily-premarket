@@ -3718,14 +3718,20 @@ async function persistSnapshotBundle(env, bundle) {
     try {
       const previous = JSON.parse(previousRaw);
       const previousChain = previous && previous.data && previous.data.chain;
-      const previousCheck = validateSnapshotChain(previousChain, bundle.date, previous.date, null, !previous.data.walls);
+      const previousWalls = previous && previous.data && previous.data.walls;
+      const previousHasWalls = Boolean(
+        previousWalls &&
+        previousWalls.call_wall &&
+        previousWalls.put_wall &&
+        previousWalls.max_pain
+      );
+      const previousCheck = validateSnapshotChain(previousChain, bundle.date, previous.date, null, !previousHasWalls);
       if (previousCheck.valid) {
         bundle.data.chain = previousChain;
-        bundle.data.walls = previous.data.walls || {
+        bundle.data.walls = previousHasWalls ? previousWalls : {
           call_wall: previousCheck.key_levels.call_wall,
           put_wall: previousCheck.key_levels.put_wall,
-          max_pain: previousCheck.key_levels.max_pain,
-          primary_expiry: previousCheck.key_levels.primary_expiry
+          max_pain: previousCheck.key_levels.max_pain
         };
         bundle.chain_status = "complete";
         bundle.chain_diagnostics = {
