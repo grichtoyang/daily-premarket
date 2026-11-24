@@ -1912,8 +1912,16 @@ def run_17f_self_tests():
         assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出餘額","兩者合計")==20582909.906
         assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出增減","兩者合計")==-60170.064
         assert _extract_wide_section_table_value(sbl_fixture,"### 5. 借券資料","借券賣出餘額","上市")==18440868.343
+        from src.sources.us_market import _apply_asia_freshness
+        asia_source_fixture=[
+            ("日經225",{"price":38600,"change":100,"pct":0.3,"date":"2026-11-24","ok":True}),
+            ("香港恆生",{"price":26000,"change":200,"pct":0.8,"date":"2026-11-20","ok":True}),
+        ]
+        _apply_asia_freshness(asia_source_fixture,"2026-11-23")
+        assert asia_source_fixture[0][1]["price"]==38600
+        assert asia_source_fixture[1][1]["price"] is None and asia_source_fixture[1][1]["stale"] is True
         asia_fixture=[
-            ["香港恆生","^HSI","unavailable","","","2026-11-20","","Asia/Hong_Kong","Yahoo Finance Chart API（資料日期早於 T0，已排除）"],
+            ["香港恆生","^HSI","26000","200","0.8","2026-11-20","","Asia/Hong_Kong","Yahoo Finance Chart API"],
             ["日經225","^N225","38600","","","2026-11-23","","Asia/Tokyo","Yahoo Finance Chart API"],
         ]
         asia_warnings=_apply_asia_freshness_to_report_rows(asia_fixture,"2026-11-23")
