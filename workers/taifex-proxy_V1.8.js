@@ -3878,7 +3878,14 @@ async function retryCurrentDaySnapshotChain(env, date) {
     const bundle = JSON.parse(raw);
     const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date, null, false);
     if (existing.valid) {
-      await env.SNAPSHOTS.delete(pendingKey);
+      // The Chain is already valid; a pending-marker cleanup failure is not
+      // a failed Chain fetch and must not consume one of the four retry slots.
+      try {
+        await env.SNAPSHOTS.delete(pendingKey);
+      } catch (error) {
+        console.log("same-day completed pending cleanup failed", date,
+          error?.message || String(error));
+      }
       return;
     }
 
@@ -3896,7 +3903,14 @@ async function retryCurrentDaySnapshotChain(env, date) {
         same_day_retry: retryCount + 1
       };
       await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
-      await env.SNAPSHOTS.delete(pendingKey);
+      // Snapshot persistence succeeded. Pending cleanup is a separate
+      // housekeeping step; its failure must not be counted as a Chain retry.
+      try {
+        await env.SNAPSHOTS.delete(pendingKey);
+      } catch (error) {
+        console.log("same-day recovered pending cleanup failed", date,
+          error?.message || String(error));
+      }
       console.log("same-day snapshot Chain recovered", date, "retry=", retryCount + 1);
       return;
     }
