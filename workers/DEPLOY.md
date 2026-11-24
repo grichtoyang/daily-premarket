@@ -1,17 +1,17 @@
 # Cloudflare Workers 部署與驗收說明
 
-> **版本狀態（2026-11-20）：** 正式環境目前由使用者確認部署 TAIFEX Worker **V1.7**。V1.7 的 Delta CSV 修正仍在驗證中，尚未部署。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
+> **版本狀態（2026-11-24）：** 正式環境目前仍由使用者確認部署 TAIFEX Worker **V1.7**。Repo 新增的 **V1.8** 快照可靠性修正尚未部署。未取得使用者明確批准前，不得部署、切換正式流量或寫入 KV。
 
 ## 1. Worker 與版本
 
 | Worker | 正式版本 | 本次維護狀態 | 用途 |
 |---|---|---|---|
-| `taifex` | V1.7 | 同一份 `workers/taifex-proxy_V1.7.js` 直接維護；修正尚未部署 | TAIFEX / TXO 資料代理 |
+| `taifex` | V1.7 | `workers/taifex-proxy_V1.8.js` 已進版、待使用者部署 | TAIFEX / TXO 資料代理 |
 | `twse-proxy` | `workers/twse-proxy_V1.2.js` | 本次無變更 | TWSE 資料代理 |
 
 正式網址：`https://taifex.grichtoyang.workers.dev`
 
-V1.7 既有內容（保持不變）：
+V1.7 既有功能（V1.8 全數保留）：
 - Compact endpoint 設定 75 秒共用 deadline。
 - TXO Chain 仍保留 V1.6 的 25 秒內部 deadline。
 - Delta 與 TAIEX 指數請求在 Chain 完成後平行執行，並共用 compact deadline。
@@ -19,7 +19,15 @@ V1.7 既有內容（保持不變）：
 - 增加 compact stage timing / outcome diagnostics。
 - `/health` 版本字串標示 V1.7 與 direct historical Delta CSV 功能。
 
-本次 V1.7 修正新增官方歷史 Delta CSV 直接下載及解析；不更改資料來源的官方性質、GEX 計算公式、expiry selection、既有端點 schema 或 KV snapshot 格式。
+V1.8 快照修正：
+- 快照 Chain 必須通過指定日期、合約數量、Call/Put 覆蓋、合約唯一性及 OI 完整度驗證。
+- Chain 未通過驗證時明確標記 pending，保留一般快照，並建立同一 KV Namespace 內的待補 key。
+- 後續 Cron 自動回頭補抓最近 10 筆舊快照中缺失的 Chain，並持續重試待補日期；每次最多處理 5 個，失敗日期會輪替，避免其他日期餓死。
+- 已驗證的舊 Chain 不會被失敗的新抓取覆蓋。
+- 不新增 Cloudflare 服務、Namespace、Binding、Secret 或 Cron Trigger；沿用既有 `SNAPSHOTS` KV 與 Cron。
+- Python 既有 `/snapshots/bundle` schema 保持相容；未完成狀態透過 bundle 的 `chain_status` / `chain_diagnostics` 明確呈現。
+
+本次不更改資料來源、GEX 計算公式、expiry selection、其他資料端點或 daily-data workflow。
 
 ## 2. 部署前必要檢查（唯讀）
 
@@ -42,7 +50,7 @@ V1.7 既有內容（保持不變）：
 
 1. 在 Cloudflare Dashboard 開啟既有 `taifex` Worker。
 2. 再次確認並記錄目前正式 V1.7 Deployment / Version ID。
-3. 開啟 Edit code，將分支 `phase2-p0-ui-fixes` 中 `workers/taifex-proxy_V1.7.js` 的完整內容貼入。
+3. 開啟 Edit code，將分支 `phase2-p0-ui-fixes` 中 `workers/taifex-proxy_V1.8.js` 的完整內容貼入。
 4. 確認程式碼沒有截斷，且既有 `SNAPSHOTS` binding、Cron、Secret 均保留。
 5. 只有在上述檢查完成且使用者已明確批准時，才執行 Save and deploy。
 6. 不要在本次部署流程中呼叫 `/snapshots/write-now`、手動寫 KV、觸發 GitHub `daily-data` 或修改其他 Worker。
@@ -61,9 +69,9 @@ curl -i https://taifex.grichtoyang.workers.dev/health
 - HTTP 200
 - `ok: true`
 - `service: "taifex-proxy"`
-- `version` 以 `V1.7` 開頭，且明確包含 direct historical Delta CSV。
+- `version` 應回報 `V1.8 — validated Chain snapshots with automatic recovery`。
 
-若 `version` 未包含 `direct historical Delta CSV` 描述，表示本次修正尚未生效或部署目標錯誤；立即停止後續驗收並評估回滾。
+若 `version` 未回報 V1.8，表示尚未部署正確版本；停止後續驗收並評估回滾。
 
 ### 4.2 Compact endpoint（核心驗收）
 
@@ -100,11 +108,11 @@ curl -i "https://taifex.grichtoyang.workers.dev/options-gamma-levels?date=YYYY-M
 curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD"
 ```
 
-確認既有快照可讀、日期與內容符合預期。本驗收絕不呼叫 `/snapshots/write-now`，避免新增或覆寫 KV 資料。
+確認既有快照可讀、日期與內容符合預期；若該日期 Chain 曾缺失，觀察 Cron 自動補抓後 `chain_status` 是否變成 `complete`。本驗收絕不呼叫 `/snapshots/write-now`，避免手動新增或覆寫 KV 資料。
 
 ### 4.5 上線判定
 
-- **PASS**：Health 回報 V1.7；compact endpoint 的 stage 診斷及資料狀態合理；既有端點抽查無回歸；KV bundle 唯讀正常；Cron / binding / Secret 保留。
+- **PASS**：Health 回報 V1.8；既有端點抽查無回歸；KV bundle 可讀；缺失 Chain 能由後續 Cron 自動補回並通過驗證；Cron / binding / Secret 保留。
 - **FAIL**：版本錯誤、Worker runtime exception、既有端點回歸、KV binding 遺失或資料 schema 被破壞。
 - **BLOCKED**：Cloudflare 設定或 rollback target 無法確認。
 - **NOT TESTED**：尚未執行的上游情境、單項失敗保留測試或未能觸發的市場資料情境。不得以靜態測試取代真實環境驗收。
@@ -123,7 +131,8 @@ curl -i "https://taifex.grichtoyang.workers.dev/snapshots/bundle?date=YYYY-MM-DD
 
 ## 6. 相關版本
 
-- `workers/taifex-proxy_V1.7.js`：V1.7 唯一維護檔；Repo 內容包含尚待使用者部署的 Delta CSV 修正。
+- `workers/taifex-proxy_V1.8.js`：V1.8 快照可靠性版本，保留 V1.7 原有功能；目前待使用者部署。
+- `workers/taifex-proxy_V1.7.js`：保留的 V1.7 原始版本，不覆寫。
 - 正式環境目前仍是使用者先前確認部署的 V1.7；未部署前不能假設線上程式與 Repo 檔案相同。
 - `workers/taifex-proxy_V1.6.js`：歷史版本程式碼基準。
 - `workers/taifex-proxy_V1.5.js`、`V1.4.js`：歷史版本。

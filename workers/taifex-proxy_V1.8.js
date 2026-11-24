@@ -3703,19 +3703,21 @@ async function persistSnapshotBundle(env, bundle) {
     } catch (_) { /* retain pending status if previous snapshot is unreadable */ }
   }
 
-  await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
-  if (bundle.chain_status === "complete") {
-    await env.SNAPSHOTS.delete(pendingKey);
-  } else {
+  if (bundle.chain_status !== "complete") {
     const previousPending = await env.SNAPSHOTS.get(pendingKey);
     let attempts = 0;
     try { attempts = Number(JSON.parse(previousPending || "{}").attempts) || 0; } catch (_) {}
+    // Record the retry obligation before writing the incomplete bundle.
     await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
       date: bundle.date,
       attempts,
       last_error: bundle.chain_diagnostics,
       updated_at: new Date().toISOString()
     }));
+    await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
+  } else {
+    await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
+    await env.SNAPSHOTS.delete(pendingKey);
   }
 }
 
@@ -3755,11 +3757,26 @@ async function discoverRecentIncompleteSnapshots(env) {
 
 async function retryPendingSnapshotChains(env) {
   const listing = await env.SNAPSHOTS.list({ prefix: SNAPSHOT_PENDING_PREFIX, limit: 1000 });
-  const pending = listing.keys.map(item => item.name).sort().slice(0, 5);
+  const candidates = await Promise.all(listing.keys.map(async item => {
+    const raw = await env.SNAPSHOTS.get(item.name);
+    let metadata = {};
+    try { metadata = JSON.parse(raw || "{}"); } catch (_) {}
+    return {
+      key: item.name,
+      date: item.name.slice(SNAPSHOT_PENDING_PREFIX.length),
+      metadata
+    };
+  }));
+  // Failed dates move to the back after each attempt; older unresolved dates
+  // therefore cannot permanently starve later pending snapshots.
+  const pending = candidates
+    .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date))
+    .sort((a, b) => String(a.metadata.updated_at || "").localeCompare(String(b.metadata.updated_at || "")))
+    .slice(0, 5);
 
-  for (const pendingKey of pending) {
-    const date = pendingKey.slice(SNAPSHOT_PENDING_PREFIX.length);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+  for (const item of pending) {
+    const pendingKey = item.key;
+    const date = item.date;
 
     try {
       const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
@@ -3796,11 +3813,9 @@ async function retryPendingSnapshotChains(env) {
         await env.SNAPSHOTS.delete(pendingKey);
         console.log("snapshot chain recovered", date, JSON.stringify(bundle.chain_diagnostics));
       } else {
-        let previous = {};
-        try { previous = JSON.parse(await env.SNAPSHOTS.get(pendingKey) || "{}"); } catch (_) {}
         await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
           date,
-          attempts: (Number(previous.attempts) || 0) + chain.attempts,
+          attempts: (Number(item.metadata.attempts) || 0) + chain.attempts,
           last_error: chain.diagnostics,
           updated_at: new Date().toISOString()
         }));
