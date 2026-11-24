@@ -3744,7 +3744,7 @@ async function putSnapshotBundleWithRetry(env, snapshotKey, bundle, date) {
         reason: "snapshot_bundle_write_failed",
         detail: lastError?.message || String(lastError),
         snapshot_write_attempts: 3,
-        action: "manual_review_required"
+        action: "verify_snapshot_presence"
       },
       updated_at: new Date().toISOString()
     }));
