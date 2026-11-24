@@ -21,7 +21,7 @@ V1.7 既有功能（V1.8 全數保留）：
 
 V1.8 快照修正：
 - 快照 Chain 必須通過指定日期、來源 TXO 列與解析合約數一致、至少 100 筆且 Call/Put 各至少 30 筆、每個到期月份 Call/Put 履約價集合一致、合約唯一性及至少 95% OI 完整度驗證。
-- Chain 未通過驗證時明確標記 pending，保留一般快照，並建立同一 KV Namespace 內的待補 key。 初次寫入不完整快照時，pending 先寫入；Snapshot bundle 寫入最多 3 次（首次加 2 次重試，間隔 500ms／1,500ms），每次重送同一份序列化內容與同一 key，不重新抓取市場資料。三次仍失敗會 best-effort 記錄 `snapshot_bundle_write_failed`，並保留後續確認 Snapshot 是否實際存在的資格；若確認 bundle 確實遺失，才標記人工檢查。不會以即時資料重建遺失的歷史 bundle。
+- Chain 未通過驗證時明確標記 pending，保留一般快照，並建立同一 KV Namespace 內的待補 key。 初次寫入不完整快照時，pending 先寫入；Snapshot bundle 寫入最多 3 次（首次加 2 次重試，間隔 500ms／1,500ms），每次重送同一份序列化內容與同一 key，不重新抓取市場資料。三次仍失敗會 best-effort 記錄 `snapshot_bundle_write_failed`，並保留後續確認 Snapshot 是否實際存在的資格；若確認 bundle 確實遺失，才標記人工檢查。不會以即時資料重建遺失的歷史 bundle。 完整 Chain 分支也使用相同的最多 3 次 Snapshot bundle 寫入（同一份序列化內容、同一 key，間隔 500／1,500ms）；三次仍失敗才回報寫入失敗。完整 bundle 寫入成功後才刪除 pending；若刪除失敗只記錄 `snapshot completed pending cleanup failed`，不把已成功保存的快照判為失敗，後續 Cron 可再清理。
 - 原定每日 Cron 只建立一次當日快照；首次 Chain 抓取最多 1 次，每次共用 25 秒 deadline。若失敗，建立 pending 並安排同日定時恢復。
 - 必須在既有每日 Cron 之外，於同一個 Worker 增加一個 `*/30 * * * *` Cron Trigger（每 30 分鐘）。此 Trigger 只檢查當日 Chain pending 是否到期，不重新建立每日快照，也不處理歷史日期。
 - 當日最多額外重試 **4 次**，每次最多 1 次抓取、25 秒 deadline；相對於前一次失敗，排程等待時間依序為 **30／30／60／60 分鐘**。任何一次取得通過完整性驗證的 Chain，立即更新原日期快照並刪除 pending；四次額外重試仍失敗則停止當日重試，保留 pending。
