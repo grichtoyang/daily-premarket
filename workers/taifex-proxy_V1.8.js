@@ -6914,11 +6914,16 @@ export default {
 
     if (url.pathname === "/snapshots/write-now") {
       try {
+        // Fail closed: never expose a write-capable endpoint when its
+        // authentication secret is missing or empty.
+        if (!env || typeof env.SNAPSHOT_KEY !== "string" || env.SNAPSHOT_KEY.length === 0) {
+          return json({ ok: false, error: "Snapshot write authentication unavailable" }, 503);
+        }
         const key = url.searchParams.get("key");
-        if (env && env.SNAPSHOT_KEY && key !== env.SNAPSHOT_KEY) {
+        if (key !== env.SNAPSHOT_KEY) {
           return json({ ok: false, error: "Forbidden" }, 403);
         }
-        if (!env || !env.SNAPSHOTS) {
+        if (!env.SNAPSHOTS) {
           return json({
             ok: false,
             error: "KV SNAPSHOTS not bound"
