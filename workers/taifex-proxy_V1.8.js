@@ -3763,6 +3763,73 @@ async function persistSnapshotBundle(env, bundle) {
   }
 }
 
+async function retryCurrentDaySnapshotChain(env, date) {
+  const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
+  const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+  if (!pendingRaw) return;
+  let metadata = {};
+  try { metadata = JSON.parse(pendingRaw); } catch (_) { return; }
+
+  const retryCount = Number(metadata.same_day_retry_count) || 0;
+  const nextRetryAt = Date.parse(metadata.next_retry_at || "");
+  // Cron may start slightly before next_retry_at due to its fixed 30-minute cadence.
+  // A 5-minute early window prevents a due retry from being skipped until the next slot.
+  if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() + 5 * 60 * 1000 < nextRetryAt) return;
+
+  const snapshotKey = `snapshot:${date}`;
+  const raw = await env.SNAPSHOTS.get(snapshotKey);
+  if (!raw) {
+    console.log("same-day snapshot retry skipped: bundle missing", date);
+    return;
+  }
+
+  try {
+    const bundle = JSON.parse(raw);
+    const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date, null, false);
+    if (existing.valid) {
+      await env.SNAPSHOTS.delete(pendingKey);
+      return;
+    }
+
+    const chain = await fetchValidatedSnapshotChain(date, 1);
+    if (chain.found) {
+      bundle.data = bundle.data || {};
+      bundle.data.chain = chain.rows;
+      bundle.data.walls = chain.walls;
+      bundle.chain_status = "complete";
+      bundle.chain_diagnostics = {
+        attempts: (Number(metadata.attempts) || 1) + 1,
+        source: chain.source,
+        validation: chain.validation,
+        recovered_at: new Date().toISOString(),
+        same_day_retry: retryCount + 1
+      };
+      await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
+      await env.SNAPSHOTS.delete(pendingKey);
+      console.log("same-day snapshot Chain recovered", date, "retry=", retryCount + 1);
+      return;
+    }
+
+    const completedRetries = retryCount + 1;
+    const delaysMinutes = [30, 30, 60, 60];
+    const nextRetryAtValue = completedRetries < 4
+      ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
+      : null;
+    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+      ...metadata,
+      attempts: (Number(metadata.attempts) || 1) + 1,
+      same_day_retry_count: completedRetries,
+      next_retry_at: nextRetryAtValue,
+      last_error: chain.diagnostics,
+      updated_at: new Date().toISOString()
+    }));
+    console.log("same-day snapshot Chain retry failed", date, "retry=", completedRetries,
+      "next_retry_at=", nextRetryAtValue);
+  } catch (error) {
+    console.log("same-day snapshot Chain retry exception", date, error?.message || String(error));
+  }
+}
+
 async function recoverRecentSnapshotChains(env, excludeDates = []) {
   // Cursor-free bounded recovery: inspect pending markers across the latest
   // 45 calendar days. Snapshot validation/discovery remains capped at the
