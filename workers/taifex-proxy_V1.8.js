@@ -3709,7 +3709,7 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash, chainAttempts = 4) 
 
 async function putSnapshotBundleWithRetry(env, snapshotKey, bundle, date) {
   const payload = JSON.stringify(bundle);
-  const delaysMs = [500, 1500];
+  const delaysMs = [1100, 2100];
   let lastError = null;
 
   // Retry the same immutable bundle/key only. This handles transient KV
@@ -3783,7 +3783,7 @@ async function getSnapshotBundleWithRetry(env, snapshotKey, date) {
 }
 
 async function putSnapshotPendingWithRetry(env, pendingKey, metadata, date) {
-  const delaysMs = [500, 1500];
+  const delaysMs = [1100, 2100];
   let lastError = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
