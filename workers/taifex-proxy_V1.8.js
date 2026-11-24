@@ -3736,12 +3736,15 @@ async function persistSnapshotBundle(env, bundle) {
 
   if (bundle.chain_status !== "complete") {
     const previousPending = await env.SNAPSHOTS.get(pendingKey);
-    let attempts = 0;
-    try { attempts = Number(JSON.parse(previousPending || "{}").attempts) || 0; } catch (_) {}
-    // Record the retry obligation before writing the incomplete bundle.
+    let previousMeta = {};
+    try { previousMeta = JSON.parse(previousPending || "{}"); } catch (_) {}
+    const attempts = Number(previousMeta.attempts) || Number(bundle.chain_diagnostics && bundle.chain_diagnostics.attempts) || 1;
+    // Initial failure schedules the first same-day retry 30 minutes later.
     await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
       date: bundle.date,
       attempts,
+      same_day_retry_count: Number(previousMeta.same_day_retry_count) || 0,
+      next_retry_at: previousMeta.next_retry_at || new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       last_error: bundle.chain_diagnostics,
       updated_at: new Date().toISOString()
     }));
@@ -3783,6 +3786,71 @@ async function discoverRecentIncompleteSnapshots(env) {
     } catch (error) {
       console.log("snapshot discovery failed", date, String(error));
     }
+  }
+}
+
+async function retryCurrentDaySnapshotChain(env, date) {
+  const pendingKey = `${SNAPSHOT_PENDING_PREFIX}${date}`;
+  const pendingRaw = await env.SNAPSHOTS.get(pendingKey);
+  if (!pendingRaw) return;
+  let metadata = {};
+  try { metadata = JSON.parse(pendingRaw); } catch (_) { return; }
+
+  const retryCount = Number(metadata.same_day_retry_count) || 0;
+  const nextRetryAt = Date.parse(metadata.next_retry_at || "");
+  if (retryCount >= 4 || !Number.isFinite(nextRetryAt) || Date.now() < nextRetryAt) return;
+
+  const snapshotKey = `snapshot:${date}`;
+  const raw = await env.SNAPSHOTS.get(snapshotKey);
+  if (!raw) {
+    console.log("same-day snapshot retry skipped: bundle missing", date);
+    return;
+  }
+
+  try {
+    const bundle = JSON.parse(raw);
+    const existing = validateSnapshotChain(bundle && bundle.data && bundle.data.chain, date, bundle && bundle.date);
+    if (existing.valid) {
+      await env.SNAPSHOTS.delete(pendingKey);
+      return;
+    }
+
+    const chain = await fetchValidatedSnapshotChain(date, 1);
+    if (chain.found) {
+      bundle.data = bundle.data || {};
+      bundle.data.chain = chain.rows;
+      bundle.data.walls = chain.walls;
+      bundle.chain_status = "complete";
+      bundle.chain_diagnostics = {
+        attempts: (Number(metadata.attempts) || 1) + 1,
+        source: chain.source,
+        validation: chain.validation,
+        recovered_at: new Date().toISOString(),
+        same_day_retry: retryCount + 1
+      };
+      await env.SNAPSHOTS.put(snapshotKey, JSON.stringify(bundle));
+      await env.SNAPSHOTS.delete(pendingKey);
+      console.log("same-day snapshot Chain recovered", date, "retry=", retryCount + 1);
+      return;
+    }
+
+    const completedRetries = retryCount + 1;
+    const delaysMinutes = [30, 30, 60, 60];
+    const nextRetryAtValue = completedRetries < 4
+      ? new Date(Date.now() + delaysMinutes[completedRetries] * 60 * 1000).toISOString()
+      : null;
+    await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+      ...metadata,
+      attempts: (Number(metadata.attempts) || 1) + 1,
+      same_day_retry_count: completedRetries,
+      next_retry_at: nextRetryAtValue,
+      last_error: chain.diagnostics,
+      updated_at: new Date().toISOString()
+    }));
+    console.log("same-day snapshot Chain retry failed", date, "retry=", completedRetries,
+      "next_retry_at=", nextRetryAtValue);
+  } catch (error) {
+    console.log("same-day snapshot Chain retry exception", date, error?.message || String(error));
   }
 }
 
@@ -3866,8 +3934,9 @@ function taipeiTodayISO(when = null) {
 
 export default {
 
-  /* V1.4 — daily snapshot cron (configure in wrangler.toml, e.g.
-     "30 6 * * 1-5"). Requires KV binding SNAPSHOTS. */
+  /* Original daily snapshot Cron plus an additional "*/30 * * * *"
+     recovery Cron. The retry Cron only services due same-day Chain retries.
+     Requires the existing SNAPSHOTS KV binding. */
   async scheduled(event, env, ctx) {
     if (!env || !env.SNAPSHOTS) {
       console.log("snapshot cron failed: KV SNAPSHOTS not bound");
@@ -3878,25 +3947,34 @@ export default {
     const wd = nowTaipei.getUTCDay();
     if (wd === 0 || wd === 6) return;
 
-    // Priority 1: capture today's snapshot first. Chain gets up to four
-    // bounded attempts (25s deadline each, 3s between attempts) in this run.
     const iso = nowTaipei.toISOString().slice(0, 10);
+    const retryCron = "*/30 * * * *";
+
+    // The additional 30-minute trigger only services today's due Chain retry.
+    // It must never rebuild the daily bundle or process historical dates.
+    if (event && event.cron === retryCron) {
+      try {
+        await retryCurrentDaySnapshotChain(env, iso);
+      } catch (error) {
+        console.log("same-day Chain retry scheduler failed", iso, error?.message || String(error));
+      }
+      return;
+    }
+
+    // The original daily trigger captures the bundle once. If Chain fails,
+    // persistSnapshotBundle schedules up to four separate same-day retries.
     try {
-      const bundle = await collectSnapshotBundle(iso, iso.replace(/-/g, "/"), 4);
+      const bundle = await collectSnapshotBundle(iso, iso.replace(/-/g, "/"), 1);
       await persistSnapshotBundle(env, bundle);
       console.log("snapshot saved", iso, "chain_status=", bundle.chain_status,
         "chain_attempts=", bundle.chain_diagnostics && bundle.chain_diagnostics.attempts);
     } catch (error) {
-      // A recovery-task failure must never prevent today's snapshot attempt.
       console.log("current snapshot cron failed", iso, error?.message || String(error));
     }
 
-    // Priority 2: recover older pending dates. Keep this isolated so a KV/list
-    // error or one failed date cannot abort today's capture or the whole Cron.
+    // Historical recovery remains on the original daily invocation only.
     try {
       await discoverRecentIncompleteSnapshots(env);
-      // Do not immediately spend another retry batch on today's date; its
-      // four-attempt capture above is the complete same-day retry budget.
       await retryPendingSnapshotChains(env, [iso]);
     } catch (error) {
       console.log("historical snapshot recovery failed", error?.message || String(error));
