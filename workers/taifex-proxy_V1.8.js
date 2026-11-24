@@ -3470,6 +3470,7 @@ async function institutionalEndpoint(
 ========================= */
 
 const SNAPSHOT_PENDING_PREFIX = "snapshot-pending:";
+const SNAPSHOT_RECOVERY_STATE_KEY = "snapshot-chain-recovery-state";
 const SNAPSHOT_CHAIN_MIN_TOTAL = 100;
 const SNAPSHOT_CHAIN_MIN_PER_SIDE = 30;
 
@@ -3764,12 +3765,27 @@ async function persistSnapshotBundle(env, bundle) {
 }
 
 async function discoverRecentIncompleteSnapshots(env) {
-  const listing = await env.SNAPSHOTS.list({ prefix: "snapshot:", limit: 1000 });
-  const dates = listing.keys
-    .map(item => item.name.slice("snapshot:".length))
-    .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date))
-    .sort()
-    .slice(-10);
+  // Walk every KV page so the "most recent 10" is not limited to the first 1,000 keys.
+  let cursor;
+  const recentDates = [];
+  do {
+    const listing = await env.SNAPSHOTS.list({
+      prefix: "snapshot:",
+      limit: 1000,
+      ...(cursor ? { cursor } : {})
+    });
+    for (const item of listing.keys) {
+      const date = item.name.slice("snapshot:".length);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+      recentDates.push(date);
+    }
+    cursor = listing.list_complete ? undefined : listing.cursor;
+    if (!listing.list_complete && !cursor) {
+      throw new Error("SNAPSHOTS.list incomplete without pagination cursor");
+    }
+  } while (cursor);
+
+  const dates = [...new Set(recentDates)].sort().slice(-10);
 
   for (const date of dates) {
     const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
@@ -3865,7 +3881,34 @@ async function retryCurrentDaySnapshotChain(env, date) {
 }
 
 async function retryPendingSnapshotChains(env, excludeDates = []) {
-  const listing = await env.SNAPSHOTS.list({ prefix: SNAPSHOT_PENDING_PREFIX, limit: 1000 });
+  // Scan one bounded page per daily Cron. Persisting the KV cursor rotates the
+  // scan window, so a large pending queue does not require reading every
+  // pending value on every invocation.
+  let savedCursor = null;
+  try {
+    const stateRaw = await env.SNAPSHOTS.get(SNAPSHOT_RECOVERY_STATE_KEY);
+    savedCursor = JSON.parse(stateRaw || "{}").cursor || null;
+  } catch (_) {}
+
+  let listing;
+  try {
+    listing = await env.SNAPSHOTS.list({
+      prefix: SNAPSHOT_PENDING_PREFIX,
+      limit: 100,
+      ...(savedCursor ? { cursor: savedCursor } : {})
+    });
+  } catch (error) {
+    // A stale cursor must not permanently stop recovery; restart at the first page.
+    console.log("snapshot recovery cursor reset", error?.message || String(error));
+    listing = await env.SNAPSHOTS.list({ prefix: SNAPSHOT_PENDING_PREFIX, limit: 100 });
+  }
+
+  const nextCursor = listing.list_complete ? null : (listing.cursor || null);
+  await env.SNAPSHOTS.put(SNAPSHOT_RECOVERY_STATE_KEY, JSON.stringify({
+    cursor: nextCursor,
+    updated_at: new Date().toISOString()
+  }));
+
   const candidates = await Promise.all(listing.keys.map(async item => {
     const raw = await env.SNAPSHOTS.get(item.name);
     let metadata = {};
@@ -3891,8 +3934,16 @@ async function retryPendingSnapshotChains(env, excludeDates = []) {
     try {
       const raw = await env.SNAPSHOTS.get(`snapshot:${date}`);
       if (!raw) {
-        const rebuilt = await collectSnapshotBundle(date, date.replace(/-/g, "/"), 2);
-        await persistSnapshotBundle(env, rebuilt);
+        // Never rebuild a historical bundle from current-day endpoints: only
+        // the Chain fetch is date-addressable here, while the other datasets
+        // may silently contain today's values.
+        await env.SNAPSHOTS.put(pendingKey, JSON.stringify({
+          ...item.metadata,
+          date,
+          last_error: { reason: "snapshot_bundle_missing", action: "manual_review_required" },
+          updated_at: new Date().toISOString()
+        }));
+        console.log("snapshot historical recovery blocked: bundle missing", date);
         continue;
       }
 
