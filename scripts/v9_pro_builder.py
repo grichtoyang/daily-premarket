@@ -1117,6 +1117,10 @@ def parse_data_report(report_path):
     if re.search(r"借券賣出增減\s*\|",text) and sbl_sold_change is None:
         consistency_warnings.append("借券賣出增減合計存在於 DATA_REPORT，但 Builder 未能解析")
 
+    if sbl_sold_balance is not None and (sbl_sold_listed is None or sbl_sold_otc is None):
+        consistency_warnings.append("借券賣出餘額合計存在，但上市／上櫃分項不完整")
+    if sbl_sold_change is not None and (sbl_change_listed is None or sbl_change_otc is None):
+        consistency_warnings.append("借券賣出增減合計存在，但上市／上櫃分項不完整")
     for label,listed_value,otc_value,total_value in (
         ("借券賣出餘額",sbl_sold_listed,sbl_sold_otc,sbl_sold_balance),
         ("借券賣出增減",sbl_change_listed,sbl_change_otc,sbl_sold_change),
