@@ -22,11 +22,13 @@ V1.7 既有功能（V1.8 全數保留）：
 V1.8 快照修正：
 - 快照 Chain 必須通過指定日期、來源 TXO 列與解析合約數一致、至少 100 筆且 Call/Put 各至少 30 筆、每個到期月份 Call/Put 履約價集合一致、合約唯一性及至少 95% OI 完整度驗證。
 - Chain 未通過驗證時明確標記 pending，保留一般快照，並建立同一 KV Namespace 內的待補 key。
-- 當日 Cron 優先建立當日快照；Chain 最多進行 **4 次有限抓取**，每次共用 25 秒 deadline，失敗間隔 3 秒。四次仍失敗才標記 pending，不會無限重試。
-- 當日快照完成或失敗後，才處理歷史 pending：自動發現最近 10 筆快照中的 Chain 缺口，並在後續 Cron 持續補抓；每次最多處理 5 個日期，每日期最多 2 次抓取，失敗日期輪替。
+- 原定每日 Cron 只建立一次當日快照；首次 Chain 抓取最多 1 次，每次共用 25 秒 deadline。若失敗，建立 pending 並安排同日定時恢復。
+- 必須在既有每日 Cron 之外，於同一個 Worker 增加一個 `*\/30 * * * *` Cron Trigger（每 30 分鐘）。此 Trigger 只檢查當日 Chain pending 是否到期，不重新建立每日快照，也不處理歷史日期。
+- 當日最多額外重試 **4 次**，每次最多 1 次抓取、25 秒 deadline；相對於前一次失敗，排程等待時間依序為 **30／30／60／60 分鐘**。任何一次取得通過完整性驗證的 Chain，立即更新原日期快照並刪除 pending；四次額外重試仍失敗則停止當日重試，保留 pending。
+- 每 30 分鐘 Trigger 不會等待或 sleep；透過 KV 的 `next_retry_at` 控制實際重試時間。原定每日 Cron 才會執行歷史 pending 恢復：自動發現最近 10 筆快照中的 Chain 缺口，每次最多處理 5 個日期，每日期最多 2 次抓取，失敗日期輪替。
 - `/snapshots/bundle?date=...` 改為**純讀取**：只驗證並回報 `chain_status` / `chain_diagnostics`，不發出 Chain 上游請求、不重試、不等待、不寫入 KV。daily-data 不再負責補抓，也不增加等待時間。
 - 已驗證的舊 Chain 不會被失敗的新抓取覆蓋。
-- 不新增 Cloudflare 服務、Namespace、Binding、Secret 或 Cron Trigger；沿用既有 `SNAPSHOTS` KV 與 Cron。
+- 不新增 Cloudflare 服務、Namespace、Binding 或 Secret；沿用既有 `SNAPSHOTS` KV，並在同一 Worker 增加一個 30 分鐘 Cron Trigger。
 - Python 既有 `/snapshots/bundle` schema 保持相容；未完成狀態透過 bundle 的 `chain_status` / `chain_diagnostics` 明確呈現。
 
 本次不更改資料來源、GEX 計算公式、expiry selection、其他資料端點或 daily-data workflow。
@@ -40,7 +42,7 @@ V1.8 快照修正：
 1. Worker 名稱與正式網址，確認目標是既有 `taifex`，不是新建 Worker。
 2. 現行 Deployment / Version ID、部署時間及可回滾版本。
 3. Settings / Bindings：KV binding 名稱必須仍是 `SNAPSHOTS`，並確認 Namespace ID 與目前正式環境相同。不要新建 Namespace 或更換 ID。
-4. Triggers / Cron Triggers：確認既有快照排程並記錄 cron expression。過往 Dashboard 紀錄為週一至週五 08:30 UTC（`30 8 * * 1-5`，台北時間 16:30），但部署當下必須以 Dashboard 現況為準；不要新增重複排程或變更時間。
+4. Triggers / Cron Triggers：確認既有每日快照排程並記錄 cron expression。過往 Dashboard 紀錄為週一至週五 08:30 UTC（`30 8 * * 1-5`，台北時間 16:30），但部署當下必須以 Dashboard 現況為準。保留該每日排程，另外增加 `*\/30 * * * *`（每 30 分鐘）作為 Chain 同日恢復 Trigger；不得以新排程取代原每日快照排程。
 5. Variables and Secrets：必須確認 `SNAPSHOT_KEY` 存在且保留原值；只確認存在狀態，不讀取、不複製、不洩露 Secret 值。**若 `SNAPSHOT_KEY` 不存在，部署前標記 BLOCKED**：目前程式在 Secret 未設定時，`/snapshots/write-now` 不會要求 key，可能允許未授權寫入 KV。部署不得移除或清空此 Secret。
 6. 記錄正式環境目前的 V1.7 版本作為 rollback target，並確認 Cloudflare Deployments / Versions 可以回滾。
 
