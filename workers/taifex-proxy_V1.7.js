@@ -6285,6 +6285,23 @@ export default {
             console.log("snapshot chain pointer ignored:", String(chainError));
           }
         }
+        // Backward compatibility: accept a legacy all-in-one snapshot only when
+        // its embedded Chain independently proves exact-date provenance and Walls.
+        // New-format general payloads deliberately contain no embedded Chain.
+        if (!chainAvailable) {
+          const legacyQuality = bundle.chain_quality;
+          const legacyChain = bundle.data.chain;
+          const legacyWalls = bundle.data.walls;
+          if (legacyQuality?.status === "complete" &&
+              legacyQuality?.requested_date === actual &&
+              legacyQuality?.source_date === actual &&
+              legacyQuality?.source && legacyQuality?.source_url &&
+              Array.isArray(legacyChain) && legacyChain.length > 0 &&
+              legacyWalls?.primary_expiry) {
+            chainAvailable = true;
+            chainSnapshotVersion = pointer.version_key;
+          }
+        }
         bundle.chain_available = chainAvailable;
         if (!chainAvailable) {
           delete bundle.data.chain;
