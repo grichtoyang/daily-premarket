@@ -917,8 +917,8 @@ def _extract_section_table_value(report_text, heading, label, required=False, ex
     return None
 
 
-def _asia_freshness_warnings(rows, t0_date):
-    """Flag Asian-index quotes whose exchange-local date is older than report T0."""
+def _apply_asia_freshness_to_report_rows(rows, t0_date):
+    """Fail closed on stale Asian-index rows and return explicit quality warnings."""
     warnings = []
     if not t0_date:
         return warnings
@@ -935,6 +935,15 @@ def _asia_freshness_warnings(rows, t0_date):
         warnings.append(
             f"亞洲指數 {name} 資料日期 {actual_date or '缺失'} 早於或無法核對 T0 {t0_date}"
         )
+        # Defense in depth: do not publish a stale close/pct even if the
+        # upstream DATA_REPORT freshness guard regresses.
+        row[2] = "unavailable"
+        if len(row) > 3:
+            row[3] = "unavailable"
+        if len(row) > 4:
+            row[4] = "unavailable"
+        if len(row) > 8:
+            row[8] = "Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除）"
     return warnings
 
 
@@ -993,6 +1002,7 @@ def parse_data_report(report_path):
     gen_time=gen_time_match.group(1) if gen_time_match else ""
 
     us_rows=parse_table("### 1. 美股指數"); asia_rows=parse_table("### 2. 亞洲主要指數"); fut_rows=parse_table("### 3. 美股指數期貨")
+    asia_freshness_warnings = _apply_asia_freshness_to_report_rows(asia_rows, t0_date)
     yield_rows=parse_table("### 4. 美國國債殖利率"); fx_rows=parse_table("### 5. 主要匯率"); adr_rows=parse_table("### 6. 台灣相關ADR"); comm_rows=parse_table("### 7. 原油黃金Bitcoin")
 
     def build_arr(rows, pct_index=4):
@@ -1128,7 +1138,7 @@ def parse_data_report(report_path):
         {'day':{'o':fut_day_o,'h':fut_day_h,'l':fut_day_l,'c':fut_day_c,'basis':basis}},
         {'callOi':call_oi,'putOi':put_oi,'pcr':pcr}
     )
-    consistency_warnings.extend(_asia_freshness_warnings(asia_rows, t0_date))
+    consistency_warnings.extend(asia_freshness_warnings)
 
     if re.search(r"夜盤價格相對日盤收盤的變化\s*\|",text) and night_change is None:
         consistency_warnings.append("夜盤相對日盤收盤變化存在於 DATA_REPORT，但 Builder 未能解析")
@@ -1906,8 +1916,10 @@ def run_17f_self_tests():
             ["香港恆生","^HSI","unavailable","","","2026-11-20","","Asia/Hong_Kong","Yahoo Finance Chart API（資料日期早於 T0，已排除）"],
             ["日經225","^N225","38600","","","2026-11-23","","Asia/Tokyo","Yahoo Finance Chart API"],
         ]
-        asia_warnings=_asia_freshness_warnings(asia_fixture,"2026-11-23")
+        asia_warnings=_apply_asia_freshness_to_report_rows(asia_fixture,"2026-11-23")
         assert len(asia_warnings)==1 and "香港恆生" in asia_warnings[0]
+        assert asia_fixture[0][2:5]==["unavailable","unavailable","unavailable"]
+        assert asia_fixture[1][2]=="38600"
         night_fixture="| 夜盤價格相對日盤收盤的變化 | +3,253 | 點 |"
         assert re.search(r"夜盤價格相對日盤收盤的變化\s*\|\s*([-+0-9,.]+)\s*\|",night_fixture).group(1)=="+3,253"
         # Institutional futures OI totals require all three finite source values.
