@@ -3354,6 +3354,7 @@ async function fetchTXOChainForDate(taifexDate, options = {}) {
     requested_date: requestedISO,
     source: result.source || "taifex_web",
     raw_rows: result.rows.length,
+    source_txo_rows: result.rows.filter(row => Array.isArray(row) && row[0] === "TXO").length,
     rows: parsed.data,
     error_code: parsed.found ? null : "TXO_CHAIN_PARSE_EMPTY",
     diagnostics: {
@@ -3472,7 +3473,7 @@ const SNAPSHOT_PENDING_PREFIX = "snapshot-pending:";
 const SNAPSHOT_CHAIN_MIN_TOTAL = 100;
 const SNAPSHOT_CHAIN_MIN_PER_SIDE = 30;
 
-function validateSnapshotChain(chain, expectedDate, actualDate) {
+function validateSnapshotChain(chain, expectedDate, actualDate, sourceTaoRows = null) {
   if (actualDate !== expectedDate) {
     return { valid: false, reason: "chain_date_mismatch", expected_date: expectedDate, actual_date: actualDate || null };
   }
@@ -3481,6 +3482,7 @@ function validateSnapshotChain(chain, expectedDate, actualDate) {
   }
 
   const keys = new Set();
+  const monthStrikes = new Map();
   let calls = 0;
   let puts = 0;
   let validOI = 0;
@@ -3510,6 +3512,11 @@ function validateSnapshotChain(chain, expectedDate, actualDate) {
     }
     keys.add(key);
 
+    if (!monthStrikes.has(month)) {
+      monthStrikes.set(month, { call: new Set(), put: new Set() });
+    }
+    monthStrikes.get(month)[type].add(strike);
+
     if (type === "call") calls++;
     else puts++;
 
@@ -3523,6 +3530,9 @@ function validateSnapshotChain(chain, expectedDate, actualDate) {
 
   const total = calls + puts;
   const oiCoverage = total ? validOI / total : 0;
+  if (Number.isFinite(sourceTaoRows) && sourceTaoRows !== total) {
+    return { valid: false, reason: "chain_parser_dropped_source_rows", source_txo_rows: sourceTaoRows, parsed_contracts: total, calls, puts, oi_coverage: oiCoverage };
+  }
   if (invalidRows || duplicates) {
     return { valid: false, reason: "chain_invalid_or_duplicate_rows", total, calls, puts, invalid_rows: invalidRows, duplicates, oi_coverage: oiCoverage };
   }
@@ -3531,6 +3541,24 @@ function validateSnapshotChain(chain, expectedDate, actualDate) {
   }
   if (oiCoverage < 0.95) {
     return { valid: false, reason: "chain_open_interest_coverage_too_low", total, calls, puts, oi_coverage: oiCoverage, minimum_oi_coverage: 0.95 };
+  }
+  for (const [month, sides] of monthStrikes) {
+    if (
+      sides.call.size !== sides.put.size ||
+      [...sides.call].some(strike => !sides.put.has(strike))
+    ) {
+      return {
+        valid: false,
+        reason: "chain_call_put_strike_mismatch",
+        contract_month: month,
+        call_strikes: sides.call.size,
+        put_strikes: sides.put.size,
+        total,
+        calls,
+        puts,
+        oi_coverage: oiCoverage
+      };
+    }
   }
 
   let keyLevels;
@@ -3561,7 +3589,7 @@ async function fetchValidatedSnapshotChain(date, maxAttempts = 2) {
     try {
       const result = await fetchTXOChainForDate(slash);
       const validation = result.found
-        ? validateSnapshotChain(result.rows, date, result.date)
+        ? validateSnapshotChain(result.rows, date, result.date, result.source_txo_rows)
         : { valid: false, reason: result.reason || result.error_code || "chain_fetch_failed" };
 
       if (validation.valid) {
@@ -3574,7 +3602,8 @@ async function fetchValidatedSnapshotChain(date, maxAttempts = 2) {
             total: validation.total,
             calls: validation.calls,
             puts: validation.puts,
-            oi_coverage: validation.oi_coverage
+            oi_coverage: validation.oi_coverage,
+            source_txo_rows: result.source_txo_rows
           },
           walls: {
             call_wall: validation.key_levels.call_wall,
