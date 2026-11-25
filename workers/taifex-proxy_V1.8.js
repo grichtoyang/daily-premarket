@@ -685,7 +685,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
         if (params.get("commodity_id") === "TXO") {
           const parsedPrimary = parseTXOOptionChain(rows);
           if (!parsedPrimary.found) {
-            primaryError = `TXO primary parse empty: raw_rows=${rows.length}, parsed_contracts=0`;
+            primaryError = `TXO primary parse empty: raw_rows=${rows.length}, parsed_contracts=0, diagnostics=${JSON.stringify(parsedPrimary.diagnostics)}`;
           } else {
             return {
               response, html, rows,
@@ -3342,7 +3342,8 @@ async function fetchTXOChainForDate(taifexDate, options = {}) {
     error_code: parsed.found ? null : "TXO_CHAIN_PARSE_EMPTY",
     diagnostics: {
       primary_error: result.primary_error || null,
-      fallback_error: result.fallback_error || null
+      fallback_error: result.fallback_error || null,
+      parser: parsed.diagnostics
     }
   };
 }
