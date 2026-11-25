@@ -692,7 +692,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
               source: "taifex_web",
               fallback: false,
               source_url: `${TAIFEX}${path}`,
-              primary_parse: { raw_rows: rows.length, parsed_contracts: parsedPrimary.data.length }
+              primary_parse: { raw_rows: rows.length, parsed_contracts: parsedPrimary.data.length, ...parsedPrimary.diagnostics }
             };
           }
         } else {
@@ -1245,7 +1245,7 @@ function parseTXOOptionChain(rows) {
     // 20 columns: after-hours volume, regular volume, total volume,
     //             OI, bid, ask, historical high/low.
     // Do not guess the meaning of a 19-column or shorter row.
-    const layout = row.length === 18 ? "18" : row.length >= 20 ? "20" : null;
+    const layout = row.length === 18 ? "18" : row.length === 20 ? "20" : null;
     if (!layout) {
       diagnostics.skipped_unsupported_columns++;
       continue;
