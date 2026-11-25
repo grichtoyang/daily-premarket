@@ -1215,129 +1215,105 @@ function nullableNumber(value) {
    TXO 完整 Option Chain
 ========================= */
 
+function normalizeTXOOptionType(value) {
+  const s = String(value ?? "").trim().toLowerCase();
+  if (s === "call" || s === "c" || s.includes("買權")) return "call";
+  if (s === "put" || s === "p" || s.includes("賣權")) return "put";
+  return null;
+}
+
 function parseTXOOptionChain(rows) {
-
   const data = [];
+  const diagnostics = {
+    input_rows: Array.isArray(rows) ? rows.length : 0,
+    parsed_18_column: 0,
+    parsed_20_column: 0,
+    skipped_non_txo: 0,
+    skipped_unsupported_columns: 0,
+    skipped_invalid_type: 0,
+    skipped_invalid_strike: 0
+  };
 
-  for (const row of rows) {
-
-    /*
-     * 官方完整 TXO 行情表的資料列以 TXO 開頭，
-     * 欄位順序為：
-     *
-     * 0  契約
-     * 1  到期月份(週別)
-     * 2  契約到期日
-     * 3  履約價
-     * 4  買賣權
-     * 5  開盤價
-     * 6  最高價
-     * 7  最低價
-     * 8  最後成交價
-     * 9  結算價
-     * 10 漲跌價
-     * 11 漲跌%
-     * 12 盤後交易時段成交量
-     * 13 一般交易時段成交量
-     * 14 合計成交量
-     * 15 未沖銷契約量
-     * 16 最後最佳買價
-     * 17 最後最佳賣價
-     * 18 歷史最高價
-     * 19 歷史最低價
-     */
-
-    if (
-      row.length < 20 ||
-      row[0] !== "TXO"
-    ) {
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!Array.isArray(row) || String(row[0] ?? "").trim().toUpperCase() !== "TXO") {
+      diagnostics.skipped_non_txo++;
       continue;
     }
 
-    const optionType =
-      row[4] === "Call"
-        ? "call"
-        : row[4] === "Put"
-          ? "put"
-          : null;
+    // TAIFEX web table has appeared in two valid layouts:
+    // 18 columns: volume, OI, bid, ask, historical high/low.
+    // 20 columns: after-hours volume, regular volume, total volume,
+    //             OI, bid, ask, historical high/low.
+    // Do not guess the meaning of a 19-column or shorter row.
+    const layout = row.length === 18 ? "18" : row.length >= 20 ? "20" : null;
+    if (!layout) {
+      diagnostics.skipped_unsupported_columns++;
+      continue;
+    }
 
+    const optionType = normalizeTXOOptionType(row[4]);
     if (!optionType) {
+      diagnostics.skipped_invalid_type++;
       continue;
     }
 
-    const strike =
-      nullableNumber(row[3]);
-
-    if (strike === null) {
+    const strike = nullableNumber(row[3]);
+    if (strike === null || strike <= 0) {
+      diagnostics.skipped_invalid_strike++;
       continue;
     }
 
-    data.push({
-
-      contract:
-        row[0],
-
-      contract_month:
-        row[1],
-
-      contract_expiry_date:
-        row[2],
-
+    const common = {
+      contract: "TXO",
+      contract_month: String(row[1] ?? "").trim(),
+      contract_expiry_date: String(row[2] ?? "").trim(),
       strike,
+      type: optionType,
+      open: nullableNumber(row[5]),
+      high: nullableNumber(row[6]),
+      low: nullableNumber(row[7]),
+      last: nullableNumber(row[8]),
+      settlement: nullableNumber(row[9]),
+      change: nullableNumber(row[10]),
+      change_percent: nullableNumber(row[11])
+    };
 
-      type:
-        optionType,
-
-      open:
-        nullableNumber(row[5]),
-
-      high:
-        nullableNumber(row[6]),
-
-      low:
-        nullableNumber(row[7]),
-
-      last:
-        nullableNumber(row[8]),
-
-      settlement:
-        nullableNumber(row[9]),
-
-      change:
-        nullableNumber(row[10]),
-
-      change_percent:
-        nullableNumber(row[11]),
-
-      after_hours_volume:
-        nullableNumber(row[12]),
-
-      regular_volume:
-        nullableNumber(row[13]),
-
-      total_volume:
-        nullableNumber(row[14]),
-
-      open_interest:
-        nullableNumber(row[15]),
-
-      best_bid:
-        nullableNumber(row[16]),
-
-      best_ask:
-        nullableNumber(row[17]),
-
-      historical_high:
-        nullableNumber(row[18]),
-
-      historical_low:
-        nullableNumber(row[19])
-    });
+    if (layout === "18") {
+      // The 18-column web layout exposes one volume field only.
+      // Preserve it as total_volume; never fabricate day/night splits.
+      data.push({
+        ...common,
+        after_hours_volume: null,
+        regular_volume: null,
+        total_volume: nullableNumber(row[12]),
+        open_interest: nullableNumber(row[13]),
+        best_bid: nullableNumber(row[14]),
+        best_ask: nullableNumber(row[15]),
+        historical_high: nullableNumber(row[16]),
+        historical_low: nullableNumber(row[17])
+      });
+      diagnostics.parsed_18_column++;
+    } else {
+      // Keep the established 20-column mapping unchanged.
+      data.push({
+        ...common,
+        after_hours_volume: nullableNumber(row[12]),
+        regular_volume: nullableNumber(row[13]),
+        total_volume: nullableNumber(row[14]),
+        open_interest: nullableNumber(row[15]),
+        best_bid: nullableNumber(row[16]),
+        best_ask: nullableNumber(row[17]),
+        historical_high: nullableNumber(row[18]),
+        historical_low: nullableNumber(row[19])
+      });
+      diagnostics.parsed_20_column++;
+    }
   }
 
   return {
     found: data.length > 0,
-    data
+    data,
+    diagnostics
   };
 }
 
