@@ -1,11 +1,11 @@
 
 /*
  * ============================================================
- * TAIFEX Proxy V1.7 — Bounded Compact Analysis Fetch
+ * TAIFEX Proxy V1.8 — Parse-aware TXO Chain Fallback
  * ============================================================
  *
  * STATUS:
- *   V1.7 maintenance source — production currently runs V1.7.
+ *   V1.8 candidate — V1.7 remains the current production version until manually deployed.
  *   Changes in this repository are pending deployment until approved.
  *
  * PURPOSE:
@@ -37,10 +37,15 @@
  *   from aggregate OI, so outputs remain "TAIFEX-derived GEX".
  *
  * VERSION POLICY:
- *   Maintain the deployed V1.7 in this same file. The repository source
- *   may contain pending V1.7 maintenance changes until the user deploys
- *   them. Do not create a parallel version or silently alter existing
- *   semantics or field meanings.
+ *   V1.8 is maintained as a separate versioned file. Preserve V1.7
+ *   unchanged for rollback. Do not silently alter existing semantics
+ *   or field meanings outside the explicitly documented V1.8 fix.
+ *
+ * V1.8 ADDITIVE (2026-11-25):
+ *   + Validate TXO Chain primary rows with parseTXOOptionChain before
+ *     accepting the web source; parse-empty primary responses now invoke
+ *     the existing date-validated OpenAPI fallback.
+ *   + Preserve primary parse failure context for fallback diagnostics.
  *
  * V1.2 ADDITIVE (2026-09-18):
  *   + /futures-top10?date=YYYY-MM-DD[&month=YYYYMM]
@@ -3600,7 +3605,7 @@ export default {
         ok: true,
         service: "taifex-proxy",
         taifex: true,
-        version: "V1.7 — bounded compact fetch + parallel Delta/TAIEX + historical Delta CSV (additive)"
+        version: "V1.8 — TXO parse-aware OpenAPI fallback (additive)"
       });
     }
 
