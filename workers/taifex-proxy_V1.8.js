@@ -4034,7 +4034,7 @@ export default {
 
           parser: {
 
-            version: "V1.0 — Production",
+            version: "V1.8 — dual-layout TXO parser",
 
             found:
               parsed.found,
@@ -4049,18 +4049,23 @@ export default {
               callCount,
 
             put_count:
-              putCount
+              putCount,
+
+            ...parsed.diagnostics
           },
 
           error_code:
             parsed.found ? null : "TXO_CHAIN_PARSE_FAILED",
 
-          diagnostics: parsed.found ? null : {
+          diagnostics: {
             primary_error: result.primary_error || null,
             fallback_error: result.fallback_error || null,
-            parse_reason: "No valid TXO option-chain contracts parsed",
-            input_rows: result.rows.length,
-            parsed_contracts: data.length
+            ...(parsed.found ? {} : {
+              parse_reason: "No valid TXO option-chain contracts parsed",
+              input_rows: result.rows.length,
+              parsed_contracts: data.length
+            }),
+            parser: parsed.diagnostics
           }
 
         }, parsed.found ? 200 : 502);
