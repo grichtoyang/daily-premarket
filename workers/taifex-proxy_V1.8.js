@@ -523,6 +523,26 @@ function number(value) {
   return Number.isFinite(n) ? n : null;
 }
 
+function summarizeTXORawRows(rows) {
+  const columns = {}, firstCells = {}, optionTypes = {};
+  let txo = 0, calls = 0, puts = 0, invalidStrike = 0;
+  const samples = [];
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!Array.isArray(row)) continue;
+    const len = String(row.length); columns[len] = (columns[len] || 0) + 1;
+    const first = String(row[0] ?? '').trim().toUpperCase() || '(empty)';
+    firstCells[first] = (firstCells[first] || 0) + 1;
+    if (first !== 'TXO') continue;
+    txo++; const cp = String(row[4] ?? '').trim() || '(empty)';
+    optionTypes[cp] = (optionTypes[cp] || 0) + 1;
+    if (/^(call|c|買權)$/i.test(cp) || cp.includes('買權')) calls++;
+    else if (/^(put|p|賣權)$/i.test(cp) || cp.includes('賣權')) puts++;
+    const strike = nullableNumber(row[3]); if (strike === null || strike <= 0) invalidStrike++;
+    if (samples.length < 3) samples.push(row.slice(0,20).map(v => String(v ?? '').slice(0,80)));
+  }
+  return { extracted_rows: Array.isArray(rows) ? rows.length : 0, column_distribution: columns, first_cell_distribution: firstCells, txo_rows: txo, call_rows: calls, put_rows: puts, option_type_distribution: optionTypes, invalid_strike_rows: invalidStrike, sample_rows: samples };
+}
+
 function parseRows(html) {
   const rows = [];
   const trRegex = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
@@ -653,6 +673,7 @@ function txoChainErrorCode(primaryError, fallbackError) {
 }
 
 async function fetchTAIFEXPost(path, body, options = {}) {
+  let primaryDiagnostics = { source: `${TAIFEX}${path}`, http_status: null, content_type: null, html_length: 0, extracted_rows: 0, column_distribution: {}, first_cell_distribution: {}, txo_rows: 0, call_rows: 0, put_rows: 0, option_type_distribution: {}, invalid_strike_rows: 0, sample_rows: [] };
 
   let primaryError = null;
   let fallbackError = null;
@@ -676,6 +697,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
 
     const html = await response.text();
     const rows = parseRows(html);
+    primaryDiagnostics = { source: `${TAIFEX}${path}`, http_status: response.status, content_type: response.headers.get('content-type'), html_length: html.length, ...summarizeTXORawRows(rows) };
 
     if (response.ok && rows.length) {
       // A non-empty HTML table is not sufficient: validate TXO contracts
@@ -692,7 +714,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
               source: "taifex_web",
               fallback: false,
               source_url: `${TAIFEX}${path}`,
-              primary_parse: { raw_rows: rows.length, parsed_contracts: parsedPrimary.data.length, ...parsedPrimary.diagnostics }
+              primary_parse: { raw_rows: rows.length, parsed_contracts: parsedPrimary.data.length, ...parsedPrimary.diagnostics }, primary_diagnostics: primaryDiagnostics, fallback_diagnostics: { attempted: false, source: null, requested_date: null, returned_rows: 0, parsed_contracts: 0 }
             };
           }
         } else {
@@ -731,7 +753,9 @@ async function fetchTAIFEXPost(path, body, options = {}) {
           fallback: true,
           source_url: "https://openapi.taifex.com.tw/v1/DailyMarketReportOpt",
           requested_date: requestedISO,
-          primary_error: primaryError
+          primary_error: primaryError,
+          primary_diagnostics: primaryDiagnostics,
+          fallback_diagnostics: { attempted: true, source: 'taifex_openapi', requested_date: requestedISO, returned_rows: fb.rows.length, parsed_contracts: fb.rows.length }
         };
       }
       fallbackError = fb.reason || "TAIFEX OpenAPI fallback returned no valid rows";
@@ -770,6 +794,8 @@ async function fetchTAIFEXPost(path, body, options = {}) {
     source_url: `${TAIFEX}${path}`,
     primary_error: primaryError,
     fallback_error: fallbackError,
+    primary_diagnostics: primaryDiagnostics,
+    fallback_diagnostics: { attempted: path === '/cht/3/optDailyMarketReport', source: path === '/cht/3/optDailyMarketReport' ? 'taifex_openapi' : null, requested_date: path === '/cht/3/optDailyMarketReport' ? queryDateToISO(new URLSearchParams(body).get('queryDate')) : null, returned_rows: 0, parsed_contracts: 0 },
     error_code: path === "/cht/3/optDailyMarketReport"
       ? txoChainErrorCode(primaryError, fallbackError)
       : "TAIFEX_UPSTREAM_UNAVAILABLE"
@@ -3990,7 +4016,9 @@ export default {
             error_code: result.error_code || "TXO_CHAIN_SOURCES_UNAVAILABLE",
             diagnostics: {
               primary_error: result.primary_error || null,
-              fallback_error: result.fallback_error || null
+              fallback_error: result.fallback_error || null,
+              primary: result.primary_diagnostics || null,
+              fallback: result.fallback_diagnostics || null
             }
           }, 502);
         }
@@ -4060,6 +4088,8 @@ export default {
           diagnostics: {
             primary_error: result.primary_error || null,
             fallback_error: result.fallback_error || null,
+            primary: result.primary_diagnostics || null,
+            fallback: result.fallback_diagnostics || { attempted: Boolean(result.fallback), source: result.fallback ? result.source : null, requested_date: result.requested_date || null, returned_rows: result.fallback ? result.rows.length : 0, parsed_contracts: result.fallback ? data.length : 0 },
             ...(parsed.found ? {} : {
               parse_reason: "No valid TXO option-chain contracts parsed",
               input_rows: result.rows.length,
