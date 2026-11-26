@@ -203,13 +203,26 @@ async function fetchTAIFEXOpenAPI(path, options = {}) {
     let payload;
     try {
       payload = JSON.parse(text);
-    } catch (_) {
+    } catch (parseError) {
+      const contentType = response.headers.get("content-type") || null;
+      const bodyPreview = text
+        .slice(0, 300)
+        .replace(/[\x00-\x1F\x7F]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
       return {
         found: false,
         response,
         source_url,
         rows: [],
-        reason: "TAIFEX OpenAPI response is not valid JSON"
+        reason: "TAIFEX OpenAPI response is not valid JSON",
+        diagnostics: {
+          content_type: contentType,
+          body_length: text.length,
+          body_preview: bodyPreview,
+          parse_error: parseError?.message || String(parseError)
+        }
       };
     }
 
@@ -3523,7 +3536,11 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
       tx_row_count: txRows.length,
       type0_row_count: type0Rows.length,
       selected_row_count: f.found ? type0Rows.length : null,
-      error: null
+      error: null,
+      content_type: f.diagnostics?.content_type ?? null,
+      body_length: f.diagnostics?.body_length ?? null,
+      body_preview: f.diagnostics?.body_preview ?? null,
+      parse_error: f.diagnostics?.parse_error ?? null
     };
 
     if (f.found) {
