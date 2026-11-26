@@ -3596,6 +3596,7 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     bundle.diagnostics.top10fut = {
       endpoint: "/OpenInterestOfLargeTradersFutures",
       found: Boolean(f.found),
+      source_format: f.source_format ?? null,
       http_status: f.response?.status ?? null,
       reason: f.reason || null,
       raw_row_count: f.rows.length,
