@@ -160,6 +160,65 @@ function apiValue(row, keys) {
   return null;
 }
 
+
+function parseTAIFEXCSV(text) {
+  const source = String(text ?? "").replace(/^\uFEFF/, "");
+  const matrix = [];
+  let row = [];
+  let field = "";
+  let quoted = false;
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
+    if (quoted) {
+      if (ch === '"' && source[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') quoted = false;
+      else field += ch;
+    } else if (ch === '"' && field.length === 0) quoted = true;
+    else if (ch === ",") { row.push(field); field = ""; }
+    else if (ch === "\n") {
+      row.push(field.replace(/\r$/, ""));
+      if (row.some(value => value.trim() !== "")) matrix.push(row);
+      row = []; field = "";
+    } else field += ch;
+  }
+  if (quoted) throw new Error("TAIFEX CSV has an unterminated quoted field");
+  if (field.length || row.length) {
+    row.push(field.replace(/\r$/, ""));
+    if (row.some(value => value.trim() !== "")) matrix.push(row);
+  }
+  if (matrix.length < 2) throw new Error("TAIFEX CSV has no data rows");
+
+  const headers = matrix[0].map((value, index) =>
+    String(value ?? "").trim().replace(/^\uFEFF/, "") || ("column_" + (index + 1))
+  );
+  if (!headers.includes("契約") || !headers.includes("交易人類別")) {
+    throw new Error("TAIFEX CSV header does not match large-trader schema");
+  }
+  const aliases = {
+    "日期": "Date",
+    "契約": "Contract",
+    "商品名稱(契約名稱)": "ProductName",
+    "到期月份(週別)": "ContractMonth(Week)",
+    "交易人類別": "TypeOfTraders",
+    "前五大交易人買方數量": "Top5BuyVolume",
+    "前五大交易人賣方數量": "Top5SellVolume",
+    "前十大交易人買方數量": "Top10BuyVolume",
+    "前十大交易人賣方數量": "Top10SellVolume",
+    "全市場未沖銷部位數": "TotalMarketOpenInterest"
+  };
+  const rows = matrix.slice(1).map(values => {
+    const record = {};
+    headers.forEach((header, index) => {
+      const value = String(values[index] ?? "").trim();
+      record[header] = value;
+      if (aliases[header]) record[aliases[header]] = value;
+    });
+    return record;
+  }).filter(record => Object.values(record).some(value => value !== ""));
+  return { headers, rows };
+}
+
+
 const GEX_UPSTREAM_TIMEOUT_MS = 12000;
 const TXO_CHAIN_PRIMARY_TIMEOUT_MS = 12000;
 const TXO_CHAIN_OPENAPI_TIMEOUT_MS = 8000;
@@ -200,43 +259,51 @@ async function fetchTAIFEXOpenAPI(path, options = {}) {
       };
     }
 
-    let payload;
+    const contentType = response.headers.get("content-type") || null;
+    let rows = [];
+    let sourceFormat = "json";
+    let jsonParseError = null;
     try {
-      payload = JSON.parse(text);
+      const payload = JSON.parse(text);
+      rows = Array.isArray(payload)
+        ? payload
+        : payload && Array.isArray(payload.data)
+          ? payload.data
+          : [];
     } catch (parseError) {
-      const contentType = response.headers.get("content-type") || null;
-      const bodyPreview = text
-        .slice(0, 300)
-        .replace(/[\x00-\x1F\x7F]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      return {
-        found: false,
-        response,
-        source_url,
-        rows: [],
-        reason: "TAIFEX OpenAPI response is not valid JSON",
-        diagnostics: {
-          content_type: contentType,
-          body_length: text.length,
-          body_preview: bodyPreview,
-          parse_error: parseError?.message || String(parseError)
-        }
-      };
+      jsonParseError = parseError?.message || String(parseError);
+      try {
+        const csv = parseTAIFEXCSV(text);
+        rows = csv.rows;
+        sourceFormat = "csv";
+      } catch (csvError) {
+        const bodyPreview = text
+          .slice(0, 300)
+          .replace(/[\x00-\x1F\x7F]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        return {
+          found: false,
+          response,
+          source_url,
+          rows: [],
+          reason: "TAIFEX OpenAPI response is neither valid JSON nor supported CSV",
+          diagnostics: {
+            content_type: contentType,
+            body_length: text.length,
+            body_preview: bodyPreview,
+            parse_error: jsonParseError,
+            csv_error: csvError?.message || String(csvError)
+          }
+        };
+      }
     }
-
-    const rows = Array.isArray(payload)
-      ? payload
-      : payload && Array.isArray(payload.data)
-        ? payload.data
-        : [];
-
     return {
       found: rows.length > 0,
       response,
       source_url,
       rows,
+      source_format: sourceFormat,
       reason: rows.length ? null : "TAIFEX OpenAPI returned no rows"
     };
   } catch (error) {
