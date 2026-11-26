@@ -204,14 +204,24 @@ function parseTAIFEXCSV(text) {
     "前五大交易人賣方數量": "Top5SellVolume",
     "前十大交易人買方數量": "Top10BuyVolume",
     "前十大交易人賣方數量": "Top10SellVolume",
-    "全市場未沖銷部位數": "TotalMarketOpenInterest"
+    "全市場未沖銷部位數": "TotalMarketOpenInterest",
+    // Backward-compatible canonical fields consumed by /futures-top10
+    // and src.sources.taifex.snap_top10_change().
+    "到期月份(週別)": "SettlementMonth",
+    "前十大交易人買方數量": ["Top10BuyVolume", "Top10Buy"],
+    "前十大交易人賣方數量": ["Top10SellVolume", "Top10Sell"]
   };
   const rows = matrix.slice(1).map(values => {
     const record = {};
     headers.forEach((header, index) => {
       const value = String(values[index] ?? "").trim();
       record[header] = value;
-      if (aliases[header]) record[aliases[header]] = value;
+      const alias = aliases[header];
+      if (Array.isArray(alias)) {
+        for (const name of alias) record[name] = value;
+      } else if (alias) {
+        record[alias] = value;
+      }
     });
     return record;
   }).filter(record => Object.values(record).some(value => value !== ""));
