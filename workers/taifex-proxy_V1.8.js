@@ -3487,10 +3487,45 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
     data: {}
   };
 
+  // Additive diagnostics: expose why Top 10 Futures may be absent
+  // without changing the existing collection/filtering behavior.
+  bundle.diagnostics = {
+    top10fut: {
+      endpoint: "/OpenInterestOfLargeTradersFutures",
+      found: false,
+      http_status: null,
+      reason: null,
+      raw_row_count: 0,
+      sample_keys: [],
+      tx_row_count: 0,
+      type0_row_count: 0,
+      selected_row_count: null,
+      error: null
+    }
+  };
+
   try {
     const f = await fetchTAIFEXOpenAPI(
       "/OpenInterestOfLargeTradersFutures"
     );
+    const txRows = f.rows.filter(r => r && r.Contract === "TX");
+    const type0Rows = txRows.filter(r =>
+      String(r.TypeOfTraders) === "0"
+    );
+
+    bundle.diagnostics.top10fut = {
+      endpoint: "/OpenInterestOfLargeTradersFutures",
+      found: Boolean(f.found),
+      http_status: f.response?.status ?? null,
+      reason: f.reason || null,
+      raw_row_count: f.rows.length,
+      sample_keys: f.rows.length ? Object.keys(f.rows[0]).slice(0, 30) : [],
+      tx_row_count: txRows.length,
+      type0_row_count: type0Rows.length,
+      selected_row_count: f.found ? type0Rows.length : null,
+      error: null
+    };
+
     if (f.found) {
       bundle.data.top10fut = f.rows.filter(r =>
         r.Contract === "TX" &&
@@ -3506,7 +3541,11 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
         String(r.TypeOfTraders) === "0"
       );
     }
-  } catch (_) { /* keep partial bundle */ }
+  } catch (error) {
+    bundle.diagnostics.top10fut.error =
+      error?.message || String(error);
+    /* keep partial bundle */
+  }
 
   /* Chain 每次請求已有 25 秒整體 deadline；最多 2 次，間隔 3 秒，避免長時間重試放大上游負載。 */
   try {
