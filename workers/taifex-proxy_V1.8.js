@@ -203,13 +203,26 @@ async function fetchTAIFEXOpenAPI(path, options = {}) {
     let payload;
     try {
       payload = JSON.parse(text);
-    } catch (_) {
+    } catch (parseError) {
+      const contentType = response.headers.get("content-type") || null;
+      const bodyPreview = text
+        .slice(0, 300)
+        .replace(/[\\u0000-\\u001F\\u007F]/g, " ")
+        .replace(/\\s+/g, " ")
+        .trim();
+
       return {
         found: false,
         response,
         source_url,
         rows: [],
-        reason: "TAIFEX OpenAPI response is not valid JSON"
+        reason: "TAIFEX OpenAPI response is not valid JSON",
+        diagnostics: {
+          content_type: contentType,
+          body_length: text.length,
+          body_preview: bodyPreview,
+          parse_error: parseError?.message || String(parseError)
+        }
       };
     }
 
