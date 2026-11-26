@@ -809,7 +809,13 @@ async function fetchTAIFEXPost(path, body, options = {}) {
               source: "taifex_web",
               fallback: false,
               source_url: `${TAIFEX}${path}`,
-              primary_parse: { raw_rows: rows.length, parsed_contracts: parsedPrimary.data.length, ...parsedPrimary.diagnostics }, primary_diagnostics: primaryDiagnostics, fallback_diagnostics: { attempted: false, source: null, requested_date: null, returned_rows: 0, parsed_contracts: 0 }
+              primary_parse: { raw_rows: rows.length, parsed_contracts: parsedPrimary.data.length, ...parsedPrimary.diagnostics },
+              primary_error: null,
+              primary_diagnostics: primaryDiagnostics,
+              fallback_duration_ms: 0,
+              fallback_error: null,
+              diagnostic_class: "PRIMARY_SUCCESS",
+              fallback_diagnostics: { attempted: false, source: null, requested_date: null, returned_date: null, returned_rows: 0, parsed_contracts: 0, duration_ms: 0, error: null }
             };
           }
         } else {
@@ -863,7 +869,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
           fallback_duration_ms: fallbackDurationMs,
           fallback_error: null,
           diagnostic_class: "PRIMARY_FAILED_FALLBACK_SUCCESS",
-          fallback_diagnostics: { attempted: true, source: 'taifex_openapi', requested_date: requestedISO, returned_rows: fb.rows.length, parsed_contracts: fb.rows.length, duration_ms: fallbackDurationMs }
+          fallback_diagnostics: { attempted: true, source: 'taifex_openapi', requested_date: requestedISO, returned_date: fallbackReturnedDate, returned_rows: fb.rows.length, parsed_contracts: fb.rows.length, duration_ms: fallbackDurationMs, error: null }
         };
       }
       if (!fallbackError) fallbackError = fb?.reason || "TAIFEX OpenAPI fallback returned no valid rows";
@@ -3475,8 +3481,14 @@ async function fetchTXOChainForDate(taifexDate, options = {}) {
         primary_http_status: result.primary_diagnostics?.http_status ?? null,
         primary_content_type: result.primary_diagnostics?.content_type ?? null,
         primary_body_length: result.primary_diagnostics?.html_length ?? null,
-        fallback_error: result.fallback_error || null,
-        fallback_duration_ms: result.fallback_duration_ms ?? null,
+        primary_raw_rows: result.primary_diagnostics?.extracted_rows ?? null,
+        fallback_attempted: Boolean(result.fallback_diagnostics?.attempted),
+        fallback_requested_date: result.fallback_diagnostics?.requested_date || null,
+        fallback_returned_date: result.fallback_diagnostics?.returned_date || null,
+        fallback_returned_rows: result.fallback_diagnostics?.returned_rows ?? 0,
+        fallback_parsed_contracts: result.fallback_diagnostics?.parsed_contracts ?? 0,
+        fallback_error: result.fallback_error || result.fallback_diagnostics?.error || null,
+        fallback_duration_ms: result.fallback_duration_ms ?? result.fallback_diagnostics?.duration_ms ?? null,
         diagnostic_class: result.diagnostic_class || null
       }
     };
@@ -3489,8 +3501,27 @@ async function fetchTXOChainForDate(taifexDate, options = {}) {
     raw_rows: result.rows.length,
     rows: parsed.data,
     error_code: parsed.found ? null : "TXO_CHAIN_PARSE_EMPTY",
+    source: result.source || null,
+    fallback: Boolean(result.fallback),
+    source_url: result.source_url || null,
     diagnostics: {
+      diagnostic_class: result.diagnostic_class || (result.fallback ? "PRIMARY_FAILED_FALLBACK_SUCCESS" : "PRIMARY_SUCCESS"),
+      final_source: result.source || null,
       primary_error: result.primary_error || null,
+      primary_phase: result.primary_diagnostics?.phase || null,
+      primary_fetch_headers_ms: result.primary_diagnostics?.fetch_headers_ms ?? null,
+      primary_read_body_ms: result.primary_diagnostics?.read_body_ms ?? null,
+      primary_total_ms: result.primary_diagnostics?.total_ms ?? null,
+      primary_http_status: result.primary_diagnostics?.http_status ?? null,
+      primary_content_type: result.primary_diagnostics?.content_type ?? null,
+      primary_body_length: result.primary_diagnostics?.html_length ?? null,
+      primary_raw_rows: result.primary_diagnostics?.extracted_rows ?? null,
+      fallback_attempted: Boolean(result.fallback_diagnostics?.attempted),
+      fallback_requested_date: result.fallback_diagnostics?.requested_date || result.requested_date || null,
+      fallback_returned_date: result.fallback_diagnostics?.returned_date || null,
+      fallback_returned_rows: result.fallback_diagnostics?.returned_rows ?? 0,
+      fallback_parsed_contracts: result.fallback_diagnostics?.parsed_contracts ?? 0,
+      fallback_duration_ms: result.fallback_duration_ms ?? result.fallback_diagnostics?.duration_ms ?? 0,
       fallback_error: result.fallback_error || null,
       parser: parsed.diagnostics
     }
@@ -3687,10 +3718,17 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
       } catch (error) {
         c = { found: false, reason: error?.message || String(error) };
       }
-      if (!c.found) {
-        console.log(JSON.stringify({ event: "snapshot_chain_attempt", date: taipeiISO, attempt, error_code: c.error_code || null, reason: c.reason || null, ...(c.diagnostics || {}) }));
-        if (attempt < 2) await new Promise(r => setTimeout(r, 3000));
-      }
+      console.log(JSON.stringify({
+        event: "snapshot_chain_attempt",
+        date: taipeiISO,
+        attempt,
+        found: Boolean(c.found),
+        chain_rows: Array.isArray(c.rows) ? c.rows.length : 0,
+        error_code: c.error_code || null,
+        reason: c.reason || null,
+        ...(c.diagnostics || {})
+      }));
+      if (!c.found && attempt < 2) await new Promise(r => setTimeout(r, 3000));
     }
     if (c.found) bundle.data.chain = c.rows;
     else console.log("snapshot chain all attempts failed — bundle without chain");
