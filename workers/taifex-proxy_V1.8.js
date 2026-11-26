@@ -791,7 +791,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
     primaryReadBodyMs = Date.now() - bodyStartedAt;
     primaryPhase = "parse_body";
     const rows = parseRows(html);
-    primaryDiagnostics = { source: `${TAIFEX}${path}`, http_status: response.status, content_type: response.headers.get('content-type'), html_length: html.length, ...summarizeTXORawRows(rows) };
+    primaryDiagnostics = { source: `${TAIFEX}${path}`, http_status: response.status, content_type: response.headers.get('content-type'), html_length: html.length, phase: primaryPhase, fetch_headers_ms: primaryFetchHeadersMs, read_body_ms: primaryReadBodyMs, total_ms: Date.now() - primaryStartedAt, ...summarizeTXORawRows(rows) };
 
     if (response.ok && rows.length) {
       // A non-empty HTML table is not sufficient: validate TXO contracts
