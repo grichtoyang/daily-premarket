@@ -3536,7 +3536,11 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
       tx_row_count: txRows.length,
       type0_row_count: type0Rows.length,
       selected_row_count: f.found ? type0Rows.length : null,
-      error: null
+      error: null,
+      content_type: f.diagnostics?.content_type ?? null,
+      body_length: f.diagnostics?.body_length ?? null,
+      body_preview: f.diagnostics?.body_preview ?? null,
+      parse_error: f.diagnostics?.parse_error ?? null
     };
 
     if (f.found) {
