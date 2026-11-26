@@ -765,6 +765,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
   let primaryFetchHeadersMs = null;
   let primaryReadBodyMs = null;
   let fallbackDurationMs = null;
+  let fallbackReturnedDate = null;
   let primaryError = null;
   let fallbackError = null;
 
@@ -847,6 +848,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
       } finally {
         fallbackDurationMs = Date.now() - fallbackStartedAt;
       }
+      fallbackReturnedDate = fb?.date || null;
       if (fb?.found) {
         return {
           response: fallbackResponseFromRows(fb.rows),
@@ -907,7 +909,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
       : /timeout|deadline exceeded|aborted/i.test(String(primaryError || ""))
         ? (/timeout|deadline exceeded|aborted/i.test(String(fallbackError || "")) ? "BOTH_SOURCES_TIMEOUT" : fallbackError ? "PRIMARY_TIMEOUT_FALLBACK_FAILED" : "PRIMARY_TIMEOUT_FALLBACK_NOT_COMPLETED")
         : (primaryError ? (fallbackError ? "BOTH_SOURCES_FAILED" : "PRIMARY_FAILED_FALLBACK_NOT_COMPLETED") : "SOURCES_UNAVAILABLE"),
-    fallback_diagnostics: { attempted: path === '/cht/3/optDailyMarketReport', source: path === '/cht/3/optDailyMarketReport' ? 'taifex_openapi' : null, requested_date: path === '/cht/3/optDailyMarketReport' ? queryDateToISO(new URLSearchParams(body).get('queryDate')) : null, returned_date: null, returned_rows: 0, parsed_contracts: 0, duration_ms: fallbackDurationMs, error: fallbackError },
+    fallback_diagnostics: { attempted: path === '/cht/3/optDailyMarketReport', source: path === '/cht/3/optDailyMarketReport' ? 'taifex_openapi' : null, requested_date: path === '/cht/3/optDailyMarketReport' ? queryDateToISO(new URLSearchParams(body).get('queryDate')) : null, returned_date: fallbackReturnedDate, returned_rows: 0, parsed_contracts: 0, duration_ms: fallbackDurationMs, error: fallbackError },
     error_code: path === "/cht/3/optDailyMarketReport"
       ? txoChainErrorCode(primaryError, fallbackError)
       : "TAIFEX_UPSTREAM_UNAVAILABLE"
