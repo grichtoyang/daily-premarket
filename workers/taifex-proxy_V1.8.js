@@ -760,6 +760,11 @@ function txoChainErrorCode(primaryError, fallbackError) {
 async function fetchTAIFEXPost(path, body, options = {}) {
   let primaryDiagnostics = { source: `${TAIFEX}${path}`, http_status: null, content_type: null, html_length: 0, extracted_rows: 0, column_distribution: {}, first_cell_distribution: {}, txo_rows: 0, call_rows: 0, put_rows: 0, option_type_distribution: {}, invalid_strike_rows: 0, sample_rows: [] };
 
+  const primaryStartedAt = Date.now();
+  let primaryPhase = "fetch_headers";
+  let primaryFetchHeadersMs = null;
+  let primaryReadBodyMs = null;
+  let fallbackDurationMs = null;
   let primaryError = null;
   let fallbackError = null;
 
@@ -779,8 +784,12 @@ async function fetchTAIFEXPost(path, body, options = {}) {
       body,
       ...gexFetchOptions(options)
     });
-
+    primaryFetchHeadersMs = Date.now() - primaryStartedAt;
+    primaryPhase = "read_body";
+    const bodyStartedAt = Date.now();
     const html = await response.text();
+    primaryReadBodyMs = Date.now() - bodyStartedAt;
+    primaryPhase = "parse_body";
     const rows = parseRows(html);
     primaryDiagnostics = { source: `${TAIFEX}${path}`, http_status: response.status, content_type: response.headers.get('content-type'), html_length: html.length, ...summarizeTXORawRows(rows) };
 
@@ -813,6 +822,7 @@ async function fetchTAIFEXPost(path, body, options = {}) {
     }
   } catch (error) {
     primaryError = error?.message || String(error);
+    primaryDiagnostics = { ...primaryDiagnostics, phase: primaryPhase, fetch_headers_ms: primaryFetchHeadersMs, read_body_ms: primaryReadBodyMs, total_ms: Date.now() - primaryStartedAt, error: primaryError };
   }
 
   /* OpenAPI fallback: current/latest TXO chain only. */
@@ -828,7 +838,9 @@ async function fetchTAIFEXPost(path, body, options = {}) {
           ? options.fallbackTimeoutMs
           : options.timeoutMs
       };
+      const fallbackStartedAt = Date.now();
       const fb = await fetchOpenAPIChainForDate(requestedISO, fallbackOptions);
+      fallbackDurationMs = Date.now() - fallbackStartedAt;
       if (fb.found) {
         return {
           response: fallbackResponseFromRows(fb.rows),
@@ -839,8 +851,11 @@ async function fetchTAIFEXPost(path, body, options = {}) {
           source_url: "https://openapi.taifex.com.tw/v1/DailyMarketReportOpt",
           requested_date: requestedISO,
           primary_error: primaryError,
-          primary_diagnostics: primaryDiagnostics,
-          fallback_diagnostics: { attempted: true, source: 'taifex_openapi', requested_date: requestedISO, returned_rows: fb.rows.length, parsed_contracts: fb.rows.length }
+          primary_diagnostics: { ...primaryDiagnostics, phase: primaryPhase, fetch_headers_ms: primaryFetchHeadersMs, read_body_ms: primaryReadBodyMs, total_ms: Date.now() - primaryStartedAt },
+          fallback_duration_ms: fallbackDurationMs,
+          fallback_error: null,
+          diagnostic_class: "PRIMARY_FAILED_FALLBACK_SUCCESS",
+          fallback_diagnostics: { attempted: true, source: 'taifex_openapi', requested_date: requestedISO, returned_rows: fb.rows.length, parsed_contracts: fb.rows.length, duration_ms: fallbackDurationMs }
         };
       }
       fallbackError = fb.reason || "TAIFEX OpenAPI fallback returned no valid rows";
@@ -879,8 +894,12 @@ async function fetchTAIFEXPost(path, body, options = {}) {
     source_url: `${TAIFEX}${path}`,
     primary_error: primaryError,
     fallback_error: fallbackError,
-    primary_diagnostics: primaryDiagnostics,
-    fallback_diagnostics: { attempted: path === '/cht/3/optDailyMarketReport', source: path === '/cht/3/optDailyMarketReport' ? 'taifex_openapi' : null, requested_date: path === '/cht/3/optDailyMarketReport' ? queryDateToISO(new URLSearchParams(body).get('queryDate')) : null, returned_rows: 0, parsed_contracts: 0 },
+    primary_diagnostics: { ...primaryDiagnostics, phase: primaryPhase, fetch_headers_ms: primaryFetchHeadersMs, read_body_ms: primaryReadBodyMs, total_ms: Date.now() - primaryStartedAt },
+    fallback_duration_ms: fallbackDurationMs,
+    diagnostic_class: /timeout|deadline exceeded|aborted/i.test(String(primaryError || ""))
+      ? (/timeout|deadline exceeded|aborted/i.test(String(fallbackError || "")) ? "BOTH_SOURCES_TIMEOUT" : fallbackError ? "PRIMARY_TIMEOUT_FALLBACK_FAILED" : "PRIMARY_TIMEOUT_FALLBACK_NOT_COMPLETED")
+      : (primaryError ? (fallbackError ? "BOTH_SOURCES_FAILED" : "PRIMARY_FAILED_FALLBACK_NOT_COMPLETED") : "SOURCES_UNAVAILABLE"),
+    fallback_diagnostics: { attempted: path === '/cht/3/optDailyMarketReport', source: path === '/cht/3/optDailyMarketReport' ? 'taifex_openapi' : null, requested_date: path === '/cht/3/optDailyMarketReport' ? queryDateToISO(new URLSearchParams(body).get('queryDate')) : null, returned_rows: 0, parsed_contracts: 0, duration_ms: fallbackDurationMs, error: fallbackError },
     error_code: path === "/cht/3/optDailyMarketReport"
       ? txoChainErrorCode(primaryError, fallbackError)
       : "TAIFEX_UPSTREAM_UNAVAILABLE"
@@ -3439,7 +3458,16 @@ async function fetchTXOChainForDate(taifexDate, options = {}) {
       error_code: result.error_code || "TXO_CHAIN_SOURCES_UNAVAILABLE",
       diagnostics: {
         primary_error: result.primary_error || null,
-        fallback_error: result.fallback_error || null
+        primary_phase: result.primary_diagnostics?.phase || null,
+        primary_fetch_headers_ms: result.primary_diagnostics?.fetch_headers_ms ?? null,
+        primary_read_body_ms: result.primary_diagnostics?.read_body_ms ?? null,
+        primary_total_ms: result.primary_diagnostics?.total_ms ?? null,
+        primary_http_status: result.primary_diagnostics?.http_status ?? null,
+        primary_content_type: result.primary_diagnostics?.content_type ?? null,
+        primary_body_length: result.primary_diagnostics?.html_length ?? null,
+        fallback_error: result.fallback_error || null,
+        fallback_duration_ms: result.fallback_duration_ms ?? null,
+        diagnostic_class: result.diagnostic_class || null
       }
     };
   }
@@ -3650,7 +3678,7 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
         c = { found: false, reason: error?.message || String(error) };
       }
       if (!c.found) {
-        console.log(`snapshot chain attempt ${attempt} failed: ${c.error_code || c.reason || "unavailable"}`);
+        console.log(JSON.stringify({ event: "snapshot_chain_attempt", date: taipeiISO, attempt, error_code: c.error_code || null, reason: c.reason || null, ...(c.diagnostics || {}) }));
         if (attempt < 2) await new Promise(r => setTimeout(r, 3000));
       }
     }
