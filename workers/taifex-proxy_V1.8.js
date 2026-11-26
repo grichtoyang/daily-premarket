@@ -3532,6 +3532,13 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
         String(r.TypeOfTraders) === "0"
       );
     }
+  } catch (error) {
+    bundle.diagnostics.top10fut.error =
+      error?.message || String(error);
+    /* keep partial bundle */
+  }
+
+  try {
     const o = await fetchTAIFEXOpenAPI(
       "/OpenInterestOfLargeTradersOptions"
     );
@@ -3541,11 +3548,7 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
         String(r.TypeOfTraders) === "0"
       );
     }
-  } catch (error) {
-    bundle.diagnostics.top10fut.error =
-      error?.message || String(error);
-    /* keep partial bundle */
-  }
+  } catch (_) { /* keep partial bundle */ }
 
   /* Chain 每次請求已有 25 秒整體 deadline；最多 2 次，間隔 3 秒，避免長時間重試放大上游負載。 */
   try {
