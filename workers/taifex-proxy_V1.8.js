@@ -207,8 +207,8 @@ async function fetchTAIFEXOpenAPI(path, options = {}) {
       const contentType = response.headers.get("content-type") || null;
       const bodyPreview = text
         .slice(0, 300)
-        .replace(/[\\u0000-\\u001F\\u007F]/g, " ")
-        .replace(/\\s+/g, " ")
+        .replace(/[\x00-\x1F\x7F]/g, " ")
+        .replace(/\s+/g, " ")
         .trim();
 
       return {
