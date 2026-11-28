@@ -385,6 +385,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('"gex_flip_diagnostics": _gex_flip_diag', taifex_source)
         self.assertIn('"gex_wide_range_flip_diagnostics": _gex_wide_flip_diag', taifex_source)
         self.assertIn('"flip_meta": flip_meta', taifex_source)
+        self.assertIn('"flip_proxy_expiry_selection_diagnostics": _flip_proxy_expiry_diag', taifex_source)
+        self.assertIn('"gex_expiry_selection_diagnostics": _gex_expiry_diag', taifex_source)
+        self.assertIn('"gex_flip_diagnostics": _gex_flip_diag', taifex_source)
+        self.assertIn('"gex_wide_range_flip": _gex_wide_flip', taifex_source)
+
         self.assertIn('與預期夜盤交易日 {_today} 不一致', taifex_source)
         self.assertIn('**正式 GEX 模型 Gamma Flip 零交叉搜尋診斷**', source)
         self.assertIn('本段診斷與上方 Proxy Flip 使用同一來源欄位', source)
@@ -399,6 +404,9 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('"gamma_diagnostics": _gm.get("diagnostics")', source)
         self.assertIn('("Gamma Flip 價位", _f2(_gm[\'flip\']), _gm_flip_src)', source)
         self.assertIn('"formal_flip_diagnostics": _gm.get("gex_flip_diagnostics")', source)
+        self.assertIn('"formal_wide_range_flip_diagnostics": _gm.get("gex_wide_range_flip_diagnostics")', source)
+        self.assertIn('_gex_flip_diag = _gm.get("gex_flip_diagnostics") or {}', source)
+
         self.assertIn('"formal_wide_range_flip": _gm.get("gex_wide_range_flip")', source)
         self.assertIn('"proxy_expiry_selection_diagnostics": _gm.get("flip_proxy_expiry_selection_diagnostics")', source)
         self.assertIn('A("### 16．選擇權法人日盤、夜盤交易")', source)
