@@ -2,7 +2,7 @@
 
 - 報告日期：`2026-11-28`
 - T0 交易日期：`2026-11-27`
-- 首次資料產出時間：`2026-11-28 12:51:09`
+- 首次資料產出時間：`2026-11-28 11:04:08`
 - 本次更新開始時間：`2026-11-28 12:51:09`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
@@ -79,7 +79,7 @@
 
 ### 5. 借券資料
 
-**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWT93U 與上櫃 tpex_margin_sbl，缺值市場不納入加總。
+**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWSE TWT93U 與上櫃 TPEx S47，缺值市場不納入加總。
 
 | 項目 | 數值 | 單位 | 資料來源 |
 |---|---|---|---|
@@ -557,6 +557,7 @@
 
 | 項目 | 數值 | 資料來源 |
 |---|---|---|
+| Gamma Flip 狀態 | 前一交易日 Proxy（2026-11-26；僅供歷史參考，不作當日正式 Flip） | options-market-structure-compact (proxy) |
 | Gamma Flip 價位 | 37,182.94 | options-market-structure-compact (proxy) |
 | Gamma Flip 來源到期月份 | 202611F4 | options-market-structure-compact (proxy) |
 | Gamma Flip 來源到期日 | 2026-11-27 | options-market-structure-compact (proxy) |
@@ -569,6 +570,7 @@
 | 模型納入 Call OI（通過 GEX 計算條件） | 30,494 | TAIFEX Gamma model（逐履約價） |
 | 原始 Put OI（選定到期日全部有效 Chain 合約） | 8,722 | options-gamma-levels（GEX 到期日） |
 | 模型納入 Put OI（通過 GEX 計算條件） | 8,722 | TAIFEX Gamma model（逐履約價） |
+- 使用限制：此值為前一交易日 Proxy，並非 T0 正式 Gamma Flip；其到期月份可能與 T0 正式 GEX 不同，不得直接互相驗證或作為當日 Gamma 區域判斷。
 - OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。
 
 **Gamma Flip Proxy 零交叉搜尋診斷**
