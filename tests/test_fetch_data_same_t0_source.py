@@ -1,10 +1,48 @@
 import unittest
 
-from src.fetch_data import merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi, _adr_stale_note
+from src.fetch_data import (
+    merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi, _adr_stale_note,
+    _market_coverage, _validate_market_quote_completeness,
+)
 from src.sources.us_market import _apply_adr_freshness
 
 
 class SameT0SourceAttributionTests(unittest.TestCase):
+
+    def test_market_coverage_counts_unavailable_and_partial_quotes(self):
+        market_data = {
+            "亞洲主要指數": [
+                ("日經225", {"symbol": "^N225", "price": None, "change": None, "pct": None}),
+            ],
+            "美股指數": [
+                ("S&P 500", {"symbol": "^GSPC", "price": 7297.49, "change": None, "pct": 1.6}),
+            ],
+        }
+        partial, unavailable = _market_coverage(market_data)
+        self.assertEqual(len(unavailable), 1)
+        self.assertIn("日經225", unavailable[0])
+        self.assertEqual(len(partial), 1)
+        self.assertIn("change", partial[0])
+
+    def test_market_report_validator_rejects_unavailable_market_quote(self):
+        text = """## 二、重要市場
+| 項目 | 價格 | 漲跌 |
+|---|---|---|
+| 台積電ADR | unavailable | unavailable |
+## 三、期貨
+"""
+        with self.assertRaisesRegex(ValueError, "重要市場行情仍有缺值"):
+            _validate_market_quote_completeness(text)
+
+    def test_market_report_validator_accepts_complete_market_quote(self):
+        text = """## 二、重要市場
+| 項目 | 價格 | 漲跌 |
+|---|---|---|
+| 台積電ADR | 353.34 | +11.00 |
+## 三、期貨
+"""
+        _validate_market_quote_completeness(text)
+
     def test_raw_chain_oi_and_model_eligible_oi_are_reconciled_separately(self):
         levels = [
             {"call_oi": 12000, "put_oi": 3000},

@@ -64,40 +64,104 @@ def quote(sym: str) -> dict:
         print(f"[WARN] yahoo {sym} failed: {e}")
     return out
 
-def _apply_asia_freshness(rows: list[tuple], expected_date: str | None) -> list[tuple]:
-    """Fail closed per index when Yahoo's final daily bar is older than report T0.
 
-    Do not use the newest date across the whole group as a proxy for every
-    market: one current index must never make another market's stale quote look
-    fresh. A quote without a usable exchange-local date is also not verifiable.
+def _quote_v7_batch(symbols: list[str]) -> dict[str, dict]:
+    """Batch fallback to Yahoo's quote endpoint when Chart API bars are stale.
+
+    The regularMarketTime timestamp is required: a price without an exchange-local
+    timestamp is not eligible to replace a stale daily bar.
     """
-    if not expected_date:
+    if not symbols:
+        return {}
+    out: dict[str, dict] = {}
+    params = {"symbols": ",".join(dict.fromkeys(symbols))}
+    for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
+        try:
+            r = requests.get(
+                f"https://{host}/v7/finance/quote",
+                params=params,
+                headers={**HEADERS, "Accept": "application/json"},
+                timeout=15,
+            )
+            r.raise_for_status()
+            payload = r.json().get("quoteResponse") or {}
+            if payload.get("error"):
+                raise RuntimeError(str(payload["error"]))
+            retrieved_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+            for item in payload.get("result") or []:
+                symbol = item.get("symbol")
+                price = item.get("regularMarketPrice")
+                timestamp = item.get("regularMarketTime")
+                exchange_timezone = item.get("exchangeTimezoneName")
+                if not symbol or price is None:
+                    continue
+                date_value = (
+                    _exchange_date(timestamp, exchange_timezone)
+                    if timestamp is not None and exchange_timezone else None
+                )
+                change = item.get("regularMarketChange")
+                pct = item.get("regularMarketChangePercent")
+                previous = item.get("regularMarketPreviousClose")
+                if change is None and previous not in (None, 0):
+                    change = float(price) - float(previous)
+                if pct is None and previous not in (None, 0) and change is not None:
+                    pct = float(change) / float(previous) * 100
+                out[symbol] = {
+                    "symbol": symbol,
+                    "price": price,
+                    "change": change,
+                    "pct": pct,
+                    "date": date_value,
+                    "retrieved_at": retrieved_at,
+                    "exchange_timezone": exchange_timezone,
+                    "source": "Yahoo Finance Quote API v7（Chart API 備援）",
+                    "ok": date_value is not None,
+                }
+            if len(out) >= len(set(symbols)):
+                break
+        except Exception as e:  # noqa: BLE001
+            print(f"[WARN] yahoo quote fallback host={host} failed: {e}")
+    print(
+        f"[INFO] yahoo quote fallback requested={len(set(symbols))} "
+        f"returned={len(out)}"
+    )
+    return out
+
+
+def _apply_asia_freshness(rows: list[tuple], expected_date: str | dict | None) -> list[tuple]:
+    """Validate each Asian quote against its own exchange's latest completed session.
+
+    A mapping is keyed by Yahoo symbol. A plain date remains supported for older
+    callers/tests. Missing quotes or unavailable exchange calendars fail closed.
+    """
+    if expected_date is None:
         return rows
     for name, q in rows:
-        if q.get("price") is None:
-            continue
+        symbol = q.get("symbol")
+        expected = expected_date.get(symbol) if isinstance(expected_date, dict) else expected_date
         actual_date = q.get("date")
-        if actual_date and actual_date >= expected_date:
+        if q.get("price") is not None and expected and actual_date == expected:
             continue
+        if q.get("price") is None:
+            reason = f"{name}本次未取得報價；該市場最近已收盤交易日 {expected or '無法驗證'}"
+        elif not expected:
+            reason = f"{name}無法取得交易所最近已收盤交易日，日期驗證失敗"
+        else:
+            reason = f"{name}資料日期 {actual_date or '缺失'} 與該市場最近已收盤交易日 {expected} 不一致"
         q["stale"] = True
-        q["stale_reason"] = (
-            f"{name}資料日期 {actual_date or '缺失'} 早於或無法核對報告 T0 {expected_date}"
-        )
+        q["stale_reason"] = reason
         q["price"] = None
         q["change"] = None
         q["pct"] = None
         q["ok"] = False
-        q["source"] = "Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除）"
+        q["source"] = f"Yahoo Finance（{reason}，已排除）"
     return rows
 
 
-def _expected_us_session_date(now: datetime | None = None) -> str:
-    """Return the latest fully closed NYSE session date in New York local context.
-
-    Uses the exchange calendar (including holidays and early closes), not Taiwan T0
-    and not another Yahoo quote as a proxy. Raises when the calendar is unavailable;
-    callers must fail closed rather than treating an unverified ADR as fresh.
-    """
+def _expected_exchange_session_date(
+    calendar_name: str, timezone_name: str, now: datetime | None = None
+) -> str:
+    """Return the latest fully closed session for one exchange calendar."""
     import pandas as pd
     import pandas_market_calendars as mcal
 
@@ -105,18 +169,43 @@ def _expected_us_session_date(now: datetime | None = None) -> str:
     if now_utc.tzinfo is None:
         raise ValueError("now must be timezone-aware")
     now_utc = now_utc.astimezone(timezone.utc)
-    ny_date = now_utc.astimezone(ZoneInfo("America/New_York")).date()
-    calendar = mcal.get_calendar("NYSE")
+    local_date = now_utc.astimezone(ZoneInfo(timezone_name)).date()
+    calendar = mcal.get_calendar(calendar_name)
     schedule = calendar.schedule(
-        start_date=(ny_date - timedelta(days=30)).isoformat(),
-        end_date=ny_date.isoformat(),
+        start_date=(local_date - timedelta(days=30)).isoformat(),
+        end_date=local_date.isoformat(),
     )
     if schedule.empty:
-        raise RuntimeError("NYSE calendar returned no sessions")
-    closed = schedule[schedule["market_close"] <= pd.Timestamp(now_utc)]
+        raise RuntimeError(f"{calendar_name} calendar returned no sessions")
+    close_column = "market_close" if "market_close" in schedule.columns else "close"
+    closed = schedule[schedule[close_column] <= pd.Timestamp(now_utc)]
     if closed.empty:
-        raise RuntimeError("No completed NYSE session found in calendar window")
+        raise RuntimeError(f"No completed {calendar_name} session found in calendar window")
     return closed.index[-1].date().isoformat()
+
+
+def _expected_asia_session_dates(now: datetime | None = None) -> dict[str, str | None]:
+    """Resolve latest completed session independently for each Asian exchange."""
+    exchanges = {
+        "^N225": ("JPX", "Asia/Tokyo"),
+        "^KS11": ("XKRX", "Asia/Seoul"),
+        "^HSI": ("HKEX", "Asia/Hong_Kong"),
+        "000001.SS": ("SSE", "Asia/Shanghai"),
+        "399001.SZ": ("SSE", "Asia/Shanghai"),
+    }
+    result: dict[str, str | None] = {}
+    for symbol, (calendar_name, timezone_name) in exchanges.items():
+        try:
+            result[symbol] = _expected_exchange_session_date(calendar_name, timezone_name, now)
+        except Exception as e:  # noqa: BLE001
+            print(f"[WARN] {calendar_name} calendar unavailable for {symbol}: {e}")
+            result[symbol] = None
+    return result
+
+
+def _expected_us_session_date(now: datetime | None = None) -> str:
+    """Return the latest fully closed NYSE session, including holidays/early closes."""
+    return _expected_exchange_session_date("NYSE", "America/New_York", now)
 
 
 def _apply_adr_freshness(rows: list[tuple], expected_session: str | None) -> list[tuple]:
@@ -146,21 +235,82 @@ def _apply_adr_freshness(rows: list[tuple], expected_session: str | None) -> lis
     return rows
 
 
+
+def _refresh_stale_market_quotes(
+    market_data: dict,
+    expected_asia: dict[str, str | None],
+    expected_us_session: str | None,
+) -> None:
+    """Try Yahoo Quote API v7 before rejecting stale/missing Asia and ADR Chart bars."""
+    pending: dict[str, str] = {}
+    for group, rows in market_data.items():
+        for _, q in rows:
+            symbol = q.get("symbol")
+            if group == "亞洲主要指數":
+                expected = expected_asia.get(symbol)
+            elif group == "台灣相關ADR":
+                expected = expected_us_session
+            else:
+                continue
+            if expected and (q.get("price") is None or q.get("date") != expected):
+                pending[symbol] = expected
+    if not pending:
+        return
+
+    started = datetime.now(timezone.utc)
+    fallback = _quote_v7_batch(list(pending))
+    accepted = 0
+    for group, rows in market_data.items():
+        for name, q in rows:
+            symbol = q.get("symbol")
+            expected = pending.get(symbol)
+            if not expected:
+                continue
+            candidate = fallback.get(symbol)
+            if (
+                candidate
+                and candidate.get("price") is not None
+                and candidate.get("date") == expected
+                and candidate.get("change") is not None
+                and candidate.get("pct") is not None
+            ):
+                q.update(candidate)
+                q["fallback_used"] = True
+                accepted += 1
+                print(f"[INFO] yahoo quote fallback accepted {symbol} date={expected}")
+            else:
+                actual = candidate.get("date") if candidate else "no_quote"
+                print(
+                    f"[WARN] yahoo quote fallback not accepted {symbol} "
+                    f"expected={expected} actual={actual}"
+                )
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    print(
+        f"[TIMING] source=us_market.quote_fallback elapsed={elapsed:.2f}s "
+        f"requested={len(pending)} accepted={accepted}"
+    )
+
+
 def get_all(expected_date: str | None = None) -> dict:
-    """{group: [(name, quote)]}。亞洲指數按其既有 T0 規則；ADR 按 NYSE 日曆驗證。"""
+    """{group: [(name, quote)]}; stale Asia/ADR Chart bars get a timestamped quote-API fallback."""
     from concurrent.futures import ThreadPoolExecutor
     out: dict = {}
     with ThreadPoolExecutor(max_workers=5) as ex:
         for g, items in GROUPS.items():
             out[g] = list(ex.map(lambda it: (it[0], quote(it[1])), items))
+
+    now_utc = datetime.now(timezone.utc)
+    expected_asia = _expected_asia_session_dates(now_utc)
+    try:
+        expected_us_session = _expected_us_session_date(now_utc)
+    except Exception as e:  # noqa: BLE001
+        print(f"[WARN] NYSE calendar unavailable; ADR freshness fails closed: {e}")
+        expected_us_session = None
+
+    _refresh_stale_market_quotes(out, expected_asia, expected_us_session)
     if "亞洲主要指數" in out:
-        out["亞洲主要指數"] = _apply_asia_freshness(out["亞洲主要指數"], expected_date)
+        out["亞洲主要指數"] = _apply_asia_freshness(out["亞洲主要指數"], expected_asia)
     if "台灣相關ADR" in out:
-        try:
-            expected_us_session = _expected_us_session_date()
-        except Exception as e:  # noqa: BLE001
-            print(f"[WARN] NYSE calendar unavailable; ADR freshness fails closed: {e}")
-            expected_us_session = None
         out["台灣相關ADR"] = _apply_adr_freshness(out["台灣相關ADR"], expected_us_session)
     return out
 

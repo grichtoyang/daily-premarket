@@ -6,6 +6,7 @@ import pandas as pd
 
 from src.sources.us_market import (
     _apply_asia_freshness, _apply_adr_freshness, _expected_us_session_date,
+    _expected_asia_session_dates, _quote_v7_batch, _refresh_stale_market_quotes,
 )
 
 
@@ -72,6 +73,94 @@ class AsianMarketFreshnessTests(unittest.TestCase):
         self.assertIsNone(result[1][1]["price"])
         self.assertIsNone(result[1][1]["change"])
         self.assertIsNone(result[1][1]["pct"])
+
+
+    def test_asia_freshness_uses_exchange_specific_expected_dates(self):
+        rows = self._rows([
+            ("日經225", "^N225", 56000.0, "2026-11-26"),
+            ("香港恆生", "^HSI", 22000.0, "2026-11-27"),
+        ])
+        expected = {"^N225": "2026-11-26", "^HSI": "2026-11-27"}
+        result = _apply_asia_freshness(rows, expected)
+        self.assertTrue(result[0][1]["ok"])
+        self.assertFalse(result[0][1].get("stale", False))
+        self.assertTrue(result[1][1]["ok"])
+        self.assertFalse(result[1][1].get("stale", False))
+
+    def test_missing_asia_quote_is_marked_stale(self):
+        rows = self._rows([("日經225", "^N225", None, None)])
+        result = _apply_asia_freshness(rows, {"^N225": "2026-11-27"})
+        quote = result[0][1]
+        self.assertTrue(quote["stale"])
+        self.assertFalse(quote["ok"])
+        self.assertIsNone(quote["price"])
+        self.assertIn("本次未取得報價", quote["stale_reason"])
+
+    def test_asia_calendar_dates_are_resolved_per_exchange(self):
+        expected = {"JPX": "2026-11-27", "XKRX": "2026-11-27",
+                    "HKEX": "2026-11-27", "SSE": "2026-11-27"}
+        with patch(
+            "src.sources.us_market._expected_exchange_session_date",
+            side_effect=lambda calendar, timezone_name, now: expected[calendar],
+        ):
+            result = _expected_asia_session_dates(
+                datetime(2026, 11, 28, 1, 45, tzinfo=timezone.utc)
+            )
+        self.assertEqual(result, {
+            "^N225": "2026-11-27", "^KS11": "2026-11-27",
+            "^HSI": "2026-11-27", "000001.SS": "2026-11-27",
+            "399001.SZ": "2026-11-27",
+        })
+
+    def test_quote_api_fallback_parses_exchange_timestamp(self):
+        timestamp = int(datetime(2026, 11, 27, 21, 0, tzinfo=timezone.utc).timestamp())
+        response = unittest.mock.Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"quoteResponse": {"result": [{
+            "symbol": "TSM", "regularMarketPrice": 353.34,
+            "regularMarketChange": 11.0, "regularMarketChangePercent": 3.21,
+            "regularMarketTime": timestamp, "exchangeTimezoneName": "America/New_York",
+        }]}}
+        with patch("requests.get", return_value=response):
+            result = _quote_v7_batch(["TSM"])
+        self.assertEqual(result["TSM"]["date"], "2026-11-27")
+        self.assertEqual(result["TSM"]["price"], 353.34)
+        self.assertEqual(result["TSM"]["change"], 11.0)
+        self.assertEqual(result["TSM"]["pct"], 3.21)
+        self.assertIn("Quote API v7", result["TSM"]["source"])
+
+    def test_stale_chart_quote_is_replaced_only_by_matching_fallback_date(self):
+        chart_quote = {
+            "symbol": "^N225", "price": 59000.0, "change": 10.0, "pct": 0.1,
+            "date": "2026-11-26", "source": "Yahoo Finance Chart API", "ok": True,
+        }
+        fresh_quote = {
+            "symbol": "^N225", "price": 60000.0, "change": 1000.0, "pct": 1.69,
+            "date": "2026-11-27", "retrieved_at": "2026-11-28T01:45:00+00:00",
+            "exchange_timezone": "Asia/Tokyo",
+            "source": "Yahoo Finance Quote API v7（Chart API 備援）", "ok": True,
+        }
+        data = {"亞洲主要指數": [("日經225", chart_quote)]}
+        with patch("src.sources.us_market._quote_v7_batch", return_value={"^N225": fresh_quote}):
+            _refresh_stale_market_quotes(data, {"^N225": "2026-11-27"}, None)
+        self.assertEqual(chart_quote["price"], 60000.0)
+        self.assertEqual(chart_quote["date"], "2026-11-27")
+        self.assertTrue(chart_quote["fallback_used"])
+
+    def test_stale_fallback_quote_is_not_used(self):
+        chart_quote = {
+            "symbol": "^N225", "price": 59000.0, "change": 10.0, "pct": 0.1,
+            "date": "2026-11-26", "source": "Yahoo Finance Chart API", "ok": True,
+        }
+        stale_fallback = {
+            "symbol": "^N225", "price": 58000.0, "change": -1000.0, "pct": -1.7,
+            "date": "2026-11-25", "source": "Yahoo Finance Quote API v7", "ok": True,
+        }
+        data = {"亞洲主要指數": [("日經225", chart_quote)]}
+        with patch("src.sources.us_market._quote_v7_batch", return_value={"^N225": stale_fallback}):
+            _refresh_stale_market_quotes(data, {"^N225": "2026-11-27"}, None)
+        self.assertEqual(chart_quote["price"], 59000.0)
+        self.assertNotIn("fallback_used", chart_quote)
 
     def test_missing_expected_date_preserves_legacy_behavior(self):
         rows = self._rows([

@@ -137,12 +137,68 @@ def _combine_source_labels(*sources: str) -> str:
 
 def _coverage_status_lines(partial: list[str], unavailable: list[str]) -> list[str]:
     """Render partial and unavailable fields as separate, explicit DATA_REPORT lists."""
-    partial_fields = list(partial or [])
-    unavailable_fields = list(unavailable or [])
+    partial_fields = list(dict.fromkeys(partial or []))
+    unavailable_fields = list(dict.fromkeys(unavailable or []))
     return [
         f"- 部分取得欄位 ({len(partial_fields)})：{', '.join(partial_fields) if partial_fields else '無'}",
         f"- 未取得欄位 ({len(unavailable_fields)})：{', '.join(unavailable_fields) if unavailable_fields else '無'}",
     ]
+
+
+def _market_coverage(market_data: dict) -> tuple[list[str], list[str]]:
+    """Count missing/partial quote fields across every overseas market table."""
+    partial: list[str] = []
+    unavailable: list[str] = []
+    for group, rows in (market_data or {}).items():
+        for name, quote_data in rows or []:
+            q = quote_data if isinstance(quote_data, dict) else {}
+            symbol = q.get("symbol") or name
+            label = f"{group}.{name}({symbol})"
+            if q.get("price") is None:
+                unavailable.append(label)
+                continue
+            missing = [
+                field for field in ("change", "pct")
+                if q.get(field) is None
+            ]
+            if missing:
+                partial.append(f"{label}.{','.join(missing)}")
+    return partial, unavailable
+
+
+def _treasury_coverage(yields: dict) -> tuple[list[str], list[str]]:
+    """Count missing US Treasury yield/one-day-change fields by tenor."""
+    partial: list[str] = []
+    unavailable: list[str] = []
+    for tenor, data in (yields or {}).items():
+        item = data if isinstance(data, dict) else {}
+        if item.get("yield") is None:
+            unavailable.append(f"美國國債殖利率.{tenor}")
+        elif item.get("chg") is None:
+            partial.append(f"美國國債殖利率.{tenor}.日變化")
+    return partial, unavailable
+
+
+def _validate_market_quote_completeness(text: str) -> None:
+    """Do not publish a DATA_REPORT whose required market quote table has missing cells."""
+    lines = text.splitlines()
+    try:
+        start = lines.index("## 二、重要市場")
+        end = lines.index("## 三、期貨")
+    except ValueError:
+        return  # Required-section validation reports the structural error separately.
+    missing_rows = []
+    for line in lines[start + 1:end]:
+        if not line.lstrip().startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if any(cell.lower() == MISSING for cell in cells):
+            missing_rows.append(cells[0] if cells else "unknown")
+    if missing_rows:
+        labels = "、".join(dict.fromkeys(missing_rows))
+        raise ValueError(
+            f"DATA_REPORT 重要市場行情仍有缺值 ({len(missing_rows)} 列)：{labels}"
+        )
 
 def _add3(a, b, c):
     """Return a complete three-party total; never present a partial sum as the total."""
@@ -1515,8 +1571,19 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _snap_unav.append("options.top10_change")
     if _top10_rollover_notes:
         A("- 換月註記：" + "；".join(_top10_rollover_notes))
-    _all_unav = s["unavailable"] + [f"futures.{x}" for x in fx["unavailable"]] + _snap_unav
-    for _coverage_line in _coverage_status_lines(s.get("partial", []), _all_unav):
+    _market_partial, _market_unav = _market_coverage(mk)
+    _treasury_partial, _treasury_unav = _treasury_coverage(y)
+    _all_unav = list(dict.fromkeys(
+        s["unavailable"]
+        + [f"futures.{x}" for x in fx["unavailable"]]
+        + _snap_unav
+        + _market_unav
+        + _treasury_unav
+    ))
+    _all_partial = list(dict.fromkeys(
+        s.get("partial", []) + _market_partial + _treasury_partial
+    ))
+    for _coverage_line in _coverage_status_lines(_all_partial, _all_unav):
         A(_coverage_line)
     A("")
     A("## 五、資料來源、時間與完整性")
@@ -1639,6 +1706,7 @@ def _validate_data_report_text(text: str, t0: str) -> None:
         raise ValueError("DATA_REPORT 缺少必要章節：" + "、".join(missing))
     if "\x00" in text or len(text.strip()) < 1000:
         raise ValueError("DATA_REPORT 內容為空或明顯不完整")
+    _validate_market_quote_completeness(text)
 
 
 def _atomic_write_data_report(out: Path, text: str, t0: str) -> None:
