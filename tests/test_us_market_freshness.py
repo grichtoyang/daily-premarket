@@ -41,7 +41,8 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             self.assertIsNone(quote["change"])
             self.assertIsNone(quote["pct"])
             self.assertEqual(quote["date"], "2026-11-19")
-            self.assertIn("早於或無法核對報告 T0", quote["stale_reason"])
+            self.assertTrue(quote["stale_reason"])
+            self.assertIn("不一致", quote["stale_reason"])
 
     def test_batch_with_t0_data_is_not_rejected(self):
         rows = self._rows([
@@ -208,7 +209,7 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             "indicators": {"quote": [{"close": [342.34, 353.34]}]},
         }]}}
         with patch("requests.get", return_value=response):
-            result = _quote_chart_meta("TSM")
+            result = _quote_chart_meta("TSM", "2026-11-27")
         self.assertEqual(result["date"], "2026-11-27")
         self.assertEqual(result["price"], 353.34)
         self.assertAlmostEqual(result["change"], 11.0)
