@@ -17,6 +17,7 @@ assert.match(section("function parseFuturesInstitutional", "function parseFuture
 assert.match(section("function parseFuturesInstitutional", "function parseFuturesInstitutionalOI"), /investment_trust/);
 assert.match(section("async function institutionalEndpoint", "/* =========================\n   Worker"), /parsed\.found !== true/);
 assert.match(source, /date: fb\.date/);
+assert.match(source, /sourceDateMatches = key !== "fut_trade_day" \|\| r\.date === taipeiISO/);
 
 const parserStart = source.indexOf("function parseFuturesInstitutional(rows)");
 const parserEnd = source.indexOf("function parseFuturesInstitutionalOI(rows)", parserStart);
