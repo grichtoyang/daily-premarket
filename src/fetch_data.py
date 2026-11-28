@@ -1322,7 +1322,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _gm_gex_date_src = f"{SRC_FX} (options-gamma-levels)" if _gm_gex_date is not None else MISSING
     _gm_expiry_month = _gm.get("gex_contract_month")
     _gm_expiry_date = _gm.get("gex_expiry_date")
-    _gex_diag_available = _gm.get("gex_status") == "available"
+    _gex_diag_available = _gm.get("flip_diagnostics_source") == "options-gamma-levels"
     _flip_proxy_used = _gm_flip_src == "options-market-structure-compact (proxy)"
     _flip_source_expiry_month = (
         _gm.get("flip_proxy_contract_month") if _flip_proxy_used
@@ -1396,7 +1396,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _wide_flip_diag = _gm.get("wide_range_flip_diagnostics") or {}
     if _wide_flip_diag:
         A("")
-        A("**正式 GEX 擴大區間診斷（±15%；不覆蓋正式 ±10% 結果）**" if _gex_diag_available else "**Gamma Flip Proxy 擴大區間診斷（±15%）**")
+        A("**正式 GEX 擴大區間診斷（±15%；不覆蓋正式 ±10% 結果）**" if _gm.get("wide_range_flip_diagnostics_source") == "options-gamma-levels" else "**Gamma Flip Proxy 擴大區間診斷（±15%）**")
         A(f"- 搜尋標的區間：{_f2(_wide_flip_diag.get('search_lower_underlying'))}～{_f2(_wide_flip_diag.get('search_upper_underlying'))}")
         A(f"- 搜尋步長／計算次數：{_f2(_wide_flip_diag.get('step'))}／{_wide_flip_diag.get('evaluations', MISSING)}")
         A(f"- 起點／終點 Net GEX：{_f2(_wide_flip_diag.get('start_net_gex_1pct'))}／{_f2(_wide_flip_diag.get('end_net_gex_1pct'))}")
@@ -1435,7 +1435,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                       "net_gex_1pct": _gm.get("net_gex_1pct"),
                       "gross_gex_1pct": _gm.get("gross_gex_1pct"),
                        "gamma_diagnostics": _gm.get("diagnostics"),
-                       "formal_flip_diagnostics": _gm.get("flip_diagnostics"), "flip_diagnostics_source": "options-gamma-levels" if _gex_diag_available else "options-market-structure-compact (proxy)",
+                       "formal_flip_diagnostics": _gm.get("flip_diagnostics"), "flip_diagnostics_source": _gm.get("flip_diagnostics_source"), "wide_range_flip_diagnostics_source": _gm.get("wide_range_flip_diagnostics_source"),
                        "wide_range_flip": _gm.get("wide_range_flip"),
                        "wide_range_flip_diagnostics": _gm.get("wide_range_flip_diagnostics"),
                        "expiry_selection_diagnostics": _gm.get("expiry_selection_diagnostics"),
