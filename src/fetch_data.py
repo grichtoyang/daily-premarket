@@ -1116,7 +1116,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         _feat = {"劇本一": "開高、續漲機率高", "劇本二": "先漲、小心開高走低",
                  "劇本三": "開低、續跌機率高", "劇本四": "先跌、開低反彈"}[_play]
     A(_tbl([("夜盤成交量占比 (夜盤量／(夜盤量＋日盤量))",
-             f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX if _nratio is not None else MISSING),
+             f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, _combine_source_labels(SRC_FX, _nvia) if _nratio is not None else MISSING),
             ("夜盤漲跌點數", _f2s(_nchg), _nchg_src),
             ("外資夜盤多空淨交易量", _f2s(_fgn), _source_if_available(_fgn, SRC_FX)),
             ("劇本分類", _play, "規則對應"),
@@ -1314,12 +1314,25 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _gm_src = _gm.get("wall_src") or MISSING
     _gm_flip_src = (_gm.get("flip_src") or MISSING) if _gm.get("flip") is not None else MISSING
     _gm_wall_date = _gm.get("wall_date") or _gm.get("date")
-    # Gamma Flip 價位可以 unavailable，但 GEX 計算資料日期仍然存在；日期不可綁定是否找到零交叉。
-    _gm_flip_date = _gm.get("date")
+    # GEX 與 Gamma Flip Proxy 可能來自不同端點、不同到期日；日期與到期月份分開標示。
+    _gm_flip_date = _gm.get("flip_date") or _gm.get("date")
+    _gm_gex_date = _gm.get("gex_date") or (_gm.get("date") if _gm.get("gex_status") == "available" else None)
     _gm_wall_date_src = f"{SRC_FX} ({_gm_src})" if _gm_wall_date is not None else MISSING
-    _gm_flip_date_src = f"{SRC_FX} ({_gm.get('src') or 'TAIFEX Gamma endpoints'})" if _gm_flip_date is not None else MISSING
+    _gm_flip_date_src = f"{SRC_FX} ({_gm_flip_src})" if _gm_flip_date is not None else MISSING
+    _gm_gex_date_src = f"{SRC_FX} (options-gamma-levels)" if _gm_gex_date is not None else MISSING
     _gm_expiry_month = _gm.get("gex_contract_month")
     _gm_expiry_date = _gm.get("gex_expiry_date")
+    _flip_proxy_used = _gm_flip_src == "options-market-structure-compact (proxy)"
+    _flip_source_expiry_month = (
+        _gm.get("flip_proxy_contract_month") if _flip_proxy_used
+        else _gm_expiry_month if _gm_flip_src == "options-gamma-levels"
+        else None
+    )
+    _flip_source_expiry_date = (
+        _gm.get("flip_proxy_expiry_date") if _flip_proxy_used
+        else _gm_expiry_date if _gm_flip_src == "options-gamma-levels"
+        else None
+    )
     _gm_primary_month = _gm.get("primary_expiry_month") or _w.get("expiry")
     _gm_expiry_src = "options-gamma-levels（GEX 實際使用）" if _gm_expiry_month else (
         SRC_FX if _gm_primary_month is not None else MISSING)
@@ -1336,27 +1349,33 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("### 14．Gamma Flip")
     A("")
     A(_tbl([("Gamma Flip 價位", _f2(_gm['flip']), _gm_flip_src),
+            ("Gamma Flip 來源到期月份", _flip_source_expiry_month or MISSING, _gm_flip_src),
+            ("Gamma Flip 來源到期日", _flip_source_expiry_date or MISSING, _gm_flip_src if _flip_source_expiry_date else MISSING),
+            ("Gamma Flip 資料日期", _gm_flip_date or MISSING, _gm_flip_date_src),
             ("GEX 實際使用到期月份", _gm_expiry_month or MISSING, _gm_expiry_src),
             ("GEX 實際到期日", _gm_expiry_date or MISSING, _gm_expiry_src if _gm_expiry_date else MISSING),
+            ("GEX 資料日期", _gm_gex_date or MISSING, _gm_gex_date_src),
             ("主到期月份（Key Levels）", _gm_primary_month or MISSING,
              SRC_FX if _gm_primary_month is not None else MISSING),
             ("原始 Call OI（選定到期日全部有效 Chain 合約）", _fi(_gm_call_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
             ("模型納入 Call OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "call_oi")), "TAIFEX Gamma model（逐履約價）"),
             ("原始 Put OI（選定到期日全部有效 Chain 合約）", _fi(_gm_put_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
-            ("模型納入 Put OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "put_oi")), "TAIFEX Gamma model（逐履約價）"),
-            ("GEX 資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)],
+            ("模型納入 Put OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "put_oi")), "TAIFEX Gamma model（逐履約價）")],
            ("項目", "數值", "資料來源")))
     A("- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。")
     _flip_diag = _gm.get("flip_diagnostics") or {}
     if _flip_diag:
         A("")
-        A("**Gamma Flip 零交叉搜尋診斷**")
+        A("**正式 GEX 模型 Gamma Flip 零交叉搜尋診斷**")
         A(f"- 搜尋標的區間：{_f2(_flip_diag.get('search_lower_underlying'))}～{_f2(_flip_diag.get('search_upper_underlying'))}")
         A(f"- 搜尋步長／計算次數：{_f2(_flip_diag.get('step'))}／{_flip_diag.get('evaluations', MISSING)}")
         A(f"- 起點／終點 Net GEX：{_f2(_flip_diag.get('start_net_gex_1pct'))}／{_f2(_flip_diag.get('end_net_gex_1pct'))}")
         A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_flip_diag.get('min_net_gex_1pct'))}／{_f2(_flip_diag.get('max_net_gex_1pct'))}")
         A(f"- 正負號交叉次數：{_flip_diag.get('zero_crossings', MISSING)}")
-        A("- 解讀限制：此 Flip 僅代表目前 Call 正／Put 負假設下的模型零交叉；Aggregate OI 無法識別 Dealer 實際淨部位，不等同市場實際 Dealer Gamma Flip。")
+        if _flip_proxy_used:
+            A("- 注意：上方 Gamma Flip 價位來自 options-market-structure-compact Proxy；本段是 options-gamma-levels 正式 GEX 模型的搜尋診斷。兩者算法與來源到期月份不同，不可視為同一 Flip 的驗證結果。")
+        else:
+            A("- 解讀限制：此正式 GEX Flip 僅代表目前 Call 正／Put 負假設下的模型零交叉；Aggregate OI 無法識別 Dealer 實際淨部位，不等同市場實際 Dealer Gamma Flip。")
     _expiry_diag = _gm.get("expiry_selection_diagnostics") or {}
     if _expiry_diag:
         A("")
@@ -1374,7 +1393,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _wide_flip_diag = _gm.get("wide_range_flip_diagnostics") or {}
     if _wide_flip_diag:
         A("")
-        A("**擴大區間 Gamma Flip 診斷（±15%；不覆蓋正式 ±10% 結果）**")
+        A("**正式 GEX 擴大區間診斷（±15%；不覆蓋正式 ±10% 結果）**")
         A(f"- 搜尋標的區間：{_f2(_wide_flip_diag.get('search_lower_underlying'))}～{_f2(_wide_flip_diag.get('search_upper_underlying'))}")
         A(f"- 搜尋步長／計算次數：{_f2(_wide_flip_diag.get('step'))}／{_wide_flip_diag.get('evaluations', MISSING)}")
         A(f"- 起點／終點 Net GEX：{_f2(_wide_flip_diag.get('start_net_gex_1pct'))}／{_f2(_wide_flip_diag.get('end_net_gex_1pct'))}")
@@ -1407,7 +1426,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A("#### GEX_LEVELS_JSON（僅衍生後逐履約價 GEX，不含原始報價；GEX 單位 NT$／標的變動 1%）")
         A("")
         A("```json")
-        A(json.dumps({"date": _gm.get("date"), "underlying": _gm.get("underlying"),
+        A(json.dumps({"date": _gm_gex_date or _gm.get("date"), "gex_date": _gm_gex_date, "flip_source": _gm.get("flip_src"), "flip_date": _gm_flip_date, "underlying": _gm.get("underlying"),
                       "unit": "NTD per 1% underlying move",
                       "model": _gm.get("model"), "quality": _gm.get("quality"),
                       "net_gex_1pct": _gm.get("net_gex_1pct"),
@@ -1430,7 +1449,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
              _f2s(_wl.get("maxpain")), SRC_SNAP if _wl.get("maxpain") is not None else _wall_unavailable)],
            ("項目", "數值", "資料來源")))
     A("")
-    A("### 17．選擇權法人日盤、夜盤交易")
+    A("### 16．選擇權法人日盤、夜盤交易")
     A("")
     _ot = fx.get("opt_trade", {})
     def _otg(sess, k):
@@ -1502,7 +1521,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(_tbl(_p_rows, ("法人", "日多方力道", "日空方力道", "日淨多空力道",
                      "夜多方力道", "夜空方力道", "夜淨多空力道", "日淨－夜淨", "資料來源")))
     A("")
-    A("### 18．選擇權前十大")
+    A("### 17．選擇權前十大")
     A("")
     _t10c = _timed_call("taifex_official.top10_opt.call", taifex_official.top10_opt, d["month"] or "", "買權", t0)
     _t10p = _timed_call("taifex_official.top10_opt.put", taifex_official.top10_opt, d["month"] or "", "賣權", t0)
@@ -1552,7 +1571,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             _t10r(_t10p_chg, "賣權前十大")],
            ("項目", "淨變化", "區間", "資料來源")))
     A("")
-    A("### 16．資料來源、時間、時區與狀態")
+    A("### 18．資料來源、時間、時區與狀態")
     A("")
     A("- 資料來源：TAIFEX 經 Cloudflare Worker Proxy")
     A(f"- 資料日期：{t0}；本次報告產製時間：{now}；時區：`Asia/Taipei`")
