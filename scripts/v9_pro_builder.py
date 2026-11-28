@@ -2095,7 +2095,7 @@ def run_17f_self_tests():
             assert "樣本偏少" in sparse["desc"]
             empty_db=str(pathlib.Path(tmp)/"empty.db")
             empty=calculate_historical_correlation(empty_db)
-            assert empty["matrix"] == [] and "累積中" in empty["desc"]
+            assert len(empty["matrix"]) == 8 and all(len(row) == 8 for row in empty["matrix"]) and all(value is None for row in empty["matrix"] for value in row) and "累積中" in empty["desc"]
             # A null field affects only pairs involving that field.
             conn=sqlite3.connect(corr_db)
             conn.execute("INSERT INTO v9_pro_history (date,spot_pct,foreign_spot,pcr) VALUES (?,?,?,?)",
