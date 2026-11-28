@@ -1170,12 +1170,16 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 "；當日 Chain/Delta 無共同到期日，依最早未來共同到期日規則選用 {}"
                 "；Key Levels 主到期月份仍獨立呈現"
             ).format(_selected_expiry.get("contract_month") or _gamma_expiry["gex_contract_month"])
+        _gamma_label = "Gamma GEX" if g_pay is not None else "Gamma Proxy"
+        _gamma_value_label = "GEX 數值" if g_pay is not None else "Proxy 值"
         notes.append(
-            "Gamma GEX 實際使用到期月份 {}（到期日 {}）與 Options Key Levels 主到期月份 {} 不同；"
-            "GEX 數值應以實際使用到期月份為準{}".format(
+            "{} 實際使用到期月份 {}（到期日 {}）與 Options Key Levels 主到期月份 {} 不同；"
+            "{}應以實際使用到期月份為準{}".format(
+                _gamma_label,
                 _gamma_expiry["gex_contract_month"],
                 _gamma_expiry["gex_expiry_date"] or "未提供",
                 prim_month,
+                _gamma_value_label,
                 _selection_note
             )
         )
