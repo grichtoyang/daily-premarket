@@ -333,7 +333,7 @@ def _freeze_first_output_time(old_text: str, new_text: str) -> str:
         return new_text
     out = []
     replaced = False
-    for ln in new_text.split("\\n"):
+    for ln in new_text.split("\n"):
         m = _pat.match(ln)
         if m and not replaced:
             ln = m.group(1) + m.group(2) + m.group(3) + old_value + m.group(5)
