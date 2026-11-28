@@ -18,6 +18,24 @@ def _exchange_date(timestamp: int | float, timezone_name: str | None) -> str:
     return datetime.fromtimestamp(timestamp, tz=tz).strftime("%Y-%m-%d")
 
 
+_FX_SYMBOLS = {"TWD=X", "JPY=X", "KRW=X"}
+
+
+def _fx_session_date(timestamp: int | float) -> str:
+    """Map FX quote timestamps to the New York 17:00 session date, not Yahoo's vendor timezone date."""
+    dt = datetime.fromtimestamp(timestamp, tz=ZoneInfo("America/New_York"))
+    session_date = dt.date()
+    if dt.weekday() == 5:  # Saturday: FX market is closed; last session was Friday.
+        session_date -= timedelta(days=1)
+    elif dt.weekday() == 6 and dt.hour < 17:  # Sunday before the weekly reopen.
+        session_date -= timedelta(days=2)
+    return session_date.isoformat()
+
+
+def _quote_session_date(symbol: str, timestamp: int | float, timezone_name: str | None) -> str:
+    return _fx_session_date(timestamp) if symbol in _FX_SYMBOLS else _exchange_date(timestamp, timezone_name)
+
+
 GROUPS: dict[str, list[tuple[str, str]]] = {
     "美股指數": [("S&P 500", "^GSPC"), ("Nasdaq Composite", "^IXIC"), ("Nasdaq 100", "^NDX"),
              ("Dow Jones", "^DJI"), ("費城半導體 SOX", "^SOX"), ("VIX", "^VIX")],
@@ -53,18 +71,17 @@ def quote(sym: str, expected_date: str | None = None) -> dict:
             return out
         ts = res.get("timestamp") or []
         meta = res.get("meta") or {}
-        exchange_timezone = meta.get("exchangeTimezoneName")
+        source_timezone = meta.get("exchangeTimezoneName")
+        is_fx = sym in _FX_SYMBOLS
+        exchange_timezone = "America/New_York" if is_fx else source_timezone
         out["exchange_timezone"] = exchange_timezone
         closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
         pts = [(t, c) for t, c in zip(ts, closes) if c is not None]
 
         meta_price = meta.get("regularMarketPrice")
         meta_time = meta.get("regularMarketTime")
-        meta_date = (
-            _exchange_date(meta_time, exchange_timezone)
-            if meta_time is not None and exchange_timezone else None
-        )
-        bar_date = _exchange_date(pts[-1][0], exchange_timezone) if pts and exchange_timezone else None
+        meta_date = _quote_session_date(sym, meta_time, source_timezone) if meta_time is not None else None
+        bar_date = _quote_session_date(sym, pts[-1][0], source_timezone) if pts else None
         meta_is_expected = meta_date == expected_date if expected_date else (
             meta_date is not None and (bar_date is None or meta_date >= bar_date)
         )
@@ -74,8 +91,7 @@ def quote(sym: str, expected_date: str | None = None) -> dict:
             # change only from the latest daily bar strictly before meta_date.
             previous_points = [
                 close for timestamp, close in pts
-                if exchange_timezone
-                and _exchange_date(timestamp, exchange_timezone) < meta_date
+                if _quote_session_date(sym, timestamp, source_timezone) < meta_date
             ]
             previous = previous_points[-1] if previous_points else None
             out["price"] = meta_price
