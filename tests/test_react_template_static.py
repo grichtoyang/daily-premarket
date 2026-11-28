@@ -215,7 +215,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn('前一交易日 Proxy Flip', self.html)
         self.assertIn('前日 Proxy Flip', self.html)
         self.assertIn('當日正式 GEX 延伸 Flip（±15%）', self.html)
-        self.assertIn('referenceFlip:n.referenceFlip', self.html)
+        self.assertIn('v:n.referenceFlip,label:"前日 Proxy Flip"', self.html)
         function_start = self.html.index("function v9ProEffectiveGammaFlip(")
         function_end = self.html.index("function ", function_start + 1)
         function_source = self.html[function_start:function_end]
