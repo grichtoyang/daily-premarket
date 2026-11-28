@@ -955,7 +955,9 @@ async function fetchTAIFEX(path) {
         primaryError = "TAIFEX primary institutional response is incomplete or has no verifiable source date";
       } else {
         return {
-          response, html, rows, source: "taifex_web", fallback: false,
+          response, html, rows,
+          date: isDayInstitutional ? pageDataDate(html) : null,
+          source: "taifex_web", fallback: false,
           source_url: `${TAIFEX}${path}`
         };
       }
@@ -3724,7 +3726,8 @@ async function collectSnapshotBundle(taipeiISO, taifexSlash) {
   for (const [key, path, parser] of dayPaths) {
     try {
       const r = await fetchTAIFEX(path);
-      if (r.response.ok) {
+      const sourceDateMatches = key !== "fut_trade_day" || r.date === taipeiISO;
+      if (r.response.ok && sourceDateMatches) {
         const parsed = parser(r.rows);
         if (parsed.found) bundle.data[key] = parsed.data;
       }
