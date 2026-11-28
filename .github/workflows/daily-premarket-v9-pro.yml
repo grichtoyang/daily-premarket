@@ -226,6 +226,12 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Run React template and Gamma Flip freshness regression tests
+        if: steps.browser_gate.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests -p "test_react_template_static.py" -v
+
       - name: Install Playwright for conditional browser audit
         if: steps.browser_gate.outputs.run == 'true'
         run: |
