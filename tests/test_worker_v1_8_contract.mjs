@@ -51,6 +51,9 @@ assert.equal(parseFuturesInstitutional([
 assert.equal(parseFuturesInstitutional([
   completeRows[0], completeRows[1], ["臺股期貨", "自營商", 1, null, 3, 4, 5, 6]
 ]).found, false);
+assert.equal(parseFuturesInstitutional([
+  completeRows[0], completeRows[1], ["臺股期貨", "自營商", 1, "", 3, 4, 5, 6]
+]).found, false);
 
 
 const fallbackStart = source.indexOf("async function fetchOpenAPIInstitutionalFutures(options = {})");
@@ -87,5 +90,9 @@ const fallbackStaleMix = await makeFallback([
 assert.equal(fallbackStaleMix.found, false);
 const fallbackMissingCategory = await makeFallback(apiRows.slice(0, 2))();
 assert.equal(fallbackMissingCategory.found, false);
+const fallbackBlankField = await makeFallback([
+  apiRows[0], apiRows[1], { ...apiRows[2], "TradingValue(Long)(Thousands)": "" }
+])();
+assert.equal(fallbackBlankField.found, false);
 
 console.log("PASS: V1.8 institutional timeout/fallback/date/completeness contract");
