@@ -120,6 +120,21 @@ def _source_if_available(value, source: str) -> str:
     return source if value is not None else MISSING
 
 
+
+
+def _gamma_flip_status_label(t0: str, flip, flip_date: str | None, flip_source: str | None) -> str:
+    """Describe whether a reported Flip is current-day formal GEX or a dated Proxy reference."""
+    if flip is None:
+        return MISSING
+    if flip_source == "options-market-structure-compact (proxy)":
+        if flip_date and flip_date != t0:
+            return f"前一交易日 Proxy（{flip_date}；僅供歷史參考，不作當日正式 Flip）"
+        return "T0 Proxy（非正式 GEX 模型結果）"
+    if flip_source == "options-gamma-levels":
+        return "T0 正式 GEX 模型 Flip（模型估算，非實際 Dealer 部位）"
+    return "來源／日期未能驗證"
+
+
 def _snapshot_chain_source_label(chain: dict | None, snapshot_date: str | None, t0: str) -> str:
     """Attribute calculated OI changes to the snapshot bundle that supplied the prior chain."""
     data = chain if isinstance(chain, dict) else {}
@@ -304,6 +319,29 @@ def _freeze_header(old_text: str, new_text: str) -> str:
     return "\n".join(out)
 
 
+def _freeze_first_output_time(old_text: str, new_text: str) -> str:
+    """Keep the first publication timestamp immutable, including --force-rewrite runs."""
+    import re as _r
+    _pat = _r.compile(r"^(\\s*-\\s*)(資料產出時間|首次資料產出時間)(：)(.*?)(\\s*)$")
+    old_value = None
+    for ln in old_text.split("\\n"):
+        m = _pat.match(ln)
+        if m and m.group(4).strip():
+            old_value = m.group(4)
+            break
+    if old_value is None:
+        return new_text
+    out = []
+    replaced = False
+    for ln in new_text.split("\\n"):
+        m = _pat.match(ln)
+        if m and not replaced:
+            ln = m.group(1) + m.group(2) + m.group(3) + old_value + m.group(5)
+            replaced = True
+        out.append(ln)
+    return "\\n".join(out)
+
+
 _NEWS_ANCHOR = "重大經濟數據、央行事件與重大市場新聞"
 
 
@@ -442,6 +480,9 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
         return old_text, 0
     else:
         prefer_new = False
+
+    # Publication lineage is immutable even when --force-rewrite intentionally replaces data values.
+    new_text = _freeze_first_output_time(old_text, new_text)
 
     if protect:  # F11：表格以外的三塊（標頭／新聞／維持率來源）也沿用前版
         if not _is_session_upgrade(old_text, new_session):
@@ -834,7 +875,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 5. 借券資料")
     A("")
-    A("**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWT93U 與上櫃 tpex_margin_sbl，缺值市場不納入加總。")
+    A("**資料來源：** 各欄位依實際取得市場分別標示；借券賣出餘額／增減使用上市 TWSE TWT93U 與上櫃 TPEx S47，缺值市場不納入加總。")
     A("")
     A(_tbl([("整體市場借券餘額", _f3(sb["bal"]), "張", _source_if_available(sb["bal"], SRC_SBL_BAL))],
            ("項目", "數值", "單位", "資料來源")))
@@ -1360,7 +1401,9 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     A("### 14．Gamma Flip")
     A("")
-    A(_tbl([("Gamma Flip 價位", _f2(_gm['flip']), _gm_flip_src),
+    _gamma_flip_status = _gamma_flip_status_label(t0, _gm.get("flip"), _gm_flip_date, _gm_flip_src)
+    A(_tbl([("Gamma Flip 狀態", _gamma_flip_status, _gm_flip_src),
+            ("Gamma Flip 價位", _f2(_gm['flip']), _gm_flip_src),
             ("Gamma Flip 來源到期月份", _flip_source_expiry_month or MISSING, _gm_flip_src),
             ("Gamma Flip 來源到期日", _flip_source_expiry_date or MISSING, _gm_flip_src if _flip_source_expiry_date else MISSING),
             ("Gamma Flip 資料日期", _gm_flip_date or MISSING, _gm_flip_date_src),
@@ -1374,6 +1417,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
             ("原始 Put OI（選定到期日全部有效 Chain 合約）", _fi(_gm_put_oi.get("total")), "options-gamma-levels（GEX 到期日）"),
             ("模型納入 Put OI（通過 GEX 計算條件）", _fi(_sum_gex_model_oi(_gm.get("levels") or [], "put_oi")), "TAIFEX Gamma model（逐履約價）")],
            ("項目", "數值", "資料來源")))
+    if _flip_proxy_used and _gm_flip_date and _gm_flip_date != t0:
+        A("- 使用限制：此值為前一交易日 Proxy，並非 T0 正式 Gamma Flip；其到期月份可能與 T0 正式 GEX 不同，不得直接互相驗證或作為當日 Gamma 區域判斷。")
     A("- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。")
     _flip_diag = _gm.get("flip_diagnostics") or {}
     _flip_diag_source = _gm.get("flip_diagnostics_source")
