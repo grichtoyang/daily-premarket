@@ -668,8 +668,8 @@ def _adr_stale_note(mk: dict) -> str | None:
         f"{name}（{symbol}，資料日期 {date or MISSING}；{reason or '新鮮度驗證失敗'}）"
         for name, symbol, date, reason in stale
     )
-    marker = "\\n".join(f"<!-- ADR_STALE_SYMBOLS:{symbol} -->" for symbol in symbols)
-    return (f"台灣相關 ADR 新鮮度異常，已排除舊行情：{details}\\n{marker}")
+    marker = "\n".join(f"<!-- ADR_STALE_SYMBOLS:{symbol} -->" for symbol in symbols)
+    return (f"台灣相關 ADR 新鮮度異常，已排除舊行情：{details}\n{marker}")
 
 
 def last_weekday(d: date) -> date:
