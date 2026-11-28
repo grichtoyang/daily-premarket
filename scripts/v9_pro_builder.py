@@ -320,77 +320,80 @@ def _normalize_t0_date(t0_date):
     except (TypeError, ValueError):
         raise ValueError(f"Invalid T0 date {t0_date!r}; expected YYYYMMDD")
 
-def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min_samples=5, lookback=60, as_of_date=None):
-    """Build a Pearson matrix only from complete, explicitly eligible V9 history rows."""
+def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min_samples=30, lookback=60, as_of_date=None):
+    """Calculate pairwise Pearson correlations; sample shortage never blocks output."""
     fields = [
-        ("大盤漲跌幅", "spot_pct"),
-        ("外資現貨", "foreign_spot"),
-        ("外資期貨", "foreign_fut"),
-        ("選擇權 PCR", "pcr"),
-        ("VIX", "vix"),
-        ("RSI", "rsi"),
-        ("KD-K", "k"),
-        ("KD-D", "d"),
+        ("大盤漲跌幅", "spot_pct"), ("外資現貨", "foreign_spot"),
+        ("外資期貨", "foreign_fut"), ("選擇權 PCR", "pcr"),
+        ("VIX", "vix"), ("RSI", "rsi"), ("KD-K", "k"), ("KD-D", "d"),
     ]
     conn = None
     try:
         conn = init_db(db_path)
         if not conn:
-            return {"labels": [], "matrix": [], "desc": "歷史資料庫不可用，相關性未計算"}
-        t0_iso=_t0_iso_date(as_of_date)
-        query=("SELECT " + ",".join(column for _, column in fields) +
-            " FROM v9_pro_history WHERE correlation_eligible=1 " +
-            ("AND date<=? " if t0_iso else "") +
-            "ORDER BY date DESC LIMIT ?")
-        params=(t0_iso,int(lookback)) if t0_iso else (int(lookback),)
-        rows = conn.execute(query,params).fetchall()
+            return {"labels": [], "matrix": [], "sample_counts": [], "desc": "歷史資料庫不可用；歷史資料累積中"}
+        t0_iso = _t0_iso_date(as_of_date)
+        query = ("SELECT " + ",".join(column for _, column in fields) +
+                 " FROM v9_pro_history " + ("WHERE date<=? " if t0_iso else "") +
+                 "ORDER BY date DESC LIMIT ?")
+        params = (t0_iso, max(1, min(60, int(lookback)))) if t0_iso else (max(1, min(60, int(lookback))),)
+        rows = conn.execute(query, params).fetchall()
         conn.close()
         conn = None
-        valid = []
+        samples = []
         for row in reversed(rows):
             values = []
             for value in row:
                 try:
                     number = float(value)
-                    if not math.isfinite(number):
-                        raise ValueError("non-finite")
-                    values.append(number)
-                except (TypeError, ValueError):
-                    values = []
-                    break
-            if values:
-                valid.append(values)
-        if len(valid) < min_samples:
-            return {
-                "labels": [], "matrix": [],
-                "desc": f"完整且通過資料品質檢查的歷史樣本 {len(valid)}/{min_samples} 筆；累積足夠後顯示熱圖"
-            }
-        columns = list(zip(*valid))
-        # Constant series have undefined Pearson correlation and are omitted.
-        keep = []
-        for index, values in enumerate(columns):
-            if max(values) - min(values) > 1e-12:
-                keep.append(index)
-        if len(keep) < 2:
-            return {"labels": [], "matrix": [], "desc": "有效歷史欄位不足 2 項或欄位無變異，相關性未計算"}
-        labels = [fields[index][0] for index in keep]
-        matrix = []
-        for i in keep:
-            row_values = []
-            x = [sample[i] for sample in valid]
-            mean_x = sum(x) / len(x)
-            dx = [value - mean_x for value in x]
-            for j in keep:
-                y = [sample[j] for sample in valid]
-                mean_y = sum(y) / len(y)
-                dy = [value - mean_y for value in y]
-                denominator = math.sqrt(sum(v*v for v in dx) * sum(v*v for v in dy))
-                corr = sum(a*b for a, b in zip(dx, dy)) / denominator if denominator else None
-                row_values.append(round(max(-1.0, min(1.0, corr)), 4) if corr is not None else None)
-            matrix.append(row_values)
-        return {"labels": labels, "matrix": matrix, "desc": f"Pearson 相關係數｜完整有效樣本 {len(valid)} 筆｜最近 {lookback} 筆"}
-    except (sqlite3.Error, OSError, ValueError) as e:
-        return {"labels": [], "matrix": [], "desc": f"相關性資料讀取失敗：{type(e).__name__}"}
+                    values.append(number if math.isfinite(number) else None)
+                except (TypeError, ValueError, OverflowError):
+                    values.append(None)
+            samples.append(values)
+        labels = [name for name, _ in fields]
+        size = len(fields)
+        matrix = [[None for _ in range(size)] for _ in range(size)]
+        counts = [[0 for _ in range(size)] for _ in range(size)]
+        for i in range(size):
+            for j in range(i, size):
+                paired = [(row[i], row[j]) for row in samples if row[i] is not None and row[j] is not None]
+                n = len(paired)
+                counts[i][j] = counts[j][i] = n
+                if n < 2:
+                    continue
+                xs = [pair[0] for pair in paired]
+                ys = [pair[1] for pair in paired]
+                dx = [value - sum(xs) / n for value in xs]
+                dy = [value - sum(ys) / n for value in ys]
+                denom = math.sqrt(sum(v*v for v in dx) * sum(v*v for v in dy))
+                if denom <= 1e-12:
+                    continue
+                corr = sum(a*b for a, b in zip(dx, dy)) / denom
+                matrix[i][j] = matrix[j][i] = round(max(-1.0, min(1.0, corr)), 4)
+        usable = [i for i in range(size) if matrix[i][i] is not None]
+        if len(usable) < 2:
+            labels = [labels[i] for i in usable]
+            matrix = [[matrix[i][j] for j in usable] for i in usable]
+            counts = [[counts[i][j] for j in usable] for i in usable]
+        else:
+            labels = [labels[i] for i in usable]
+            matrix = [[matrix[i][j] for j in usable] for i in usable]
+            counts = [[counts[i][j] for j in usable] for i in usable]
+        pair_counts = [counts[i][j] for i in range(len(labels)) for j in range(i+1, len(labels)) if matrix[i][j] is not None]
+        min_pair = min(pair_counts) if pair_counts else 0
+        max_pair = max(pair_counts) if pair_counts else 0
+        if not samples:
+            desc = "歷史資料累積中｜目前 0 筆有效觀測；不顯示虛構相關係數"
+        elif not pair_counts:
+            desc = f"歷史資料累積中｜最近 {len(samples)} 筆；目前沒有至少 2 筆且具變異的有效配對"
+        else:
+            confidence = "參考樣本達 30 筆" if min_pair >= 30 else ("樣本偏少，僅供探索性觀察" if min_pair < 5 else "樣本有限，解讀須保守")
+            desc = f"Pearson 相關係數｜最多回看 {len(samples)} 筆｜有效配對樣本數 {min_pair}–{max_pair} 筆｜{confidence}"
+        return {"labels": labels, "matrix": matrix, "sample_counts": counts,
+                "min_reference_samples": int(min_samples), "desc": desc}
+    except (sqlite3.Error, OSError, ValueError, TypeError) as e:
+        return {"labels": [], "matrix": [], "sample_counts": [],
+                "desc": f"相關性資料讀取失敗：{type(e).__name__}；不影響報表產出"}
     finally:
         if conn is not None:
             conn.close()
@@ -2070,43 +2073,44 @@ def run_17f_self_tests():
             conn.execute("CREATE TABLE v9_pro_history (bias INTEGER, spot_close REAL)")
             conn.commit(); conn.close()
             assert init_db(invalid_db) is None
-        # DATA-UI-05: correlation is hidden until five complete, quality-approved rows exist.
+        # Correlation is pairwise and advisory: sparse history must never block output.
         with tempfile.TemporaryDirectory() as tmp:
             corr_db=str(pathlib.Path(tmp)/"correlation.db")
             corr_conn=init_db(corr_db)
             assert corr_conn is not None
             corr_conn.execute(
-                "INSERT INTO v9_pro_history (date,spot_pct,foreign_spot,foreign_fut,pcr,vix,rsi,k,d,correlation_eligible) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?)",
-                ("2026-10-01",1,2,3,0.8,18,40,20,25,1)
+                "INSERT INTO v9_pro_history (date,spot_pct,foreign_spot) VALUES (?,?,?)",
+                ("2026-10-01",1,2)
             )
-            corr_conn.commit(); corr_conn.close()
-            insufficient=calculate_historical_correlation(corr_db)
-            assert insufficient["matrix"]==[] and "1/5" in insufficient["desc"]
-            corr_conn=sqlite3.connect(corr_db)
-            for day in range(2,7):
-                corr_conn.execute(
-                    "INSERT INTO v9_pro_history (date,spot_pct,foreign_spot,foreign_fut,pcr,vix,rsi,k,d,correlation_eligible) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    (f"2026-10-0{day}",day,day*2,day*3,0.5+day/10,15+day,30+day,10+day,15+day,1)
-                )
-            # An incomplete row must never enter the matrix.
             corr_conn.execute(
-                "INSERT INTO v9_pro_history (date,spot_pct,correlation_eligible) VALUES (?,?,?)",
-                ("2026-10-07",99,0)
+                "INSERT INTO v9_pro_history (date,spot_pct,foreign_spot) VALUES (?,?,?)",
+                ("2026-10-02",2,4)
             )
             corr_conn.commit(); corr_conn.close()
-            enough=calculate_historical_correlation(corr_db)
-            assert len(enough["labels"])==8 and len(enough["matrix"])==8
-            assert len(enough["matrix"][0])==8 and "6 筆" in enough["desc"]
-            assert abs(enough["matrix"][0][1]-1.0)<1e-9
+            sparse=calculate_historical_correlation(corr_db)
+            assert sparse["matrix"] and sparse["matrix"][0][1] == 1.0
+            assert sparse["sample_counts"][0][1] == 2
+            assert "樣本偏少" in sparse["desc"]
+            empty_db=str(pathlib.Path(tmp)/"empty.db")
+            empty=calculate_historical_correlation(empty_db)
+            assert empty["matrix"] == [] and "累積中" in empty["desc"]
+            # A null field affects only pairs involving that field.
+            conn=sqlite3.connect(corr_db)
+            conn.execute("INSERT INTO v9_pro_history (date,spot_pct,foreign_spot,pcr) VALUES (?,?,?,?)",
+                         ("2026-10-03",3,6,0.8))
+            conn.commit(); conn.close()
+            pairwise=calculate_historical_correlation(corr_db)
+            assert pairwise["sample_counts"][0][1] == 3
+            assert pairwise["sample_counts"][0][3] == 1
+            assert pairwise["matrix"][0][3] is None
+            assert calculate_historical_correlation(corr_db,lookback=500)["sample_counts"][0][1] <= 60
         print("[17F SELF-TEST] PASS: full, sparse, empty-data, normalization, optimizer-before-score, T0-sqlite-date, v9-only-schema, invalid-schema-rejection, data-report-consistency, data-ui-05-correlation")
         return 0
     except Exception:
         traceback.print_exc()
         return 1
 
-def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports", db_path="dashboards/v9_pro_history.db", lookback=5):
+def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports", db_path="dashboards/v9_pro_history.db", lookback=60):
     """Seed the build-local V9 history DB from committed dated DATA_REPORTs before dashboard generation."""
     cutoff=_t0_iso_date(as_of_date)
     if not cutoff:
@@ -2120,7 +2124,7 @@ def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports"
         report_date=_t0_iso_date(match.group(1))
         if report_date and report_date<=cutoff:
             selected.append((report_date,path))
-    selected=selected[-int(lookback):]
+    selected=selected[-max(1,min(60,int(lookback))):]
     if not selected:
         raise FileNotFoundError(f"No dated DATA_REPORTs found in {report_dir} up to {cutoff}")
     for report_date,path in selected:
@@ -2151,7 +2155,7 @@ def seed_correlation_history_for_dashboard(as_of_date, report_dir="data_reports"
         if not save_today_to_db(bias,analyzer.signals,tech,report_date.replace("-",""),db_path):
             raise RuntimeError(f"Could not seed correlation history from {path}")
         print(f"[CORRELATION SEED] {report_date}: saved/verified")
-    corr=calculate_historical_correlation(db_path,min_samples=5,lookback=lookback,as_of_date=cutoff)
+    corr=calculate_historical_correlation(db_path,min_samples=30,lookback=lookback,as_of_date=cutoff)
     print(f"[CORRELATION SEED] Dashboard history: {corr['desc']}")
     return corr
 
@@ -2235,7 +2239,7 @@ def main():
         if not args.date:
             raise ValueError('--seed-correlation-history requires --date YYYYMMDD')
         corr=seed_correlation_history_for_dashboard(args.date)
-        return 0 if corr.get('matrix') else 2
+        return 0
     date_str=args.date.strip() if args.date else ""
     if date_str and (len(date_str)!=8 or not date_str.isdigit()):
         raise ValueError(f"Invalid --date {date_str!r}; expected YYYYMMDD")
