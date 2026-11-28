@@ -382,11 +382,11 @@ if(!missing.scenarios.compass.includes("資料不足")||!missing.trade.target.in
 const upNight=JSON.parse(JSON.stringify(fixture));
 upNight.night.c=45500; upNight.night.l=45000; upNight.futures.foreign_night=-1200;
 const upNightOut=v9ProSynthesisAnalysis(upNight);
-if(!upNightOut.night.target.includes("夜盤收盤高於日盤收盤")||upNightOut.night.target.includes("夜盤收盤低於日盤收盤")) throw Error("positive night move still receives bearish target wording");
+if(!upNightOut.night.target.includes("守住日盤收盤 45,301")||!upNightOut.night.target.includes("回落跌破")||upNightOut.night.target.includes("收復日盤收盤")) throw Error("positive night move lacks bullish-session confirmation wording: "+upNightOut.night.target);
 const downNight=JSON.parse(JSON.stringify(fixture));
 downNight.night.c=43000; downNight.night.l=42000; downNight.futures.foreign_night=-1200;
 const downNightOut=v9ProSynthesisAnalysis(downNight);
-if(!downNightOut.night.target.includes("夜盤收盤低於日盤收盤")||!downNightOut.night.target.includes("收復日盤收盤")) throw Error("negative night move missing bearish confirmation conditions");
+if(!downNightOut.night.target.includes("收復日盤收盤 45,301")||!downNightOut.night.target.includes("再跌破夜盤低點 42,000")||downNightOut.night.target.includes("守住日盤收盤")) throw Error("negative night move lacks bearish confirmation conditions: "+downNightOut.night.target);
 
 // Zero is a valid numeric flow/OI value, but not a valid Taiwan index price or option wall.
 const zero=JSON.parse(JSON.stringify(fixture));
