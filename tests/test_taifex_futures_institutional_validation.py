@@ -77,6 +77,22 @@ class FuturesInstitutionalValidationTests(unittest.TestCase):
             (True, None),
         )
 
+    @patch("src.sources.taifex._previous_trading_day_iso", return_value="2026-11-26")
+    @patch("src.sources.taifex.snapshot_bundle", return_value=None)
+    @patch("src.sources.taifex._night_ohlc", return_value=None)
+    @patch("src.sources.taifex._prev_dates", return_value=[])
+    @patch("src.sources.taifex._night_query_date", return_value=None)
+    @patch("src.sources.taifex._memoized_build_fetch")
+    def test_build_does_not_use_stale_institutional_rows(self, cache_factory, *_mocks):
+        def fake_fetch(_get):
+            return lambda ep, day, timeout=40: (
+                payload("2026-11-26") if ep == "futures-institutional" else None
+            )
+        cache_factory.side_effect = fake_fetch
+        result = taifex.build("2026-11-27", session="日盤")
+        self.assertIsNone(result["fut_trade"][("day", "foreign")]["net"])
+        self.assertTrue(any("期貨日盤三大法人資料拒收" in note for note in result["notes"]))
+
 
 if __name__ == "__main__":
     unittest.main()
