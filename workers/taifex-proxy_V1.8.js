@@ -532,7 +532,10 @@ async function fetchOpenAPIInstitutionalFutures(options = {}) {
   for (const r of tx) {
     const institution = String(apiValue(r, ["Item", "item"]) ?? "").trim();
     if (!["外資", "投信", "自營商"].includes(institution) || seen.has(institution)) continue;
-    const values = fields.map(keys => number(apiValue(r, keys)));
+    const values = fields.map(keys => {
+      const raw = apiValue(r, keys);
+      return raw === null || raw === undefined || String(raw).trim() === "" ? null : number(raw);
+    });
     if (values.some(value => value === null || !Number.isFinite(value))) continue;
     seen.add(institution);
     rows.push(["臺股期貨", institution, ...values]);
@@ -1054,7 +1057,9 @@ function parseFuturesInstitutional(rows) {
     if (idx < 0) continue;
     const institution = institutionCode(row[idx]);
     if (!required.has(institution) || seen.has(institution)) continue;
-    const values = row.slice(idx + 1, idx + 7).map(number);
+    const values = row.slice(idx + 1, idx + 7).map(value =>
+      value === null || value === undefined || String(value).trim() === "" ? null : number(value)
+    );
     if (values.length !== 6 || values.some(value => value === null || !Number.isFinite(value))) continue;
     seen.add(institution);
     data.push({
