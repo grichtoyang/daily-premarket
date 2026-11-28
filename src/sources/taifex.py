@@ -95,6 +95,24 @@ def _get_impl(ep: str, t0: str, timeout: int = 40) -> dict | None:
                     j = None
                     diagnostic["detail"] = f"Invalid Worker JSON: {e}"[:400]
                 if isinstance(j, dict) and j.get("ok") is True and j.get("data") is not None:
+                    if ep == "futures-institutional":
+                        _valid, _reason = _valid_futures_institutional_payload(j, t0)
+                        if not _valid:
+                            diagnostic.update({
+                                "http_status": 200, "error_code": "FUTURES_INSTITUTIONAL_INVALID",
+                                "stage": "payload_validation",
+                                "error": "Worker returned stale or incomplete futures institutional data",
+                                "detail": _reason,
+                            })
+                            _LAST_FETCH_ERRORS[ep] = diagnostic
+                            if attempt == 0:
+                                print(f"[INFO] taifex {ep} payload invalid ({_reason})，4 秒後重試",
+                                      file=sys.stderr, flush=True)
+                                time.sleep(4)
+                                continue
+                            print(f"[INFO] taifex {ep} payload invalid，放棄：{diagnostic}",
+                                  file=sys.stderr, flush=True)
+                            return None
                     _LAST_FETCH_ERRORS.pop(ep, None)
                     return j
                 diagnostic.update({
@@ -640,6 +658,40 @@ def _previous_trading_day_iso(t0: str) -> str | None:
             return cursor.isoformat()
     return None
 
+def _valid_futures_institutional_payload(payload: dict | None, t0: str) -> tuple[bool, str | None]:
+    """Require an explicitly T0-dated row for each major institution."""
+    import math
+    if not isinstance(payload, dict):
+        return False, "payload_missing"
+    if payload.get("date") != t0:
+        return False, f"date_mismatch:{payload.get('date') or 'missing'}"
+    rows = payload.get("data")
+    if not isinstance(rows, list) or len(rows) != 3:
+        return False, "row_count_must_be_three"
+    expected = {"foreign", "investment_trust", "dealer"}
+    seen = set()
+    fields = ("long_volume", "long_amount", "short_volume",
+              "short_amount", "net_volume", "net_amount")
+    for row in rows:
+        if not isinstance(row, dict):
+            return False, "row_schema_invalid"
+        institution = row.get("institution")
+        if institution not in expected or institution in seen:
+            return False, "institution_missing_or_duplicated"
+        seen.add(institution)
+        for field in fields:
+            value = row.get(field)
+            if isinstance(value, bool) or value is None:
+                return False, f"invalid_numeric_field:{institution}:{field}"
+            try:
+                parsed = float(value)
+            except (TypeError, ValueError):
+                return False, f"invalid_numeric_field:{institution}:{field}"
+            if not math.isfinite(parsed):
+                return False, f"invalid_numeric_field:{institution}:{field}"
+    return (seen == expected, None if seen == expected else "institution_categories_incomplete")
+
+
 def _rows(payload: dict | None) -> list:
     d = (payload or {}).get("data")
     return d if isinstance(d, list) else []
@@ -869,6 +921,14 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         notes.append(f"無日期端點為最新盤勢快照 (判定資料日期 {_content}，非 T0 {t0})，"
                      "適用：日盤價／法人交易／夜盤／選擇權法人；T0 相符時不另標註")
     P = {ep: _fetch(ep, t0) for ep in BUILD_INITIAL_EPS}
+    _inst_payload = P.get("futures-institutional")
+    if _inst_payload is not None:
+        _inst_valid, _inst_reason = _valid_futures_institutional_payload(_inst_payload, t0)
+        if not _inst_valid:
+            P["futures-institutional"] = None
+            notes.append(
+                f"期貨日盤三大法人資料拒收：T0={t0}，原因={_inst_reason}；"
+                "不採用缺日期、跨日或不完整資料")
     # 夜盤附屬端點（量/結算/法人夜交易）同口徑把關：payload 日期必須等於今天，
     # 否則視為無新節次，不採用（回退舊值曾靜默混入，2026-10-08 全日版教訓）。
     # options-after-hours 不在此列（它供日盤買賣權拆分，非純夜盤歸屬）。
