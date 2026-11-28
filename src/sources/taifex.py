@@ -875,7 +875,7 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
         if _today is None:
             P[_ep] = None
         elif _d is not None and _d != _today:
-            notes.append(f"{_ep} 日期 {_d} 非今日 {_today}，視為無新節次，不採用")
+            notes.append(f"{_ep} 回傳資料日期 {_d} 與預期夜盤交易日 {_today} 不一致，視為非本次夜盤節次，不採用")
             P[_ep] = None
     # Gamma 端點需 TAIEX 收盤 (FMTQIK 落後約一日)：僅查詢 T0 一次，上游 502 則標 unavailable，不再跑 T-1/T-2
     g_pay, g_date = None, None
@@ -1161,16 +1161,29 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
     _gross_gex = gdata.get("gross_gex_1pct") if g_pay is not None else None
     _gamma_expiry = _gamma_expiry_metadata(gdata if g_pay is not None else cgamma, prim_month)
+    _expiry_diag = (gdata.get("expiry_selection_diagnostics") or {}) if g_pay is not None else (cgamma.get("expiry_selection_diagnostics") or {})
     if _gamma_expiry["gex_expiry_matches_primary"] is False:
+        _selection_note = ""
+        if isinstance(_expiry_diag.get("same_day_common_expiries"), list) and not _expiry_diag["same_day_common_expiries"]:
+            _selected_expiry = _expiry_diag.get("selected") or {}
+            _selection_note = (
+                "；當日 Chain/Delta 無共同到期日，依最早未來共同到期日規則選用 {}"
+                "；Key Levels 主到期月份仍獨立呈現"
+            ).format(_selected_expiry.get("contract_month") or _gamma_expiry["gex_contract_month"])
         notes.append(
             "Gamma GEX 實際使用到期月份 {}（到期日 {}）與 Options Key Levels 主到期月份 {} 不同；"
-            "GEX 數值應以實際使用到期月份為準".format(
+            "GEX 數值應以實際使用到期月份為準{}".format(
                 _gamma_expiry["gex_contract_month"],
                 _gamma_expiry["gex_expiry_date"] or "未提供",
-                prim_month
+                prim_month,
+                _selection_note
             )
         )
+    _flip_proxy_used = flip_src == "options-market-structure-compact (proxy)"
     gamma = {"wall": wall, "flip": flip, **_gamma_expiry,
+             "gex_date": g_date,
+             "flip_proxy_contract_month": cgamma.get("contract_month") if _flip_proxy_used else None,
+             "flip_proxy_expiry_date": cgamma.get("expiry_date") if _flip_proxy_used else None,
              "model": gdata.get("model") if g_pay is not None else None,
              "sign_convention_note": (
                  "Call 正／Put 負為模型假設；Aggregate OI 不揭露 Dealer 實際淨部位，"
