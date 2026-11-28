@@ -184,6 +184,30 @@ class AsianMarketFreshnessTests(unittest.TestCase):
         self.assertEqual(result["change"], 2000.0)
         self.assertAlmostEqual(result["pct"], 2000 / 58000 * 100)
 
+    def test_fx_quote_uses_new_york_session_date_when_vendor_timezone_rolls_to_saturday(self):
+        meta_time = int(datetime(2026, 11, 28, 4, 51, tzinfo=timezone.utc).timestamp())
+        bar_times = [
+            int(datetime(2026, 11, 26, 21, 0, tzinfo=timezone.utc).timestamp()),
+            int(datetime(2026, 11, 27, 21, 0, tzinfo=timezone.utc).timestamp()),
+        ]
+        response = unittest.mock.Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"chart": {"result": [{
+            "meta": {
+                "regularMarketPrice": 1333.90, "regularMarketTime": meta_time,
+                "exchangeTimezoneName": "Europe/London",
+            },
+            "timestamp": bar_times,
+            "indicators": {"quote": [{"close": [1343.53, 1333.90]}]},
+        }]}}
+        with patch("requests.get", return_value=response):
+            from src.sources.us_market import quote
+            result = quote("KRW=X")
+        self.assertEqual(result["date"], "2026-11-27")
+        self.assertEqual(result["exchange_timezone"], "America/New_York")
+        self.assertAlmostEqual(result["change"], -9.63, places=2)
+        self.assertAlmostEqual(result["pct"], -9.63 / 1343.53 * 100, places=4)
+
     def test_chart_meta_fallback_requires_a_previous_close(self):
         timestamp = int(datetime(2026, 11, 27, 21, 0, tzinfo=timezone.utc).timestamp())
         response = unittest.mock.Mock()
