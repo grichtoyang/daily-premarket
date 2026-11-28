@@ -1,6 +1,6 @@
 import unittest
 
-from src.fetch_data import merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi
+from src.fetch_data import merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi, _adr_stale_note
 
 
 class SameT0SourceAttributionTests(unittest.TestCase):
@@ -338,6 +338,50 @@ class SameT0SourceAttributionTests(unittest.TestCase):
                 merged, filled = merge_same_t0(old, new, new_session="全日", protect=protect)
                 self.assertEqual(filled, 0)
                 self.assertIn("| 台積電ADR | TSM | unavailable | unavailable | unavailable | 2026-11-25 |", merged)
+                self.assertNotIn("353.34", merged)
+                self.assertNotIn("11.00", merged)
+
+    def test_unavailable_adr_quote_is_marked_and_cannot_be_restored_during_merge(self):
+        # Exercise the full guard chain: source failure -> stale note/marker -> same-T0 merge.
+        mk = {
+            "台灣相關ADR": [
+                ("台積電ADR", {
+                    "symbol": "TSM", "price": None, "change": None, "pct": None,
+                    "date": None, "stale": True,
+                    "stale_reason": "台積電ADR本次未取得可驗證報價",
+                })
+            ]
+        }
+        note = _adr_stale_note(mk)
+        self.assertIsNotNone(note)
+        self.assertIn("<!-- ADR_STALE_SYMBOLS:TSM -->", note)
+
+        old = """# DATA_REPORT_20261127
+- T0 交易日期：`2026-11-27`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 5. 台灣相關ADR
+| 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
+|---|---|---:|---:|---:|---|---|---|---|
+| 台積電ADR | TSM | 353.34 | 11.00 | +3.21% | 2026-11-27 | 2026-11-28T00:43:30+00:00 | America/New_York | Yahoo Finance Chart API |
+"""
+        new = """# DATA_REPORT_20261127
+- T0 交易日期：`2026-11-27`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 5. 台灣相關ADR
+| 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
+|---|---|---:|---:|---:|---|---|---|---|
+| 台積電ADR | TSM | unavailable | unavailable | unavailable | unavailable | unavailable | unavailable | Yahoo Finance Chart API（本次未取得報價，已排除） |
+- 註記：{note}
+"""
+        for protect in (True, False):
+            with self.subTest(protect=protect):
+                merged, filled = merge_same_t0(old, new, new_session="全日", protect=protect)
+                self.assertEqual(filled, 0)
+                self.assertIn("| 台積電ADR | TSM | unavailable | unavailable | unavailable |", merged)
                 self.assertNotIn("353.34", merged)
                 self.assertNotIn("11.00", merged)
 
