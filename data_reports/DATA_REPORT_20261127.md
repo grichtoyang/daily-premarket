@@ -165,7 +165,7 @@
 | USD/TWD | TWD=X | 32.98 | -0.21 | -0.63 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
 | DXY美元指數 | DX-Y.NYB | 104.01 | 0.34 | +0.33 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
 | USD/JPY | JPY=X | 159.51 | 0.30 | +0.19 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
-| USD/KRW | KRW=X | 1,333.90 | -9.63 | -0.72 | 2026-11-28 | 2026-11-28T04:51:31+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| USD/KRW | KRW=X | 1,333.90 | -9.63 | -0.72 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice；FX 交易時區） |
 
 ### 6. 台灣相關ADR
 
