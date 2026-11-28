@@ -1044,7 +1044,7 @@ function parseFuturesInstitutional(rows) {
   for (let i = txIndex; i < rows.length; i++) {
     const row = rows[i];
     if (i > txIndex) {
-      const product = row.find(x => x.includes("期貨"));
+      const product = row.find(x => x.includes("期貨") && x !== "臺股期貨");
       if (product && !["自營商", "投信", "外資", "陸資"].includes(product)) break;
     }
     const idx = row.findIndex(x => institutionCode(x));
