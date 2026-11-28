@@ -1131,9 +1131,9 @@ def parse_data_report(report_path):
             gex_payload={}
     gex_levels=gex_payload.get('levels',[])
     gex_status='available' if gex_levels and gex_payload.get('net_gex_1pct') is not None and gex_payload.get('gross_gex_1pct') is not None else 'unavailable'
-    call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 17．選擇權法人日盤、夜盤交易")
+    call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 16．選擇權法人日盤、夜盤交易")
     opt_inst_force_table=parse_table("#### 法人多空力道表")
-    opt_top10_tables=parse_tables("### 18．選擇權前十大")
+    opt_top10_tables=parse_tables("### 17．選擇權前十大")
     opt_top10_call=opt_top10_tables[0] if len(opt_top10_tables)>0 else []
     opt_top10_put=opt_top10_tables[1] if len(opt_top10_tables)>1 else []
     consistency_warnings=validate_data_report_consistency(
