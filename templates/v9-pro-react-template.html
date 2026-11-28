@@ -937,7 +937,7 @@ function m2({data:e}){
   ]});
 }function v9ProCorrelationMatrixReady(labels,matrix) {
   if(!Array.isArray(labels)||labels.length<2||!Array.isArray(matrix)||matrix.length!==labels.length)return false;
-  return matrix.every(row=>Array.isArray(row)&&row.length===labels.length&&row.some(value=>value!=null&&value!==""&&Number.isFinite(Number(value))&&Number(value)>=-1&&Number(value)<=1));
+  return matrix.some((row,i)=>Array.isArray(row)&&row.length===labels.length&&row.some((value,j)=>j!==i&&value!=null&&value!==""&&Number.isFinite(Number(value))&&Number(value)>=-1&&Number(value)<=1));
 }
 function v9ProEffectiveGammaFlip(options,spot){
   const number=value=>{if(value==null||value==="")return null;const parsed=Number(String(value).replace(/,/g,"").trim());return Number.isFinite(parsed)?parsed:null;};
