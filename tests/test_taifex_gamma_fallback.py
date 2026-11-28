@@ -22,9 +22,12 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         payloads = {
             "2026-11-05": {"data": {"gamma": {
                 "gamma_wall_proxy": 38900, "gamma_flip_proxy": None,
+                "contract_month": "202612W1", "expiry_date": "2026-12-02",
             }, "call_wall": {"strike": 39000}}},
             "2026-11-04": {"data": {"gamma": {
                 "gamma_wall_proxy": 38800, "gamma_flip_proxy": 39750.5,
+                "contract_month": "202611F4", "expiry_date": "2026-11-27",
+                "gamma_flip_diagnostics": {"zero_crossings": 1},
             }}},
         }
         result = _gamma_proxy_fallback(
