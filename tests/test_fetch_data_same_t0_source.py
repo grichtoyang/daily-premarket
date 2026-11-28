@@ -1,6 +1,7 @@
 import unittest
 
 from src.fetch_data import merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi, _adr_stale_note
+from src.sources.us_market import _apply_adr_freshness
 
 
 class SameT0SourceAttributionTests(unittest.TestCase):
@@ -343,15 +344,14 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 
     def test_unavailable_adr_quote_is_marked_and_cannot_be_restored_during_merge(self):
         # Exercise the full guard chain: source failure -> stale note/marker -> same-T0 merge.
-        mk = {
-            "台灣相關ADR": [
-                ("台積電ADR", {
-                    "symbol": "TSM", "price": None, "change": None, "pct": None,
-                    "date": None, "stale": True,
-                    "stale_reason": "台積電ADR本次未取得可驗證報價",
-                })
-            ]
-        }
+        rows = [
+            ("台積電ADR", {
+                "symbol": "TSM", "price": None, "change": None, "pct": None,
+                "date": None, "ok": False, "source": "Yahoo Finance Chart API",
+            })
+        ]
+        rows = _apply_adr_freshness(rows, "2026-11-27")
+        mk = {"台灣相關ADR": rows}
         note = _adr_stale_note(mk)
         self.assertIsNotNone(note)
         self.assertIn("<!-- ADR_STALE_SYMBOLS:TSM -->", note)
@@ -398,7 +398,7 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 """
         new = old.replace("29.49 | 0.16 | +0.55%", "31.34 | 1.85 | +6.27%").replace(
             "2026-11-25 | 2026-11-28T01:07:19", "2026-11-27 | 2026-11-28T01:07:19"
-        ) + "<!-- ADR_STALE_SYMBOLS:TSM -->\\n"
+        ) + "<!-- ADR_STALE_SYMBOLS:TSM -->\n"
         merged, _ = merge_same_t0(old, new, new_session="全日", protect=False)
         self.assertIn("| 日月光ADR | ASX | 31.34 | 1.85 | +6.27% | 2026-11-27 |", merged)
         self.assertNotIn("| 日月光ADR | ASX | 29.49 |", merged)
