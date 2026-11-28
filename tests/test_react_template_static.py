@@ -371,7 +371,7 @@ if(!out.scenarios.compass.includes("區間條件：成立")||!out.scenarios.comp
 if(!out.factors.look.includes("正向貢獻合計 +1.8 分")||!out.factors.look.includes("負向貢獻合計 -9.0 分")||!out.factors.look.includes("可見子集合淨貢獻 -7.2 分")||!out.factors.look.includes("外資現貨 -7.1")) throw Error("visible factor contribution summary does not match chart values");
 if(!out.factors.compass.includes("不可將可見子集合計當成全部因子的總貢獻")) throw Error("visible factor subset limitation missing: "+out.factors.compass);
 if(!out.correlation.look.includes("現貨／外資現貨 +0.85")||!out.correlation.look.includes("現貨／費半 -0.64")) throw Error("strongest correlation pairs not identified");
-if(!out.trade.target.includes("目前不追價")||!out.trade.target.includes("Put Wall 44,000")||!out.trade.target.includes("Call Wall 48,000")) throw Error("trade plan does not respect current range: "+out.trade.target);
+if(!out.scenarios.look.includes("Put Wall 44,000")||!out.scenarios.look.includes("Call Wall 48,000")||!out.trade.target.includes("目前價格仍在 Put／Call Wall 區間內")||!out.trade.target.includes("未突破前不追價")) throw Error("range levels and non-chasing trade plan are not aligned: "+out.scenarios.look+" | "+out.trade.target);
 
 // Missing night price inputs must not produce actionable text containing fake zero/missing levels.
 const missing=v9ProSynthesisAnalysis({day:{},night:{},futures:{},spot:{},options:{},analysis:{}});
