@@ -108,7 +108,7 @@ def quote(sym: str, expected_date: str | None = None) -> dict:
             return out
         last_t, last_c = pts[-1]
         out["price"] = last_c
-        out["date"] = _exchange_date(last_t, exchange_timezone)
+        out["date"] = _quote_session_date(sym, last_t, source_timezone)
         if len(pts) >= 2:
             prev_c = pts[-2][1]
             out["change"] = last_c - prev_c
