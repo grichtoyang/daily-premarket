@@ -370,16 +370,8 @@ def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min
                     continue
                 corr = sum(a*b for a, b in zip(dx, dy)) / denom
                 matrix[i][j] = matrix[j][i] = round(max(-1.0, min(1.0, corr)), 4)
-        usable = [i for i in range(size) if matrix[i][i] is not None]
-        if len(usable) < 2:
-            labels = [labels[i] for i in usable]
-            matrix = [[matrix[i][j] for j in usable] for i in usable]
-            counts = [[counts[i][j] for j in usable] for i in usable]
-        else:
-            labels = [labels[i] for i in usable]
-            matrix = [[matrix[i][j] for j in usable] for i in usable]
-            counts = [[counts[i][j] for j in usable] for i in usable]
-        pair_counts = [counts[i][j] for i in range(len(labels)) for j in range(i+1, len(labels)) if matrix[i][j] is not None]
+        # Preserve all indicators so unavailable pairs remain visible as em-dashes.
+        pair_counts = [counts[i][j] for i in range(size) for j in range(i+1, size) if matrix[i][j] is not None]
         min_pair = min(pair_counts) if pair_counts else 0
         max_pair = max(pair_counts) if pair_counts else 0
         if not samples:
