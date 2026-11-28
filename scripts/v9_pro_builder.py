@@ -1917,7 +1917,7 @@ def run_17f_self_tests():
             sys.path.insert(0, _repo_root)
         from src.sources.us_market import _apply_asia_freshness
         asia_source_fixture=[
-            ("日經225",{"price":38600,"change":100,"pct":0.3,"date":"2026-11-24","ok":True}),
+            ("日經225",{"price":38600,"change":100,"pct":0.3,"date":"2026-11-23","ok":True}),
             ("香港恆生",{"price":26000,"change":200,"pct":0.8,"date":"2026-11-20","ok":True}),
         ]
         _apply_asia_freshness(asia_source_fixture,"2026-11-23")
