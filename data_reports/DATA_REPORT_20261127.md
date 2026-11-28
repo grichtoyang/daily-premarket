@@ -2,8 +2,8 @@
 
 - 報告日期：`2026-11-28`
 - T0 交易日期：`2026-11-27`
-- 首次資料產出時間：`2026-11-28 09:45:23`
-- 本次更新開始時間：`2026-11-28 09:45:23`
+- 首次資料產出時間：`2026-11-28 10:07:54`
+- 本次更新開始時間：`2026-11-28 10:07:54`
 - 時區：`Asia/Taipei`
 - 產出盤別：`全日`
 - 產出者：`actions`
@@ -94,8 +94,8 @@
 - 上櫃來源：TPEx S47（上櫃）；增減來源：TPEx S47（上櫃）
 - 借券賣出餘額完整性：`complete`
 - 借券賣出增減完整性：`complete`
-- TWSE TWT93U（上市）：資料日期：`20261127`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-28T09:45:35+08:00`；狀態：`available_after_schedule`
-- TPEx S47（上櫃）：資料日期：`20261127`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-28T09:45:36+08:00`；狀態：`available_after_schedule`
+- TWSE TWT93U（上市）：資料日期：`20261127`；最後預定更新：`23:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-28T10:08:10+08:00`；狀態：`available_after_schedule`
+- TPEx S47（上櫃）：資料日期：`20261127`；最後預定更新：`22:30`；來源回報產製時間：`unavailable`；本次查詢時間：`2026-11-28T10:08:12+08:00`；狀態：`available_after_schedule`
 
 ### 6. 市場成交結構
 
@@ -115,12 +115,12 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| S&P 500 | ^GSPC | 7,297.49 | 114.71 | +1.60 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq Composite | ^IXIC | 24,129.50 | 543.70 | +2.31 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq 100 | ^NDX | 26,726.39 | 679.49 | +2.61 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| Dow Jones | ^DJI | 50,774.94 | 591.99 | +1.18 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| 費城半導體 SOX | ^SOX | 9,186.71 | 411.85 | +4.69 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| VIX | ^VIX | 23.81 | -2.99 | -11.16 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/Chicago | Yahoo Finance Chart API |
+| S&P 500 | ^GSPC | 7,297.49 | -425.11 | -5.50 | 2026-11-27 | 2026-11-28T02:08:14+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| Nasdaq Composite | ^IXIC | 24,129.50 | -2,348.31 | -8.87 | 2026-11-27 | 2026-11-28T02:08:14+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| Nasdaq 100 | ^NDX | 26,726.39 | -2,925.05 | -9.86 | 2026-11-27 | 2026-11-28T02:08:14+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| Dow Jones | ^DJI | 50,774.94 | -1,602.63 | -3.06 | 2026-11-27 | 2026-11-28T02:08:14+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 費城半導體 SOX | ^SOX | 9,186.71 | -2,295.79 | -19.99 | 2026-11-27 | 2026-11-28T02:08:14+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| VIX | ^VIX | 23.81 | 6.29 | +35.90 | 2026-11-27 | 2026-11-28T02:08:14+00:00 | America/Chicago | Yahoo Finance Chart API（meta.regularMarketPrice） |
 
 ### 2. 亞洲主要指數
 
@@ -128,11 +128,11 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 日經225 | ^N225 | unavailable | unavailable | unavailable | 2026-11-26 | 2026-11-28T01:45:36+00:00 | Asia/Tokyo | Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除） |
-| 韓國KOSPI | ^KS11 | unavailable | unavailable | unavailable | 2026-11-26 | 2026-11-28T01:45:36+00:00 | Asia/Seoul | Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除） |
-| 香港恆生 | ^HSI | unavailable | unavailable | unavailable | 2026-11-26 | 2026-11-28T01:45:36+00:00 | Asia/Hong_Kong | Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除） |
-| 上海綜合 | 000001.SS | unavailable | unavailable | unavailable | 2026-11-26 | 2026-11-28T01:45:36+00:00 | Asia/Shanghai | Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除） |
-| 深圳成分 | 399001.SZ | unavailable | unavailable | unavailable | 2026-11-26 | 2026-11-28T01:45:36+00:00 | Asia/Shanghai | Yahoo Finance Chart API（資料日期早於或無法核對 T0，已排除） |
+| 日經225 | ^N225 | 58,711.11 | -4,557.26 | -7.20 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Asia/Tokyo | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 韓國KOSPI | ^KS11 | 4,915.68 | -722.66 | -12.82 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Asia/Seoul | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 香港恆生 | ^HSI | 22,694.77 | -346.55 | -1.50 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Asia/Hong_Kong | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 上海綜合 | 000001.SS | 3,606.49 | -41.81 | -1.15 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Asia/Shanghai | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 深圳成分 | 399001.SZ | 10,814.02 | -431.71 | -3.84 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Asia/Shanghai | Yahoo Finance Chart API（meta.regularMarketPrice） |
 
 ### 3. 美股指數期貨
 
@@ -140,10 +140,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| S&P500期貨 | ES=F | 7,308.25 | 112.50 | +1.56 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| Nasdaq100期貨 | NQ=F | 26,765.00 | 664.75 | +2.55 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| 道瓊期貨 | YM=F | 50,821.00 | 593.00 | +1.18 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| Russell2000期貨 | RTY=F | 2,754.40 | 48.30 | +1.78 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
+| S&P500期貨 | ES=F | 7,308.25 | -475.00 | -6.10 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| Nasdaq100期貨 | NQ=F | 26,765.00 | -3,214.50 | -10.72 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 道瓊期貨 | YM=F | 50,821.00 | -1,875.00 | -3.56 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| Russell2000期貨 | RTY=F | 2,754.40 | -85.10 | -3.00 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
 
 ### 4. 美國國債殖利率
 
@@ -151,10 +151,10 @@
 
 | 項目 | API 資料欄位／識別 | 殖利率（%） | 日變化（百分點） | 資料日期 | 擷取時間（UTC） | 資料來源 |
 |---|---|---|---|---|---|---|
-| 美國 2 年期殖利率 | 2 Yr | 4.69 | 0.08 | 27-NOV-26 | 2026-11-28T01:45:56+00:00 | U.S. Treasury yield.xml（BC_2YEAR 備援） |
-| 美國 10 年期殖利率 | 10 Yr | 4.94 | 0.09 | 2026-11-27 | 2026-11-28T01:45:56+00:00 | Yahoo Finance (備援) |
-| 美國 20 年期殖利率 | 20 Yr | 5.36 | 0.08 | 27-NOV-26 | 2026-11-28T01:45:56+00:00 | U.S. Treasury yield.xml（BC_20YEAR 備援） |
-| 美國 30 年期殖利率 | 30 Yr | 5.32 | 0.09 | 2026-11-27 | 2026-11-28T01:45:56+00:00 | Yahoo Finance (備援) |
+| 美國 2 年期殖利率 | 2 Yr | 4.69 | 0.08 | 27-NOV-26 | 2026-11-28T02:08:34+00:00 | U.S. Treasury yield.xml（BC_2YEAR 備援） |
+| 美國 10 年期殖利率 | 10 Yr | 4.94 | -0.06 | 2026-11-27 | 2026-11-28T02:08:35+00:00 | Yahoo Finance (備援) |
+| 美國 20 年期殖利率 | 20 Yr | 5.36 | 0.08 | 27-NOV-26 | 2026-11-28T02:08:34+00:00 | U.S. Treasury yield.xml（BC_20YEAR 備援） |
+| 美國 30 年期殖利率 | 30 Yr | 5.33 | 0.02 | 2026-11-27 | 2026-11-28T02:08:35+00:00 | Yahoo Finance (備援) |
 
 ### 5. 主要匯率
 
@@ -162,10 +162,10 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.92 | -0.27 | -0.82 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | Europe/London | Yahoo Finance Chart API |
-| DXY美元指數 | DX-Y.NYB | 104.01 | 0.34 | +0.33 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| USD/JPY | JPY=X | 159.28 | 0.07 | +0.04 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | Europe/London | Yahoo Finance Chart API |
-| USD/KRW | KRW=X | 1,343.53 | 0.56 | +0.04 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | Europe/London | Yahoo Finance Chart API |
+| USD/TWD | TWD=X | 32.98 | 0.44 | +1.37 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| DXY美元指數 | DX-Y.NYB | 104.01 | 1.82 | +1.78 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| USD/JPY | JPY=X | 159.51 | 1.99 | +1.26 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| USD/KRW | KRW=X | 1,333.00 | 8.23 | +0.62 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
 
 ### 6. 台灣相關ADR
 
@@ -173,9 +173,9 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| 台積電ADR | TSM | unavailable | unavailable | unavailable | 2026-11-25 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API（台積電ADR資料日期 2026-11-25 與美國最近已收盤交易日 2026-11-27 不一致，已排除） |
-| 聯電ADR | UMC | unavailable | unavailable | unavailable | 2026-11-25 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API（聯電ADR資料日期 2026-11-25 與美國最近已收盤交易日 2026-11-27 不一致，已排除） |
-| 日月光ADR | ASX | unavailable | unavailable | unavailable | 2026-11-25 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API（日月光ADR資料日期 2026-11-25 與美國最近已收盤交易日 2026-11-27 不一致，已排除） |
+| 台積電ADR | TSM | 353.34 | -83.53 | -19.12 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 聯電ADR | UMC | 13.44 | -6.01 | -30.90 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 日月光ADR | ASX | 31.34 | -10.72 | -25.49 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
 
 ### 7. 原油黃金Bitcoin
 
@@ -183,38 +183,38 @@
 
 | 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| WTI原油期貨 | CL=F | 83.08 | -0.60 | -0.72 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| 黃金期貨 | GC=F | 3,668.50 | 132.70 | +3.75 | 2026-11-27 | 2026-11-28T01:45:36+00:00 | America/New_York | Yahoo Finance Chart API |
-| Bitcoin | BTC-USD | 60,119.89 | -374.82 | -0.62 | 2026-11-28 | 2026-11-28T01:45:36+00:00 | UTC | Yahoo Finance Chart API |
+| WTI原油期貨 | CL=F | 83.08 | -19.70 | -19.17 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| 黃金期貨 | GC=F | 3,668.50 | -383.10 | -9.46 | 2026-11-27 | 2026-11-28T02:08:15+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| Bitcoin | BTC-USD | 60,103.42 | -21,164.17 | -26.04 | 2026-11-28 | 2026-11-28T02:08:15+00:00 | UTC | Yahoo Finance Chart API（meta.regularMarketPrice） |
 
 ### 8. 重大經濟數據、央行事件與重大市場新聞
 
 **資料來源：** 台股 `tw.stock.yahoo.com` (含內文摘要)；國際 `Fed 公告 RSS`＋`CNBC`＋`MarketWatch` (標題、來源、時間與連結)
 
-- 事件1：選前台股翻紅守住3萬9 衛星股亮10顆漲停燈
-  - 來源：Yahoo 台股；發布時間：2026-11-27T09:23:22Z；台北時間：2026-11-27 17:23
-  - 摘要：台積電尾盤發力，台股選前量縮收紅，守住3萬9千點！加權指數今(27)日上漲156.27點、漲幅0.40%，收39,308.08點，週線翻紅、大漲3,274.79點，上市成交金額縮至6,673.11億元。九合一選舉前觀望氣氛濃厚，大盤早盤一度
-  - 原文連結：https://tw.stock.yahoo.com/news/%E9%81%B8%E5%89%8D%E6%9C%80%E5%BE%8C%E4%B8%80%E7%9B%A4%E7%A5%9E%E5%B1%B1%E7%99%BC%E5%8A%9B%E5%8F%B0%E8%82%A1%E7%BF%BB%E7%B4%85%E5%AE%883%E8%90%AC9%EF%BC%81%E6%AC%8A%E5%80%BC%E8%82%A1%E5%90%84%E8%B5%B0%E5%90%84%E7%9A%84-%E8%A1%9B%E6%98%9F%E8%82%A110%E9%A1%86%E7%B4%85%E7%87%88%E6%90%B6%E9%A2%A8%E9%A0%AD-%EF%BD%9Cyahoo%E8%B2%A1%E7%B6%93%E6%8E%83%E6%8F%8F-092322357.html
-- 事件2：大學生打工買0050「這種做法」慘賠6萬！　網安慰：買到值得的經驗
+- 事件1：大學生打工買0050「這種做法」慘賠6萬！　網安慰：買到值得的經驗
   - 來源：Yahoo 台股；發布時間：2026-11-27T09:36:00Z；台北時間：2026-11-27 17:36
   - 摘要：一名座標台中的大學生日前在網路發發文分享，自己靠著每天打工存下的40萬元投入元大台灣50（0050），原本帳面一度獲利4萬元，卻因急於賺錢、心態失衡，最終在低點賣出，反而倒虧2萬元，整體資金從40萬元縮水至34萬元，一口氣少了6萬元，說這次
   - 原文連結：https://tw.stock.yahoo.com/news/%E5%A4%A7%E5%AD%B8%E7%94%9F%E6%89%93%E5%B7%A5%E8%B2%B70050-%E9%80%99%E7%A8%AE%E5%81%9A%E6%B3%95-%E6%85%98%E8%B3%A06%E8%90%AC-%E7%B6%B2%E5%AE%89%E6%85%B0-%E8%B2%B7%E5%88%B0%E5%80%BC%E5%BE%97%E7%9A%84%E7%B6%93%E9%A9%97-093600689.html
-- 事件3：台積電硬撐台股翻紅！三大法人仍賣超213億元 本周提款2,916億元
+- 事件2：台積電硬撐台股翻紅！三大法人仍賣超213億元 本周提款2,916億元
   - 來源：Yahoo 台股；發布時間：2026-11-27T08:44:18Z；台北時間：2026-11-27 16:44
   - 摘要：台股27日適逢九合一選舉投票前夕，美股因感恩節休市，市場缺乏美股指引，加權指數開高後陷入震盪，盤中一度下探38,890.53點，尾盤在台積電（2330）急拉助攻下，終場上漲156.27點，以39,308.08點作收，漲幅0.39%，成交金額
   - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E7%A9%8D%E9%9B%BB%E7%A1%AC%E6%92%90%E5%8F%B0%E8%82%A1%E7%BF%BB%E7%B4%85-%E4%B8%89%E5%A4%A7%E6%B3%95%E4%BA%BA%E4%BB%8D%E8%B3%A3%E8%B6%85213%E5%84%84%E5%85%83-%E6%9C%AC%E5%91%A8%E6%8F%90%E6%AC%BE2-916%E5%84%84%E5%85%83-084418540.html
-- 事件4：立陶宛總統嫌台灣投資太少！再施壓代表處更名　揚言不排除單方面行動
+- 事件3：立陶宛總統嫌台灣投資太少！再施壓代表處更名　揚言不排除單方面行動
   - 來源：Yahoo 台股；發布時間：2026-11-27T05:47:00Z；台北時間：2026-11-27 13:47
   - 摘要：[FTNN新聞網]記者林欣愉／綜合報導立陶宛持續推動與中國關係正常化，並要求台灣駐立陶宛代表處改名，爭議再度升溫！立陶宛總統瑙塞達（GitanasNausėda）於當...
   - 原文連結：https://tw.stock.yahoo.com/news/%E7%AB%8B%E9%99%B6%E5%AE%9B%E7%B8%BD%E7%B5%B1%E5%AB%8C%E5%8F%B0%E7%81%A3%E6%8A%95%E8%B3%87%E5%A4%AA%E5%B0%91-%E5%86%8D%E6%96%BD%E5%A3%93%E4%BB%A3%E8%A1%A8%E8%99%95%E6%9B%B4%E5%90%8D-%E6%8F%9A%E8%A8%80%E4%B8%8D%E6%8E%92%E9%99%A4%E5%96%AE%E6%96%B9%E9%9D%A2%E8%A1%8C%E5%8B%95-054700956.html
-- 事件5：水五金新業務發威！「這檔」前3季純益暴增1.11倍　每股大賺9.03元、12/28除息
+- 事件4：水五金新業務發威！「這檔」前3季純益暴增1.11倍　每股大賺9.03元、12/28除息
   - 來源：Yahoo 台股；發布時間：2026-11-27T04:05:00Z；台北時間：2026-11-27 12:05
   - 摘要：[FTNN新聞網]實習記者盛琳／綜合報導家飾鑄件廠泰金-KY（6629）公布2026年前3季財報，受惠於水五金代工新業務及新客戶訂單挹注，前3季營收衝上19.38億元、年...
   - 原文連結：https://tw.stock.yahoo.com/news/%E6%B0%B4%E4%BA%94%E9%87%91%E6%96%B0%E6%A5%AD%E5%8B%99%E7%99%BC%E5%A8%81-%E9%80%99%E6%AA%94-%E5%89%8D3%E5%AD%A3%E7%B4%94%E7%9B%8A%E6%9A%B4%E5%A2%9E1-11%E5%80%8D-%E6%AF%8F%E8%82%A1%E5%A4%A7%E8%B3%BA9-040500765.html
-- 事件6：美股感恩節休市 台股選前多頭續攻 小幅開高後平盤震盪守住39000點
+- 事件5：美股感恩節休市 台股選前多頭續攻 小幅開高後平盤震盪守住39000點
   - 來源：Yahoo 台股；發布時間：2026-11-27T02:10:00Z；台北時間：2026-11-27 10:10
   - 摘要：【緯來新聞網】 適逢感恩節，美股週四（26日）休市，受美股不開盤影響，台指期夜盤今（27）日收平盤
   - 原文連結：https://tw.stock.yahoo.com/news/%E7%BE%8E%E8%82%A1%E6%84%9F%E6%81%A9%E7%AF%80%E4%BC%91%E5%B8%82-%E5%8F%B0%E8%82%A1%E9%81%B8%E5%89%8D%E5%A4%9A%E9%A0%AD%E7%BA%8C%E6%94%BB-%E5%B0%8F%E5%B9%85%E9%96%8B%E9%AB%98%E5%BE%8C%E5%B9%B3%E7%9B%A4%E9%9C%87%E7%9B%AA%E5%AE%88%E4%BD%8F39000%E9%BB%9E-021000840.html
+- 事件6：台積電2度測試年線漲回、台股漲956點　明大選投票前一日股民爭論是否攻上4萬點
+  - 來源：Yahoo 台股；發布時間：2026-11-26T10:35:15Z；台北時間：2026-11-26 18:35
+  - 摘要：台積電26日收盤下跌，台股仍大漲9百多點，靠的是台達電、鴻海、南亞、台光電、日...
+  - 原文連結：https://tw.stock.yahoo.com/news/%E5%8F%B0%E7%A9%8D%E9%9B%BB2%E5%BA%A6%E6%B8%AC%E8%A9%A6%E5%B9%B4%E7%B7%9A%E6%BC%B2%E5%9B%9E-%E5%8F%B0%E8%82%A1%E6%BC%B2956%E9%BB%9E-%E6%98%8E%E5%A4%A7%E9%81%B8%E6%8A%95%E7%A5%A8%E5%89%8D-%E6%97%A5%E8%82%A1%E6%B0%91%E7%88%AD%E8%AB%96%E6%98%AF%E5%90%A6%E6%94%BB%E4%B8%8A4%E8%90%AC%E9%BB%9E-103515604.html
 - 事件7：Inflation has shoppers hunting for value. That bodes well for Black Friday
   - 來源：CNBC；發布時間：Fri, 27 Nov 2026 22:00:57 GMT；台北時間：2026-11-28 06:00
   - 摘要：Even as consumers face macroeconomic headwinds, retailers are expecting robust holiday spending through Black Friday and beyond.
@@ -391,7 +391,7 @@
 |---|---|---|
 | 交易日期 | 2026-11-27 | TAIFEX Proxy |
 | 到期月份／到期日 | 202611F4 | TAIFEX Proxy |
-| 本次報告產製時間 | 2026-11-28 09:45:23 | 本機 |
+| 本次報告產製時間 | 2026-11-28 10:07:54 | 本機 |
 | 日盤／夜盤標記 | 日盤收盤後資料 | TAIFEX Proxy |
 
 ### 2．Call 總成交量、OI、OI 增減
@@ -581,7 +581,7 @@
 
 **TAIFEX Delta 原始資料與 Parser 階段診斷**
 ```json
-{"requested_date":"2026-11-27","source":"taifex_csv","fallback_used":false,"csv_duration_ms":660,"attempts":[{"source":"taifex_csv","duration_ms":660,"http_status":200,"bytes":479358,"parser":{"requested_date":"2026-11-27","source_date":"2026-11-27","published_at":"2026/11/27 04:33:23 PM","input_lines":9684,"txo_rows":3228,"parsed_rows":3228,"invalid_rows":0,"call_rows":1614,"put_rows":1614},"accepted_txo_rows":3228}],"parser":{"requested_date":"2026-11-27","source_date":"2026-11-27","published_at":"2026/11/27 04:33:23 PM","input_lines":9684,"txo_rows":3228,"parsed_rows":3228,"invalid_rows":0,"call_rows":1614,"put_rows":1614},"final_rows":3228}
+{"requested_date":"2026-11-27","source":"taifex_csv","fallback_used":false,"csv_duration_ms":990,"attempts":[{"source":"taifex_csv","duration_ms":990,"http_status":200,"bytes":479358,"parser":{"requested_date":"2026-11-27","source_date":"2026-11-27","published_at":"2026/11/27 04:33:23 PM","input_lines":9684,"txo_rows":3228,"parsed_rows":3228,"invalid_rows":0,"call_rows":1614,"put_rows":1614},"accepted_txo_rows":3228}],"parser":{"requested_date":"2026-11-27","source_date":"2026-11-27","published_at":"2026/11/27 04:33:23 PM","input_lines":9684,"txo_rows":3228,"parsed_rows":3228,"invalid_rows":0,"call_rows":1614,"put_rows":1614},"final_rows":3228}
 ```
 
 **擴大區間 Gamma Flip 診斷（±15%；不覆蓋正式 ±10% 結果）**
@@ -669,11 +669,11 @@
 ### 16．資料來源、時間、時區與狀態
 
 - 資料來源：TAIFEX 經 Cloudflare Worker Proxy
-- 資料日期：2026-11-27；本次報告產製時間：2026-11-28 09:45:23；時區：`Asia/Taipei`
+- 資料日期：2026-11-27；本次報告產製時間：2026-11-28 10:07:54；時區：`Asia/Taipei`
 - 日盤／夜盤標記：日盤收盤後 + 夜盤盤後
 - 部分取得欄位 (0)：無
 - 註記：--force-rewrite 明示覆蓋（人工指定）
-- 註記：同 T0 覆蓋：24 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
+- 註記：同 T0 覆蓋：103 格以本次新抓取覆蓋（該 T0 尚無報告，無凍結對象）
 - 未取得欄位 (0)：無
 
 ## 五、資料來源、時間與完整性
@@ -699,11 +699,6 @@
 - 期貨選擇權：`TAIFEX Proxy`
 - 新聞：台股 Yahoo／國際 Fed＋CNBC＋MarketWatch；台股 Yahoo（不足時財訊快報備援）/ 國際 Fed 公告＋CNBC＋MarketWatch RSS；Fed 無摘要；investing 港股為主已退役；cnyes CSR、wantgoo JS 算繪、中央社/台灣央行路徑待查，未採用
 - 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`Yahoo Finance (備援)`
-- 註記：亞洲主要指數資料日期落後 T0 2026-11-27，已將舊行情排除並標示 unavailable；原始資料日期：日經225 2026-11-26、韓國KOSPI 2026-11-26、香港恆生 2026-11-26、上海綜合 2026-11-26、深圳成分 2026-11-26
-- 註記：台灣相關 ADR 新鮮度異常，已排除舊行情：台積電ADR（TSM，資料日期 2026-11-25；台積電ADR資料日期 2026-11-25 與美國最近已收盤交易日 2026-11-27 不一致）；聯電ADR（UMC，資料日期 2026-11-25；聯電ADR資料日期 2026-11-25 與美國最近已收盤交易日 2026-11-27 不一致）；日月光ADR（ASX，資料日期 2026-11-25；日月光ADR資料日期 2026-11-25 與美國最近已收盤交易日 2026-11-27 不一致）
-<!-- ADR_STALE_SYMBOLS:TSM -->
-<!-- ADR_STALE_SYMBOLS:UMC -->
-<!-- ADR_STALE_SYMBOLS:ASX -->
 - 註記：上市市場維持率為當日暫估，以 TWSE 自建計算為主；0 檔採最近有效收盤價。Blave 同 T0 交叉驗證 158.4150%；差異 0.000 個百分點；門檻 <1.00 個百分點；PASS。Blave 不可用不影響 DATA_REPORT 產出。
 - 註記：上市 MI_MARGN 無日期欄，採用最新可得
 - TAIFEX 註記：futures-price-after-hours 日期 2026-11-27 非今日 2026-11-30，視為無新節次，不採用
