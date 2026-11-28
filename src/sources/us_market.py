@@ -31,7 +31,7 @@ GROUPS: dict[str, list[tuple[str, str]]] = {
     "原油黃金Bitcoin": [("WTI原油期貨", "CL=F"), ("黃金期貨", "GC=F"), ("Bitcoin", "BTC-USD")],
 }
 
-def quote(sym: str) -> dict:
+def quote(sym: str, expected_date: str | None = None) -> dict:
     """Fetch the latest exchange-stamped quote from Yahoo Chart API.
 
     Prefer meta.regularMarketPrice when its exchange-local timestamp is at least
@@ -65,7 +65,10 @@ def quote(sym: str) -> dict:
             if meta_time is not None and exchange_timezone else None
         )
         bar_date = _exchange_date(pts[-1][0], exchange_timezone) if pts and exchange_timezone else None
-        if meta_price is not None and meta_date and (bar_date is None or meta_date >= bar_date):
+        meta_is_expected = meta_date == expected_date if expected_date else (
+            meta_date is not None and (bar_date is None or meta_date >= bar_date)
+        )
+        if meta_price is not None and meta_date and meta_is_expected:
             previous = meta.get("chartPreviousClose") or meta.get("previousClose")
             if previous is None and meta_date == bar_date and len(pts) >= 2:
                 previous = pts[-2][1]
@@ -94,17 +97,17 @@ def quote(sym: str) -> dict:
     return out
 
 
-def _quote_chart_meta(sym: str) -> dict | None:
-    """Retry Yahoo's public v8 chart endpoint on alternate hosts for fresh meta quote.
+def _quote_chart_meta(sym: str, expected_date: str) -> dict | None:
+    """Fetch the latest completed expected-session close from Yahoo v8 Chart API.
 
-    v7/finance/quote is deliberately not used: Yahoo now requires a session cookie
-    and crumb for that endpoint. The chart endpoint remains the unauthenticated path.
+    Use exchange-local timestamps and daily bars. Never substitute a live quote
+    from a newer, still-open session for the last completed session in DATA_REPORT.
     """
     for host in ("query2.finance.yahoo.com", "query1.finance.yahoo.com"):
         try:
             r = requests.get(
                 f"https://{host}/v8/finance/chart/{sym}",
-                params={"range": "1d", "interval": "1m", "includePrePost": "false"},
+                params={"range": "5d", "interval": "1d", "includePrePost": "false"},
                 headers={**HEADERS, "Accept": "application/json"},
                 timeout=15,
             )
@@ -113,30 +116,50 @@ def _quote_chart_meta(sym: str) -> dict | None:
             if not res:
                 continue
             meta = res.get("meta") or {}
-            price = meta.get("regularMarketPrice")
-            timestamp = meta.get("regularMarketTime")
             timezone_name = meta.get("exchangeTimezoneName")
-            if price is None or timestamp is None or not timezone_name:
+            if not timezone_name:
                 continue
+            meta_time = meta.get("regularMarketTime")
+            meta_date = _exchange_date(meta_time, timezone_name) if meta_time is not None else None
+            meta_price = meta.get("regularMarketPrice")
             previous = meta.get("chartPreviousClose") or meta.get("previousClose")
-            if previous in (None, 0):
-                continue
-            change = float(price) - float(previous)
-            return {
-                "symbol": sym,
-                "price": price,
-                "change": change,
-                "pct": change / float(previous) * 100,
-                "date": _exchange_date(timestamp, timezone_name),
-                "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                "exchange_timezone": timezone_name,
-                "source": f"Yahoo Finance Chart API meta fallback（{host}）",
-                "ok": True,
-            }
+            if meta_date == expected_date and meta_price is not None and previous not in (None, 0):
+                price = float(meta_price)
+                prev = float(previous)
+                change = price - prev
+                return {
+                    "symbol": sym, "price": price, "change": change,
+                    "pct": change / prev * 100, "date": meta_date,
+                    "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "exchange_timezone": timezone_name,
+                    "source": f"Yahoo Finance Chart API meta fallback（{host}）",
+                    "ok": True,
+                }
+
+            timestamps = res.get("timestamp") or []
+            closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
+            points = [
+                (_exchange_date(ts, timezone_name), float(close))
+                for ts, close in zip(timestamps, closes) if close is not None
+            ]
+            expected_points = [point for point in points if point[0] == expected_date]
+            previous_points = [point for point in points if point[0] < expected_date]
+            if expected_points and previous_points:
+                price = expected_points[-1][1]
+                previous_close = previous_points[-1][1]
+                change = price - previous_close
+                return {
+                    "symbol": sym, "price": price, "change": change,
+                    "pct": change / previous_close * 100 if previous_close else None,
+                    "date": expected_date,
+                    "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "exchange_timezone": timezone_name,
+                    "source": f"Yahoo Finance Chart API daily-bar fallback（{host}）",
+                    "ok": previous_close != 0,
+                }
         except Exception as e:  # noqa: BLE001
             print(f"[WARN] yahoo chart-meta fallback {sym} host={host} failed: {e}")
     return None
-
 
 
 
@@ -278,7 +301,9 @@ def _refresh_stale_market_quotes(
 
     started = datetime.now(timezone.utc)
     with ThreadPoolExecutor(max_workers=4) as executor:
-        fetched = list(executor.map(_quote_chart_meta, pending.keys()))
+        fetched = list(executor.map(
+            lambda item: _quote_chart_meta(item[0], item[1]), pending.items()
+        ))
     fallback = dict(zip(pending.keys(), fetched))
     accepted = 0
     for group, rows in market_data.items():
@@ -313,13 +338,8 @@ def _refresh_stale_market_quotes(
 
 
 def get_all(expected_date: str | None = None) -> dict:
-    """{group: [(name, quote)]}; stale Asia/ADR Chart bars get a timestamped quote-API fallback."""
+    """{group: [(name, quote)]}; validate only completed sessions for each exchange."""
     from concurrent.futures import ThreadPoolExecutor
-    out: dict = {}
-    with ThreadPoolExecutor(max_workers=5) as ex:
-        for g, items in GROUPS.items():
-            out[g] = list(ex.map(lambda it: (it[0], quote(it[1])), items))
-
     now_utc = datetime.now(timezone.utc)
     expected_asia = _expected_asia_session_dates(now_utc)
     try:
@@ -327,6 +347,20 @@ def get_all(expected_date: str | None = None) -> dict:
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] NYSE calendar unavailable; ADR freshness fails closed: {e}")
         expected_us_session = None
+
+    out: dict = {}
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        for group, items in GROUPS.items():
+            def _fetch_item(item):
+                name, symbol = item
+                if group == "亞洲主要指數":
+                    expected = expected_asia.get(symbol)
+                elif group == "台灣相關ADR":
+                    expected = expected_us_session
+                else:
+                    expected = None
+                return name, quote(symbol, expected_date=expected)
+            out[group] = list(ex.map(_fetch_item, items))
 
     _refresh_stale_market_quotes(out, expected_asia, expected_us_session)
     if "亞洲主要指數" in out:
