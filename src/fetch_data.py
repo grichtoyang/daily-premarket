@@ -1435,7 +1435,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                       "net_gex_1pct": _gm.get("net_gex_1pct"),
                       "gross_gex_1pct": _gm.get("gross_gex_1pct"),
                        "gamma_diagnostics": _gm.get("diagnostics"),
-                       "formal_flip_diagnostics": _gm.get("flip_diagnostics"),
+                       "formal_flip_diagnostics": _gm.get("flip_diagnostics"), "flip_diagnostics_source": "options-gamma-levels" if _gex_diag_available else "options-market-structure-compact (proxy)",
                        "wide_range_flip": _gm.get("wide_range_flip"),
                        "wide_range_flip_diagnostics": _gm.get("wide_range_flip_diagnostics"),
                        "expiry_selection_diagnostics": _gm.get("expiry_selection_diagnostics"),
