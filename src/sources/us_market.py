@@ -91,12 +91,58 @@ def _apply_asia_freshness(rows: list[tuple], expected_date: str | None) -> list[
     return rows
 
 
-def get_all(expected_date: str | None = None) -> dict:
-    """{group: [(name, quote)]}。
+def _expected_us_session_date(now: datetime | None = None) -> str:
+    """Return the latest fully closed NYSE session date in New York local context.
 
-    expected_date 僅用於亞洲主要指數的新鮮度檢查；不把其他市場的交易日
-    強制對齊台灣 T0。F6（2026-10-19）：25 檔以 ThreadPoolExecutor 並行抓取。
+    Uses the exchange calendar (including holidays and early closes), not Taiwan T0
+    and not another Yahoo quote as a proxy. Raises when the calendar is unavailable;
+    callers must fail closed rather than treating an unverified ADR as fresh.
     """
+    import pandas as pd
+    import pandas_market_calendars as mcal
+
+    now_utc = now or datetime.now(timezone.utc)
+    if now_utc.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+    now_utc = now_utc.astimezone(timezone.utc)
+    ny_date = now_utc.astimezone(ZoneInfo("America/New_York")).date()
+    calendar = mcal.get_calendar("NYSE")
+    schedule = calendar.schedule(
+        start_date=(ny_date - __import__("datetime").timedelta(days=30)).isoformat(),
+        end_date=ny_date.isoformat(),
+    )
+    if schedule.empty:
+        raise RuntimeError("NYSE calendar returned no sessions")
+    closed = schedule[schedule["market_close"] <= pd.Timestamp(now_utc)]
+    if closed.empty:
+        raise RuntimeError("No completed NYSE session found in calendar window")
+    return closed.index[-1].date().isoformat()
+
+
+def _apply_adr_freshness(rows: list[tuple], expected_session: str | None) -> list[tuple]:
+    """Reject ADR quotes not dated on the latest fully closed US equity session."""
+    for name, q in rows:
+        if q.get("price") is None:
+            continue
+        actual_date = q.get("date")
+        if expected_session and actual_date == expected_session:
+            continue
+        q["stale"] = True
+        if expected_session is None:
+            reason = f"{name}無法驗證美國交易日（交易日曆不可用）"
+        else:
+            reason = f"{name}資料日期 {actual_date or '缺失'} 與美國最近已收盤交易日 {expected_session} 不一致"
+        q["stale_reason"] = reason
+        q["price"] = None
+        q["change"] = None
+        q["pct"] = None
+        q["ok"] = False
+        q["source"] = f"Yahoo Finance Chart API（{reason}，已排除）"
+    return rows
+
+
+def get_all(expected_date: str | None = None) -> dict:
+    """{group: [(name, quote)]}。亞洲指數按其既有 T0 規則；ADR 按 NYSE 日曆驗證。"""
     from concurrent.futures import ThreadPoolExecutor
     out: dict = {}
     with ThreadPoolExecutor(max_workers=5) as ex:
@@ -104,6 +150,13 @@ def get_all(expected_date: str | None = None) -> dict:
             out[g] = list(ex.map(lambda it: (it[0], quote(it[1])), items))
     if "亞洲主要指數" in out:
         out["亞洲主要指數"] = _apply_asia_freshness(out["亞洲主要指數"], expected_date)
+    if "台灣相關ADR" in out:
+        try:
+            expected_us_session = _expected_us_session_date()
+        except Exception as e:  # noqa: BLE001
+            print(f"[WARN] NYSE calendar unavailable; ADR freshness fails closed: {e}")
+            expected_us_session = None
+        out["台灣相關ADR"] = _apply_adr_freshness(out["台灣相關ADR"], expected_us_session)
     return out
 
 def ohlc(sym: str) -> dict:
