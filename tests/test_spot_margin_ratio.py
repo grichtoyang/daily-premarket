@@ -204,13 +204,19 @@ class _Response:
 
 
 def yahoo_payload(timestamp, exchange_timezone):
+    # quote() needs the latest completed session and its prior-session close
+    # to calculate a valid daily change and percentage.
+    previous_timestamp = timestamp - 86400
     return {
         "chart": {
             "result": [{
                 "meta": {"exchangeTimezoneName": exchange_timezone},
-                "timestamp": [timestamp],
+                "timestamp": [previous_timestamp, timestamp],
                 "indicators": {"quote": [{
-                    "open": [100.0], "high": [102.0], "low": [99.0], "close": [101.0]
+                    "open": [99.0, 100.0],
+                    "high": [101.0, 102.0],
+                    "low": [98.0, 99.0],
+                    "close": [100.0, 101.0]
                 }]}
             }]
         }
