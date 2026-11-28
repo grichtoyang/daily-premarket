@@ -1119,6 +1119,8 @@ def parse_data_report(report_path):
     put_wall=optional_get(r"Put Wall 價位 \| ([0-9,]+) \|")
     gamma_wall=optional_get(r"Gamma Wall 價位 \| ([0-9,.]+) \|")
     gamma_flip=optional_get(r"Gamma Flip 價位 \| ([0-9,.]+) \|")
+    gamma_flip_date_match=re.search(r"\| Gamma Flip 資料日期 \| (\d{4}-\d{2}-\d{2}) \|", text)
+    gamma_flip_date=gamma_flip_date_match.group(1) if gamma_flip_date_match else None
     max_pain=optional_get(r"Max Pain 價位 \| ([0-9,]+) \|")
     gex_payload_match=re.search(r"GEX_LEVELS_JSON.*?```json\s*(\{.*?\})\s*```", text, re.S)
     gex_payload={}
@@ -1131,6 +1133,23 @@ def parse_data_report(report_path):
             gex_payload={}
     gex_levels=gex_payload.get('levels',[])
     gex_status='available' if gex_levels and gex_payload.get('net_gex_1pct') is not None and gex_payload.get('gross_gex_1pct') is not None else 'unavailable'
+    # A Proxy Flip recovered from an earlier source date is reference-only.
+    # It must never be used as the current T0 formal Flip or a trading-condition input.
+    gamma_flip_date=gex_payload.get('flip_date') or gamma_flip_date
+    gamma_flip_source=gex_payload.get('flip_source')
+    gamma_flip_is_stale=bool(gamma_flip is not None and gamma_flip_date and gamma_flip_date != t0_date)
+    gamma_flip_reference=gamma_flip if gamma_flip_is_stale else None
+    gamma_flip_reference_date=gamma_flip_date if gamma_flip_is_stale else None
+    gamma_flip_reference_source=gamma_flip_source if gamma_flip_is_stale else None
+    if gamma_flip_is_stale:
+        gamma_flip=None
+    formal_wide_flip=gex_payload.get('formal_wide_range_flip') or {}
+    formal_wide_diag=gex_payload.get('formal_wide_range_flip_diagnostics') or {}
+    extended_flip=(
+        formal_wide_flip.get('estimated_underlying')
+        if gex_status=='available' and gex_payload.get('gex_date')==t0_date
+        and formal_wide_diag.get('found') is True else None
+    )
     call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 16．選擇權法人日盤、夜盤交易") or parse_table("### 17．選擇權法人日盤、夜盤交易")
     opt_inst_force_table=parse_table("#### 法人多空力道表")
     opt_top10_tables=parse_tables("### 17．選擇權前十大") or parse_tables("### 18．選擇權前十大")
@@ -1206,7 +1225,7 @@ def parse_data_report(report_path):
         'inst': {'foreign': foreign_inst, 'trust': trust_inst, 'dealer': dealer_inst, 'all': all_inst},
         'tx': {'day': {'o': fut_day_o, 'h': fut_day_h, 'l': fut_day_l, 'c': fut_day_c, 'diff': fut_day_diff, 'pct': fut_day_pct, 'vol': fut_day_vol, 'basis': basis, 'prem': basis_pct}, 'night': {'o': fut_night_o, 'h': fut_night_h, 'l': fut_night_l, 'c': fut_night_c, 'diff': fut_night_diff, 'pct': fut_night_pct, 'vol': fut_night_vol, 'change': night_change}},
         'futures': {'foreign_oi': foreign_fut_oi, 'trust_oi': trust_fut_oi, 'dealer_oi': dealer_fut_oi, 'institutional_oi_total': institutional_oi_total, 'top10': top10_oi, 'top10_change_note': futures_rollover_note, 'foreign_day': foreign_day_net, 'foreign_night': foreign_night_net},
-        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'extendedFlip': ((gex_payload.get('wide_range_flip') or {}).get('estimated_underlying') if gamma_flip is None else None), 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'instOptForceAnalysis': build_option_force_analysis(opt_inst_force_table, opt_inst_table), 'top10Call': opt_top10_call, 'top10Put': opt_top10_put, 'top10ChangeNote': options_rollover_note},
+        'options': {'callVol': call_vol, 'callOi': call_oi, 'putVol': put_vol, 'putOi': put_oi, 'pcr': pcr, 'callWall': call_wall, 'putWall': put_wall, 'gammaWall': gamma_wall, 'flip': gamma_flip, 'flipDate': gamma_flip_date if not gamma_flip_is_stale else None, 'flipSource': gamma_flip_source if not gamma_flip_is_stale else None, 'flipStatus': 'stale_proxy' if gamma_flip_is_stale else ('current_day' if gamma_flip is not None and gamma_flip_date==t0_date else 'missing'), 'referenceFlip': gamma_flip_reference, 'referenceFlipDate': gamma_flip_reference_date, 'referenceFlipSource': gamma_flip_reference_source, 'extendedFlip': extended_flip, 'maxPain': max_pain, 'netGex1pct': gex_payload.get('net_gex_1pct'), 'grossGex1pct': gex_payload.get('gross_gex_1pct'), 'gexLevels': gex_levels, 'gexDate': gex_payload.get('date'), 'gexStatus': gex_status, 'callOiDist': call_oi_table, 'putOiDist': put_oi_table, 'instOpt': opt_inst_table, 'instOptForce': opt_inst_force_table, 'instOptForceAnalysis': build_option_force_analysis(opt_inst_force_table, opt_inst_table), 'top10Call': opt_top10_call, 'top10Put': opt_top10_put, 'top10ChangeNote': options_rollover_note},
         'news': news_events,
     }
 
@@ -1843,7 +1862,7 @@ def build_final_json(parsed, tech, analyzer, historical, db_status, args_date_st
         'futures': parsed['futures'],
         'options': {
             'callVol': parsed['options']['callVol'], 'callOi': parsed['options']['callOi'], 'putVol': parsed['options']['putVol'], 'putOi': parsed['options']['putOi'],
-            'pcr': parsed['options']['pcr'], 'callWall': parsed['options']['callWall'], 'putWall': parsed['options']['putWall'], 'gammaWall': parsed['options']['gammaWall'], 'flip': parsed['options']['flip'], 'extendedFlip': parsed['options']['extendedFlip'], 'maxPain': parsed['options']['maxPain'],
+            'pcr': parsed['options']['pcr'], 'callWall': parsed['options']['callWall'], 'putWall': parsed['options']['putWall'], 'gammaWall': parsed['options']['gammaWall'], 'flip': parsed['options']['flip'], 'flipDate': parsed['options']['flipDate'], 'flipSource': parsed['options']['flipSource'], 'flipStatus': parsed['options']['flipStatus'], 'referenceFlip': parsed['options']['referenceFlip'], 'referenceFlipDate': parsed['options']['referenceFlipDate'], 'referenceFlipSource': parsed['options']['referenceFlipSource'], 'extendedFlip': parsed['options']['extendedFlip'], 'maxPain': parsed['options']['maxPain'],
             'netGex1pct': parsed['options']['netGex1pct'], 'grossGex1pct': parsed['options']['grossGex1pct'], 'gexLevels': parsed['options']['gexLevels'], 'gexDate': parsed['options']['gexDate'], 'gexStatus': parsed['options']['gexStatus'],
             'callOiDist': parsed['options']['callOiDist'], 'putOiDist': parsed['options']['putOiDist'], 'instOpt': parsed['options']['instOpt'],
             'instOptForce': parsed['options']['instOptForce'], 'instOptForceAnalysis': parsed['options']['instOptForceAnalysis'], 'top10Call': parsed['options']['top10Call'], 'top10Put': parsed['options']['top10Put'], 'top10ChangeNote': parsed['options'].get('top10ChangeNote')
