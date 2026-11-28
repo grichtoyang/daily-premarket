@@ -950,16 +950,17 @@ async function fetchTAIFEX(path) {
     const rows = parseRows(html);
 
     if (response.ok && rows.length) {
-      return {
-        response,
-        html,
-        rows,
-        source: "taifex_web",
-        fallback: false,
-        source_url: `${TAIFEX}${path}`
-      };
+      if (isDayInstitutional && !parseFuturesInstitutional(rows).found) {
+        primaryError = "TAIFEX primary institutional response is incomplete or has duplicate/missing categories";
+      } else {
+        return {
+          response, html, rows, source: "taifex_web", fallback: false,
+          source_url: `${TAIFEX}${path}`
+        };
+      }
+    } else {
+      primaryError = `TAIFEX primary HTTP ${response.status} / rows ${rows.length}`;
     }
-    primaryError = `TAIFEX primary HTTP ${response.status} / rows ${rows.length}`;
   } catch (error) {
     primaryError = error?.message || String(error);
   }
