@@ -939,7 +939,19 @@ function m2({data:e}){
   ]});
 }function v9ProCorrelationMatrixReady(labels,matrix) {
   if(!Array.isArray(labels)||labels.length<2||!Array.isArray(matrix)||matrix.length!==labels.length)return false;
-  return matrix.some((row,i)=>Array.isArray(row)&&row.length===labels.length&&row.some((value,j)=>j!==i&&value!=null&&value!==""&&Number.isFinite(Number(value))&&Number(value)>=-1&&Number(value)<=1));
+  let hasComputablePair=false;
+  for(let i=0;i<matrix.length;i++){
+    const row=matrix[i];
+    if(!Array.isArray(row)||row.length!==labels.length)return false;
+    for(let j=0;j<row.length;j++){
+      const value=row[j];
+      if(value==null||value==="")continue;
+      const number=Number(value);
+      if(!Number.isFinite(number)||number < -1||number > 1)return false;
+      if(i!==j)hasComputablePair=true;
+    }
+  }
+  return hasComputablePair;
 }
 function v9ProEffectiveGammaFlip(options,spot){
   const number=value=>{if(value==null||value==="")return null;const parsed=Number(String(value).replace(/,/g,"").trim());return Number.isFinite(parsed)?parsed:null;};
