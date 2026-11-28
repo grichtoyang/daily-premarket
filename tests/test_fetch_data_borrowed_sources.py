@@ -805,6 +805,7 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
             side_effect={
                 "2026-11-07": "2026-11-06",
                 "2026-11-06": "2026-11-05",
+                "2026-11-27": "2026-11-26",
             }.get,
         )
         self.patch_trading_day.start()
@@ -882,6 +883,30 @@ class Top10OiSnapshotChangeContractTests(unittest.TestCase):
         self.assertEqual(put_result["chg"], -50)
 
 
+
+
+    def test_real_1127_snapshot_chinese_side_field_calculates_expected_deltas(self):
+        # Regression fixture from the 2026-11-27 Worker bundle:
+        # top10opt uses 買賣權 rather than CallPut and contains T-1 (11/26) rows.
+        self.mock_snapshot.return_value["date"] = "2026-11-27"
+        self.mock_snapshot.return_value["data"]["top10opt"] = [
+            {"Date": "20261126", "SettlementMonth": "202612",
+             "買賣權": "買權", "Top10Buy": "16,759", "Top10Sell": "19,131"},
+            {"Date": "20261126", "SettlementMonth": "202612",
+             "買賣權": "賣權", "Top10Buy": "13,068", "Top10Sell": "15,506"},
+        ]
+
+        call_result = self.taifex.snap_top10_change(
+            "202612", "2026-11-27", -2458, cur_date="20261127",
+            dataset="top10opt", callput="買權")
+        put_result = self.taifex.snap_top10_change(
+            "202612", "2026-11-27", -2203, cur_date="20261127",
+            dataset="top10opt", callput="賣權")
+
+        self.assertEqual(call_result["chg"], -86)
+        self.assertEqual(put_result["chg"], 235)
+        self.assertEqual(call_result["prev_date"], "2026-11-26")
+        self.assertEqual(put_result["prev_date"], "2026-11-26")
 
 
 class DataReportWriteSafetyTests(unittest.TestCase):
