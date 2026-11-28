@@ -211,6 +211,7 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("'flipStatus': 'stale_proxy' if gamma_flip_is_stale", builder)
         self.assertIn("formal_wide_flip=gex_payload.get('formal_wide_range_flip') or {}", builder)
         self.assertIn("formal_wide_diag.get('found') is True else None", builder)
+        self.assertIn("if gamma_flip is None and gex_status=='available'", builder)
         self.assertIn('options?.referenceFlipDate', self.html)
         self.assertIn('前一交易日 Proxy Flip', self.html)
         self.assertIn('前日 Proxy Flip', self.html)
