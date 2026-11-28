@@ -1,7 +1,7 @@
 import unittest
 
 from src.fetch_data import (
-    merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi, _adr_stale_note,
+    merge_same_t0, _snapshot_chain_source_label, _sum_gex_model_oi, _adr_stale_note, _gamma_flip_status_label,
     _market_coverage, _validate_market_quote_completeness,
 )
 from src.sources.us_market import _apply_adr_freshness
@@ -82,6 +82,40 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertIn("- 首次資料產出時間：`2026-11-08 10:38:08`", merged)
         self.assertIn("- 本次更新開始時間：`2026-11-08 11:04:09`", merged)
         self.assertNotIn("- 本次更新開始時間：`2026-11-08 10:38:08`", merged)
+
+
+    def test_force_rewrite_preserves_first_publish_time_but_refreshes_update_time(self):
+        old = """# DATA_REPORT_20261127
+- 報告日期：`2026-11-28`
+- T0 交易日期：`2026-11-27`
+- 首次資料產出時間：`2026-11-28 11:04:08`
+- 本次更新開始時間：`2026-11-28 11:04:08`
+- 產出盤別：`全日`
+"""
+        new = """# DATA_REPORT_20261127
+- 報告日期：`2026-11-28`
+- T0 交易日期：`2026-11-27`
+- 首次資料產出時間：`2026-11-28 12:51:09`
+- 本次更新開始時間：`2026-11-28 12:51:09`
+- 產出盤別：`全日`
+"""
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=False)
+        self.assertIn("- 首次資料產出時間：`2026-11-28 11:04:08`", merged)
+        self.assertIn("- 本次更新開始時間：`2026-11-28 12:51:09`", merged)
+
+    def test_previous_day_gamma_proxy_is_explicitly_reference_only(self):
+        status = _gamma_flip_status_label(
+            "2026-11-27", 37182.94, "2026-11-26", "options-market-structure-compact (proxy)"
+        )
+        self.assertIn("前一交易日 Proxy", status)
+        self.assertIn("2026-11-26", status)
+        self.assertIn("不作當日正式 Flip", status)
+
+    def test_current_day_formal_gamma_flip_is_distinguished_from_proxy(self):
+        status = _gamma_flip_status_label(
+            "2026-11-27", 34633.93, "2026-11-27", "options-gamma-levels"
+        )
+        self.assertIn("T0 正式 GEX 模型 Flip", status)
 
     def test_borrowed_value_is_not_carried_forward_when_fresh_source_is_unavailable(self):
         old = """# DATA_REPORT_20261030
