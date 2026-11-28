@@ -11,7 +11,7 @@ function section(start, end) {
 assert.match(section("async function fetchTAIFEX(path)", "function institutionCode"), /AbortSignal\.timeout\(12000\)/);
 assert.match(section("async function fetchTAIFEX(path)", "function institutionCode"), /deadlineAt: institutionalDeadlineAt/);
 assert.match(section("async function fetchTAIFEX(path)", "function institutionCode"), /!pageDataDate\(html\)/);
-assert.match(section("async function fetchOpenAPIInstitutionalFutures", "async function fetchOpenAPIInstitutionalOptionsRows"), /timeoutMs: 8000/);
+assert.match(section("async function fetchOpenAPIInstitutionalFutures", "async function fetchOpenAPIInstitutionalOptionsRows"), /timeoutMs: Number\.isFinite\(options\.timeoutMs\) \? options\.timeoutMs : 8000/);
 assert.match(section("async function fetchOpenAPIInstitutionalFutures", "async function fetchOpenAPIInstitutionalOptionsRows"), /dates\.length !== 1/);
 assert.match(section("function parseFuturesInstitutional", "function parseFuturesInstitutionalOI"), /seen\.has\(institution\)/);
 assert.match(section("function parseFuturesInstitutional", "function parseFuturesInstitutionalOI"), /investment_trust/);
