@@ -33,6 +33,11 @@ class GammaFallbackAvailabilityTests(unittest.TestCase):
         self.assertEqual(result["wall_date"], "2026-11-05")
         self.assertEqual(result["flip"], 39750.5)
         self.assertEqual(result["flip_date"], "2026-11-04")
+        self.assertEqual(result["flip_meta"]["contract_month"], "202611F4")
+        self.assertEqual(result["flip_meta"]["expiry_date"], "2026-11-27")
+        self.assertEqual(result["flip_meta"]["gamma_flip_diagnostics"], {"zero_crossings": 1})
+        self.assertEqual(result["wall_meta"]["contract_month"], "202612W1")
+
         self.assertEqual(result["payload"]["data"]["gamma"]["gamma_flip_proxy"], 39750.5)
         self.assertEqual(result["payload"]["data"]["call_wall"]["strike"], 39000)
 
