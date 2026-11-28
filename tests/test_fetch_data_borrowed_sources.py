@@ -296,7 +296,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
     def test_night_scenario_source_labels_require_available_values(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
         self.assertIn(
-            'f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, SRC_FX if _nratio is not None else MISSING)',
+            'f"{_nratio * 100:.2f}%" if _nratio is not None else MISSING, _combine_source_labels(SRC_FX, _nvia) if _nratio is not None else MISSING)',
             source,
         )
         self.assertIn(
