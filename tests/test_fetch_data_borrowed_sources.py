@@ -367,6 +367,9 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('("GEX 資料日期", _gm_gex_date or MISSING, _gm_gex_date_src)', source)
         self.assertIn('("Gamma Flip 來源到期月份", _flip_source_expiry_month or MISSING, _gm_flip_src)', source)
         self.assertIn('("Gamma Flip 來源到期日", _flip_source_expiry_date or MISSING, _gm_flip_src if _flip_source_expiry_date else MISSING)', source)
+        self.assertIn('_gm_expiry_month = _gm.get("gex_contract_month") if _gm.get("gex_status") == "available" else None', source)
+        self.assertIn('_gamma_label = "Gamma GEX" if g_pay is not None else "Gamma Proxy"', taifex_source)
+
         self.assertIn("_sum_gex_model_oi(_gm.get(\"levels\") or [], \"call_oi\")", source)
         self.assertIn("_sum_gex_model_oi(_gm.get(\"levels\") or [], \"put_oi\")", source)
         taifex_source = (ROOT / "src/sources/taifex.py").read_text(encoding="utf-8")
