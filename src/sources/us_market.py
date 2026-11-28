@@ -4,7 +4,7 @@
 change/pct 由最近兩根日K收盤計算 (不依賴 meta 漲跌欄)。
 """
 from __future__ import annotations
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import requests
 from src.utils import HEADERS
@@ -108,7 +108,7 @@ def _expected_us_session_date(now: datetime | None = None) -> str:
     ny_date = now_utc.astimezone(ZoneInfo("America/New_York")).date()
     calendar = mcal.get_calendar("NYSE")
     schedule = calendar.schedule(
-        start_date=(ny_date - __import__("datetime").timedelta(days=30)).isoformat(),
+        start_date=(ny_date - timedelta(days=30)).isoformat(),
         end_date=ny_date.isoformat(),
     )
     if schedule.empty:
