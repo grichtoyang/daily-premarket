@@ -504,37 +504,42 @@ async function fetchOpenAPIFuturesForDate(requestedISO = null) {
   return openApiFuturesRows(result.rows, requestedISO);
 }
 
-async function fetchOpenAPIInstitutionalFutures() {
+async function fetchOpenAPIInstitutionalFutures(options = {}) {
+  const requestOptions = {
+    deadlineAt: Number.isFinite(options.deadlineAt) ? options.deadlineAt : Date.now() + 8000,
+    timeoutMs: Number.isFinite(options.timeoutMs) ? options.timeoutMs : 8000
+  };
   const result = await fetchTAIFEXOpenAPI(
-    "/MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate"
+    "/MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate",
+    requestOptions
   );
   if (!result.found) return result;
-
-  const date = apiDateISO(apiValue(result.rows[0], ["Date", "date"]));
   const tx = result.rows.filter(r =>
     apiValue(r, ["ContractCode", "contractCode"]) === "臺股期貨"
   );
-
-  const rows = [];
-  for (const r of tx) {
-    rows.push([
-      "臺股期貨",
-      apiValue(r, ["Item", "item"]),
-      apiValue(r, ["TradingVolume(Long)"]),
-      apiValue(r, ["TradingValue(Long)(Thousands)"]),
-      apiValue(r, ["TradingVolume(Short)"]),
-      apiValue(r, ["TradingValue(Short)(Thousands)"]),
-      apiValue(r, ["TradingVolume(Net)"]),
-      apiValue(r, ["TradingValue(Net)(Thousands)"]),
-      apiValue(r, ["OpenInterest(Long)"]),
-      apiValue(r, ["ContractValueofOpenInterest(Long)(Thousands)"]),
-      apiValue(r, ["OpenInterest(Short)"]),
-      apiValue(r, ["ContractValueofOpenInterest(Short)(Thousands)"]),
-      apiValue(r, ["OpenInterest(Net)"]),
-      apiValue(r, ["ContractValueofOpenInterest(Net)(Thousands)"])
-    ]);
+  const dates = [...new Set(tx.map(r => apiDateISO(apiValue(r, ["Date", "date"]))))];
+  if (!tx.length || dates.length !== 1 || !dates[0]) {
+    return { found: false, date: null, rows: [],
+      reason: "OpenAPI institutional rows have missing or inconsistent dates" };
   }
-  return { found: rows.length > 0, date, rows };
+  const fields = [
+    ["TradingVolume(Long)"], ["TradingValue(Long)(Thousands)"],
+    ["TradingVolume(Short)"], ["TradingValue(Short)(Thousands)"],
+    ["TradingVolume(Net)"], ["TradingValue(Net)(Thousands)"]
+  ];
+  const rows = [];
+  const seen = new Set();
+  for (const r of tx) {
+    const institution = String(apiValue(r, ["Item", "item"]) ?? "").trim();
+    if (!["外資", "投信", "自營商"].includes(institution) || seen.has(institution)) continue;
+    const values = fields.map(keys => number(apiValue(r, keys)));
+    if (values.some(value => value === null || !Number.isFinite(value))) continue;
+    seen.add(institution);
+    rows.push(["臺股期貨", institution, ...values]);
+  }
+  const complete = ["外資", "投信", "自營商"].every(name => seen.has(name));
+  return { found: complete, date: dates[0], rows: complete ? rows : [],
+    reason: complete ? null : "OpenAPI institutional data is missing a valid major-institution row" };
 }
 
 
@@ -924,9 +929,10 @@ async function fetchTAIFEXPost(path, body, options = {}) {
 
 async function fetchTAIFEX(path) {
   let primaryError = null;
-
+  const isDayInstitutional = path === "/cht/3/futContractsDate";
+  const institutionalDeadlineAt = Date.now() + 22000;
   try {
-    const response = await fetch(`${TAIFEX}${path}`, {
+    const requestOptions = {
       method: "GET",
       headers: {
         "User-Agent":
@@ -935,8 +941,10 @@ async function fetchTAIFEX(path) {
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language":
           "zh-TW,zh;q=0.9,en;q=0.8"
-      }
-    });
+      },
+      ...(isDayInstitutional ? { signal: AbortSignal.timeout(12000) } : {})
+    };
+    const response = await fetch(`${TAIFEX}${path}`, requestOptions);
 
     const html = await response.text();
     const rows = parseRows(html);
@@ -975,12 +983,15 @@ async function fetchTAIFEX(path) {
   /* Futures institutional current-day fallback. */
   if (path === "/cht/3/futContractsDate" || path === "/cht/3/futContractsDateAh") {
     if (path.endsWith("Date")) {
-      const fb = await fetchOpenAPIInstitutionalFutures();
+      const fb = await fetchOpenAPIInstitutionalFutures({
+        deadlineAt: institutionalDeadlineAt, timeoutMs: 8000
+      });
       if (fb.found) {
         return {
           response: fallbackResponseFromRows(fb.rows),
           html: `<openapi-fallback>${JSON.stringify(fb.rows)}</openapi-fallback>`,
           rows: fb.rows,
+          date: fb.date,
           source: "taifex_openapi",
           fallback: true,
           source_url: "https://openapi.taifex.com.tw/v1/MarketDataOfMajorInstitutionalTradersDetailsOfFuturesContractsBytheDate",
@@ -1027,58 +1038,28 @@ function parseFuturesInstitutional(rows) {
   }
 
   const data = [];
-
+  const required = new Set(["foreign", "investment_trust", "dealer"]);
+  const seen = new Set();
   for (let i = txIndex; i < rows.length; i++) {
-
     const row = rows[i];
-
     if (i > txIndex) {
-
-      const product = row.find(x =>
-        x.includes("期貨")
-      );
-
-      if (
-        product &&
-        ![
-          "自營商",
-          "投信",
-          "外資",
-          "陸資"
-        ].includes(product)
-      ) {
-        break;
-      }
+      const product = row.find(x => x.includes("期貨"));
+      if (product && !["自營商", "投信", "外資", "陸資"].includes(product)) break;
     }
-
-    const idx = row.findIndex(x =>
-      institutionCode(x)
-    );
-
+    const idx = row.findIndex(x => institutionCode(x));
     if (idx < 0) continue;
-
-    const institution =
-      institutionCode(row[idx]);
-
-    const v = row.slice(idx + 1);
-
+    const institution = institutionCode(row[idx]);
+    if (!required.has(institution) || seen.has(institution)) continue;
+    const values = row.slice(idx + 1, idx + 7).map(number);
+    if (values.length !== 6 || values.some(value => value === null || !Number.isFinite(value))) continue;
+    seen.add(institution);
     data.push({
-      institution,
-      long_volume: number(v[0]),
-      long_amount: number(v[1]),
-      short_volume: number(v[2]),
-      short_amount: number(v[3]),
-      net_volume: number(v[4]),
-      net_amount: number(v[5])
+      institution, long_volume: values[0], long_amount: values[1],
+      short_volume: values[2], short_amount: values[3],
+      net_volume: values[4], net_amount: values[5]
     });
-
-    if (data.length >= 3) break;
   }
-
-  return {
-    found: data.length === 3,
-    data
-  };
+  return { found: data.length === 3 && [...required].every(name => seen.has(name)), data };
 }
 
 /* =========================
@@ -3592,27 +3573,26 @@ async function institutionalEndpoint(
       }, 502);
     }
 
-    const parsed =
-      parser(result.rows);
-
-    // 資料日期以頁面為準（無參數頁回最新已發布，不等於今天時照實標；
-    // 下游以 date==查詢日判斷新鮮度，見 2026-10-12 教訓）
+    const parsed = parser(result.rows);
+    const isDayInstitutional = path === "/cht/3/futContractsDate";
+    if (isDayInstitutional && parsed.found !== true) {
+      return json({
+        ok: false, source: "TAIFEX", dataset,
+        error: "Futures institutional data is incomplete: require one valid row for each major institution",
+        error_code: "FUTURES_INSTITUTIONAL_INCOMPLETE",
+        parser: { version: "4.2", found: false, row_count: result.rows.length }
+      }, 502);
+    }
     const _pgd = pageDataDate(result.html);
-
+    const _sourceDate = result.date || _pgd;
+    const _date = _sourceDate || (isDayInstitutional ? null : taipeiToday());
     return json({
-      ok: true,
-      source: "TAIFEX",
-      dataset,
-      market,
-      session,
-      date: _pgd || taipeiToday(),
-      date_source: _pgd ? "page" : "fetch-day",
+      ok: true, source: "TAIFEX", dataset, market, session,
+      date: _date,
+      date_source: result.date ? "openapi" : _pgd ? "page" : _date ? "fetch-day" : "missing",
       data: parsed.data,
-      parser: {
-        version: "4.1",
-        found: parsed.found,
-        row_count: result.rows.length
-      }
+      parser: { version: isDayInstitutional ? "4.2" : "4.1",
+        found: parsed.found, row_count: result.rows.length }
     });
 
   } catch (error) {
