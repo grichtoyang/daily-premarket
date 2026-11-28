@@ -1364,26 +1364,43 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
            ("項目", "數值", "資料來源")))
     A("- OI 對帳口徑：原始 OI 統計選定到期日全部有效 Chain 合約；模型納入 OI 僅統計通過結算價、IV 與 Gamma 計算條件並納入逐履約價 GEX 的合約。兩者差額不等於 Chain 缺漏。")
     _flip_diag = _gm.get("flip_diagnostics") or {}
+    _flip_diag_source = _gm.get("flip_diagnostics_source")
     if _flip_diag:
         A("")
-        A("**正式 GEX 模型 Gamma Flip 零交叉搜尋診斷**" if _gex_diag_available else "**Gamma Flip Proxy 零交叉搜尋診斷**")
+        A("**正式 GEX 模型 Gamma Flip 零交叉搜尋診斷**" if _flip_diag_source == "options-gamma-levels" else "**Gamma Flip Proxy 零交叉搜尋診斷**")
         A(f"- 搜尋標的區間：{_f2(_flip_diag.get('search_lower_underlying'))}～{_f2(_flip_diag.get('search_upper_underlying'))}")
         A(f"- 搜尋步長／計算次數：{_f2(_flip_diag.get('step'))}／{_flip_diag.get('evaluations', MISSING)}")
         A(f"- 起點／終點 Net GEX：{_f2(_flip_diag.get('start_net_gex_1pct'))}／{_f2(_flip_diag.get('end_net_gex_1pct'))}")
         A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_flip_diag.get('min_net_gex_1pct'))}／{_f2(_flip_diag.get('max_net_gex_1pct'))}")
         A(f"- 正負號交叉次數：{_flip_diag.get('zero_crossings', MISSING)}")
-        if _gex_diag_available and _flip_proxy_used:
-            A("- 注意：上方 Gamma Flip 價位來自 options-market-structure-compact Proxy；本段是 options-gamma-levels 正式 GEX 模型的搜尋診斷。兩者算法與來源到期月份不同，不可視為同一 Flip 的驗證結果。")
-        elif _gex_diag_available:
-            A("- 解讀限制：此正式 GEX Flip 僅代表目前 Call 正／Put 負假設下的模型零交叉；Aggregate OI 無法識別 Dealer 實際淨部位，不等同市場實際 Dealer Gamma Flip。")
+        if _flip_diag_source == "options-market-structure-compact (proxy)":
+            A("- 注意：本段診斷與上方 Proxy Flip 使用同一來源欄位；它不是正式 GEX 模型的零交叉結果，也不代表 Dealer 實際淨部位。")
         else:
-            A("- 注意：本段診斷屬 Gamma Flip Proxy 自身模型，並非 options-gamma-levels 正式 GEX 計算；Proxy 亦非 Dealer 實際淨部位。")
-    _expiry_diag = _gm.get("expiry_selection_diagnostics") or {}
+            A("- 解讀限制：此正式 GEX Flip 僅代表目前 Call 正／Put 負假設下的模型零交叉；Aggregate OI 無法識別 Dealer 實際淨部位，不等同市場實際 Dealer Gamma Flip。")
+    _gex_flip_diag = _gm.get("gex_flip_diagnostics") or {}
+    if _gex_flip_diag and _flip_diag_source != "options-gamma-levels":
+        A("")
+        A("**正式 options-gamma-levels GEX 模型零交叉診斷（獨立於上方 Proxy Flip）**")
+        A(f"- 搜尋標的區間：{_f2(_gex_flip_diag.get('search_lower_underlying'))}～{_f2(_gex_flip_diag.get('search_upper_underlying'))}")
+        A(f"- 搜尋步長／計算次數：{_f2(_gex_flip_diag.get('step'))}／{_gex_flip_diag.get('evaluations', MISSING)}")
+        A(f"- 起點／終點 Net GEX：{_f2(_gex_flip_diag.get('start_net_gex_1pct'))}／{_f2(_gex_flip_diag.get('end_net_gex_1pct'))}")
+        A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_gex_flip_diag.get('min_net_gex_1pct'))}／{_f2(_gex_flip_diag.get('max_net_gex_1pct'))}")
+        A(f"- 正負號交叉次數：{_gex_flip_diag.get('zero_crossings', MISSING)}")
+        A("- 結果僅適用於正式 GEX 模型；不可拿來驗證或否定上方 Proxy Flip。")
+    _expiry_diag = _gm.get("gex_expiry_selection_diagnostics") or _gm.get("expiry_selection_diagnostics") or {}
+    _expiry_diag_source = "options-gamma-levels" if _gm.get("gex_expiry_selection_diagnostics") else "options-market-structure-compact (proxy)"
     if _expiry_diag:
         A("")
-        A("**GEX 到期日配對診斷（原始候選清單）**")
+        A("**GEX 到期日配對診斷（原始候選清單）**" if _expiry_diag_source == "options-gamma-levels" else "**Gamma Proxy 到期日配對診斷（原始候選清單）**")
         A("\x60\x60\x60json")
         A(json.dumps(_expiry_diag, ensure_ascii=False, separators=(",", ":")))
+        A("\x60\x60\x60")
+    _flip_proxy_expiry_diag = _gm.get("flip_proxy_expiry_selection_diagnostics") or {}
+    if _flip_proxy_expiry_diag and _flip_proxy_expiry_diag != _expiry_diag:
+        A("")
+        A("**Gamma Flip Proxy 到期日配對診斷（原始候選清單）**")
+        A("\x60\x60\x60json")
+        A(json.dumps(_flip_proxy_expiry_diag, ensure_ascii=False, separators=(",", ":")))
         A("\x60\x60\x60")
     _delta_fetch_diag = _gm.get("delta_fetch_diagnostics") or {}
     if _delta_fetch_diag:
@@ -1402,6 +1419,16 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_wide_flip_diag.get('min_net_gex_1pct'))}／{_f2(_wide_flip_diag.get('max_net_gex_1pct'))}")
         A(f"- 正負號交叉次數：{_wide_flip_diag.get('zero_crossings', MISSING)}")
         A(f"- 擴大區間診斷 Flip：{_f2((_gm.get('wide_range_flip') or {}).get('estimated_underlying'))}")
+    _gex_wide_flip_diag = _gm.get("gex_wide_range_flip_diagnostics") or {}
+    if _gex_wide_flip_diag and _gm.get("wide_range_flip_diagnostics_source") != "options-gamma-levels":
+        A("")
+        A("**正式 GEX 擴大區間診斷（±15%；獨立於上方 Proxy）**")
+        A(f"- 搜尋標的區間：{_f2(_gex_wide_flip_diag.get('search_lower_underlying'))}～{_f2(_gex_wide_flip_diag.get('search_upper_underlying'))}")
+        A(f"- 搜尋步長／計算次數：{_f2(_gex_wide_flip_diag.get('step'))}／{_gex_wide_flip_diag.get('evaluations', MISSING)}")
+        A(f"- 起點／終點 Net GEX：{_f2(_gex_wide_flip_diag.get('start_net_gex_1pct'))}／{_f2(_gex_wide_flip_diag.get('end_net_gex_1pct'))}")
+        A(f"- 搜尋區間最低／最高 Net GEX：{_f2(_gex_wide_flip_diag.get('min_net_gex_1pct'))}／{_f2(_gex_wide_flip_diag.get('max_net_gex_1pct'))}")
+        A(f"- 正負號交叉次數：{_gex_wide_flip_diag.get('zero_crossings', MISSING)}")
+        A(f"- 擴大區間 GEX Flip：{_f2((_gm.get('gex_wide_range_flip') or {}).get('estimated_underlying'))}")
     A("")
     A("### 14A．GEX 整體曝險與履約價分布")
     A("")
