@@ -69,9 +69,15 @@ def quote(sym: str, expected_date: str | None = None) -> dict:
             meta_date is not None and (bar_date is None or meta_date >= bar_date)
         )
         if meta_price is not None and meta_date and meta_is_expected:
-            previous = meta.get("chartPreviousClose") or meta.get("previousClose")
-            if previous is None and meta_date == bar_date and len(pts) >= 2:
-                previous = pts[-2][1]
+            # chartPreviousClose/previousClose may refer to the chart range,
+            # not the immediately preceding exchange session. Derive daily
+            # change only from the latest daily bar strictly before meta_date.
+            previous_points = [
+                close for timestamp, close in pts
+                if exchange_timezone
+                and _exchange_date(timestamp, exchange_timezone) < meta_date
+            ]
+            previous = previous_points[-1] if previous_points else None
             out["price"] = meta_price
             out["date"] = meta_date
             if previous not in (None, 0):
@@ -122,10 +128,23 @@ def _quote_chart_meta(sym: str, expected_date: str) -> dict | None:
             meta_time = meta.get("regularMarketTime")
             meta_date = _exchange_date(meta_time, timezone_name) if meta_time is not None else None
             meta_price = meta.get("regularMarketPrice")
-            previous = meta.get("chartPreviousClose") or meta.get("previousClose")
-            if meta_date == expected_date and meta_price is not None and previous not in (None, 0):
+            timestamps = res.get("timestamp") or []
+            closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
+            points = [
+                (_exchange_date(ts, timezone_name), float(close))
+                for ts, close in zip(timestamps, closes) if close is not None
+            ]
+            expected_points = [point for point in points if point[0] == expected_date]
+            previous_points = [point for point in points if point[0] < expected_date]
+
+            # Ignore chartPreviousClose/previousClose: their reference period
+            # can differ from the immediately preceding trading session.
+            if (
+                meta_date == expected_date and meta_price is not None
+                and previous_points and previous_points[-1][1] != 0
+            ):
                 price = float(meta_price)
-                prev = float(previous)
+                prev = previous_points[-1][1]
                 change = price - prev
                 return {
                     "symbol": sym, "price": price, "change": change,
@@ -135,15 +154,6 @@ def _quote_chart_meta(sym: str, expected_date: str) -> dict | None:
                     "source": f"Yahoo Finance Chart API meta fallback（{host}）",
                     "ok": True,
                 }
-
-            timestamps = res.get("timestamp") or []
-            closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
-            points = [
-                (_exchange_date(ts, timezone_name), float(close))
-                for ts, close in zip(timestamps, closes) if close is not None
-            ]
-            expected_points = [point for point in points if point[0] == expected_date]
-            previous_points = [point for point in points if point[0] < expected_date]
             if expected_points and previous_points:
                 price = expected_points[-1][1]
                 previous_close = previous_points[-1][1]
