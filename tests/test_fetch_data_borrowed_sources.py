@@ -362,7 +362,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('_source_if_available(_oi_ratio_change, _pch_src)', source)
         self.assertIn('_gm_flip_src = (_gm.get("flip_src") or MISSING) if _gm.get("flip") is not None else MISSING', source)
         self.assertIn('_gm_wall_date = _gm.get("wall_date") or _gm.get("date")', source)
-        self.assertIn('_gm_flip_date = _gm.get("flip_date") or _gm.get("date")', source)
+        self.assertIn('_gm_flip_date = (_gm.get("flip_date") or _gm.get("date")) if _gm.get("flip") is not None else None', source)
         self.assertIn('("Gamma Flip 資料日期", _gm_flip_date or MISSING, _gm_flip_date_src)', source)
         self.assertIn('("GEX 資料日期", _gm_gex_date or MISSING, _gm_gex_date_src)', source)
         self.assertIn('("Gamma Flip 來源到期月份", _flip_source_expiry_month or MISSING, _gm_flip_src)', source)
@@ -380,6 +380,10 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('與預期夜盤交易日 {_today} 不一致', taifex_source)
         self.assertIn('**正式 GEX 模型 Gamma Flip 零交叉搜尋診斷**', source)
         self.assertIn('本段是 options-market-structure-compact Proxy', source)
+        self.assertIn('_gex_diag_available = _gm.get("gex_status") == "available"', source)
+        self.assertIn('**Gamma Flip Proxy 零交叉搜尋診斷**', source)
+        self.assertIn('"flip_diagnostics_source": "options-gamma-levels" if _gex_diag_available else "options-market-structure-compact (proxy)"', source)
+
         self.assertIn('**GEX 到期日配對診斷（原始候選清單）**', source)
         self.assertIn('**正式 GEX 擴大區間診斷（±15%；不覆蓋正式 ±10% 結果）**', source)
         self.assertIn('"gamma_diagnostics": _gm.get("diagnostics")', source)
@@ -391,6 +395,8 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertLess(source.index('A("### 16．選擇權法人日盤、夜盤交易")'), source.index('A("### 17．選擇權前十大")'))
         self.assertLess(source.index('A("### 17．選擇權前十大")'), source.index('A("### 18．資料來源、時間、時區與狀態")'))
         self.assertIn('_combine_source_labels(SRC_FX, _nvia) if _nratio is not None else MISSING', source)
+        self.assertIn('_source_if_available(_diff2(d["vol_day"], n["vol"]), _combine_source_labels(SRC_FX, _nvia))', source)
+
         self.assertIn('_source_if_available(_diff2(d["vol_day"], n["vol"]), _combine_source_labels(SRC_FX, _nvia))', source)
         builder_source = (ROOT / "scripts/v9_pro_builder.py").read_text(encoding="utf-8")
         self.assertIn('opt_inst_table=parse_table("### 16．選擇權法人日盤、夜盤交易") or parse_table("### 17．選擇權法人日盤、夜盤交易")', builder_source)
