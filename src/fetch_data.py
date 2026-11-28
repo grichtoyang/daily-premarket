@@ -1335,15 +1335,27 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         else None
     )
     _gm_primary_month = _gm.get("primary_expiry_month") or _w.get("expiry")
+    _wall_source_expiry_month = (
+        _gm.get("wall_proxy_contract_month") if _gm_src == "options-market-structure-compact (proxy)"
+        else _gm.get("gex_contract_month") if _gm_src == "options-gamma-levels"
+        else None
+    )
+    _wall_source_expiry_date = (
+        _gm.get("wall_proxy_expiry_date") if _gm_src == "options-market-structure-compact (proxy)"
+        else _gm.get("gex_expiry_date") if _gm_src == "options-gamma-levels"
+        else None
+    )
     _gm_expiry_src = "options-gamma-levels（GEX 實際使用）" if _gm_expiry_month else MISSING
     _gm_call_oi = _gm.get("gex_call_oi") if isinstance(_gm.get("gex_call_oi"), dict) else {}
     _gm_put_oi = _gm.get("gex_put_oi") if isinstance(_gm.get("gex_put_oi"), dict) else {}
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
+            ("Gamma Wall 來源到期月份", _wall_source_expiry_month or MISSING, _gm_src),
+            ("Gamma Wall 來源到期日", _wall_source_expiry_date or MISSING, _gm_src if _wall_source_expiry_date else MISSING),
             ("GEX 實際使用到期月份", _gm_expiry_month or MISSING, _gm_expiry_src),
             ("GEX 實際到期日", _gm_expiry_date or MISSING, _gm_expiry_src if _gm_expiry_date else MISSING),
             ("Options Key Levels 主到期月份", _gm_primary_month or MISSING,
              SRC_FX if _gm_primary_month is not None else MISSING),
-            ("資料日期", _gm_wall_date or MISSING, _gm_wall_date_src)],
+            ("Gamma Wall 資料日期", _gm_wall_date or MISSING, _gm_wall_date_src)],
            ("項目", "數值", "資料來源")))
     A("")
     A("### 14．Gamma Flip")
@@ -1394,6 +1406,13 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A("**GEX 到期日配對診斷（原始候選清單）**" if _expiry_diag_source == "options-gamma-levels" else "**Gamma Proxy 到期日配對診斷（原始候選清單）**")
         A("\x60\x60\x60json")
         A(json.dumps(_expiry_diag, ensure_ascii=False, separators=(",", ":")))
+        A("\x60\x60\x60")
+    _wall_proxy_expiry_diag = _gm.get("wall_proxy_expiry_selection_diagnostics") or {}
+    if _wall_proxy_expiry_diag and _wall_proxy_expiry_diag != _expiry_diag:
+        A("")
+        A("**Gamma Wall Proxy 到期日配對診斷（原始候選清單）**")
+        A("\x60\x60\x60json")
+        A(json.dumps(_wall_proxy_expiry_diag, ensure_ascii=False, separators=(",", ":")))
         A("\x60\x60\x60")
     _flip_proxy_expiry_diag = _gm.get("flip_proxy_expiry_selection_diagnostics") or {}
     if _flip_proxy_expiry_diag and _flip_proxy_expiry_diag != _expiry_diag:
