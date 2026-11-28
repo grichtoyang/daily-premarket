@@ -1226,6 +1226,9 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _wide_flip = _proxy_wide_flip if _flip_proxy_used else (_gex_wide_flip or _proxy_wide_flip)
     gamma = {"wall": wall, "flip": flip, **_gamma_expiry,
              "gex_date": g_date,
+             "wall_proxy_contract_month": _wall_proxy_meta.get("contract_month") if _wall_proxy_used else None,
+             "wall_proxy_expiry_date": _wall_proxy_meta.get("expiry_date") if _wall_proxy_used else None,
+             "wall_proxy_expiry_selection_diagnostics": _wall_proxy_meta.get("expiry_selection_diagnostics") if _wall_proxy_used else None,
              "flip_proxy_contract_month": _flip_proxy_meta.get("contract_month") if _flip_proxy_used else None,
              "flip_proxy_expiry_date": _flip_proxy_meta.get("expiry_date") if _flip_proxy_used else None,
              "flip_proxy_expiry_selection_diagnostics": _flip_proxy_expiry_diag,
