@@ -376,7 +376,7 @@ if(!out.trade.target.includes("目前不追價")||!out.trade.target.includes("Pu
 // Missing night price inputs must not produce actionable text containing fake zero/missing levels.
 const missing=v9ProSynthesisAnalysis({day:{},night:{},futures:{},spot:{},options:{},analysis:{}});
 if(!missing.night.target.includes("收盤缺值／無效")||!missing.night.target.includes("暫不提供價位觸發條件")) throw Error("missing day/night closes still produce a trigger");
-if(!missing.scenarios.compass.includes("資料不足")||!missing.trade.target.includes("先補齊有效關鍵位")) throw Error("missing key levels produce a directional trade plan");
+if(!missing.scenarios.compass.includes("資料不足")||!missing.trade.target.includes("補足有效價位前維持觀望")||missing.trade.target.includes("偏多候選")||missing.trade.target.includes("偏空候選")) throw Error("missing key levels produce a directional trade plan: "+missing.scenarios.compass+" | "+missing.trade.target);
 
 // The price-action target must reverse with night-session direction, not remain bearish.
 const upNight=JSON.parse(JSON.stringify(fixture));
@@ -442,7 +442,7 @@ if(missing.oi.look.includes("0 口")||missing.flow.look.includes("0 口")) throw
 
 // Zero is a valid OI/flow value, distinct from missing data.
 const zero=v9ProFuturesAnalysis({day:fixture.day,night:fixture.night,futures:{foreign_oi:0,trust_oi:0,dealer_oi:0,top10:0,foreign_day:0,foreign_night:0}});
-if(!zero.oi.look.includes("外資淨 OI 0 口")||!zero.flow.compass.includes("均為零")) throw Error("zero OI/flow was treated as missing");
+if(!zero.oi.look.includes("外資淨未平倉部位（淨 OI）0 口")||!zero.flow.compass.includes("均為零")) throw Error("zero OI/flow was treated as missing: "+zero.oi.look+" | "+zero.flow.compass);
 console.log("futures narratives actual + missing + zero fixtures PASS");
 """
         node = shutil.which("node")
