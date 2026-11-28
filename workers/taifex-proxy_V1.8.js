@@ -531,7 +531,11 @@ async function fetchOpenAPIInstitutionalFutures(options = {}) {
   const seen = new Set();
   for (const r of tx) {
     const institution = String(apiValue(r, ["Item", "item"]) ?? "").trim();
-    if (!["外資", "投信", "自營商"].includes(institution) || seen.has(institution)) continue;
+    if (!["外資", "投信", "自營商"].includes(institution)) continue;
+    if (seen.has(institution)) {
+      return { found: false, date: dates[0], rows: [],
+        reason: "OpenAPI institutional data contains a duplicate major-institution row" };
+    }
     const values = fields.map(keys => {
       const raw = apiValue(r, keys);
       return raw === null || raw === undefined || String(raw).trim() === "" ? null : number(raw);
@@ -1047,6 +1051,7 @@ function parseFuturesInstitutional(rows) {
   const data = [];
   const required = new Set(["foreign", "investment_trust", "dealer"]);
   const seen = new Set();
+  let duplicateInstitution = false;
   for (let i = txIndex; i < rows.length; i++) {
     const row = rows[i];
     if (i > txIndex) {
@@ -1056,7 +1061,11 @@ function parseFuturesInstitutional(rows) {
     const idx = row.findIndex(x => institutionCode(x));
     if (idx < 0) continue;
     const institution = institutionCode(row[idx]);
-    if (!required.has(institution) || seen.has(institution)) continue;
+    if (!required.has(institution)) continue;
+    if (seen.has(institution)) {
+      duplicateInstitution = true;
+      continue;
+    }
     const values = row.slice(idx + 1, idx + 7).map(value =>
       value === null || value === undefined || String(value).trim() === "" ? null : number(value)
     );
@@ -1068,7 +1077,8 @@ function parseFuturesInstitutional(rows) {
       net_volume: values[4], net_amount: values[5]
     });
   }
-  return { found: data.length === 3 && [...required].every(name => seen.has(name)), data };
+  return { found: !duplicateInstitution && data.length === 3 &&
+    [...required].every(name => seen.has(name)), data };
 }
 
 /* =========================
