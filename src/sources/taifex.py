@@ -1171,8 +1171,17 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
     _gex_levels = _valid_gex_levels(gdata.get("levels")) if g_pay is not None else []
     _net_gex = gdata.get("net_gex_1pct") if g_pay is not None else None
     _gross_gex = gdata.get("gross_gex_1pct") if g_pay is not None else None
-    _gamma_expiry = _gamma_expiry_metadata(gdata if g_pay is not None else cgamma, prim_month)
-    _expiry_diag = (gdata.get("expiry_selection_diagnostics") or {}) if g_pay is not None else (cgamma.get("expiry_selection_diagnostics") or {})
+    _flip_proxy_used = flip_src == "options-market-structure-compact (proxy)"
+    _wall_proxy_used = wall_src == "options-market-structure-compact (proxy)"
+    _flip_proxy_meta = _gamma_proxy.get("flip_meta") or {}
+    _wall_proxy_meta = _gamma_proxy.get("wall_meta") or {}
+    _gamma_meta = gdata if g_pay is not None else (
+        _flip_proxy_meta if _flip_proxy_used else _wall_proxy_meta if _wall_proxy_used else cgamma
+    )
+    _gamma_expiry = _gamma_expiry_metadata(_gamma_meta, prim_month)
+    _gex_expiry_diag = gdata.get("expiry_selection_diagnostics") if g_pay is not None else None
+    _flip_proxy_expiry_diag = _flip_proxy_meta.get("expiry_selection_diagnostics") if _flip_proxy_used else None
+    _expiry_diag = _gex_expiry_diag or _flip_proxy_expiry_diag or {}
     if _gamma_expiry["gex_expiry_matches_primary"] is False:
         _selection_note = ""
         if isinstance(_expiry_diag.get("same_day_common_expiries"), list) and not _expiry_diag["same_day_common_expiries"]:
@@ -1194,21 +1203,32 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
                 _selection_note
             )
         )
-    _flip_proxy_used = flip_src == "options-market-structure-compact (proxy)"
-    _flip_diag = gdata.get("gamma_flip_diagnostics") if g_pay is not None else None
-    _flip_diag_source = "options-gamma-levels" if _flip_diag is not None else None
-    if _flip_diag is None:
-        _flip_diag = cgamma.get("gamma_flip_diagnostics")
-        _flip_diag_source = "options-market-structure-compact (proxy)" if _flip_diag is not None else None
-    _wide_flip_diag = gdata.get("gamma_flip_wide_range_diagnostics") if g_pay is not None else None
-    _wide_flip_diag_source = "options-gamma-levels" if _wide_flip_diag is not None else None
-    if _wide_flip_diag is None:
-        _wide_flip_diag = cgamma.get("gamma_flip_wide_range_diagnostics")
-        _wide_flip_diag_source = "options-market-structure-compact (proxy)" if _wide_flip_diag is not None else None
+    _gex_flip_diag = gdata.get("gamma_flip_diagnostics") if g_pay is not None else None
+    _proxy_flip_diag = _flip_proxy_meta.get("gamma_flip_diagnostics") if _flip_proxy_used else None
+    _flip_diag = _proxy_flip_diag if _flip_proxy_used else (_gex_flip_diag or _proxy_flip_diag)
+    _flip_diag_source = (
+        "options-market-structure-compact (proxy)" if _flip_proxy_used and _flip_diag is not None
+        else "options-gamma-levels" if _flip_diag is not None and _gex_flip_diag is not None
+        else "options-market-structure-compact (proxy)" if _flip_diag is not None
+        else None
+    )
+    _gex_wide_flip_diag = gdata.get("gamma_flip_wide_range_diagnostics") if g_pay is not None else None
+    _proxy_wide_flip_diag = _flip_proxy_meta.get("gamma_flip_wide_range_diagnostics") if _flip_proxy_used else None
+    _wide_flip_diag = _proxy_wide_flip_diag if _flip_proxy_used else (_gex_wide_flip_diag or _proxy_wide_flip_diag)
+    _wide_flip_diag_source = (
+        "options-market-structure-compact (proxy)" if _flip_proxy_used and _wide_flip_diag is not None
+        else "options-gamma-levels" if _wide_flip_diag is not None and _gex_wide_flip_diag is not None
+        else "options-market-structure-compact (proxy)" if _wide_flip_diag is not None
+        else None
+    )
+    _gex_wide_flip = gdata.get("gamma_flip_wide_range") if g_pay is not None else None
+    _proxy_wide_flip = _flip_proxy_meta.get("gamma_flip_wide_range") if _flip_proxy_used else None
+    _wide_flip = _proxy_wide_flip if _flip_proxy_used else (_gex_wide_flip or _proxy_wide_flip)
     gamma = {"wall": wall, "flip": flip, **_gamma_expiry,
              "gex_date": g_date,
-             "flip_proxy_contract_month": cgamma.get("contract_month") if _flip_proxy_used else None,
-             "flip_proxy_expiry_date": cgamma.get("expiry_date") if _flip_proxy_used else None,
+             "flip_proxy_contract_month": _flip_proxy_meta.get("contract_month") if _flip_proxy_used else None,
+             "flip_proxy_expiry_date": _flip_proxy_meta.get("expiry_date") if _flip_proxy_used else None,
+             "flip_proxy_expiry_selection_diagnostics": _flip_proxy_expiry_diag,
              "model": gdata.get("model") if g_pay is not None else None,
              "sign_convention_note": (
                  "Call 正／Put 負為模型假設；Aggregate OI 不揭露 Dealer 實際淨部位，"
@@ -1221,10 +1241,16 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
              "diagnostics": gdata.get("gamma_diagnostics") if g_pay is not None else cgamma.get("gamma_diagnostics"),
              "flip_diagnostics": _flip_diag,
              "flip_diagnostics_source": _flip_diag_source,
+             "gex_flip_diagnostics": _gex_flip_diag,
+             "gex_flip_diagnostics_source": "options-gamma-levels" if _gex_flip_diag is not None else None,
+             "proxy_flip_diagnostics": _proxy_flip_diag,
              "wide_range_flip_diagnostics": _wide_flip_diag,
              "wide_range_flip_diagnostics_source": _wide_flip_diag_source,
-             "wide_range_flip": (gdata.get("gamma_flip_wide_range") if g_pay is not None else None) or cgamma.get("gamma_flip_wide_range"),
-             "expiry_selection_diagnostics": (gdata.get("expiry_selection_diagnostics") if g_pay is not None else None) or cgamma.get("expiry_selection_diagnostics"),
+             "gex_wide_range_flip_diagnostics": _gex_wide_flip_diag,
+             "gex_wide_range_flip": _gex_wide_flip,
+             "wide_range_flip": _wide_flip,
+             "expiry_selection_diagnostics": _expiry_diag,
+             "gex_expiry_selection_diagnostics": _gex_expiry_diag,
              "delta_fetch_diagnostics": (cdata.get("data_quality") or {}).get("delta_fetch_diagnostics"),
              "gex_status": "available" if _gex_levels and _net_gex is not None and _gross_gex is not None else "unavailable",
              "date": gamma_date, "wall_date": wall_date, "flip_date": flip_date,
