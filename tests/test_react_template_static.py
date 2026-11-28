@@ -371,7 +371,7 @@ if(!out.scenarios.compass.includes("區間條件：成立")||!out.scenarios.comp
 if(!out.factors.look.includes("正向貢獻合計 +1.8 分")||!out.factors.look.includes("負向貢獻合計 -9.0 分")||!out.factors.look.includes("可見子集合淨貢獻 -7.2 分")||!out.factors.look.includes("外資現貨 -7.1")) throw Error("visible factor contribution summary does not match chart values");
 if(!out.factors.compass.includes("不可將可見子集合計當成全部因子的總貢獻")) throw Error("visible factor subset limitation missing: "+out.factors.compass);
 if(!out.correlation.look.includes("現貨／外資現貨 +0.85")||!out.correlation.look.includes("現貨／費半 -0.64")) throw Error("strongest correlation pairs not identified");
-if(!out.trade.target.includes("區間內不追價")) throw Error("trade plan does not respect current range");
+if(!out.trade.target.includes("目前不追價")||!out.trade.target.includes("Put Wall 44,000")||!out.trade.target.includes("Call Wall 48,000")) throw Error("trade plan does not respect current range: "+out.trade.target);
 
 // Missing night price inputs must not produce actionable text containing fake zero/missing levels.
 const missing=v9ProSynthesisAnalysis({day:{},night:{},futures:{},spot:{},options:{},analysis:{}});
@@ -432,7 +432,7 @@ const out=v9ProFuturesAnalysis(fixture);
 if(!out.day.compass.includes("日內收高於開盤")||!out.day.compass.includes("相對前結算仍下跌 -44 點")) throw Error("day session failed to distinguish open-close from previous settlement");
 if(!out.night.compass.includes("夜盤收盤另低於日盤收盤")||!out.night.compass.includes("收盤靠近夜盤區間下緣")) throw Error("night session structure not identified: "+out.night.compass);
 if(!out.basis.compass.includes("正價差")||!out.basis.compass.includes("不能抵銷夜盤跌勢")) throw Error("positive basis incorrectly overrides night decline");
-if(!out.oi.look.includes("三大法人合計 +1,067 口")||!out.oi.compass.includes("法人部位分歧")) throw Error("institutional OI split/total not explained");
+if(!out.oi.look.includes("三大法人合計 +1,067 口")||!out.oi.compass.includes("法人持倉分歧")) throw Error("institutional OI split/total not explained: "+out.oi.look+" | "+out.oi.compass);
 if(!out.flow.compass.includes("日夜流量方向反轉")||!out.flow.compass.includes("外資淨 OI 存量偏空")) throw Error("day/night flow divergence not explained separately from OI");
 
 // Missing values must stay unavailable and never be converted to zero.
