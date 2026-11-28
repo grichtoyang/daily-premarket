@@ -366,7 +366,7 @@ class SameT0SourceAttributionTests(unittest.TestCase):
 |---|---|---:|---:|---:|---|---|---|---|
 | 台積電ADR | TSM | 353.34 | 11.00 | +3.21% | 2026-11-27 | 2026-11-28T00:43:30+00:00 | America/New_York | Yahoo Finance Chart API |
 """
-        new = """# DATA_REPORT_20261127
+        new = f"""# DATA_REPORT_20261127
 - T0 交易日期：`2026-11-27`
 - 產出盤別：`全日`
 
