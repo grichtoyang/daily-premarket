@@ -1147,7 +1147,7 @@ def parse_data_report(report_path):
     formal_wide_diag=gex_payload.get('formal_wide_range_flip_diagnostics') or {}
     extended_flip=(
         formal_wide_flip.get('estimated_underlying')
-        if gex_status=='available' and gex_payload.get('gex_date')==t0_date
+        if gamma_flip is None and gex_status=='available' and gex_payload.get('gex_date')==t0_date
         and formal_wide_diag.get('found') is True else None
     )
     call_oi_table=parse_table("#### Call OI 分布明細 Top10"); put_oi_table=parse_table("#### Put OI 分布明細 Top10"); opt_inst_table=parse_table("### 16．選擇權法人日盤、夜盤交易") or parse_table("### 17．選擇權法人日盤、夜盤交易")
