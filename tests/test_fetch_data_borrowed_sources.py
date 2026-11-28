@@ -358,6 +358,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
     def test_options_history_and_gamma_source_labels_are_field_specific(self):
         source = (ROOT / "src/fetch_data.py").read_text(encoding="utf-8")
+        taifex_source = (ROOT / "src/sources/taifex.py").read_text(encoding="utf-8")
         self.assertIn('_source_if_available(_vol_ratio_change, _pch_src)', source)
         self.assertIn('_source_if_available(_oi_ratio_change, _pch_src)', source)
         self.assertIn('_gm_flip_src = (_gm.get("flip_src") or MISSING) if _gm.get("flip") is not None else MISSING', source)
@@ -372,16 +373,18 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
 
         self.assertIn("_sum_gex_model_oi(_gm.get(\"levels\") or [], \"call_oi\")", source)
         self.assertIn("_sum_gex_model_oi(_gm.get(\"levels\") or [], \"put_oi\")", source)
-        taifex_source = (ROOT / "src/sources/taifex.py").read_text(encoding="utf-8")
         self.assertIn('"flip_diagnostics": _flip_diag', taifex_source)
         self.assertIn('"flip_diagnostics_source": _flip_diag_source', taifex_source)
         self.assertIn('"wide_range_flip_diagnostics": _wide_flip_diag', taifex_source)
         self.assertIn('"wide_range_flip_diagnostics_source": _wide_flip_diag_source', taifex_source)
-        self.assertIn('"expiry_selection_diagnostics": (gdata.get("expiry_selection_diagnostics") if g_pay is not None else None) or cgamma.get("expiry_selection_diagnostics")', taifex_source)
-        self.assertIn('_gamma_expiry = _gamma_expiry_metadata(gdata if g_pay is not None else cgamma, prim_month)', taifex_source)
+        self.assertIn('"expiry_selection_diagnostics": _expiry_diag', taifex_source)
+        self.assertIn('_gamma_expiry = _gamma_expiry_metadata(_gamma_meta, prim_month)', taifex_source)
         self.assertIn('"gex_date": g_date', taifex_source)
         self.assertIn('"flip_proxy_contract_month": _flip_proxy_meta.get("contract_month") if _flip_proxy_used else None', taifex_source)
         self.assertIn('"flip_proxy_expiry_date": _flip_proxy_meta.get("expiry_date") if _flip_proxy_used else None', taifex_source)
+        self.assertIn('"gex_flip_diagnostics": _gex_flip_diag', taifex_source)
+        self.assertIn('"gex_wide_range_flip_diagnostics": _gex_wide_flip_diag', taifex_source)
+        self.assertIn('"flip_meta": flip_meta', taifex_source)
         self.assertIn('與預期夜盤交易日 {_today} 不一致', taifex_source)
         self.assertIn('**正式 GEX 模型 Gamma Flip 零交叉搜尋診斷**', source)
         self.assertIn('本段診斷與上方 Proxy Flip 使用同一來源欄位', source)
@@ -389,7 +392,7 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('Gamma Flip Proxy 到期日配對診斷', source)
         self.assertIn('_gex_diag_available = _gm.get("flip_diagnostics_source") == "options-gamma-levels"', source)
         self.assertIn('**Gamma Flip Proxy 零交叉搜尋診斷**', source)
-        self.assertIn('"flip_diagnostics_source": "options-gamma-levels" if _gex_diag_available else "options-market-structure-compact (proxy)"', source)
+        self.assertIn('"flip_diagnostics_source": _gm.get("flip_diagnostics_source")', source)
 
         self.assertIn('**GEX 到期日配對診斷（原始候選清單）**', source)
         self.assertIn('**正式 GEX 擴大區間診斷（±15%；不覆蓋正式 ±10% 結果）**', source)
@@ -405,8 +408,6 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertLess(source.index('A("### 16．選擇權法人日盤、夜盤交易")'), source.index('A("### 17．選擇權前十大")'))
         self.assertLess(source.index('A("### 17．選擇權前十大")'), source.index('A("### 18．資料來源、時間、時區與狀態")'))
         self.assertIn('_combine_source_labels(SRC_FX, _nvia) if _nratio is not None else MISSING', source)
-        self.assertIn('_source_if_available(_diff2(d["vol_day"], n["vol"]), _combine_source_labels(SRC_FX, _nvia))', source)
-
         self.assertIn('_source_if_available(_diff2(d["vol_day"], n["vol"]), _combine_source_labels(SRC_FX, _nvia))', source)
         builder_source = (ROOT / "scripts/v9_pro_builder.py").read_text(encoding="utf-8")
         self.assertIn('opt_inst_table=parse_table("### 16．選擇權法人日盤、夜盤交易") or parse_table("### 17．選擇權法人日盤、夜盤交易")', builder_source)
