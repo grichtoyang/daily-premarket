@@ -1326,12 +1326,12 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _flip_proxy_used = _gm_flip_src == "options-market-structure-compact (proxy)"
     _flip_source_expiry_month = (
         _gm.get("flip_proxy_contract_month") if _flip_proxy_used
-        else _gm_expiry_month if _gm_flip_src == "options-gamma-levels"
+        else _gm.get("gex_contract_month") if _gm_flip_src == "options-gamma-levels"
         else None
     )
     _flip_source_expiry_date = (
         _gm.get("flip_proxy_expiry_date") if _flip_proxy_used
-        else _gm_expiry_date if _gm_flip_src == "options-gamma-levels"
+        else _gm.get("gex_expiry_date") if _gm_flip_src == "options-gamma-levels"
         else None
     )
     _gm_primary_month = _gm.get("primary_expiry_month") or _w.get("expiry")
