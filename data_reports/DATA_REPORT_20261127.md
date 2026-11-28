@@ -137,6 +137,7 @@
 ### 3. 美股指數期貨
 
 **資料來源：** `Yahoo Finance Chart API` (API 優先；失敗標 unavailable，不推估)
+- FX 交易日依 New York 時間 17:00 週末切分（週日 17:00 開始、週五 17:00 結束）；不直接採 Yahoo vendor timezone 作為交易日。
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
@@ -162,9 +163,9 @@
 
 | 項目 | Yahoo Finance 代號 | 最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
 |---|---|---|---|---|---|---|---|---|
-| USD/TWD | TWD=X | 32.98 | -0.21 | -0.63 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| USD/TWD | TWD=X | 32.98 | -0.21 | -0.63 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice；FX 交易時區） |
 | DXY美元指數 | DX-Y.NYB | 104.01 | 0.34 | +0.33 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice） |
-| USD/JPY | JPY=X | 159.51 | 0.30 | +0.19 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | Europe/London | Yahoo Finance Chart API（meta.regularMarketPrice） |
+| USD/JPY | JPY=X | 159.51 | 0.30 | +0.19 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice；FX 交易時區） |
 | USD/KRW | KRW=X | 1,333.90 | -9.63 | -0.72 | 2026-11-27 | 2026-11-28T04:51:31+00:00 | America/New_York | Yahoo Finance Chart API（meta.regularMarketPrice；FX 交易時區） |
 
 ### 6. 台灣相關ADR
