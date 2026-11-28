@@ -204,6 +204,34 @@ class ReactTemplateStaticTests(unittest.TestCase):
         self.assertIn("Math.min(1,o/Math.max(volScaleMax,o))*20", self.html)
         self.assertNotIn("o/200000*22", self.html)
 
+    def test_stale_proxy_gamma_flip_is_reference_only_and_formal_extended_flip_is_separate(self):
+        builder = (ROOT / "scripts" / "v9_pro_builder.py").read_text(encoding="utf-8")
+        self.assertIn("gamma_flip_is_stale=bool(gamma_flip is not None and gamma_flip_date and gamma_flip_date != t0_date)", builder)
+        self.assertIn("'referenceFlip': gamma_flip_reference", builder)
+        self.assertIn("'flipStatus': 'stale_proxy' if gamma_flip_is_stale", builder)
+        self.assertIn("formal_wide_flip=gex_payload.get('formal_wide_range_flip') or {}", builder)
+        self.assertIn("formal_wide_diag.get('found') is True else None", builder)
+        self.assertIn('options?.referenceFlipDate', self.html)
+        self.assertIn('前一交易日 Proxy Flip', self.html)
+        self.assertIn('前日 Proxy Flip', self.html)
+        self.assertIn('當日正式 GEX 延伸 Flip（±15%）', self.html)
+        self.assertIn('referenceFlip:n.referenceFlip', self.html)
+        function_start = self.html.index("function v9ProEffectiveGammaFlip(")
+        function_end = self.html.index("function ", function_start + 1)
+        function_source = self.html[function_start:function_end]
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node.js is required for Gamma Flip freshness tests")
+        script = function_source + """
+const staleProxy={flip:null,referenceFlip:37182.94,referenceFlipDate:"2026-11-26",extendedFlip:34633.93,gexStatus:"available",gexDate:"2026-11-27"};
+const current=v9ProEffectiveGammaFlip(staleProxy,{close:39308.08});
+if(current.value!==34633.93||current.estimated!==true){console.error(current);process.exit(1)}
+const currentDay={flip:37200,flipDate:"2026-11-27",extendedFlip:34633.93,gexStatus:"available",gexDate:"2026-11-27"};
+const formal=v9ProEffectiveGammaFlip(currentDay,{close:39308.08});
+if(formal.value!==37200||formal.estimated!==false){console.error(formal);process.exit(1)}
+"""
+        result = run_node_script(node, script)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_inline_javascript_syntax(self):
         node = shutil.which("node")
         self.assertIsNotNone(node, "Node.js is required for React template syntax validation")
