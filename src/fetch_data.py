@@ -479,6 +479,15 @@ def merge_same_t0(old_text: str, new_text: str, new_session: str = "全日",
                 )
                 if _asia_stale_row:
                     old = None
+                # ADR stale rows are authoritative unavailable values. Never refill
+                # their quote/date/source cells from the previous same-T0 report.
+                _adr_stale_row = (
+                    any("台灣相關ADR" in (part or "") for part in hkey)
+                    and len(cells) > 1
+                    and f"<!-- ADR_STALE_SYMBOLS:{cells[1]} -->" in new_text
+                )
+                if _adr_stale_row:
+                    old = None
                 if old and len(old) == len(cells):
                     # 夜盤衍生欄位若數值完全相同、只有來源標籤改善，應更新來源欄，
                     # 不應把「沿用前版」凍結成永久標籤；數值有差異時仍走原同 T0 保護。
@@ -647,6 +656,22 @@ def _asia_stale_note(mk: dict, t0: str) -> str | None:
     except Exception:
         return None
 
+def _adr_stale_note(mk: dict) -> str | None:
+    """Describe ADR quotes rejected by the NYSE-session freshness guard."""
+    rows = mk.get("台灣相關ADR") or []
+    stale = [(name, q.get("symbol"), q.get("date"), q.get("stale_reason"))
+             for name, q in rows if q.get("stale")]
+    if not stale:
+        return None
+    symbols = [symbol for _, symbol, _, _ in stale if symbol]
+    details = "；".join(
+        f"{name}（{symbol}，資料日期 {date or MISSING}；{reason or '新鮮度驗證失敗'}）"
+        for name, symbol, date, reason in stale
+    )
+    marker = "\\n".join(f"<!-- ADR_STALE_SYMBOLS:{symbol} -->" for symbol in symbols)
+    return (f"台灣相關 ADR 新鮮度異常，已排除舊行情：{details}\\n{marker}")
+
+
 def last_weekday(d: date) -> date:
     """相容舊介面：T0 取今天之前的最近平日。新邏輯請用 src.t0.resolve。"""
     from datetime import timedelta
@@ -781,6 +806,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A("")
     mk = _timed_call("us_market.get_all", us_market.get_all, expected_date=t0)
     _asia_note = _asia_stale_note(mk, t0)
+    _adr_note = _adr_stale_note(mk)
     titles = {"美股指數": ("美股指數", "收盤／最新值"), "亞洲主要指數": ("亞洲主要指數", "收盤／最新值"),
               "美股指數期貨": ("美股指數期貨", "最新值"), "主要匯率": ("主要匯率", "最新值"),
               "台灣相關ADR": ("台灣相關ADR", "收盤／最新值"), "原油黃金Bitcoin": ("原油黃金Bitcoin", "收盤／最新值")}
@@ -1503,6 +1529,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     A(f"- 美股/亞股/期貨/匯率/ADR/商品：`Yahoo Finance Chart API`；美債：`{y['10Y']['source']}`")
     if _asia_note:
         A(f"- 註記：{_asia_note}")
+    if _adr_note:
+        A(f"- 註記：{_adr_note}")
     for n in s["notes"]:
         A(f"- 註記：{n}")
     for n in fx.get("notes", []):
