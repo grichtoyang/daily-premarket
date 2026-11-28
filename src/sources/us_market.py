@@ -1,7 +1,7 @@
 """重要市場：Yahoo Finance Chart API (免費免 Key)，API 優先、失敗標 unavailable。
 
-每檔回傳 {price, change, pct, date, retrieved_at, source}，
-change/pct 由最近兩根日K收盤計算 (不依賴 meta 漲跌欄)。
+每檔回傳 {price, change, pct, date, retrieved_at, source}。
+優先採用帶有交易所時間戳的 meta.regularMarketPrice；只有在 meta 不完整時才退回日K。
 """
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
@@ -67,7 +67,7 @@ def quote(sym: str) -> dict:
         bar_date = _exchange_date(pts[-1][0], exchange_timezone) if pts and exchange_timezone else None
         if meta_price is not None and meta_date and (bar_date is None or meta_date >= bar_date):
             previous = meta.get("chartPreviousClose") or meta.get("previousClose")
-            if previous is None and len(pts) >= 2:
+            if previous is None and meta_date == bar_date and len(pts) >= 2:
                 previous = pts[-2][1]
             out["price"] = meta_price
             out["date"] = meta_date
@@ -119,11 +119,6 @@ def _quote_chart_meta(sym: str) -> dict | None:
             if price is None or timestamp is None or not timezone_name:
                 continue
             previous = meta.get("chartPreviousClose") or meta.get("previousClose")
-            if previous is None:
-                closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
-                valid_closes = [value for value in closes if value is not None]
-                if len(valid_closes) >= 2:
-                    previous = valid_closes[-2]
             if previous in (None, 0):
                 continue
             change = float(price) - float(previous)

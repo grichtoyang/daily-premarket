@@ -112,6 +112,66 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             "399001.SZ": "2026-11-27",
         })
 
+
+    def test_quote_prefers_fresher_meta_timestamp_over_stale_daily_bars(self):
+        meta_time = int(datetime(2026, 11, 27, 6, 30, tzinfo=timezone.utc).timestamp())
+        old_bar_time = int(datetime(2026, 11, 26, 6, 30, tzinfo=timezone.utc).timestamp())
+        response = unittest.mock.Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"chart": {"result": [{
+            "meta": {
+                "regularMarketPrice": 60000.0, "chartPreviousClose": 59000.0,
+                "regularMarketTime": meta_time, "exchangeTimezoneName": "Asia/Tokyo",
+            },
+            "timestamp": [old_bar_time],
+            "indicators": {"quote": [{"close": [58000.0]}]},
+        }]}}
+        with patch("requests.get", return_value=response):
+            from src.sources.us_market import quote
+            result = quote("^N225")
+        self.assertEqual(result["price"], 60000.0)
+        self.assertEqual(result["date"], "2026-11-27")
+        self.assertEqual(result["change"], 1000.0)
+        self.assertAlmostEqual(result["pct"], 1000 / 59000 * 100)
+        self.assertIn("meta.regularMarketPrice", result["source"])
+
+    def test_quote_does_not_use_stale_daily_close_as_meta_previous_close(self):
+        meta_time = int(datetime(2026, 11, 27, 6, 30, tzinfo=timezone.utc).timestamp())
+        bar_times = [
+            int(datetime(2026, 11, 25, 6, 30, tzinfo=timezone.utc).timestamp()),
+            int(datetime(2026, 11, 26, 6, 30, tzinfo=timezone.utc).timestamp()),
+        ]
+        response = unittest.mock.Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"chart": {"result": [{
+            "meta": {
+                "regularMarketPrice": 60000.0,
+                "regularMarketTime": meta_time, "exchangeTimezoneName": "Asia/Tokyo",
+            },
+            "timestamp": bar_times,
+            "indicators": {"quote": [{"close": [57000.0, 58000.0]}]},
+        }]}}
+        with patch("requests.get", return_value=response):
+            from src.sources.us_market import quote
+            result = quote("^N225")
+        self.assertEqual(result["price"], 58000.0)
+        self.assertEqual(result["date"], "2026-11-26")
+
+    def test_chart_meta_fallback_requires_a_previous_close(self):
+        timestamp = int(datetime(2026, 11, 27, 21, 0, tzinfo=timezone.utc).timestamp())
+        response = unittest.mock.Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"chart": {"result": [{
+            "meta": {
+                "regularMarketPrice": 353.34, "regularMarketTime": timestamp,
+                "exchangeTimezoneName": "America/New_York",
+            },
+            "timestamp": [timestamp],
+            "indicators": {"quote": [{"close": [353.34]}]},
+        }]}}
+        with patch("requests.get", return_value=response):
+            self.assertIsNone(_quote_chart_meta("TSM"))
+
     def test_chart_meta_fallback_parses_exchange_timestamp_without_v7_quote(self):
         timestamp = int(datetime(2026, 11, 27, 21, 0, tzinfo=timezone.utc).timestamp())
         response = unittest.mock.Mock()
