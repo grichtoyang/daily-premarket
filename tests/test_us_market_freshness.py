@@ -6,7 +6,7 @@ import pandas as pd
 
 from src.sources.us_market import (
     _apply_asia_freshness, _apply_adr_freshness, _expected_us_session_date,
-    _expected_asia_session_dates, _quote_v7_batch, _refresh_stale_market_quotes,
+    _expected_asia_session_dates, _quote_chart_meta, _refresh_stale_market_quotes,
 )
 
 
@@ -112,22 +112,24 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             "399001.SZ": "2026-11-27",
         })
 
-    def test_quote_api_fallback_parses_exchange_timestamp(self):
+    def test_chart_meta_fallback_parses_exchange_timestamp_without_v7_quote(self):
         timestamp = int(datetime(2026, 11, 27, 21, 0, tzinfo=timezone.utc).timestamp())
         response = unittest.mock.Mock()
         response.raise_for_status.return_value = None
-        response.json.return_value = {"quoteResponse": {"result": [{
-            "symbol": "TSM", "regularMarketPrice": 353.34,
-            "regularMarketChange": 11.0, "regularMarketChangePercent": 3.21,
-            "regularMarketTime": timestamp, "exchangeTimezoneName": "America/New_York",
+        response.json.return_value = {"chart": {"result": [{
+            "meta": {
+                "regularMarketPrice": 353.34, "chartPreviousClose": 342.34,
+                "regularMarketTime": timestamp, "exchangeTimezoneName": "America/New_York",
+            },
+            "indicators": {"quote": [{"close": [342.34, 353.34]}]},
         }]}}
         with patch("requests.get", return_value=response):
-            result = _quote_v7_batch(["TSM"])
-        self.assertEqual(result["TSM"]["date"], "2026-11-27")
-        self.assertEqual(result["TSM"]["price"], 353.34)
-        self.assertEqual(result["TSM"]["change"], 11.0)
-        self.assertEqual(result["TSM"]["pct"], 3.21)
-        self.assertIn("Quote API v7", result["TSM"]["source"])
+            result = _quote_chart_meta("TSM")
+        self.assertEqual(result["date"], "2026-11-27")
+        self.assertEqual(result["price"], 353.34)
+        self.assertAlmostEqual(result["change"], 11.0)
+        self.assertAlmostEqual(result["pct"], 11.0 / 342.34 * 100)
+        self.assertIn("Chart API meta fallback", result["source"])
 
     def test_stale_chart_quote_is_replaced_only_by_matching_fallback_date(self):
         chart_quote = {
@@ -138,10 +140,10 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             "symbol": "^N225", "price": 60000.0, "change": 1000.0, "pct": 1.69,
             "date": "2026-11-27", "retrieved_at": "2026-11-28T01:45:00+00:00",
             "exchange_timezone": "Asia/Tokyo",
-            "source": "Yahoo Finance Quote API v7（Chart API 備援）", "ok": True,
+            "source": "Yahoo Finance Chart API meta fallback", "ok": True,
         }
         data = {"亞洲主要指數": [("日經225", chart_quote)]}
-        with patch("src.sources.us_market._quote_v7_batch", return_value={"^N225": fresh_quote}):
+        with patch("src.sources.us_market._quote_chart_meta", return_value=fresh_quote):
             _refresh_stale_market_quotes(data, {"^N225": "2026-11-27"}, None)
         self.assertEqual(chart_quote["price"], 60000.0)
         self.assertEqual(chart_quote["date"], "2026-11-27")
@@ -157,7 +159,7 @@ class AsianMarketFreshnessTests(unittest.TestCase):
             "date": "2026-11-25", "source": "Yahoo Finance Quote API v7", "ok": True,
         }
         data = {"亞洲主要指數": [("日經225", chart_quote)]}
-        with patch("src.sources.us_market._quote_v7_batch", return_value={"^N225": stale_fallback}):
+        with patch("src.sources.us_market._quote_chart_meta", return_value=stale_fallback):
             _refresh_stale_market_quotes(data, {"^N225": "2026-11-27"}, None)
         self.assertEqual(chart_quote["price"], 59000.0)
         self.assertNotIn("fallback_used", chart_quote)

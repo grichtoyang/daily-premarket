@@ -32,14 +32,21 @@ GROUPS: dict[str, list[tuple[str, str]]] = {
 }
 
 def quote(sym: str) -> dict:
+    """Fetch the latest exchange-stamped quote from Yahoo Chart API.
+
+    Prefer meta.regularMarketPrice when its exchange-local timestamp is at least
+    as recent as the final daily bar; this avoids silently ignoring a fresher
+    quote when the historical bar array is delayed.
+    """
     out = {"symbol": sym, "price": None, "change": None, "pct": None, "date": None,
            "retrieved_at": None, "exchange_timezone": None,
            "source": "Yahoo Finance Chart API", "ok": False}
     try:
-        r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1mo",
-                         headers={**HEADERS, "Accept": "application/json"}, timeout=20)
+        r = requests.get(
+            f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=1mo",
+            headers={**HEADERS, "Accept": "application/json"}, timeout=20,
+        )
         r.raise_for_status()
-        # Record the timestamp after a successful HTTP response, not before the request.
         out["retrieved_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
         res = (r.json().get("chart", {}).get("result") or [None])[0]
         if not res:
@@ -50,7 +57,29 @@ def quote(sym: str) -> dict:
         out["exchange_timezone"] = exchange_timezone
         closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
         pts = [(t, c) for t, c in zip(ts, closes) if c is not None]
-        if len(pts) < 1:
+
+        meta_price = meta.get("regularMarketPrice")
+        meta_time = meta.get("regularMarketTime")
+        meta_date = (
+            _exchange_date(meta_time, exchange_timezone)
+            if meta_time is not None and exchange_timezone else None
+        )
+        bar_date = _exchange_date(pts[-1][0], exchange_timezone) if pts and exchange_timezone else None
+        if meta_price is not None and meta_date and (bar_date is None or meta_date >= bar_date):
+            previous = meta.get("chartPreviousClose") or meta.get("previousClose")
+            if previous is None and len(pts) >= 2:
+                previous = pts[-2][1]
+            out["price"] = meta_price
+            out["date"] = meta_date
+            if previous not in (None, 0):
+                out["change"] = float(meta_price) - float(previous)
+                out["pct"] = out["change"] / float(previous) * 100
+            out["source"] = "Yahoo Finance Chart API（meta.regularMarketPrice）"
+            out["ok"] = out["change"] is not None and out["pct"] is not None
+            if out["ok"]:
+                return out
+
+        if not pts:
             return out
         last_t, last_c = pts[-1]
         out["price"] = last_c
@@ -59,73 +88,61 @@ def quote(sym: str) -> dict:
             prev_c = pts[-2][1]
             out["change"] = last_c - prev_c
             out["pct"] = (last_c - prev_c) / prev_c * 100 if prev_c else None
-        out["ok"] = True
+        out["ok"] = out["change"] is not None and out["pct"] is not None
     except Exception as e:  # noqa: BLE001
         print(f"[WARN] yahoo {sym} failed: {e}")
     return out
 
 
-def _quote_v7_batch(symbols: list[str]) -> dict[str, dict]:
-    """Batch fallback to Yahoo's quote endpoint when Chart API bars are stale.
+def _quote_chart_meta(sym: str) -> dict | None:
+    """Retry Yahoo's public v8 chart endpoint on alternate hosts for fresh meta quote.
 
-    The regularMarketTime timestamp is required: a price without an exchange-local
-    timestamp is not eligible to replace a stale daily bar.
+    v7/finance/quote is deliberately not used: Yahoo now requires a session cookie
+    and crumb for that endpoint. The chart endpoint remains the unauthenticated path.
     """
-    if not symbols:
-        return {}
-    out: dict[str, dict] = {}
-    params = {"symbols": ",".join(dict.fromkeys(symbols))}
-    for host in ("query1.finance.yahoo.com", "query2.finance.yahoo.com"):
+    for host in ("query2.finance.yahoo.com", "query1.finance.yahoo.com"):
         try:
             r = requests.get(
-                f"https://{host}/v7/finance/quote",
-                params=params,
+                f"https://{host}/v8/finance/chart/{sym}",
+                params={"range": "1d", "interval": "1m", "includePrePost": "false"},
                 headers={**HEADERS, "Accept": "application/json"},
                 timeout=15,
             )
             r.raise_for_status()
-            payload = r.json().get("quoteResponse") or {}
-            if payload.get("error"):
-                raise RuntimeError(str(payload["error"]))
-            retrieved_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-            for item in payload.get("result") or []:
-                symbol = item.get("symbol")
-                price = item.get("regularMarketPrice")
-                timestamp = item.get("regularMarketTime")
-                exchange_timezone = item.get("exchangeTimezoneName")
-                if not symbol or price is None:
-                    continue
-                date_value = (
-                    _exchange_date(timestamp, exchange_timezone)
-                    if timestamp is not None and exchange_timezone else None
-                )
-                change = item.get("regularMarketChange")
-                pct = item.get("regularMarketChangePercent")
-                previous = item.get("regularMarketPreviousClose")
-                if change is None and previous not in (None, 0):
-                    change = float(price) - float(previous)
-                if pct is None and previous not in (None, 0) and change is not None:
-                    pct = float(change) / float(previous) * 100
-                out[symbol] = {
-                    "symbol": symbol,
-                    "price": price,
-                    "change": change,
-                    "pct": pct,
-                    "date": date_value,
-                    "retrieved_at": retrieved_at,
-                    "exchange_timezone": exchange_timezone,
-                    "source": "Yahoo Finance Quote API v7（Chart API 備援）",
-                    "ok": date_value is not None,
-                }
-            if len(out) >= len(set(symbols)):
-                break
+            res = (r.json().get("chart", {}).get("result") or [None])[0]
+            if not res:
+                continue
+            meta = res.get("meta") or {}
+            price = meta.get("regularMarketPrice")
+            timestamp = meta.get("regularMarketTime")
+            timezone_name = meta.get("exchangeTimezoneName")
+            if price is None or timestamp is None or not timezone_name:
+                continue
+            previous = meta.get("chartPreviousClose") or meta.get("previousClose")
+            if previous is None:
+                closes = ((res.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
+                valid_closes = [value for value in closes if value is not None]
+                if len(valid_closes) >= 2:
+                    previous = valid_closes[-2]
+            if previous in (None, 0):
+                continue
+            change = float(price) - float(previous)
+            return {
+                "symbol": sym,
+                "price": price,
+                "change": change,
+                "pct": change / float(previous) * 100,
+                "date": _exchange_date(timestamp, timezone_name),
+                "retrieved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "exchange_timezone": timezone_name,
+                "source": f"Yahoo Finance Chart API meta fallback（{host}）",
+                "ok": True,
+            }
         except Exception as e:  # noqa: BLE001
-            print(f"[WARN] yahoo quote fallback host={host} failed: {e}")
-    print(
-        f"[INFO] yahoo quote fallback requested={len(set(symbols))} "
-        f"returned={len(out)}"
-    )
-    return out
+            print(f"[WARN] yahoo chart-meta fallback {sym} host={host} failed: {e}")
+    return None
+
+
 
 
 def _apply_asia_freshness(rows: list[tuple], expected_date: str | dict | None) -> list[tuple]:
@@ -257,8 +274,12 @@ def _refresh_stale_market_quotes(
     if not pending:
         return
 
+    from concurrent.futures import ThreadPoolExecutor
+
     started = datetime.now(timezone.utc)
-    fallback = _quote_v7_batch(list(pending))
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        fetched = list(executor.map(_quote_chart_meta, pending.keys()))
+    fallback = dict(zip(pending.keys(), fetched))
     accepted = 0
     for group, rows in market_data.items():
         for name, q in rows:
@@ -277,16 +298,16 @@ def _refresh_stale_market_quotes(
                 q.update(candidate)
                 q["fallback_used"] = True
                 accepted += 1
-                print(f"[INFO] yahoo quote fallback accepted {symbol} date={expected}")
+                print(f"[INFO] yahoo chart-meta fallback accepted {symbol} date={expected}")
             else:
                 actual = candidate.get("date") if candidate else "no_quote"
                 print(
-                    f"[WARN] yahoo quote fallback not accepted {symbol} "
+                    f"[WARN] yahoo chart-meta fallback not accepted {symbol} "
                     f"expected={expected} actual={actual}"
                 )
     elapsed = (datetime.now(timezone.utc) - started).total_seconds()
     print(
-        f"[TIMING] source=us_market.quote_fallback elapsed={elapsed:.2f}s "
+        f"[TIMING] source=us_market.chart_meta_fallback elapsed={elapsed:.2f}s "
         f"requested={len(pending)} accepted={accepted}"
     )
 
