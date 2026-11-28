@@ -316,6 +316,13 @@ def _gamma_proxy_fallback(
     payload = None
     wall, flip = initial_wall, initial_flip
     wall_date = flip_date = None
+    wall_meta = flip_meta = None
+    meta_keys = (
+        "contract_month", "expiry_date", "call_oi", "put_oi",
+        "gamma_flip_diagnostics", "gamma_flip_wide_range",
+        "gamma_flip_wide_range_diagnostics", "expiry_selection_diagnostics",
+        "gamma_diagnostics",
+    )
     attempts = []
     for day in dates:
         candidate = fetch(day)
@@ -335,8 +342,10 @@ def _gamma_proxy_fallback(
         })
         if wall is None and candidate_wall is not None:
             wall, wall_date = candidate_wall, day
+            wall_meta = {key: gamma.get(key) for key in meta_keys}
         if flip is None and candidate_flip is not None:
             flip, flip_date = candidate_flip, day
+            flip_meta = {key: gamma.get(key) for key in meta_keys}
         if payload is None and (candidate_wall is not None or candidate_flip is not None):
             payload = candidate
         if wall is not None and flip is not None:
@@ -344,7 +353,8 @@ def _gamma_proxy_fallback(
 
     if payload is None:
         return {"payload": None, "wall": wall, "wall_date": wall_date,
-                "flip": flip, "flip_date": flip_date, "attempts": attempts}
+                "wall_meta": wall_meta, "flip": flip, "flip_date": flip_date,
+                "flip_meta": flip_meta, "attempts": attempts}
 
     merged = dict(payload)
     data = dict(merged.get("data") or {})
@@ -358,7 +368,8 @@ def _gamma_proxy_fallback(
     data["gamma"] = gamma
     merged["data"] = data
     return {"payload": merged, "wall": wall, "wall_date": wall_date,
-            "flip": flip, "flip_date": flip_date, "attempts": attempts}
+            "wall_meta": wall_meta, "flip": flip, "flip_date": flip_date,
+            "flip_meta": flip_meta, "attempts": attempts}
 
 
 def _complete_sum(values) -> int | float | None:
