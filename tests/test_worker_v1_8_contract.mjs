@@ -16,4 +16,38 @@ assert.match(section("function parseFuturesInstitutional", "function parseFuture
 assert.match(section("function parseFuturesInstitutional", "function parseFuturesInstitutionalOI"), /investment_trust/);
 assert.match(section("async function institutionalEndpoint", "/* =========================\n   Worker"), /parsed\.found !== true/);
 assert.match(source, /date: fb\.date/);
+
+const parserStart = source.indexOf("function parseFuturesInstitutional(rows)");
+const parserEnd = source.indexOf("function parseFuturesInstitutionalOI(rows)", parserStart);
+assert.notEqual(parserStart, -1);
+assert.notEqual(parserEnd, -1);
+const parserSource = source.slice(parserStart, parserEnd);
+const institutionCode = name => ({
+  "外資": "foreign", "投信": "investment_trust", "自營商": "dealer",
+  "陸資": "china_capital"
+})[name] || null;
+const parseNumber = value => {
+  if (value === null || value === undefined) return null;
+  const s = String(value).replace(/,/g, "").trim();
+  if (!s || s === "-" || s === "--") return 0;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+};
+const parseFuturesInstitutional = new Function(
+  "institutionCode", "number", parserSource + "; return parseFuturesInstitutional;"
+)(institutionCode, parseNumber);
+const completeRows = [
+  ["臺股期貨", "外資", 1, 2, 3, 4, 5, 6],
+  ["臺股期貨", "投信", 1, 2, 3, 4, 5, 6],
+  ["臺股期貨", "自營商", 1, 2, 3, 4, 5, 6]
+];
+assert.equal(parseFuturesInstitutional(completeRows).found, true);
+assert.equal(parseFuturesInstitutional(completeRows.slice(0, 2)).found, false);
+assert.equal(parseFuturesInstitutional([
+  completeRows[0], completeRows[1], completeRows[1]
+]).found, false);
+assert.equal(parseFuturesInstitutional([
+  completeRows[0], completeRows[1], ["臺股期貨", "自營商", 1, null, 3, 4, 5, 6]
+]).found, false);
+
 console.log("PASS: V1.8 institutional timeout/fallback/date/completeness contract");
