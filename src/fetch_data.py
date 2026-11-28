@@ -1316,12 +1316,12 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
     _gm_wall_date = _gm.get("wall_date") or _gm.get("date")
     # GEX 與 Gamma Flip Proxy 可能來自不同端點、不同到期日；日期與到期月份分開標示。
     _gm_flip_date = (_gm.get("flip_date") or _gm.get("date")) if _gm.get("flip") is not None else None
-    _gm_gex_date = _gm.get("gex_date") or (_gm.get("date") if _gm.get("gex_status") == "available" else None)
+    _gm_gex_date = _gm.get("gex_date") if _gm.get("gex_status") == "available" else None
     _gm_wall_date_src = f"{SRC_FX} ({_gm_src})" if _gm_wall_date is not None else MISSING
     _gm_flip_date_src = f"{SRC_FX} ({_gm_flip_src})" if _gm_flip_date is not None else MISSING
     _gm_gex_date_src = f"{SRC_FX} (options-gamma-levels)" if _gm_gex_date is not None else MISSING
-    _gm_expiry_month = _gm.get("gex_contract_month")
-    _gm_expiry_date = _gm.get("gex_expiry_date")
+    _gm_expiry_month = _gm.get("gex_contract_month") if _gm.get("gex_status") == "available" else None
+    _gm_expiry_date = _gm.get("gex_expiry_date") if _gm.get("gex_status") == "available" else None
     _gex_diag_available = _gm.get("flip_diagnostics_source") == "options-gamma-levels"
     _flip_proxy_used = _gm_flip_src == "options-market-structure-compact (proxy)"
     _flip_source_expiry_month = (
@@ -1335,8 +1335,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         else None
     )
     _gm_primary_month = _gm.get("primary_expiry_month") or _w.get("expiry")
-    _gm_expiry_src = "options-gamma-levels（GEX 實際使用）" if _gm_expiry_month else (
-        SRC_FX if _gm_primary_month is not None else MISSING)
+    _gm_expiry_src = "options-gamma-levels（GEX 實際使用）" if _gm_expiry_month else MISSING
     _gm_call_oi = _gm.get("gex_call_oi") if isinstance(_gm.get("gex_call_oi"), dict) else {}
     _gm_put_oi = _gm.get("gex_put_oi") if isinstance(_gm.get("gex_put_oi"), dict) else {}
     A(_tbl([("Gamma Wall 價位", _f2(_gm['wall']), _gm_src),
@@ -1435,7 +1434,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
                       "net_gex_1pct": _gm.get("net_gex_1pct"),
                       "gross_gex_1pct": _gm.get("gross_gex_1pct"),
                        "gamma_diagnostics": _gm.get("diagnostics"),
-                       "formal_flip_diagnostics": _gm.get("flip_diagnostics"), "flip_diagnostics_source": _gm.get("flip_diagnostics_source"), "wide_range_flip_diagnostics_source": _gm.get("wide_range_flip_diagnostics_source"),
+                       "formal_flip_diagnostics": _gm.get("flip_diagnostics") if _gex_diag_available else None, "flip_diagnostics": _gm.get("flip_diagnostics"), "flip_diagnostics_source": _gm.get("flip_diagnostics_source"), "wide_range_flip_diagnostics_source": _gm.get("wide_range_flip_diagnostics_source"),
                        "wide_range_flip": _gm.get("wide_range_flip"),
                        "wide_range_flip_diagnostics": _gm.get("wide_range_flip_diagnostics"),
                        "expiry_selection_diagnostics": _gm.get("expiry_selection_diagnostics"),
