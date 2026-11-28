@@ -370,18 +370,28 @@ def calculate_historical_correlation(db_path="dashboards/v9_pro_history.db", min
                     continue
                 corr = sum(a*b for a, b in zip(dx, dy)) / denom
                 matrix[i][j] = matrix[j][i] = round(max(-1.0, min(1.0, corr)), 4)
-        # Preserve all indicators so unavailable pairs remain visible as em-dashes.
-        pair_counts = [counts[i][j] for i in range(size) for j in range(i+1, size) if matrix[i][j] is not None]
+        # Summarize every off-diagonal pair, including pairs whose coefficient
+        # is undefined because one indicator has zero variance.
+        pair_counts = [counts[i][j] for i in range(size) for j in range(i+1, size)]
         min_pair = min(pair_counts) if pair_counts else 0
         max_pair = max(pair_counts) if pair_counts else 0
+        computable_pairs = sum(
+            1 for i in range(size) for j in range(i+1, size)
+            if matrix[i][j] is not None
+        )
         if not samples:
             desc = "歷史資料累積中｜目前 0 筆有效觀測；不顯示虛構相關係數"
-        elif not pair_counts:
-            desc = f"歷史資料累積中｜最近 {len(samples)} 筆；目前沒有至少 2 筆且具變異的有效配對"
+        elif not pair_counts or max_pair == 0:
+            desc = f"歷史資料累積中｜最近 {len(samples)} 筆；目前沒有有效配對樣本"
         else:
             confidence = "參考樣本達 30 筆" if min_pair >= 30 else ("樣本偏少，僅供探索性觀察" if min_pair < 5 else "樣本有限，解讀須保守")
-            desc = f"Pearson 相關係數｜最多回看 {len(samples)} 筆｜有效配對樣本數 {min_pair}–{max_pair} 筆｜{confidence}"
+            coefficient_note = (
+                f"可計算係數 {computable_pairs}/28 組"
+                if computable_pairs else "目前無可計算係數（樣本不足或指標無變異）"
+            )
+            desc = f"Pearson 相關係數｜最多回看 {len(samples)} 筆｜全部有效配對樣本數 {min_pair}–{max_pair} 筆｜{coefficient_note}｜{confidence}"
         return {"labels": labels, "matrix": matrix, "sample_counts": counts,
+                "computable_pairs": computable_pairs,
                 "min_reference_samples": int(min_samples), "desc": desc}
     except (sqlite3.Error, OSError, ValueError, TypeError) as e:
         return {"labels": [], "matrix": [], "sample_counts": [],
