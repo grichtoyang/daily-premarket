@@ -950,8 +950,9 @@ async function fetchTAIFEX(path) {
     const rows = parseRows(html);
 
     if (response.ok && rows.length) {
-      if (isDayInstitutional && !parseFuturesInstitutional(rows).found) {
-        primaryError = "TAIFEX primary institutional response is incomplete or has duplicate/missing categories";
+      if (isDayInstitutional &&
+          (!parseFuturesInstitutional(rows).found || !pageDataDate(html))) {
+        primaryError = "TAIFEX primary institutional response is incomplete or has no verifiable source date";
       } else {
         return {
           response, html, rows, source: "taifex_web", fallback: false,
