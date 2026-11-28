@@ -934,6 +934,8 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
         A(f"### {num}. {title}")
         A("")
         A("**資料來源：** `Yahoo Finance Chart API` (API 優先；失敗標 unavailable，不推估)")
+        if group == "主要匯率":
+            A("- FX 交易日依 New York 時間 17:00 週末切分（週日 17:00 開始、週五 17:00 結束）；不直接採 Yahoo vendor timezone 作為交易日。")
         A("")
         A(_market_quote_table(rows, col))
         A("")
