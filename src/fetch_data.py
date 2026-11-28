@@ -322,9 +322,9 @@ def _freeze_header(old_text: str, new_text: str) -> str:
 def _freeze_first_output_time(old_text: str, new_text: str) -> str:
     """Keep the first publication timestamp immutable, including --force-rewrite runs."""
     import re as _r
-    _pat = _r.compile(r"^(\\s*-\\s*)(資料產出時間|首次資料產出時間)(：)(.*?)(\\s*)$")
+    _pat = _r.compile(r"^(\s*-\s*)(資料產出時間|首次資料產出時間)(：)(.*?)(\s*)$")
     old_value = None
-    for ln in old_text.split("\\n"):
+    for ln in old_text.split("\n"):
         m = _pat.match(ln)
         if m and m.group(4).strip():
             old_value = m.group(4)
@@ -339,7 +339,7 @@ def _freeze_first_output_time(old_text: str, new_text: str) -> str:
             ln = m.group(1) + m.group(2) + m.group(3) + old_value + m.group(5)
             replaced = True
         out.append(ln)
-    return "\\n".join(out)
+    return "\n".join(out)
 
 
 _NEWS_ANCHOR = "重大經濟數據、央行事件與重大市場新聞"
