@@ -309,5 +309,56 @@ class SameT0SourceAttributionTests(unittest.TestCase):
         self.assertEqual(_snapshot_chain_source_label({}, None, "2026-11-06"), "unavailable")
 
 
+
+    def test_stale_adr_quote_is_never_restored_during_same_t0_merge(self):
+        old = """# DATA_REPORT_20261127
+- T0 交易日期：`2026-11-27`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 5. 台灣相關ADR
+| 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
+|---|---|---:|---:|---:|---|---|---|---|
+| 台積電ADR | TSM | 353.34 | 11.00 | +3.21% | 2026-11-27 | 2026-11-28T00:43:30+00:00 | America/New_York | Yahoo Finance Chart API |
+"""
+        new = """# DATA_REPORT_20261127
+- T0 交易日期：`2026-11-27`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 5. 台灣相關ADR
+| 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
+|---|---|---:|---:|---:|---|---|---|---|
+| 台積電ADR | TSM | unavailable | unavailable | unavailable | 2026-11-25 | 2026-11-28T01:07:19+00:00 | America/New_York | Yahoo Finance Chart API（資料日期過期，已排除） |
+- 註記：台灣相關 ADR 新鮮度異常，已排除舊行情：台積電ADR（TSM，資料日期 2026-11-25）
+<!-- ADR_STALE_SYMBOLS:TSM -->
+"""
+        for protect in (True, False):
+            with self.subTest(protect=protect):
+                merged, filled = merge_same_t0(old, new, new_session="全日", protect=protect)
+                self.assertEqual(filled, 0)
+                self.assertIn("| 台積電ADR | TSM | unavailable | unavailable | unavailable | 2026-11-25 |", merged)
+                self.assertNotIn("353.34", merged)
+                self.assertNotIn("11.00", merged)
+
+    def test_fresh_adr_row_is_not_blocked_by_another_stale_symbol_marker(self):
+        old = """# DATA_REPORT_20261127
+- T0 交易日期：`2026-11-27`
+- 產出盤別：`全日`
+
+## 二、重要市場
+### 5. 台灣相關ADR
+| 項目 | Yahoo Finance 代號 | 收盤／最新值 | 漲跌值 | 漲跌幅 | 資料日期（交易所時區） | 擷取時間（UTC） | 交易所時區 | 資料來源 |
+|---|---|---:|---:|---:|---|---|---|---|
+| 日月光ADR | ASX | 29.49 | 0.16 | +0.55% | 2026-11-25 | 2026-11-28T01:07:19+00:00 | America/New_York | Yahoo Finance Chart API |
+"""
+        new = old.replace("29.49 | 0.16 | +0.55%", "31.34 | 1.85 | +6.27%").replace(
+            "2026-11-25 | 2026-11-28T01:07:19", "2026-11-27 | 2026-11-28T01:07:19"
+        ) + "<!-- ADR_STALE_SYMBOLS:TSM -->\\n"
+        merged, _ = merge_same_t0(old, new, new_session="全日", protect=False)
+        self.assertIn("| 日月光ADR | ASX | 31.34 | 1.85 | +6.27% | 2026-11-27 |", merged)
+        self.assertNotIn("| 日月光ADR | ASX | 29.49 |", merged)
+
+
 if __name__ == "__main__":
     unittest.main()
