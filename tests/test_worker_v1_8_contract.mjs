@@ -49,6 +49,9 @@ assert.equal(parseFuturesInstitutional([
   completeRows[0], completeRows[1], completeRows[1]
 ]).found, false);
 assert.equal(parseFuturesInstitutional([
+  ...completeRows, completeRows[0]
+]).found, false);
+assert.equal(parseFuturesInstitutional([
   completeRows[0], completeRows[1], ["臺股期貨", "自營商", 1, null, 3, 4, 5, 6]
 ]).found, false);
 assert.equal(parseFuturesInstitutional([
@@ -90,6 +93,8 @@ const fallbackStaleMix = await makeFallback([
 assert.equal(fallbackStaleMix.found, false);
 const fallbackMissingCategory = await makeFallback(apiRows.slice(0, 2))();
 assert.equal(fallbackMissingCategory.found, false);
+const fallbackDuplicate = await makeFallback([...apiRows, apiRows[0]])();
+assert.equal(fallbackDuplicate.found, false);
 const fallbackBlankField = await makeFallback([
   apiRows[0], apiRows[1], { ...apiRows[2], "TradingValue(Long)(Thousands)": "" }
 ])();
