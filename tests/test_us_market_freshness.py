@@ -209,6 +209,25 @@ class AsianMarketFreshnessTests(unittest.TestCase):
         self.assertEqual(chart_quote["date"], "2026-11-27")
         self.assertTrue(chart_quote["fallback_used"])
 
+
+    def test_fresh_dated_quote_with_missing_change_is_refreshed(self):
+        chart_quote = {
+            "symbol": "^N225", "price": 60000.0, "change": None, "pct": None,
+            "date": "2026-11-27", "source": "Yahoo Finance Chart API", "ok": False,
+        }
+        fresh_quote = {
+            "symbol": "^N225", "price": 60000.0, "change": 1000.0, "pct": 1.69,
+            "date": "2026-11-27", "retrieved_at": "2026-11-28T01:45:00+00:00",
+            "exchange_timezone": "Asia/Tokyo",
+            "source": "Yahoo Finance Chart API meta fallback", "ok": True,
+        }
+        data = {"亞洲主要指數": [("日經225", chart_quote)]}
+        with patch("src.sources.us_market._quote_chart_meta", return_value=fresh_quote):
+            _refresh_stale_market_quotes(data, {"^N225": "2026-11-27"}, None)
+        self.assertEqual(chart_quote["change"], 1000.0)
+        self.assertEqual(chart_quote["pct"], 1.69)
+        self.assertTrue(chart_quote["fallback_used"])
+
     def test_stale_fallback_quote_is_not_used(self):
         chart_quote = {
             "symbol": "^N225", "price": 59000.0, "change": 10.0, "pct": 0.1,

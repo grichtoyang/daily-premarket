@@ -154,15 +154,14 @@ def _market_coverage(market_data: dict) -> tuple[list[str], list[str]]:
             q = quote_data if isinstance(quote_data, dict) else {}
             symbol = q.get("symbol") or name
             label = f"{group}.{name}({symbol})"
-            if q.get("price") is None:
-                unavailable.append(label)
-                continue
             missing = [
-                field for field in ("change", "pct")
+                field for field in ("price", "change", "pct")
                 if q.get(field) is None
             ]
-            if missing:
-                partial.append(f"{label}.{','.join(missing)}")
+            if q.get("price") is None:
+                unavailable.extend(f"{label}.{field}" for field in missing)
+            elif missing:
+                partial.extend(f"{label}.{field}" for field in missing)
     return partial, unavailable
 
 
@@ -173,9 +172,10 @@ def _treasury_coverage(yields: dict) -> tuple[list[str], list[str]]:
     for tenor, data in (yields or {}).items():
         item = data if isinstance(data, dict) else {}
         if item.get("yield") is None:
-            unavailable.append(f"美國國債殖利率.{tenor}")
-        elif item.get("chg") is None:
-            partial.append(f"美國國債殖利率.{tenor}.日變化")
+            unavailable.append(f"美國國債殖利率.{tenor}.yield")
+        if item.get("chg") is None:
+            target = unavailable if item.get("yield") is None else partial
+            target.append(f"美國國債殖利率.{tenor}.日變化")
     return partial, unavailable
 
 

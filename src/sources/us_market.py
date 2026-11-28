@@ -264,7 +264,12 @@ def _refresh_stale_market_quotes(
                 expected = expected_us_session
             else:
                 continue
-            if expected and (q.get("price") is None or q.get("date") != expected):
+            if expected and (
+                q.get("price") is None
+                or q.get("date") != expected
+                or q.get("change") is None
+                or q.get("pct") is None
+            ):
                 pending[symbol] = expected
     if not pending:
         return

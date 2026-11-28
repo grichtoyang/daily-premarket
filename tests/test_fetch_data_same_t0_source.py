@@ -19,8 +19,11 @@ class SameT0SourceAttributionTests(unittest.TestCase):
             ],
         }
         partial, unavailable = _market_coverage(market_data)
-        self.assertEqual(len(unavailable), 1)
-        self.assertIn("日經225", unavailable[0])
+        self.assertEqual(len(unavailable), 3)
+        self.assertTrue(all("日經225" in item for item in unavailable))
+        self.assertTrue(any(".price" in item for item in unavailable))
+        self.assertTrue(any(".change" in item for item in unavailable))
+        self.assertTrue(any(".pct" in item for item in unavailable))
         self.assertEqual(len(partial), 1)
         self.assertIn("change", partial[0])
 
