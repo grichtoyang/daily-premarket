@@ -122,16 +122,21 @@ def _expected_us_session_date(now: datetime | None = None) -> str:
 def _apply_adr_freshness(rows: list[tuple], expected_session: str | None) -> list[tuple]:
     """Reject ADR quotes not dated on the latest fully closed US equity session."""
     for name, q in rows:
-        if q.get("price") is None:
-            continue
         actual_date = q.get("date")
-        if expected_session and actual_date == expected_session:
+        if q.get("price") is None:
+            # A missing quote is also authoritative unavailable. Mark it stale so
+            # same-T0 merge cannot silently refill an older ADR value.
+            if expected_session is None:
+                reason = f"{name}本次未取得報價，且無法驗證美國交易日（交易日曆不可用）"
+            else:
+                reason = f"{name}本次未取得可驗證報價（美國最近已收盤交易日 {expected_session}）"
+        elif expected_session and actual_date == expected_session:
             continue
-        q["stale"] = True
-        if expected_session is None:
+        elif expected_session is None:
             reason = f"{name}無法驗證美國交易日（交易日曆不可用）"
         else:
             reason = f"{name}資料日期 {actual_date or '缺失'} 與美國最近已收盤交易日 {expected_session} 不一致"
+        q["stale"] = True
         q["stale_reason"] = reason
         q["price"] = None
         q["change"] = None
