@@ -1180,6 +1180,16 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
             )
         )
     _flip_proxy_used = flip_src == "options-market-structure-compact (proxy)"
+    _flip_diag = gdata.get("gamma_flip_diagnostics") if g_pay is not None else None
+    _flip_diag_source = "options-gamma-levels" if _flip_diag is not None else None
+    if _flip_diag is None:
+        _flip_diag = cgamma.get("gamma_flip_diagnostics")
+        _flip_diag_source = "options-market-structure-compact (proxy)" if _flip_diag is not None else None
+    _wide_flip_diag = gdata.get("gamma_flip_wide_range_diagnostics") if g_pay is not None else None
+    _wide_flip_diag_source = "options-gamma-levels" if _wide_flip_diag is not None else None
+    if _wide_flip_diag is None:
+        _wide_flip_diag = cgamma.get("gamma_flip_wide_range_diagnostics")
+        _wide_flip_diag_source = "options-market-structure-compact (proxy)" if _wide_flip_diag is not None else None
     gamma = {"wall": wall, "flip": flip, **_gamma_expiry,
              "gex_date": g_date,
              "flip_proxy_contract_month": cgamma.get("contract_month") if _flip_proxy_used else None,
@@ -1194,8 +1204,10 @@ def build(t0: str, taiex_close=None, session: str = "全日") -> dict:
              "net_gex_1pct": _net_gex, "gross_gex_1pct": _gross_gex,
              "levels": _gex_levels, "levels_count": len(_gex_levels),
              "diagnostics": gdata.get("gamma_diagnostics") if g_pay is not None else cgamma.get("gamma_diagnostics"),
-             "flip_diagnostics": (gdata.get("gamma_flip_diagnostics") if g_pay is not None else None) or cgamma.get("gamma_flip_diagnostics"),
-             "wide_range_flip_diagnostics": (gdata.get("gamma_flip_wide_range_diagnostics") if g_pay is not None else None) or cgamma.get("gamma_flip_wide_range_diagnostics"),
+             "flip_diagnostics": _flip_diag,
+             "flip_diagnostics_source": _flip_diag_source,
+             "wide_range_flip_diagnostics": _wide_flip_diag,
+             "wide_range_flip_diagnostics_source": _wide_flip_diag_source,
              "wide_range_flip": (gdata.get("gamma_flip_wide_range") if g_pay is not None else None) or cgamma.get("gamma_flip_wide_range"),
              "expiry_selection_diagnostics": (gdata.get("expiry_selection_diagnostics") if g_pay is not None else None) or cgamma.get("expiry_selection_diagnostics"),
              "delta_fetch_diagnostics": (cdata.get("data_quality") or {}).get("delta_fetch_diagnostics"),
