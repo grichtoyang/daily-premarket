@@ -1059,7 +1059,7 @@ def build(report_date: str, t0: str, session: str = "全日", slot: str = "") ->
              _source_if_available(_diff2(d["close"], n["close"]),
                                   _combine_source_labels(SRC_FX, _nvia))),
             ("成交量", _fi(d["vol_day"]), _fi(n["vol"]), _f2s(_diff2(d["vol_day"], n["vol"])),
-             _source_if_available(_diff2(d["vol_day"], n["vol"]), SRC_FX))],
+             _source_if_available(_diff2(d["vol_day"], n["vol"]), _combine_source_labels(SRC_FX, _nvia)))],
            ("項目", "日盤", "夜盤", "變化 (日-夜)", "資料來源")))
     A(f"- 台指期總 OI 前日變化：{_f2s(fx['oi_chg'])}（來源：{SRC_FX if fx['oi_chg'] is not None else MISSING}）")
     A("")
