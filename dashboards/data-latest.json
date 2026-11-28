@@ -4,7 +4,7 @@
     "skill": "daily-premarket-analysis-v9-pro",
     "date": "2026-11-27",
     "report_date": "2026-11-28",
-    "generated_at": "2026-11-28 11:04:08",
+    "generated_at": "2026-11-28 12:51:09",
     "timezone": "Asia/Taipei",
     "template": "pure-react + window.DASHBOARD_DATA",
     "no_sample_data": true,
@@ -124,8 +124,14 @@
     "callWall": 42000.0,
     "putWall": 34000.0,
     "gammaWall": 38900.0,
-    "flip": 37182.94,
-    "extendedFlip": null,
+    "flip": null,
+    "flipDate": null,
+    "flipSource": null,
+    "flipStatus": "stale_proxy",
+    "referenceFlip": 37182.94,
+    "referenceFlipDate": "2026-11-26",
+    "referenceFlipSource": "options-market-structure-compact (proxy)",
+    "extendedFlip": 34633.92573397863,
     "maxPain": 38200.0,
     "netGex1pct": 2796115536.0532346,
     "grossGex1pct": 3811852720.232466,
@@ -2110,7 +2116,7 @@
           "114.71",
           "+1.60",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:30+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2126,7 +2132,7 @@
           "543.70",
           "+2.31",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:30+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2142,7 +2148,7 @@
           "679.49",
           "+2.61",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:30+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2150,15 +2156,15 @@
       {
         "l": "Dow Jones",
         "v": 1.18,
-        "close": 50774.94,
+        "close": 50774.9,
         "raw": [
           "Dow Jones",
           "^DJI",
-          "50,774.94",
-          "591.99",
+          "50,774.90",
+          "591.95",
           "+1.18",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:30+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2174,7 +2180,7 @@
           "411.85",
           "+4.69",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:30+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2190,7 +2196,7 @@
           "-2.99",
           "-11.16",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:30+00:00",
           "America/Chicago",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2208,7 +2214,7 @@
           "1,211.95",
           "+2.11",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Asia/Tokyo",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2224,7 +2230,7 @@
           "204.47",
           "+4.34",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Asia/Seoul",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2240,7 +2246,7 @@
           "467.89",
           "+2.11",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Asia/Hong_Kong",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2256,7 +2262,7 @@
           "129.60",
           "+3.73",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Asia/Shanghai",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2272,7 +2278,7 @@
           "729.98",
           "+7.24",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Asia/Shanghai",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2290,7 +2296,7 @@
           "112.50",
           "+1.56",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2306,7 +2312,7 @@
           "664.75",
           "+2.55",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2322,7 +2328,7 @@
           "593.00",
           "+1.18",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2338,7 +2344,7 @@
           "48.30",
           "+1.78",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2355,7 +2361,7 @@
           "4.69",
           "0.08",
           "27-NOV-26",
-          "2026-11-28T03:04:48+00:00",
+          "2026-11-28T04:51:50+00:00",
           "U.S. Treasury yield.xml（BC_2YEAR 備援）"
         ]
       },
@@ -2369,7 +2375,7 @@
           "4.94",
           "0.09",
           "2026-11-27",
-          "2026-11-28T03:04:48+00:00",
+          "2026-11-28T04:51:50+00:00",
           "Yahoo Finance (備援)"
         ]
       },
@@ -2383,7 +2389,7 @@
           "5.36",
           "0.08",
           "27-NOV-26",
-          "2026-11-28T03:04:48+00:00",
+          "2026-11-28T04:51:50+00:00",
           "U.S. Treasury yield.xml（BC_20YEAR 備援）"
         ]
       },
@@ -2397,7 +2403,7 @@
           "5.33",
           "0.09",
           "2026-11-27",
-          "2026-11-28T03:04:48+00:00",
+          "2026-11-28T04:51:50+00:00",
           "Yahoo Finance (備援)"
         ]
       }
@@ -2414,7 +2420,7 @@
           "-0.21",
           "-0.63",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Europe/London",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2430,7 +2436,7 @@
           "0.34",
           "+0.33",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2446,23 +2452,23 @@
           "0.30",
           "+0.19",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "Europe/London",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
       },
       {
         "l": "USD/KRW",
-        "v": -0.74,
-        "close": 1333.0,
+        "v": -0.72,
+        "close": 1333.9,
         "raw": [
           "USD/KRW",
           "KRW=X",
-          "1,333.00",
-          "-9.97",
-          "-0.74",
-          "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "1,333.90",
+          "-9.63",
+          "-0.72",
+          "2026-11-28",
+          "2026-11-28T04:51:31+00:00",
           "Europe/London",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2480,7 +2486,7 @@
           "11.00",
           "+3.21",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2496,7 +2502,7 @@
           "0.25",
           "+1.90",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2512,7 +2518,7 @@
           "1.85",
           "+6.27",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2530,7 +2536,7 @@
           "-0.60",
           "-0.72",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2546,23 +2552,23 @@
           "132.70",
           "+3.75",
           "2026-11-27",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "America/New_York",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
       },
       {
         "l": "Bitcoin",
-        "v": -0.97,
-        "close": 59908.14,
+        "v": -0.86,
+        "close": 59972.04,
         "raw": [
           "Bitcoin",
           "BTC-USD",
-          "59,908.14",
-          "-586.57",
-          "-0.97",
+          "59,972.04",
+          "-522.67",
+          "-0.86",
           "2026-11-28",
-          "2026-11-28T03:04:29+00:00",
+          "2026-11-28T04:51:31+00:00",
           "UTC",
           "Yahoo Finance Chart API（meta.regularMarketPrice）"
         ]
@@ -2669,7 +2675,7 @@
       },
       {
         "l": "USD/KRW",
-        "v": -0.74
+        "v": -0.72
       }
     ],
     "adrPct": [
@@ -2697,7 +2703,7 @@
       },
       {
         "l": "Bitcoin",
-        "v": -0.97
+        "v": -0.86
       }
     ]
   },
@@ -3249,9 +3255,9 @@
         "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "關鍵水位": {
-        "look": "現價39308.08；Put Wall 34000.0；Flip 37182.94；Regime 盤整／訊號混合",
+        "look": "現價39308.08；Put Wall 34000.0；Flip unavailable；Regime 盤整／訊號混合",
         "compass": "只採用當日有效關鍵位；缺失價位不補硬編碼水位",
-        "target": "依有效 Put Wall 34000.0 與 Flip 37182.94 觀察，缺值時不設定價位目標"
+        "target": "依有效 Put Wall 34000.0 與 Flip unavailable 觀察，缺值時不設定價位目標"
       },
       "盤前核心判斷": {
         "look": "有效因子 14/17；正向 4 項、負向 7 項；Bias 43 分／盤整／訊號混合；外資現貨-3 外資期貨-4 投信+2 夜盤-3 美股費半+5 PCR-3",
@@ -3517,27 +3523,27 @@
         "target": "分開觀察股票指數、VIX 波動率與 DXY 美元指數"
       },
       "亞洲指數": {
-        "look": "亞洲市場資料：[{'l': '日經225', 'v': 2.11, 'close': 58711.11, 'raw': ['日經225', '^N225', '58,711.11', '1,211.95', '+2.11', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Asia/Tokyo', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '韓國KOSPI', 'v': 4.34, 'close': 4915.68, 'raw': ['韓國KOSPI', '^KS11', '4,915.68', '204.47', '+4.34', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Asia/Seoul', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '香港恆生', 'v': 2.11, 'close': 22694.77, 'raw': ['香港恆生', '^HSI', '22,694.77', '467.89', '+2.11', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Asia/Hong_Kong', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '上海綜合', 'v': 3.73, 'close': 3606.49, 'raw': ['上海綜合', '000001.SS', '3,606.49', '129.60', '+3.73', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '深圳成分', 'v': 7.24, 'close': 10814.02, 'raw': ['深圳成分', '399001.SZ', '10,814.02', '729.98', '+7.24', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
+        "look": "亞洲市場資料：[{'l': '日經225', 'v': 2.11, 'close': 58711.11, 'raw': ['日經225', '^N225', '58,711.11', '1,211.95', '+2.11', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Asia/Tokyo', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '韓國KOSPI', 'v': 4.34, 'close': 4915.68, 'raw': ['韓國KOSPI', '^KS11', '4,915.68', '204.47', '+4.34', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Asia/Seoul', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '香港恆生', 'v': 2.11, 'close': 22694.77, 'raw': ['香港恆生', '^HSI', '22,694.77', '467.89', '+2.11', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Asia/Hong_Kong', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '上海綜合', 'v': 3.73, 'close': 3606.49, 'raw': ['上海綜合', '000001.SS', '3,606.49', '129.60', '+3.73', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '深圳成分', 'v': 7.24, 'close': 10814.02, 'raw': ['深圳成分', '399001.SZ', '10,814.02', '729.98', '+7.24', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Asia/Shanghai', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
         "compass": "僅呈現有來源的市場數值，不推定同步連動",
         "target": "依各市場實際變動分別觀察"
       },
       "美股期貨": {
-        "look": "美股期貨資料：[{'l': 'S&P500期貨', 'v': 1.56, 'close': 7308.25, 'raw': ['S&P500期貨', 'ES=F', '7,308.25', '112.50', '+1.56', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'Nasdaq100期貨', 'v': 2.55, 'close': 26765.0, 'raw': ['Nasdaq100期貨', 'NQ=F', '26,765.00', '664.75', '+2.55', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '道瓊期貨', 'v': 1.18, 'close': 50821.0, 'raw': ['道瓊期貨', 'YM=F', '50,821.00', '593.00', '+1.18', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'Russell2000期貨', 'v': 1.78, 'close': 2754.4, 'raw': ['Russell2000期貨', 'RTY=F', '2,754.40', '48.30', '+1.78', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
+        "look": "美股期貨資料：[{'l': 'S&P500期貨', 'v': 1.56, 'close': 7308.25, 'raw': ['S&P500期貨', 'ES=F', '7,308.25', '112.50', '+1.56', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'Nasdaq100期貨', 'v': 2.55, 'close': 26765.0, 'raw': ['Nasdaq100期貨', 'NQ=F', '26,765.00', '664.75', '+2.55', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '道瓊期貨', 'v': 1.18, 'close': 50821.0, 'raw': ['道瓊期貨', 'YM=F', '50,821.00', '593.00', '+1.18', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'Russell2000期貨', 'v': 1.78, 'close': 2754.4, 'raw': ['Russell2000期貨', 'RTY=F', '2,754.40', '48.30', '+1.78', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
         "compass": "僅呈現 DATA_REPORT 有效數值",
         "target": "資料缺值時不推定夜盤方向"
       },
       "美債殖利率": {
-        "look": "美債市場資料：[{'l': '美國 2 年期殖利率', 'v': 0.08, 'close': 4.69, 'raw': ['美國 2 年期殖利率', '2 Yr', '4.69', '0.08', '27-NOV-26', '2026-11-28T03:04:48+00:00', 'U.S. Treasury yield.xml（BC_2YEAR 備援）']}, {'l': '美國 10 年期殖利率', 'v': 0.09, 'close': 4.94, 'raw': ['美國 10 年期殖利率', '10 Yr', '4.94', '0.09', '2026-11-27', '2026-11-28T03:04:48+00:00', 'Yahoo Finance (備援)']}, {'l': '美國 20 年期殖利率', 'v': 0.08, 'close': 5.36, 'raw': ['美國 20 年期殖利率', '20 Yr', '5.36', '0.08', '27-NOV-26', '2026-11-28T03:04:48+00:00', 'U.S. Treasury yield.xml（BC_20YEAR 備援）']}, {'l': '美國 30 年期殖利率', 'v': 0.09, 'close': 5.33, 'raw': ['美國 30 年期殖利率', '30 Yr', '5.33', '0.09', '2026-11-27', '2026-11-28T03:04:48+00:00', 'Yahoo Finance (備援)']}]",
+        "look": "美債市場資料：[{'l': '美國 2 年期殖利率', 'v': 0.08, 'close': 4.69, 'raw': ['美國 2 年期殖利率', '2 Yr', '4.69', '0.08', '27-NOV-26', '2026-11-28T04:51:50+00:00', 'U.S. Treasury yield.xml（BC_2YEAR 備援）']}, {'l': '美國 10 年期殖利率', 'v': 0.09, 'close': 4.94, 'raw': ['美國 10 年期殖利率', '10 Yr', '4.94', '0.09', '2026-11-27', '2026-11-28T04:51:50+00:00', 'Yahoo Finance (備援)']}, {'l': '美國 20 年期殖利率', 'v': 0.08, 'close': 5.36, 'raw': ['美國 20 年期殖利率', '20 Yr', '5.36', '0.08', '27-NOV-26', '2026-11-28T04:51:50+00:00', 'U.S. Treasury yield.xml（BC_20YEAR 備援）']}, {'l': '美國 30 年期殖利率', 'v': 0.09, 'close': 5.33, 'raw': ['美國 30 年期殖利率', '30 Yr', '5.33', '0.09', '2026-11-27', '2026-11-28T04:51:50+00:00', 'Yahoo Finance (備援)']}]",
         "compass": "顯示 DATA_REPORT 原始列值；不以固定門檻推定殖利率曲線",
         "target": "依當日實際殖利率與期限利差另行判讀"
       },
       "匯率": {
-        "look": "匯率市場資料：[{'l': 'USD/TWD', 'v': -0.63, 'close': 32.98, 'raw': ['USD/TWD', 'TWD=X', '32.98', '-0.21', '-0.63', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Europe/London', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'DXY美元指數', 'v': 0.33, 'close': 104.01, 'raw': ['DXY美元指數', 'DX-Y.NYB', '104.01', '0.34', '+0.33', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'USD/JPY', 'v': 0.19, 'close': 159.51, 'raw': ['USD/JPY', 'JPY=X', '159.51', '0.30', '+0.19', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Europe/London', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'USD/KRW', 'v': -0.74, 'close': 1333.0, 'raw': ['USD/KRW', 'KRW=X', '1,333.00', '-9.97', '-0.74', '2026-11-27', '2026-11-28T03:04:29+00:00', 'Europe/London', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
+        "look": "匯率市場資料：[{'l': 'USD/TWD', 'v': -0.63, 'close': 32.98, 'raw': ['USD/TWD', 'TWD=X', '32.98', '-0.21', '-0.63', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Europe/London', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'DXY美元指數', 'v': 0.33, 'close': 104.01, 'raw': ['DXY美元指數', 'DX-Y.NYB', '104.01', '0.34', '+0.33', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'USD/JPY', 'v': 0.19, 'close': 159.51, 'raw': ['USD/JPY', 'JPY=X', '159.51', '0.30', '+0.19', '2026-11-27', '2026-11-28T04:51:31+00:00', 'Europe/London', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'USD/KRW', 'v': -0.72, 'close': 1333.9, 'raw': ['USD/KRW', 'KRW=X', '1,333.90', '-9.63', '-0.72', '2026-11-28', '2026-11-28T04:51:31+00:00', 'Europe/London', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
         "compass": "以當日來源資料呈現，不由單一匯率推定外資匯出",
         "target": "搭配外資現貨與期貨部位交叉觀察"
       },
       "商品": {
-        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': -0.72, 'close': 83.08, 'raw': ['WTI原油期貨', 'CL=F', '83.08', '-0.60', '-0.72', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '黃金期貨', 'v': 3.75, 'close': 3668.5, 'raw': ['黃金期貨', 'GC=F', '3,668.50', '132.70', '+3.75', '2026-11-27', '2026-11-28T03:04:29+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'Bitcoin', 'v': -0.97, 'close': 59908.14, 'raw': ['Bitcoin', 'BTC-USD', '59,908.14', '-586.57', '-0.97', '2026-11-28', '2026-11-28T03:04:29+00:00', 'UTC', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
+        "look": "商品市場資料：[{'l': 'WTI原油期貨', 'v': -0.72, 'close': 83.08, 'raw': ['WTI原油期貨', 'CL=F', '83.08', '-0.60', '-0.72', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': '黃金期貨', 'v': 3.75, 'close': 3668.5, 'raw': ['黃金期貨', 'GC=F', '3,668.50', '132.70', '+3.75', '2026-11-27', '2026-11-28T04:51:31+00:00', 'America/New_York', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}, {'l': 'Bitcoin', 'v': -0.86, 'close': 59972.04, 'raw': ['Bitcoin', 'BTC-USD', '59,972.04', '-522.67', '-0.86', '2026-11-28', '2026-11-28T04:51:31+00:00', 'UTC', 'Yahoo Finance Chart API（meta.regularMarketPrice）']}]",
         "compass": "商品價格與通膨關係需搭配時間序列判讀",
         "target": "不以缺值或單日變動推定通膨方向"
       },
@@ -3749,11 +3755,6 @@
         "t": "Put Wall 34K",
         "v": 34000,
         "type": "W"
-      },
-      {
-        "t": "Flip 37K",
-        "v": 37182,
-        "type": "F"
       }
     ],
     "historical": null,
