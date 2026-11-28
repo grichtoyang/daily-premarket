@@ -45,6 +45,8 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertIn('sb.get("otc_sale_chg")', source)
         self.assertIn('sb.get("sale_chg")', source)
         self.assertIn('("項目", "上市", "上櫃", "兩者合計", "單位")', source)
+        self.assertIn("上市 TWSE TWT93U 與上櫃 TPEx S47", source)
+        self.assertNotIn("上市 TWT93U 與上櫃 tpex_margin_sbl", source)
         self.assertNotIn("SRC_SBL)", source)
 
 
