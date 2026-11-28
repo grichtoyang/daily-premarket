@@ -118,6 +118,17 @@ class ADRMarketFreshnessTests(unittest.TestCase):
         self.assertTrue(result[0][1]["stale"])
         self.assertIsNone(result[0][1]["price"])
 
+    def test_missing_price_is_marked_stale_to_block_same_t0_carry_forward(self):
+        rows = self._rows([("台積電ADR", "TSM", None, None)])
+        result = _apply_adr_freshness(rows, "2026-11-27")
+        quote = result[0][1]
+        self.assertTrue(quote["stale"])
+        self.assertFalse(quote["ok"])
+        self.assertIsNone(quote["price"])
+        self.assertIsNone(quote["change"])
+        self.assertIsNone(quote["pct"])
+        self.assertIn("本次未取得可驗證報價", quote["stale_reason"])
+
     def test_unavailable_calendar_fails_closed(self):
         rows = self._rows([("台積電ADR", "TSM", 353.34, "2026-11-27")])
         result = _apply_adr_freshness(rows, None)
