@@ -391,6 +391,11 @@ class BorrowedSecuritiesSourceContractTests(unittest.TestCase):
         self.assertLess(source.index('A("### 16．選擇權法人日盤、夜盤交易")'), source.index('A("### 17．選擇權前十大")'))
         self.assertLess(source.index('A("### 17．選擇權前十大")'), source.index('A("### 18．資料來源、時間、時區與狀態")'))
         self.assertIn('_combine_source_labels(SRC_FX, _nvia) if _nratio is not None else MISSING', source)
+        self.assertIn('_source_if_available(_diff2(d["vol_day"], n["vol"]), _combine_source_labels(SRC_FX, _nvia))', source)
+        builder_source = (ROOT / "scripts/v9_pro_builder.py").read_text(encoding="utf-8")
+        self.assertIn('opt_inst_table=parse_table("### 16．選擇權法人日盤、夜盤交易")', builder_source)
+        self.assertIn('opt_top10_tables=parse_tables("### 17．選擇權前十大")', builder_source)
+
 
 
 
