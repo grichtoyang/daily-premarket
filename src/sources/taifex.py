@@ -1422,7 +1422,11 @@ def snap_top10_change(month: str, t0: str, cur_net, cur_date: str | None = None,
         return None
 
     if callput:
-        rows = [r for r in rows if str(r.get("CallPut", "")) == str(callput)]
+        rows = [
+            r for r in rows
+            if str(r.get("CallPut", r.get("買賣權", ""))).strip()
+            == str(callput).strip()
+        ]
     month_rows = rows
     if month:
         rows = [r for r in month_rows if str(r.get("SettlementMonth", "")) == str(month)]
